@@ -79,6 +79,11 @@
     <p class="d-note" id="dNote"></p>
     <div id="dStallsWrap" hidden>
       <h3 data-i18n="stallsTitle">夜市裡的店家（Google 地圖）</h3>
+      <label class="search stall-q" id="dStallQWrap" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="dStallQ" type="search" autocomplete="off" enterkeyhint="search" data-i18n-ph="stallQPh" placeholder="在這個夜市找店家（例如：臭豆腐）">
+      </label>
+      <p class="stall-hint" id="dStallHint" aria-live="polite"></p>
       <button class="btn primary see-map" id="dSeeMap" type="button" hidden></button>
       <ol class="stalls" id="dStalls"></ol>
     </div>

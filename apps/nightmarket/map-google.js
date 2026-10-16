@@ -115,7 +115,7 @@
 
     var map, skin = opts.skin;
     var marketMarkers = {}, stallMarkers = [], polygon = null, meMarker = null, countyLabels = [];
-    var cache = {};
+    var cache = {}, qcache = {}, curArea = null;
     var token = 0;
 
     // 只看台灣（本島與澎湖）
@@ -189,6 +189,7 @@
       stallMarkers.forEach(function (s) { s.marker.setMap(null); });
       stallMarkers = [];
       if (polygon) { polygon.setMap(null); polygon = null; }
+      curArea = null;
     }
 
     function search(textQuery, fields, extra) {
@@ -196,6 +197,20 @@
       Object.keys(extra).forEach(function (k) { req[k] = extra[k]; });
       return Place.searchByText(req).then(function (r) { return r.places || []; }).catch(function (e) { console.warn("[places]", e); return []; });
     }
+
+    function toStall(p) {
+      var loc = ll(p.location);
+      return {
+        id: p.id, name: p.displayName || "", lat: loc.lat, lng: loc.lng,
+        rating: p.rating || null, count: p.userRatingCount || 0, type: p.primaryTypeDisplayName || "",
+        address: p.formattedAddress || "", url: p.googleMapsURI || "", place: p,
+        thumb: photoUrl((p.photos || [])[0], 160), photos: (p.photos || []).slice(0, 6).map(function (ph) {
+          var a = (ph.authorAttributions || [])[0] || {};
+          return { url: photoUrl(ph, 900), author: a.displayName || "", authorUrl: a.uri || "" };
+        }).filter(function (x) { return x.url; })
+      };
+    }
+    var FIELDS = ["id", "displayName", "location", "types", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI", "photos"];
 
     async function loadArea(m) {
       var center = { lat: m.lat, lng: m.lng };
@@ -207,7 +222,7 @@
       }
       // 夜市常是一整條街，範圍抓大一點；搜尋字加上夜市名稱，結果就會是夜市裡的攤位
       var bounds = box(center, 650);
-      var fields = ["id", "displayName", "location", "types", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI", "photos"];
+      var fields = FIELDS;
       var q = [m.zh + " 小吃", m.zh + " 攤位", m.zh + " 美食"];
       var lists = await Promise.all(q.map(function (text) { return search(text, fields, { locationRestriction: bounds, maxResultCount: 20 }); }));
       var seen = {}, stalls = [];
@@ -217,16 +232,7 @@
           // 只留吃的喝的（排除車站、飯店、商店等）
           if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
           seen[p.id] = true;
-          var loc = ll(p.location);
-          stalls.push({
-            id: p.id, name: p.displayName || "", lat: loc.lat, lng: loc.lng,
-            rating: p.rating || null, count: p.userRatingCount || 0, type: p.primaryTypeDisplayName || "",
-            address: p.formattedAddress || "", url: p.googleMapsURI || "", place: p,
-            thumb: photoUrl((p.photos || [])[0], 160), photos: (p.photos || []).slice(0, 6).map(function (ph) {
-              var a = (ph.authorAttributions || [])[0] || {};
-              return { url: photoUrl(ph, 900), author: a.displayName || "", authorUrl: a.uri || "" };
-            }).filter(function (x) { return x.url; })
-          });
+          stalls.push(toStall(p));
         });
       });
       // 先留下離夜市中心近的，避免外框被遠處一兩家店拉得很大
@@ -237,6 +243,13 @@
       return { center: center, bounds: bounds, stalls: keep };
     }
 
+    function addStallMarker(s, i) {
+      var content = div("stall-pin", "<span>" + (i + 1) + "</span>");
+      var mk = new HtmlMarker({ map: map, position: { lat: s.lat, lng: s.lng }, content: content, title: s.name, zIndex: 500 - i, gmpClickable: true });
+      onClick(mk, function () { opts.onStallClick(s.id); });
+      stallMarkers.push({ id: s.id, marker: mk, el: content });
+    }
+
     function draw(area) {
       var path = hull(area.stalls, 25);
       if (!path) {
@@ -245,12 +258,7 @@
       }
       var col = getComputedStyle(document.documentElement).getPropertyValue("--lantern").trim() || "#b5492f";
       polygon = new mapsLib.Polygon({ paths: path, strokeColor: col, strokeOpacity: .9, strokeWeight: 2, fillColor: col, fillOpacity: .12, clickable: false, map: map });
-      area.stalls.forEach(function (s, i) {
-        var content = div("stall-pin", "<span>" + (i + 1) + "</span>");
-        var mk = new HtmlMarker({ map: map, position: { lat: s.lat, lng: s.lng }, content: content, title: s.name, zIndex: 500 - i, gmpClickable: true });
-        onClick(mk, function () { opts.onStallClick(s.id); });
-        stallMarkers.push({ id: s.id, marker: mk, el: content });
-      });
+      area.stalls.forEach(addStallMarker);
       var bb = new g.LatLngBounds();
       path.forEach(function (p) { bb.extend(p); });
       map.fitBounds(bb, 40);
@@ -304,10 +312,35 @@
         if (!cache[key]) cache[key] = loadArea(m).catch(function (e) { delete cache[key]; throw e; });
         var area = await cache[key];
         if (my !== token) return area.stalls; // 使用者已經切到別的夜市
+        curArea = area;
         draw(area);
         return area.stalls;
       },
       clearArea: clearArea,
+      // 關鍵字找店：在夜市範圍內用 Google 地圖搜尋，新找到的店加進清單和地圖；回傳符合的店家 id
+      searchStalls: async function (m, q) {
+        var area = curArea;
+        if (!area) return [];
+        var key = m.id + ":" + opts.lang() + ":" + q;
+        if (!qcache[key]) qcache[key] = search(q, FIELDS, { locationRestriction: box(area.center, 700), maxResultCount: 20 });
+        var list = await qcache[key];
+        var ids = [];
+        list.forEach(function (p) {
+          if (!p.location || distM(ll(p.location), area.center) > 750) return;
+          var have = area.stalls.filter(function (s) { return s.id === p.id; })[0];
+          if (!have) {
+            have = toStall(p);
+            area.stalls.push(have);
+            if (curArea === area && polygon) addStallMarker(have, area.stalls.length - 1);
+          }
+          ids.push(p.id);
+        });
+        return ids;
+      },
+      // 有關鍵字時，不符合的攤位標記變淡
+      filterStalls: function (ids) {
+        stallMarkers.forEach(function (s) { s.el.classList.toggle("dim", !!ids && ids.indexOf(s.id) < 0); });
+      },
       selectStall: function (id) {
         stallMarkers.forEach(function (s) { s.el.classList.toggle("sel", s.id === id); s.marker.setZ(s.id === id ? 900 : 500); });
       },
