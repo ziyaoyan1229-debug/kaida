@@ -1,4 +1,4 @@
-/* 開達 Kaida 封測作品共用小工具：外觀、語言、頂列、提示、本機儲存 */
+/* 開達 Kaida 封測作品共用小工具：語言、頂列、提示、本機儲存 */
 (function () {
   var MARK = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" style="fill:var(--surface)"/>' +
     '<defs><clipPath id="kcs"><rect x="0" y="14" width="100" height="72"/></clipPath></defs><g clip-path="url(#kcs)">' +
@@ -8,7 +8,6 @@
   function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function safeSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 
-  if (safeGet("kaida-skin") === "cyber") document.documentElement.setAttribute("data-skin", "cyber");
   var lang = safeGet("kaida-lang") === "en" ? "en" : "zh";
   document.documentElement.lang = lang === "en" ? "en" : "zh-Hant-TW";
 
@@ -44,20 +43,12 @@
       var tt = document.querySelector("title[data-i18n-title]");
       if (tt) document.title = K.t(tt.getAttribute("data-i18n-title"));
       var lb = document.getElementById("k-lang"); if (lb) lb.textContent = lang === "en" ? "中文" : "EN";
-      var sb = document.getElementById("k-skin"); if (sb) sb.textContent = K.t(document.documentElement.getAttribute("data-skin") === "cyber" ? "k.skin.beige" : "k.skin.cyber");
     },
     mountTopbar: function (el) {
       el.innerHTML =
         '<a class="brand" href="../../"><span>' + MARK + '</span><span><b>開達 Kaida</b> · <span data-i18n="k.beta">封測作品</span></span></a>' +
-        '<div class="toggles"><button class="chip-btn" id="k-skin" type="button"></button>' +
-        '<button class="chip-btn" id="k-lang" type="button"></button></div>';
+        '<div class="toggles"><button class="chip-btn" id="k-lang" type="button"></button></div>';
       el.querySelector("#k-lang").addEventListener("click", function () { K.setLang(lang === "en" ? "zh" : "en"); });
-      el.querySelector("#k-skin").addEventListener("click", function () {
-        var cyber = document.documentElement.getAttribute("data-skin") === "cyber";
-        if (cyber) document.documentElement.removeAttribute("data-skin"); else document.documentElement.setAttribute("data-skin", "cyber");
-        safeSet("kaida-skin", cyber ? "beige" : "cyber");
-        K.applyStatic();
-      });
     },
     toast: function (msg) {
       var el = document.getElementById("k-toast");
@@ -120,8 +111,8 @@
   };
 
   K.addStrings({
-    zh: { "k.beta": "封測作品", "k.skin.cyber": "Cyber", "k.skin.beige": "米色" },
-    en: { "k.beta": "Beta app", "k.skin.cyber": "Cyber", "k.skin.beige": "Beige" }
+    zh: { "k.beta": "封測作品" },
+    en: { "k.beta": "Beta app" }
   });
 
   window.Kaida = K;
