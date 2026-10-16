@@ -202,6 +202,22 @@
   .win-pane { padding: 12px 14px 14px; }
   .win-pane .code-input { width: 100%; box-sizing: border-box; }
   .start-btn { font-size: 18px; min-height: 52px; }
+  .pick-card { padding: 14px 0 4px; }
+  .prow { margin-bottom: 14px; }
+  .prow h4 { margin: 0 16px 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .prow .pad, .prow.pad { padding: 0 16px; margin-top: 0; }
+  .prow.pad .code-input { width: 100%; box-sizing: border-box; }
+  .rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail button { flex: none; scroll-snap-align: start; min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 15px; white-space: nowrap; cursor: pointer; }
+  .rail button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 600; }
+  .rail .mcard { width: 150px; min-height: 70px; padding: 10px 12px; border-radius: 14px; text-align: left; white-space: normal; }
+  .mcard b { display: block; font-size: 15px; } .mcard span { display: block; font-size: 12px; opacity: .8; margin-top: 3px; font-weight: 400; }
+  .rail .tcard { width: 112px; padding: 6px 6px 8px; border-radius: 14px; text-align: left; white-space: normal; font-size: 13px; line-height: 1.3; }
+  .rail .tcard[aria-pressed="true"] { background: var(--paper); color: var(--ink); border: 2px solid var(--ink); }
+  .tcard .sw { display: block; height: 54px; border-radius: 10px; margin-bottom: 6px; font-size: 24px; line-height: 54px; text-align: center; }
+  .pick-foot { padding: 4px 16px 12px; border-top: 1px solid var(--line); }
+  .pick-foot p { text-align: center; margin: 10px 0; }
   .room-card h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
   .room-card p { margin: 0 0 12px; }
   .char-top { display: flex; gap: 16px; align-items: center; }
@@ -373,7 +389,7 @@
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.sub.quick": "隨機配到有空位的房間", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -457,7 +473,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.sub.quick": "Random room with a free seat", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -792,39 +808,55 @@
     renderTasks();
   }
 
-  var pendingCode = "", roomTab = "join";
+  var pendingCode = "", roomTab = "quick";
   /* 房間主題：開房的人選，同一間房大家看到一樣的 */
   var THEME_KEYS = ["home", "cafe", "library", "study", "space", "school", "konbini", "washitsu", "cabin", "beach", "rooftop", "lodge"];
   var THEME_ICON = { home: "🏠", cafe: "☕", library: "📚", study: "✏️", space: "🚀", school: "🏫", konbini: "🏪", washitsu: "🍵", cabin: "🌲", beach: "🏖️", rooftop: "🌃", lodge: "❄️" };
   if (THEME_KEYS.indexOf(data.theme) < 0) data.theme = "home";
   function themeName(k, host) { return k === "home" ? t("theme.home", { n: host || data.me.name || t("f.you") }) : t("theme." + k); }
+  // 開房前的設定全部收在一張卡：每一列左右滑動選
+  var START_KEYS = ["quick", "join", "private", "sim", "solo"];
+  var THEME_SW = { home: ["#c08a5a", "#f3e3c6"], cafe: ["#6e4a34", "#e8d3b0"], library: ["#7a2a2a", "#c9a45a"], study: ["#9aa6b2", "#eef0f2"], space: ["#1a2440", "#4ad8ff"], school: ["#7d9a86", "#f1e7cf"], konbini: ["#2f9a6a", "#f4f6f7"], washitsu: ["#c9c08a", "#5a4030"], cabin: ["#5a3a26", "#3f6a3a"], beach: ["#7ac4c4", "#f2a65a"], rooftop: ["#2e3236", "#ff6ab0"], lodge: ["#b0302a", "#f2ece0"] };
+  var MU_KEYS = ["light", "jazz", "lofi", "noise", "fire", "rain", "forest", ""];
+  function startSummary() {
+    var bits = [t("r.tab." + roomTab), t("act." + (S.ACTS.indexOf(data.act) >= 0 ? data.act : "read"))];
+    if (roomTab === "private" || roomTab === "sim" || roomTab === "solo") bits.push(themeName(data.theme, data.me.name));
+    if (roomTab !== "join") bits.push(t("r.mode." + data.mode).replace("\n", " "));
+    bits.push(t(music().kind ? "mu." + music().kind : "mu.off"));
+    return bits.join(" · ");
+  }
   function renderRooms() {
-    var modes = ["std", "deep", "test"].map(function (m) {
-      return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m)).replace("\n", "<br>") + '</button>';
+    var el = document.getElementById("room-list"), keep = {};
+    el.querySelectorAll("[data-rail]").forEach(function (r) { keep[r.dataset.rail] = r.scrollLeft; });
+    var row = function (key, title, inner) { return '<div class="prow"><h4>' + K.esc(title) + '</h4><div class="rail" data-rail="' + key + '">' + inner + '</div></div>'; };
+    var starts = START_KEYS.map(function (k) {
+      return '<button type="button" class="mcard" data-rtab="' + k + '" aria-pressed="' + (roomTab === k) + '"><b>' + K.esc(t("r.tab." + k)) + '</b><span>' + K.esc(t("r.sub." + k)) + '</span></button>';
     }).join("");
-    var tabs = ["join", "quick", "private"].map(function (k) {
-      return '<button type="button" role="tab" data-rtab="' + k + '" aria-selected="' + (roomTab === k) + '">' + K.esc(t("r.tab." + k)) + '</button>';
+    var acts = S.ACTS.map(function (a) { return '<button type="button" data-pickact="' + a + '" aria-pressed="' + (data.act === a) + '">' + K.esc(t("act." + a)) + '</button>'; }).join("");
+    var themes = THEME_KEYS.map(function (k) {
+      var c = THEME_SW[k] || ["#c08a5a", "#f3e3c6"];
+      return '<button type="button" class="tcard" data-theme="' + k + '" aria-pressed="' + (data.theme === k) + '"><span class="sw" style="background:linear-gradient(135deg,' + c[0] + ' 0 60%,' + c[1] + ' 60% 100%)">' + THEME_ICON[k] + '</span>' + K.esc(themeName(k, data.me.name)) + '</button>';
     }).join("");
-    var pane = roomTab === "join"
-      ? '<p class="small muted">' + K.esc(t("r.joinP")) + '</p><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '">'
-      : '<p class="small muted" style="margin:0">' + K.esc(t(roomTab === "quick" ? "r.quickP" : "r.createP")) + '</p>';
+    var times = ["std", "deep", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m).replace("\n", " ")) + '</button>'; }).join("");
+    var mus = MU_KEYS.map(function (k) { return '<button type="button" data-premu="' + k + '" aria-pressed="' + ((music().kind || "") === k) + '">' + K.esc(t(k ? "mu." + k : "mu.off")) + '</button>'; }).join("");
+    var hasTheme = roomTab === "private" || roomTab === "sim" || roomTab === "solo";
+    var act = { join: "join", quick: "quick", "private": "create", sim: "sim", solo: "solo" }[roomTab];
     var away = session && session.away;
     var awayName = away ? (session.kind === "room" ? t("s.label.room") + " " + session.code : t(session.kind === "sim" ? "s.label.sim" : "s.label.solo")) : "";
-    document.getElementById("room-list").innerHTML =
+    el.innerHTML =
       (away ? '<div class="card room-card welcome"><h3>' + K.esc(t("s.away", { r: awayName })) + '</h3><p class="small muted">' + K.esc(t("s.awayP")) + '</p>' +
         '<button class="btn block start-btn" type="button" data-act="back">' + K.esc(t("s.back")) + '</button></div>' : "") +
-      '<div class="card room-card mini-win"><div class="win-tabs" role="tablist">' + tabs + '</div><div class="win-pane">' + pane + '</div></div>' +
-      '<div class="card room-card"><h3>' + K.esc(t("r.doH")) + '</h3><p class="small muted">' + K.esc(t("r.doP")) + '</p><div class="seg acts">' +
-        S.ACTS.map(function (a) { return '<button type="button" data-pickact="' + a + '" aria-pressed="' + (data.act === a) + '">' + K.esc(t("act." + a)) + '</button>'; }).join("") + '</div></div>' +
-      (roomTab === "join" ? "" : '<div class="card room-card"><h3>' + K.esc(t("r.themeH")) + '</h3><p class="small muted">' + K.esc(t("r.themeP")) + '</p><div class="seg themes">' +
-        THEME_KEYS.map(function (k) { return '<button type="button" data-theme="' + k + '" aria-pressed="' + (data.theme === k) + '"><span class="ti">' + THEME_ICON[k] + '</span>' + K.esc(themeName(k, data.me.name)) + '</button>'; }).join("") + '</div></div>') +
-      '<div class="card room-card"><h3>' + K.esc(t("r.timeH")) + '</h3>' +
-        (roomTab === "join" ? '<p class="small muted">' + K.esc(t("r.timeJoin")) + '</p>' : '<div class="seg">' + modes + '</div>') +
-        '<button class="btn block start-btn" type="button" data-act="' + (roomTab === "join" ? "join" : roomTab === "quick" ? "quick" : "create") + '">' + K.esc(t("r.start")) + '</button></div>' +
-      '<div class="card room-card"><h3>' + K.esc(t("r.simH")) + '</h3><p class="small muted">' + K.esc(t("r.simP")) + '</p>' +
-        '<button class="btn ghost block" type="button" data-act="sim">' + K.esc(t("r.sim")) + '</button></div>' +
-      '<div class="card room-card"><h3>' + K.esc(t("r.soloH")) + '</h3><p class="small muted">' + K.esc(t("r.soloP")) + '</p>' +
-        '<button class="btn ghost block" type="button" data-act="solo">' + K.esc(t("r.solo")) + '</button></div>';
+      '<div class="card pick-card">' +
+        row("start", t("r.howH"), starts) +
+        (roomTab === "join" ? '<div class="prow pad"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '"></div>' : "") +
+        row("act", t("r.doH"), acts) +
+        (hasTheme ? row("theme", t("r.themeH"), themes) : "") +
+        (roomTab === "join" ? '<div class="prow"><h4>' + K.esc(t("r.timeH")) + '</h4><p class="small muted pad">' + K.esc(t("r.timeJoin")) + '</p></div>' : row("time", t("r.timeH"), times)) +
+        row("mu", t("mu.lab"), mus) +
+        '<div class="pick-foot"><p class="small muted" id="start-sum">' + K.esc(startSummary()) + '</p>' +
+        '<button class="btn block start-btn" type="button" data-act="' + act + '">' + K.esc(t("r.start")) + '</button></div>' +
+      '</div>';
+    el.querySelectorAll("[data-rail]").forEach(function (r) { var on = r.querySelector('[aria-pressed="true"]'); if (keep[r.dataset.rail] != null) r.scrollLeft = keep[r.dataset.rail]; else if (on) r.scrollLeft = Math.max(0, on.offsetLeft - r.offsetLeft - 16); });
   }
 
   // 快速對話對應的動作（順序跟 s.says 一樣）：舉手打氣、握拳、舉書、揮手、打哈欠、點頭、喝水、端咖啡、抱頭、比讚、鞠躬
@@ -1557,10 +1589,12 @@
   // 事件
   document.getElementById("room-list").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
+    var mark = function () { b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); var sm = document.getElementById("start-sum"); if (sm) sm.textContent = startSummary(); };
+    if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); mark(); return; }
+    if (b.dataset.premu != null) { music().kind = b.dataset.premu; K.save(STORE, data); mark(); return; }
     if (b.dataset.rtab) { var jc = document.getElementById("join-code"); if (jc) pendingCode = jc.value; roomTab = b.dataset.rtab; renderRooms(); return; }
-    if (b.dataset.theme) { data.theme = b.dataset.theme; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
-    if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
+    if (b.dataset.theme) { data.theme = b.dataset.theme; persist(); mark(); return; }
+    if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); mark(); return; }
     var a = b.dataset.act;
     if (a === "back") { comeBack(); return; }
     // 暫離中改去別的房間：先正式離開原本那間
