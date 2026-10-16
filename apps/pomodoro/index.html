@@ -58,6 +58,43 @@
   .week .d { font-size: 12px; color: var(--muted); }
   .note { border-left: 2px solid var(--signal); padding: 2px 0 2px 10px; margin: 0 0 10px; }
   .note .when { font-size: 12px; color: var(--muted); }
+
+  .quote { border-left: 3px solid var(--signal); background: var(--surface); padding: 12px 14px; margin: 0 0 16px; border-radius: 0 var(--r) var(--r) 0; }
+  .quote p { margin: 0; font-size: 16px; line-height: 1.6; }
+  .quote cite { display: block; margin-top: 4px; font-style: normal; font-size: 13px; color: var(--muted); }
+  .quote .linkbtn { float: right; margin-left: 8px; }
+  .session-quote { text-align: left; margin: 4px 0 16px; }
+  .linkbtn { background: none; border: 0; padding: 4px 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+  .avatars { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .avatars button { width: 44px; height: 44px; font-size: 22px; border: 1px solid var(--line); background: var(--paper); border-radius: 50%; cursor: pointer; }
+  .avatars button[aria-pressed="true"] { border: 2px solid var(--signal); background: var(--sunk); }
+  .me-line { display: flex; align-items: center; gap: 10px; }
+  .av { font-size: 24px; width: 40px; height: 40px; flex: none; display: grid; place-items: center; background: var(--sunk); border-radius: 50%; }
+  .board { list-style: none; margin: 0; padding: 0; }
+  .board li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .board li:first-child { border-top: 0; }
+  .board .rk { width: 28px; text-align: center; font-family: var(--f-mono); font-weight: 600; color: var(--muted); flex: none; }
+  .board .rk.top { font-size: 20px; }
+  .board .who { flex: 1; min-width: 0; }
+  .board .who b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .board .who span { font-size: 12px; color: var(--muted); }
+  .board .min { font-family: var(--f-mono); font-weight: 600; text-align: right; }
+  .board .min small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
+  .board li.me { background: var(--sunk); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: var(--r); }
+  .board .acts { display: flex; gap: 4px; }
+  .board .acts button { min-height: 36px; padding: 4px 10px; font-size: 13px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .presets button { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+  .presets button[aria-pressed="true"] { border-color: var(--signal); background: var(--sunk); font-weight: 600; }
+  .cheer { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); }
+  .cheer:first-of-type { border-top: 0; }
+  .cheer .body { flex: 1; min-width: 0; }
+  .cheer .when { font-size: 12px; color: var(--muted); }
+  .modal { position: fixed; inset: 0; background: rgba(42, 38, 32, .5); display: grid; place-items: center; z-index: 40; padding: 16px; }
+  .modal .card { max-width: 400px; width: 100%; margin: 0; text-align: center; padding: 24px 20px; }
+  .modal .big-av { font-size: 48px; line-height: 1; }
+  .modal .msg { font-size: 20px; font-weight: 600; margin: 12px 0 6px; }
 </style>
 </head>
 <body>
@@ -69,11 +106,13 @@
 
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-rooms" aria-selected="true" data-i18n="tab.rooms">讀書房</button>
+    <button role="tab" id="tab-friends" aria-selected="false" data-i18n="tab.friends">好友</button>
     <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">我的紀錄</button>
   </nav>
 
   <!-- 讀書房列表 -->
   <section id="view-rooms">
+    <div class="quote" id="quote-rooms"></div>
     <div id="room-list"></div>
     <p class="small muted" data-i18n="rooms.how">讀書房照「台灣時間的整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。</p>
   </section>
@@ -91,6 +130,7 @@
       <p class="phase-line"><b id="s-room"></b></p>
       <p class="sync-note" id="s-next"></p>
     </div>
+    <div class="quote session-quote" id="quote-session"></div>
 
     <div class="card" id="mid-join" hidden><p class="small" style="margin:0" data-i18n="s.midjoin">你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來。下一輪開始時一起從頭來。</p></div>
 
@@ -111,6 +151,9 @@
     <button class="btn ghost block" id="leave" type="button" data-i18n="s.leave">離開讀書房</button>
   </section>
 
+  <!-- 好友 -->
+  <section id="view-friends" hidden></section>
+
   <!-- 我的紀錄 -->
   <section id="view-me" hidden>
     <div class="stats">
@@ -128,7 +171,7 @@
 
   <h2 data-i18n="beta.h">封測任務</h2>
   <div class="card beta">
-    <h3 data-i18n="beta.sub">做完這兩件事，再回開達留下回饋</h3>
+    <h3 data-i18n="beta.sub">做完這幾件事，再回開達留下回饋</h3>
     <ol id="beta-tasks"></ol>
     <p class="small" style="margin:10px 0 0"><a href="../../" data-i18n="beta.back">回開達 Kaida 留回饋 →</a></p>
   </div>
@@ -138,6 +181,8 @@
     <p data-i18n="foot.2">提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。</p>
   </footer>
 </div>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true"><div class="card" id="modal-card"></div></div>
 
 <script src="../shared/kaida-app.js"></script>
 <script>
@@ -175,13 +220,35 @@
       "st.week": "最近 7 天（分鐘）", "st.weektotal": "這 7 天一共專注 {m} 分鐘，完成 {p} 顆番茄",
       "st.notes": "休息時留的話", "st.nonotes": "還沒有留言。下次休息時寫一句給自己吧。",
       "st.privacy": "紀錄只存在這個瀏覽器裡，不會上傳。換手機或清除瀏覽資料就會不見。",
-      "st.clear": "清除我的所有紀錄", "st.clearconfirm": "要清除所有專注紀錄、留言和封測任務進度嗎？這個動作沒辦法復原。", "st.cleared": "已清除",
-      "beta.h": "封測任務", "beta.sub": "做完這兩件事，再回開達留下回饋",
+      "st.clear": "清除我的所有紀錄", "st.clearconfirm": "要清除所有專注紀錄、留言、好友和封測任務進度嗎？這個動作沒辦法復原。", "st.cleared": "已清除",
+      "beta.h": "封測任務", "beta.sub": "做完這幾件事，再回開達留下回饋",
       "beta.t1": "加入一間讀書房", "beta.t2": "完成一顆番茄鐘（專注到最後）",
       "beta.back": "回開達 Kaida 留回饋 →",
       "foot.1": "番茄讀書會是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。",
       "foot.2": "提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。",
-      "wd": "日,一,二,三,四,五,六"
+      "wd": "日,一,二,三,四,五,六",
+      "tab.friends": "好友",
+      "q.next": "換一句",
+      "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
+      "f.nameph": "例如：小番茄", "f.save": "儲存", "f.edit": "改暱稱",
+      "f.boardH": "本週專注排行", "f.boardEmpty": "還沒有好友。把你的好友卡傳給同學，他打開就會出現在這裡。",
+      "f.you": "你", "f.updated": "{d}更新", "f.today": "今天", "f.daysago": "{n} 天前", "f.oldweek": "還沒傳本週成績",
+      "f.pomos": "{n} 顆", "f.cheer": "打氣", "f.remove": "移除", "f.removeConfirm": "要把「{n}」從好友移除嗎？",
+      "f.invite": "邀請好友／更新我的成績", "f.inviteP": "傳出你的好友卡連結。好友打開就會加你，排行榜也會更新成你最新的成績。之後讀完書再傳一次，好友那邊才會看到新分數。",
+      "f.cheersH": "收到的打氣", "f.noCheers": "還沒有人為你打氣。先為好友打氣看看？",
+      "f.cheerBack": "回他打氣",
+      "f.composeH": "幫 {n} 打氣", "f.composeCustom": "或自己寫一句（40 字內）", "f.composeSend": "傳出去",
+      "f.presets": "加油！一起讀完這週|今天也一起專注 25 分鐘|你的排行好猛，我要追上了|休息一下再繼續，你可以的|考試順利！|我先開一顆番茄，等你",
+      "f.shareText": "{n} 邀你一起在番茄讀書會讀書。本週已專注 {m} 分鐘，打開連結加好友、看排行：",
+      "f.shareCheer": "{n} 給你打氣：「{c}」打開連結看排行，一起讀書：",
+      "f.copied": "連結已複製，貼到 LINE 或 IG 傳給好友",
+      "f.added": "已加 {n} 為好友", "f.updatedFriend": "已更新 {n} 的成績", "f.self": "這是你自己的好友卡",
+      "f.badLink": "這個好友連結壞掉了", "f.gotCheer": "{n} 給你打氣",
+      "f.ok": "好", "f.cheerReply": "回個打氣",
+      "f.how": "好友和排行不用註冊、不經過伺服器：成績寫在你傳出去的連結裡，好友打開後只存在他自己的手機。所以排行顯示的是每位好友最後一次傳給你的成績。",
+      "f.needName": "請先輸入暱稱", "f.cancel": "取消",
+      "beta.t3": "加一位好友，或為好友打氣一次",
+      "toast.doneShare": "完成一顆番茄！到「好友」把新成績傳給朋友"
     },
     en: {
       "app.title": "Pomodoro Study Club",
@@ -213,13 +280,35 @@
       "st.week": "Last 7 days (minutes)", "st.weektotal": "{m} focus minutes and {p} pomodoros in the last 7 days",
       "st.notes": "Break notes", "st.nonotes": "No notes yet. Leave yourself one on your next break.",
       "st.privacy": "Your stats stay in this browser and are never uploaded. They're gone if you switch phones or clear browser data.",
-      "st.clear": "Clear all my data", "st.clearconfirm": "Clear all focus stats, notes and beta task progress? This can't be undone.", "st.cleared": "Cleared",
-      "beta.h": "Beta tasks", "beta.sub": "Do these two things, then leave feedback on Kaida",
+      "st.clear": "Clear all my data", "st.clearconfirm": "Clear all focus stats, notes, friends and beta task progress? This can't be undone.", "st.cleared": "Cleared",
+      "beta.h": "Beta tasks", "beta.sub": "Do these, then leave feedback on Kaida",
       "beta.t1": "Join a study room", "beta.t2": "Finish one pomodoro (stay to the end)",
       "beta.back": "Back to Kaida to leave feedback →",
       "foot.1": "Pomodoro Study Club is one of Kaida's first beta apps. It's a plain web page with no account; your data stays in your browser.",
       "foot.2": "Note: phones may pause the browser while locked. When you come back the countdown re-syncs to the clock and focus minutes are counted by real time.",
-      "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat"
+      "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
+      "tab.friends": "Friends",
+      "q.next": "Another",
+      "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
+      "f.nameph": "e.g. Tomato", "f.save": "Save", "f.edit": "Edit nickname",
+      "f.boardH": "This week's focus ranking", "f.boardEmpty": "No friends yet. Send your friend card to a classmate; once they open it they'll show up here.",
+      "f.you": "You", "f.updated": "updated {d}", "f.today": "today", "f.daysago": "{n}d ago", "f.oldweek": "no score this week yet",
+      "f.pomos": "{n} 🍅", "f.cheer": "Cheer", "f.remove": "Remove", "f.removeConfirm": "Remove \"{n}\" from friends?",
+      "f.invite": "Invite friends / send my score", "f.inviteP": "Share your friend card link. Friends who open it add you, and their leaderboard updates to your latest score. Send it again after studying so they see your new numbers.",
+      "f.cheersH": "Cheers you got", "f.noCheers": "No cheers yet. Why not cheer on a friend first?",
+      "f.cheerBack": "Cheer back",
+      "f.composeH": "Cheer on {n}", "f.composeCustom": "Or write your own (40 chars max)", "f.composeSend": "Send",
+      "f.presets": "You got this, let's finish the week!|Let's do 25 focused minutes today|Your rank is wild, I'm catching up|Take a break, then keep going|Good luck on the exam!|Starting a pomodoro now, join me",
+      "f.shareText": "{n} invited you to Pomodoro Study Club. {m} focus minutes this week. Open the link to add them and see the ranking:",
+      "f.shareCheer": "{n} is cheering you on: \"{c}\" Open the link to see the ranking and study together:",
+      "f.copied": "Link copied. Paste it into LINE or IG to send it.",
+      "f.added": "Added {n} as a friend", "f.updatedFriend": "Updated {n}'s score", "f.self": "This is your own friend card",
+      "f.badLink": "This friend link is broken", "f.gotCheer": "{n} is cheering you on",
+      "f.ok": "OK", "f.cheerReply": "Cheer back",
+      "f.how": "Friends and rankings need no sign-up and no server: your score travels inside the link you send, and stays only on your friend's phone. So the ranking shows each friend's score from the last link they sent you.",
+      "f.needName": "Enter a nickname first", "f.cancel": "Cancel",
+      "beta.t3": "Add a friend or cheer one on",
+      "toast.doneShare": "Pomodoro done! Send your new score to friends from the Friends tab"
     }
   });
 
@@ -348,7 +437,8 @@
           if (data.opts.notify) K.notify(t("n.focusTitle"), t("n.focusBody", { room: roomName(session.room), m: r.focus }));
         } else {
           if (data.opts.sound) K.chime("end");
-          K.toast(t("toast.done", { m: r.brk }));
+          K.toast(t(Object.keys(data.friends).length ? "toast.doneShare" : "toast.done", { m: r.brk }));
+          qi++; renderQuotes();
           if (data.opts.notify) K.notify(t("n.breakTitle"), t("n.breakBody", { m: r.brk }));
         }
         session.wasFocus = p.focus;
@@ -367,9 +457,13 @@
     document.getElementById("view-rooms").hidden = v !== "rooms";
     document.getElementById("view-session").hidden = v !== "session";
     document.getElementById("view-me").hidden = v !== "me";
-    document.getElementById("tab-rooms").setAttribute("aria-selected", v !== "me");
+    document.getElementById("view-friends").hidden = v !== "friends";
+    document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
+    document.getElementById("tab-friends").setAttribute("aria-selected", v === "friends");
     document.getElementById("tab-me").setAttribute("aria-selected", v === "me");
     if (v === "me") renderMe();
+    if (v === "friends") { if (session) creditUntil(Date.now()); renderFriends(); }
+    renderQuotes();
     if (v === "rooms") renderRooms(Date.now());
     if (v === "session") renderSession(Date.now());
     renderTasks();
@@ -447,11 +541,203 @@
   }
 
   function renderTasks() {
-    document.getElementById("beta-tasks").innerHTML = ["t1", "t2"].map(function (id) {
+    document.getElementById("beta-tasks").innerHTML = ["t1", "t2", "t3"].map(function (id) {
       var done = !!data.tasks[id];
       return '<li class="' + (done ? "done" : "") + '"><span class="tick">' + (done ? "✓" : "") + '</span><span class="txt">' + K.esc(t("beta." + id)) + '</span></li>';
     }).join("");
   }
+
+  /* 勵志標語：每句都附出處 */
+  var QUOTES = [
+    { zh: "千里之行，始於足下。", zs: "老子《道德經》", en: "A journey of a thousand miles begins with a single step.", es: "Laozi, Tao Te Ching" },
+    { zh: "不積跬步，無以至千里；不積小流，無以成江海。", zs: "荀子《勸學》", en: "Without small steps, there is no journey of a thousand miles.", es: "Xunzi, Encouraging Learning" },
+    { zh: "鍥而不舍，金石可鏤。", zs: "荀子《勸學》", en: "Keep carving and even metal and stone will give way.", es: "Xunzi, Encouraging Learning" },
+    { zh: "業精於勤，荒於嬉。", zs: "韓愈《進學解》", en: "Skill is perfected through diligence and lost through idleness.", es: "Han Yu" },
+    { zh: "學而不思則罔，思而不學則殆。", zs: "孔子《論語》", en: "Learning without thinking is wasted; thinking without learning is dangerous.", es: "Confucius, Analects" },
+    { zh: "求知若飢，虛心若愚。", zs: "賈伯斯，2005 年史丹佛畢業演講", en: "Stay hungry. Stay foolish.", es: "Steve Jobs, Stanford commencement, 2005" },
+    { zh: "專注就是懂得說不。", zs: "賈伯斯，1997 年 WWDC", en: "Focusing is about saying no.", es: "Steve Jobs, WWDC 1997" },
+    { zh: "你的時間有限，不要浪費在過別人的人生。", zs: "賈伯斯，2005 年史丹佛畢業演講", en: "Your time is limited, so don't waste it living someone else's life.", es: "Steve Jobs, Stanford commencement, 2005" },
+    { zh: "我一次又一次地失敗，這就是我成功的原因。", zs: "麥可·喬丹", en: "I've failed over and over and over again in my life. And that is why I succeed.", es: "Michael Jordan" },
+    { zh: "你見過凌晨四點的洛杉磯嗎？", zs: "柯比·布萊恩", en: "Have you ever seen Los Angeles at four in the morning?", es: "Kobe Bryant" },
+    { zh: "我們重複做的事造就了我們。卓越不是一次行為，而是一種習慣。", zs: "威爾·杜蘭，《哲學的故事》", en: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", es: "Will Durant, The Story of Philosophy" },
+    { zh: "預測未來最好的方法，就是去創造它。", zs: "艾倫·凱，電腦科學家", en: "The best way to predict the future is to invent it.", es: "Alan Kay" },
+    { zh: "天才是百分之一的靈感，加上百分之九十九的汗水。", zs: "愛迪生", en: "Genius is one percent inspiration and ninety-nine percent perspiration.", es: "Thomas Edison" },
+    { zh: "寶劍鋒從磨礪出，梅花香自苦寒來。", zs: "《警世賢文》", en: "A sword's edge comes from grinding; plum blossoms' scent comes from bitter cold.", es: "Chinese proverb" }
+  ];
+  var qi = Math.floor(Math.random() * QUOTES.length);
+  function renderQuotes() {
+    var q = QUOTES[qi % QUOTES.length], en = K.lang() === "en";
+    var html = '<button class="linkbtn" type="button" data-act="next-quote">' + K.esc(t("q.next")) + '</button><p>「' + K.esc(en ? q.en : q.zh) + '」</p><cite>— ' + K.esc(en ? q.es : q.zs) + '</cite>';
+    if (en) html = html.replace("「", "“").replace("」", "”");
+    document.getElementById("quote-rooms").innerHTML = html;
+    document.getElementById("quote-session").innerHTML = html;
+  }
+
+  /* 好友與排行：不經過伺服器，成績寫在分享連結的 #f= 裡 */
+  var AVATARS = ["🍅", "📚", "✏️", "🎧", "☕", "🌱", "🌙", "🐱", "🐶", "🦊", "🐼", "🐧", "🦉", "🐢", "🚀", "🔥"];
+  data.me = data.me || { id: Math.random().toString(36).slice(2, 10), name: "", avatar: "🍅" };
+  data.friends = data.friends || {};
+  data.cheers = data.cheers || [];
+  var draftAvatar = data.me.avatar;
+  var cheerTo = null, cheerPick = 0;
+
+  function weekStart(d) {
+    d = new Date(d || Date.now()); d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // 週一開始
+    return d;
+  }
+  function weekKey(d) { return K.dayKey(weekStart(d)); }
+  function myWeek() {
+    var d = weekStart(), end = new Date(), m = 0, p = 0;
+    while (d <= end) { var v = data.days[K.dayKey(d)]; if (v) { m += v.min; p += v.pomo; } d.setDate(d.getDate() + 1); }
+    return { m: Math.floor(m), p: p };
+  }
+  function b64enc(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function b64dec(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+  function myCard(extra) {
+    var w = myWeek();
+    var c = { v: 1, i: data.me.id, n: data.me.name, a: data.me.avatar, k: weekKey(), m: w.m, p: w.p, s: streak(), t: Date.now() };
+    if (extra) Object.keys(extra).forEach(function (k) { c[k] = extra[k]; });
+    return c;
+  }
+  function cardLink(card) { return location.origin + location.pathname + "#f=" + b64enc(card); }
+  function shareLink(text, url) {
+    data.tasks.t3 = true; persist(); renderTasks();
+    if (navigator.share) { navigator.share({ title: t("app.title"), text: text, url: url }).catch(function () {}); return; }
+    var all = text + " " + url;
+    if (navigator.clipboard) navigator.clipboard.writeText(all).then(function () { K.toast(t("f.copied")); }, function () { prompt("", all); });
+    else prompt("", all);
+  }
+  function ago(ts) {
+    var days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(ts).setHours(0, 0, 0, 0)) / 864e5);
+    return days <= 0 ? t("f.today") : t("f.daysago", { n: days });
+  }
+
+  // 打開別人的好友卡連結
+  function readHash() {
+    var m = location.hash.match(/[#&]f=([A-Za-z0-9_-]+)/);
+    if (!m) return;
+    history.replaceState(null, "", location.pathname + location.search);
+    var c;
+    try { c = b64dec(m[1]); } catch (e) { K.toast(t("f.badLink")); return; }
+    if (!c || !c.i || typeof c.n !== "string") { K.toast(t("f.badLink")); return; }
+    if (c.i === data.me.id) { K.toast(t("f.self")); return; }
+    var name = c.n.slice(0, 20) || "?", old = data.friends[c.i];
+    if (!old || (c.t || 0) >= (old.t || 0)) {
+      data.friends[c.i] = { n: name, a: String(c.a || "🍅").slice(0, 4), k: String(c.k || ""), m: Math.max(0, Math.min(10080, +c.m || 0)), p: Math.max(0, +c.p || 0), s: Math.max(0, +c.s || 0), t: +c.t || Date.now() };
+    }
+    data.tasks.t3 = true;
+    var gotCheer = c.c && (!c.to || c.to === data.me.id);
+    if (gotCheer) {
+      var key = c.i + ":" + c.t;
+      if (!data.cheers.some(function (x) { return x.key === key; })) {
+        data.cheers.push({ key: key, from: c.i, n: name, a: data.friends[c.i].a, c: String(c.c).slice(0, 40), t: +c.t || Date.now() });
+        if (data.cheers.length > 100) data.cheers.shift();
+      }
+    }
+    persist();
+    if (gotCheer) showCheerModal(data.friends[c.i], String(c.c).slice(0, 40), c.i);
+    else K.toast(t(old ? "f.updatedFriend" : "f.added", { n: name }));
+    show("friends");
+  }
+
+  function showCheerModal(f, msg, fid) {
+    var card = document.getElementById("modal-card");
+    card.innerHTML = '<div class="big-av">' + K.esc(f.a) + '</div><p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.gotCheer", { n: f.n })) + '</p>' +
+      '<p class="msg">「' + K.esc(msg) + '」</p><div class="btn-row" style="justify-content:center;margin-top:16px">' +
+      '<button class="btn" type="button" data-cheer="' + K.esc(fid) + '">' + K.esc(t("f.cheerReply")) + '</button>' +
+      '<button class="btn ghost" type="button" data-act="close-modal">' + K.esc(t("f.ok")) + '</button></div>';
+    document.getElementById("modal").hidden = false;
+  }
+
+  function renderFriends() {
+    var el = document.getElementById("view-friends"), html = "";
+    if (!data.me.name) {
+      html += '<div class="card"><h2 style="margin-top:0">' + K.esc(t("f.setupH")) + '</h2><p class="small muted">' + K.esc(t("f.setupP")) + '</p>' +
+        '<div class="avatars">' + AVATARS.map(function (a) { return '<button type="button" data-av="' + a + '" aria-pressed="' + (a === draftAvatar) + '">' + a + '</button>'; }).join("") + '</div>' +
+        '<label class="field"><input type="text" id="f-name" maxlength="16" placeholder="' + K.esc(t("f.nameph")) + '"></label>' +
+        '<button class="btn" type="button" data-act="save-me">' + K.esc(t("f.save")) + '</button></div>';
+      html += '<p class="small muted">' + K.esc(t("f.how")) + '</p>';
+      el.innerHTML = html; return;
+    }
+    var wk = weekKey(), w = myWeek();
+    var rows = [{ me: true, n: data.me.name, a: data.me.avatar, m: w.m, p: w.p, s: streak() }];
+    Object.keys(data.friends).forEach(function (id) {
+      var f = data.friends[id], cur = f.k === wk;
+      rows.push({ id: id, n: f.n, a: f.a, m: cur ? f.m : 0, p: cur ? f.p : 0, s: f.s, t: f.t, stale: !cur });
+    });
+    rows.sort(function (a, b) { return b.m - a.m || b.p - a.p || (a.me ? -1 : 1); });
+    var medals = ["🥇", "🥈", "🥉"];
+    html += '<div class="me-line" style="margin-bottom:12px"><span class="av">' + K.esc(data.me.avatar) + '</span><b style="flex:1">' + K.esc(data.me.name) + '</b>' +
+      '<button class="linkbtn" type="button" data-act="edit-me">' + K.esc(t("f.edit")) + '</button></div>';
+    html += '<button class="btn block" type="button" data-act="invite">' + K.esc(t("f.invite")) + '</button>' +
+      '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("f.inviteP")) + '</p>';
+    html += '<h2>' + K.esc(t("f.boardH")) + '</h2><div class="card"><ol class="board">' + rows.map(function (r, i) {
+      var sub = r.me ? t("f.you") : (r.stale ? t("f.oldweek") : t("f.updated", { d: ago(r.t) }));
+      return '<li class="' + (r.me ? "me" : "") + '"><span class="rk' + (i < 3 && r.m > 0 ? " top" : "") + '">' + (i < 3 && r.m > 0 ? medals[i] : i + 1) + '</span>' +
+        '<span class="av">' + K.esc(r.a) + '</span><span class="who"><b>' + K.esc(r.n) + '</b><span>' + K.esc(sub) + (r.s ? " · 🔥" + r.s : "") + '</span></span>' +
+        '<span class="min">' + r.m + '<small>' + (K.lang() === "en" ? "min · " : "分 · ") + K.esc(t("f.pomos", { n: r.p })) + '</small></span>' +
+        (r.me ? "" : '<span class="acts"><button class="btn ghost" type="button" data-cheer="' + K.esc(r.id) + '">' + K.esc(t("f.cheer")) + '</button></span>') + '</li>';
+    }).join("") + '</ol>' + (rows.length === 1 ? '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.boardEmpty")) + '</p>' : "") + '</div>';
+
+    if (cheerTo && data.friends[cheerTo]) {
+      var presets = t("f.presets").split("|");
+      html += '<div class="card" id="composer"><h2 style="margin-top:0">' + K.esc(t("f.composeH", { n: data.friends[cheerTo].n })) + '</h2><div class="presets">' +
+        presets.map(function (p, i) { return '<button type="button" data-preset="' + i + '" aria-pressed="' + (cheerPick === i) + '">' + K.esc(p) + '</button>'; }).join("") + '</div>' +
+        '<label class="field"><span>' + K.esc(t("f.composeCustom")) + '</span><input type="text" id="f-custom" maxlength="40"></label>' +
+        '<div class="btn-row"><button class="btn" type="button" data-act="send-cheer">' + K.esc(t("f.composeSend")) + '</button>' +
+        '<button class="btn ghost" type="button" data-act="cancel-cheer">' + K.esc(t("f.cancel")) + '</button></div></div>';
+    }
+
+    var cheers = data.cheers.slice().reverse().slice(0, 10);
+    html += '<h2>' + K.esc(t("f.cheersH")) + '</h2><div class="card">' + (cheers.length ? cheers.map(function (c) {
+      return '<div class="cheer"><span class="av">' + K.esc(c.a) + '</span><div class="body"><b>' + K.esc(c.n) + '</b> <span class="when">' + K.esc(ago(c.t)) + '</span><div>「' + K.esc(c.c) + '」</div></div>' +
+        (data.friends[c.from] ? '<button class="linkbtn" type="button" data-cheer="' + K.esc(c.from) + '">' + K.esc(t("f.cheerBack")) + '</button>' : "") + '</div>';
+    }).join("") : '<p class="small muted" style="margin:0">' + K.esc(t("f.noCheers")) + '</p>') + '</div>';
+
+    var ids = Object.keys(data.friends);
+    if (ids.length) html += '<p class="small">' + ids.map(function (id) {
+      return '<button class="linkbtn" type="button" data-unfriend="' + K.esc(id) + '">' + K.esc(t("f.remove")) + " " + K.esc(data.friends[id].n) + '</button>';
+    }).join("　") + '</p>';
+    html += '<p class="small muted">' + K.esc(t("f.how")) + '</p>';
+    el.innerHTML = html;
+    if (cheerTo) { var cp = document.getElementById("composer"); if (cp) cp.scrollIntoView({ block: "center" }); }
+  }
+
+  document.getElementById("view-friends").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var ds = b.dataset;
+    if (ds.av) { draftAvatar = ds.av; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
+    if (ds.preset != null) { cheerPick = +ds.preset; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
+    if (ds.cheer) { cheerTo = ds.cheer; cheerPick = 0; return renderFriends(); }
+    if (ds.unfriend) {
+      if (!confirm(t("f.removeConfirm", { n: data.friends[ds.unfriend].n }))) return;
+      delete data.friends[ds.unfriend]; persist(); return renderFriends();
+    }
+    switch (ds.act) {
+      case "save-me":
+        var nm = document.getElementById("f-name").value.trim().slice(0, 16);
+        if (!nm) { K.toast(t("f.needName")); return; }
+        data.me.name = nm; data.me.avatar = draftAvatar; persist(); return renderFriends();
+      case "edit-me": draftAvatar = data.me.avatar; var keep = data.me.name; data.me.name = ""; renderFriends(); document.getElementById("f-name").value = keep; data.me.name = keep; return;
+      case "invite": var w = myWeek(); return shareLink(t("f.shareText", { n: data.me.name, m: w.m }), cardLink(myCard()));
+      case "cancel-cheer": cheerTo = null; return renderFriends();
+      case "send-cheer":
+        var custom = document.getElementById("f-custom").value.trim();
+        var msg = (custom || t("f.presets").split("|")[cheerPick]).slice(0, 40);
+        var to = cheerTo; cheerTo = null; renderFriends();
+        return shareLink(t("f.shareCheer", { n: data.me.name, c: msg }), cardLink(myCard({ c: msg, to: to })));
+    }
+  });
+  document.getElementById("modal").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (e.target.id === "modal" || (b && b.dataset.act === "close-modal")) { this.hidden = true; return; }
+    if (b && b.dataset.cheer) { this.hidden = true; cheerTo = b.dataset.cheer; cheerPick = 0; show("friends"); }
+  });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest('[data-act="next-quote"]'); if (b) { qi++; renderQuotes(); }
+  });
+  window.addEventListener("hashchange", readHash);
 
   // 螢幕常亮
   var wakeLock = null;
@@ -471,6 +757,7 @@
     leave();
   });
   document.getElementById("tab-rooms").addEventListener("click", function () { show("rooms"); });
+  document.getElementById("tab-friends").addEventListener("click", function () { show("friends"); });
   document.getElementById("tab-me").addEventListener("click", function () { if (session) creditUntil(Date.now()); show("me"); });
   document.getElementById("note-save").addEventListener("click", function () {
     var el = document.getElementById("note-text"), v = el.value.trim();
@@ -481,7 +768,7 @@
   });
   document.getElementById("clear").addEventListener("click", function () {
     if (!confirm(t("st.clearconfirm"))) return;
-    data.days = {}; data.notes = []; data.tasks = {};
+    data.days = {}; data.notes = []; data.tasks = {}; data.friends = {}; data.cheers = [];
     if (session) data.tasks.t1 = true;
     persist(); renderMe(); renderTasks(); K.toast(t("st.cleared"));
   });
@@ -516,6 +803,7 @@
     session.wasFocus = phaseAt(session.room, session.lastSeen || Date.now(), roomOrigin(session.room)).focus;
     show("session");
   } else show("rooms");
+  readHash();
   tick();
   setInterval(tick, 1000);
 })();
