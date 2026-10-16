@@ -11,6 +11,7 @@ const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", 
 /* ===== 小工具 ===== */
 const mats = {};
 function mat(color, opt) {
+  if (REMAP && REMAP[color]) color = REMAP[color];
   const key = color + JSON.stringify(opt || {});
   if (!mats[key]) mats[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.85, metalness: 0 }, opt || {}));
   return mats[key];
@@ -77,14 +78,15 @@ function woodTexture(base, dark, planks, vertical, w, h) {
   tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.anisotropy = 4;
   return tex;
 }
-function rugTexture() {
+function rugTexture(rc) {
+  rc = rc || ["#c9825e", "#f3e3c6", "#e8b07a"];
   const c = document.createElement("canvas"); c.width = c.height = 256;
   const g = c.getContext("2d");
-  g.fillStyle = "#c9825e"; g.fillRect(0, 0, 256, 256);
-  g.strokeStyle = "#f3e3c6"; g.lineWidth = 6; g.setLineDash([14, 10]);
+  g.fillStyle = rc[0]; g.fillRect(0, 0, 256, 256);
+  g.strokeStyle = rc[1]; g.lineWidth = 6; g.setLineDash([14, 10]);
   g.beginPath(); g.arc(128, 128, 104, 0, 7); g.stroke();
-  g.setLineDash([]); g.strokeStyle = "#e8b07a"; g.lineWidth = 10; g.beginPath(); g.arc(128, 128, 70, 0, 7); g.stroke();
-  g.fillStyle = "#f3e3c6"; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; g.beginPath(); g.arc(128 + Math.cos(a) * 40, 128 + Math.sin(a) * 40, 6, 0, 7); g.fill(); }
+  g.setLineDash([]); g.strokeStyle = rc[2]; g.lineWidth = 10; g.beginPath(); g.arc(128, 128, 70, 0, 7); g.stroke();
+  g.fillStyle = rc[1]; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; g.beginPath(); g.arc(128 + Math.cos(a) * 40, 128 + Math.sin(a) * 40, 6, 0, 7); g.fill(); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 function skyTexture(kind) {
@@ -515,6 +517,17 @@ function envAt(h) {
 let env = envAt(hourNow()), skyCanvas = null, skyTex = null, wallPicTex = null;
 function drawSky(e) {
   const c = skyCanvas, g = c.getContext("2d"), W = 256, H = 192, h = e.h;
+  if (T().sky === "space") {
+    // 太空艙窗外：星空、慢慢轉的地球和月亮
+    g.fillStyle = "#03050d"; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < 120; i++) { g.fillStyle = "#fff"; g.globalAlpha = 0.25 + (i % 6) / 8; g.fillRect((i * 73 + h * 3) % W, (i * 41) % H, 1.4, 1.4); }
+    g.globalAlpha = 1; const ex = 60 + (h / 24) * 140;
+    const gr = g.createRadialGradient(ex - 20, 160, 10, ex, 175, 80); gr.addColorStop(0, "#7ac8ff"); gr.addColorStop(0.75, "#2a5aa0"); gr.addColorStop(1, "#0a1a3a");
+    g.fillStyle = gr; g.beginPath(); g.arc(ex, 190, 75, 0, 7); g.fill();
+    g.fillStyle = "rgba(120,180,110,.85)"; g.beginPath(); g.ellipse(ex - 15, 150, 22, 10, 0.4, 0, 7); g.ellipse(ex + 25, 170, 14, 8, -0.3, 0, 7); g.fill();
+    g.fillStyle = "#e8e4d8"; g.beginPath(); g.arc(200, 40, 12, 0, 7); g.fill();
+    skyTex.needsUpdate = true; return;
+  }
   const grad = g.createLinearGradient(0, 0, 0, H); grad.addColorStop(0, e.top); grad.addColorStop(1, e.bot);
   g.fillStyle = grad; g.fillRect(0, 0, W, H);
   if (e.dark > 0.05) { g.fillStyle = "#fff"; for (let i = 0; i < 50; i++) { g.globalAlpha = e.dark * (0.35 + (i % 5) / 8); g.fillRect((i * 73) % W, (i * 41) % 120, 1.6, 1.6); } g.globalAlpha = 1; }
@@ -550,17 +563,221 @@ function applyEnv(e) {
   const k = Math.max(0, Math.min(1, (e.h - 6) / 12.5));
   sunLight.position.set(-6 + k * 12, 3 + Math.sin(Math.PI * k) * 5, -9);
   fillLight.intensity = e.fill;
-  beam.material.opacity = e.beam; beam.material.color.set(e.beamC);
-  scene.background.set(e.bg);
+  const space = T().sky === "space";
+  beam.material.opacity = space ? 0 : e.beam; beam.material.color.set(e.beamC);
+  scene.background.set(space ? "#05070f" : e.bg);
+  if (space) { sunLight.color.set("#cfe0ff"); }
   renderer.toneMappingExposure = e.exp;
   drawSky(e);
 }
 function timeKind() { return env.dark > 0.6 ? "night" : "day"; }
 
+/* ===== 房間主題 =====
+   同一個格局（座位、走道、家具位置不變，角色走路才不會卡住），
+   換掉地板、牆面、家具配色，再加上各主題自己的裝飾。 */
+let THEME = "home", REMAP = null;
+function canvasTex(w, h, draw, rx, ry) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  draw(c.getContext("2d"), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+  if (rx) t.repeat.set(rx, ry || 1);
+  return t;
+}
+function speckle(g, w, h, n, col, a) { g.fillStyle = col; for (let i = 0; i < n; i++) { g.globalAlpha = a * (0.4 + ((i * 37) % 10) / 10); g.fillRect((i * 97.3) % w, (i * 53.7) % h, 2, 2); } g.globalAlpha = 1; }
+const TEX = {
+  brick: () => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = "#6e4a3a"; g.fillRect(0, 0, w, h);
+    const bh = 32, bw = 96;
+    for (let r = 0; r < h / bh; r++) for (let k = -1; k < w / bw + 1; k++) {
+      const x = k * bw + (r % 2 ? bw / 2 : 0), sh = (Math.sin(r * 7.1 + k * 3.3) + 1) / 2;
+      g.fillStyle = "rgb(" + Math.round(150 + sh * 40) + "," + Math.round(80 + sh * 22) + "," + Math.round(58 + sh * 14) + ")";
+      g.fillRect(x + 3, r * bh + 3, bw - 6, bh - 6);
+    }
+    speckle(g, w, h, 900, "#2a1a14", 0.25);
+  }, 4, 1.6),
+  paint: (base, dot) => canvasTex(256, 256, (g, w, h) => { g.fillStyle = base; g.fillRect(0, 0, w, h); speckle(g, w, h, 500, dot, 0.08); }, 2, 1),
+  vinyl: (a, b) => canvasTex(512, 512, (g, w, h) => {
+    const s = 64; for (let y = 0; y < h; y += s) for (let x = 0; x < w; x += s) { g.fillStyle = ((x + y) / s) % 2 ? a : b; g.fillRect(x, y, s, s); }
+    g.strokeStyle = "rgba(0,0,0,.12)"; g.lineWidth = 2; for (let i = 0; i <= w; i += s) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); }
+    speckle(g, w, h, 700, "#000", 0.06);
+  }, 3.2, 2.7),
+  carpet: () => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = "#2f5a48"; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "#3d6e58"; g.lineWidth = 3;
+    for (let y = 0; y < h; y += 64) for (let x = 0; x < w; x += 64) { g.beginPath(); g.moveTo(x + 32, y + 8); g.lineTo(x + 56, y + 32); g.lineTo(x + 32, y + 56); g.lineTo(x + 8, y + 32); g.closePath(); g.stroke(); }
+    g.fillStyle = "#c9a45a"; for (let y = 0; y < h; y += 64) for (let x = 0; x < w; x += 64) g.fillRect(x + 30, y + 30, 4, 4);
+    speckle(g, w, h, 1500, "#10261c", 0.15);
+  }, 3.2, 2.7),
+  panel: () => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = "#dfe4ea"; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "#a9b3bf"; g.lineWidth = 3; for (let x = 0; x <= w; x += 128) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
+    g.beginPath(); g.moveTo(0, 170); g.lineTo(w, 170); g.moveTo(0, 340); g.lineTo(w, 340); g.stroke();
+    g.fillStyle = "#9aa4b0"; for (let x = 0; x < w; x += 128) [12, 158, 182, 328, 352, 500].forEach((y) => { g.beginPath(); g.arc(x + 10, y, 3, 0, 7); g.arc(x + 118, y, 3, 0, 7); g.fill(); });
+    g.fillStyle = "rgba(90,200,255,.35)"; g.fillRect(0, 252, w, 6);
+  }, 3, 1),
+  grid: () => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = "#3a4250"; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "#566174"; g.lineWidth = 2; for (let i = 0; i <= w; i += 64) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); }
+    g.fillStyle = "#4a5466"; for (let y = 0; y < h; y += 64) for (let x = 0; x < w; x += 64) for (let k = 0; k < 4; k++) g.fillRect(x + 12 + k * 12, y + 28, 6, 6);
+  }, 3.2, 2.7),
+  school: () => canvasTex(256, 512, (g, w, h) => {
+    g.fillStyle = "#f1e7cf"; g.fillRect(0, 0, w, h);
+    g.fillStyle = "#7d9a86"; g.fillRect(0, h * 0.72, w, h * 0.28);       // 下半部油漆牆裙
+    g.fillStyle = "#5c7766"; g.fillRect(0, h * 0.71, w, 8);
+    speckle(g, w, h, 400, "#000", 0.05);
+  }, 3, 1),
+  books: (dark) => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = dark; g.fillRect(0, 0, w, h);
+    const cols = ["#7a2a2a", "#2f4a6a", "#3f6a4a", "#8a6a2a", "#5a3a5a", "#a0522d", "#2a5a5a", "#6a2a3a", "#c9a45a"];
+    for (let r = 0; r < 4; r++) {
+      const y0 = r * 128 + 14; let x = 6, k = r * 3;
+      while (x < w - 10) { const bw = 10 + ((k * 7) % 4) * 3, bh = 92 + ((k * 13) % 5) * 5; g.fillStyle = cols[k % cols.length]; g.fillRect(x, y0 + 100 - bh, bw, bh); g.fillStyle = "rgba(255,230,160,.5)"; g.fillRect(x + 2, y0 + 100 - bh + 12, bw - 4, 3); x += bw + 1; k++; }
+      g.fillStyle = "#3a2216"; g.fillRect(0, y0 + 100, w, 14);
+    }
+  }, 1, 1),
+  wood: (a, b, n) => { const t = woodTexture(a, b, n || 8, false, 512, 512); t.repeat.set(3.2, 2.7); return t; }
+};
+// 每個主題：地板、牆、家具換色（舊色 → 新色）、窗外、火的顏色、要不要每張桌子都有隔板
+const THEMES = {
+  home: {},
+  cafe: {
+    rug: ["#6e4a34", "#e8d3b0", "#a0603a"],
+    floor: () => TEX.wood("#7a5038", "#3a2214", 10), wall: () => TEX.brick(),
+    remap: { "#8a5a38": "#4a2f22", "#7a4a2a": "#3a2418", "#a06a42": "#5a3a28", "#b07a4f": "#6e4a34", "#9a6640": "#553524", "#c26f5e": "#3f5f4a", "#d27d6b": "#4f7058", "#c9746a": "#2f4a3c", "#b5655c": "#263d31", "#e0b04f": "#d9a050" },
+    bg: "#2a1c16", decor: cafeDecor
+  },
+  library: {
+    rug: ["#7a2a2a", "#c9a45a", "#5a1e1e"],
+    floor: () => TEX.carpet(), wall: () => TEX.wood("#5a3a26", "#2a180e", 14),
+    remap: { "#8a5a38": "#5a3424", "#7a4a2a": "#432418", "#a06a42": "#6a3a26", "#b07a4f": "#7a4a32", "#9a6640": "#5e3626", "#c26f5e": "#7a2a2a", "#d27d6b": "#8e3a34", "#c9746a": "#2f4a3c", "#b5655c": "#263d31", "#e0b04f": "#2f7a52", "#d9a77e": "#7a2a2a" },
+    bg: "#24160e", decor: libraryDecor
+  },
+  study: {
+    rug: null,
+    floor: () => TEX.vinyl("#c9ccd0", "#bfc3c8"), wall: () => TEX.paint("#eef0f2", "#90a0b0"),
+    remap: { "#8a5a38": "#8e96a0", "#7a4a2a": "#6e7884", "#a06a42": "#b9bfc7", "#b07a4f": "#e2dccf", "#9a6640": "#c8c2b4", "#5a3a22": "#4a525c", "#c26f5e": "#7c8ea0", "#d27d6b": "#8fa0b2", "#c9746a": "#c9d2da", "#b5655c": "#b4bec8", "#b4a08c": "#c9ccd0", "#d9a77e": "#9aa6b2" },
+    allBooth: true, bg: "#5a6470", decor: studyDecor
+  },
+  space: {
+    rug: ["#1a2440", "#4ad8ff", "#2f4a7a"],
+    floor: () => TEX.grid(), wall: () => TEX.panel(),
+    remap: { "#8a5a38": "#9aa4b0", "#7a4a2a": "#6c7684", "#a06a42": "#c9d0d8", "#b07a4f": "#e8ecf0", "#9a6640": "#b0b8c2", "#5a3a22": "#3e4654", "#6b4a32": "#4a5262", "#c26f5e": "#2f4a7a", "#d27d6b": "#3d5c90", "#c9746a": "#2a3550", "#b5655c": "#222c44", "#b4a08c": "#8a94a2", "#9c8b7a": "#6c7684", "#d9a77e": "#4a5a7a", "#c98f6a": "#9aa4b0" },
+    sky: "space", fire: [0x4ad8ff, 0x8ae8ff, 0xd8f8ff], bg: "#0b1020", decor: spaceDecor
+  },
+  school: {
+    rug: null,
+    floor: () => TEX.wood("#d4a874", "#8a5a38", 12), wall: () => TEX.school(),
+    remap: { "#b07a4f": "#d9b98a", "#9a6640": "#c9a878", "#8a5a38": "#6b7a88", "#a06a42": "#3f6fa0", "#7a4a2a": "#56636f", "#c26f5e": "#d98c4a", "#d27d6b": "#e3a060", "#c9746a": "#e8d8a8", "#b5655c": "#d8c898" },
+    bg: "#8a7050", decor: schoolDecor
+  }
+};
+function T() { return THEMES[THEME] || THEMES.home; }
+function signTex(lines, opt) {
+  opt = opt || {};
+  return canvasTex(opt.w || 256, opt.h || 128, (g, w, h) => {
+    g.fillStyle = opt.bg || "#2f3a34"; g.fillRect(0, 0, w, h);
+    g.textAlign = "center"; g.textBaseline = "middle";
+    lines.forEach((l, i) => { g.fillStyle = l.c || opt.fg || "#f3efe6"; g.font = (l.b ? "bold " : "") + (l.s || 22) + "px sans-serif"; if (opt.glow) { g.shadowColor = l.c || opt.fg; g.shadowBlur = 14; } g.fillText(l.t, w / 2, l.y != null ? l.y : (h / (lines.length + 1)) * (i + 1)); });
+  });
+}
+function wallPlane(tex, w, h, x, y, z, side, basic) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), basic ? new THREE.MeshBasicMaterial({ map: tex, transparent: !!basic.t }) : new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 }));
+  m.position.set(x, y, z); if (side === "left") m.rotation.y = Math.PI / 2; scene.add(m); return m;
+}
+function glowBulb(x, y, z, col, s) {
+  const b = sph(0.045, new THREE.MeshBasicMaterial({ color: col }), x, y, z, scene, 8, 6); b.castShadow = false;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: col, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending }));
+  sp.scale.setScalar(s || 0.35); sp.position.set(x, y, z); scene.add(sp); bulbs.push({ sp, phase: x * 2 + z });
+}
+// 鏡頭看得到的牆面：後牆 x -2.15~-1.0 的中段、吧台上方的菜單板位置（主題房間蓋掉它），左牆電視上方 z 0.9~2.9
+const SPOT_BACK = { x: -1.58, y: 1.62 }, SPOT_SNACK = { x: 2.55, y: 1.85 }, SPOT_LEFT = { z: 2.0, y: 1.98 };
+function framed(tex, w, h, x, y, z, side, fc) {
+  if (side === "left") { box(0.05, h + 0.1, w + 0.1, fc || "#3a2418", x + 0.01, y, z, scene); return wallPlane(tex, w, h, x + 0.04, y, z, "left"); }
+  box(w + 0.1, h + 0.1, 0.05, fc || "#3a2418", x, y, z + 0.01, scene); return wallPlane(tex, w, h, x, y, z + 0.04, "back");
+}
+// 咖啡廳：霓虹招牌、手寫菜單牆、垂吊的愛迪生燈泡
+function cafeDecor() {
+  wallPlane(signTex([{ t: "COFFEE", s: 50, b: 1, c: "#ff9ec0" }, { t: "☕ & STUDY", s: 26, c: "#ffe08a" }], { bg: "#1a1210", glow: 1, w: 256, h: 160 }), 1.05, 0.66, SPOT_BACK.x, SPOT_BACK.y, -3.96, "back", {});
+  const neon = new THREE.PointLight(0xff8fb8, 1.4, 3.5, 1.6); neon.position.set(SPOT_BACK.x, 2.2, -3.4); scene.add(neon);
+  framed(signTex([{ t: "MENU", s: 30, b: 1 }, { t: "美式咖啡 ……… 60", s: 18 }, { t: "拿鐵 ………… 80", s: 18 }, { t: "焦糖瑪奇朵 … 95", s: 18 }, { t: "抹茶歐蕾 …… 85", s: 18 }, { t: "今日蛋糕 …… 70", s: 18, c: "#ffe08a" }], { w: 300, h: 160 }), 1.8, 0.78, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left");
+  wallPlane(signTex([{ t: "OPEN", s: 40, b: 1, c: "#7cffb2" }, { t: "每天 7:00 – 23:00", s: 16 }], { bg: "#1a1210", glow: 1, w: 256, h: 128 }), 0.6, 0.3, 4.3, 2.3, -3.97, "back", {});
+  [[-1.7, 0.2], [0.9, -0.9], [3.2, 1.4], [-0.6, 3.0], [2.2, 3.9], [4.6, -1.0]].forEach(([x, z]) => { box(0.008, 1.7, 0.008, "#1a1210", x, 3.45, z, scene); glowBulb(x, 2.58, z, 0xffb060, 0.42); });
+}
+// 圖書館：書牆、地球儀、梯子、安靜標示
+function libraryDecor() {
+  const b1 = framed(TEX.books("#3a2216"), 1.05, 2.4, SPOT_BACK.x, 1.42, -3.99, "back", "#432418"); b1.material.map.repeat.set(0.5, 1.2);
+  const b2 = framed(TEX.books("#3a2216"), 1.8, 0.78, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left", "#432418"); b2.material.map.repeat.set(1, 0.5);
+  const ld = new THREE.Group(); ld.position.set(-2.2, 0, -3.62); ld.rotation.x = -0.12; scene.add(ld);
+  [-0.2, 0.2].forEach((x) => box(0.05, 2.5, 0.05, "#6a3a26", x, 1.25, 0, ld)); for (let i = 0; i < 6; i++) box(0.44, 0.04, 0.04, "#6a3a26", 0, 0.3 + i * 0.38, 0, ld);
+  const gb = new THREE.Group(); gb.position.set(4.3, 2.03, -3.72); scene.add(gb);
+  cyl(0.12, 0.15, 0.04, "#432418", 0, 0.02, 0, gb); cyl(0.02, 0.02, 0.2, "#432418", 0, 0.12, 0, gb, 6);
+  const ge = sph(0.22, "#3d6e9a", 0, 0.42, 0, gb, 20, 14); ge.rotation.z = 0.4;
+  sph(0.11, "#7a9a52", 0.12, 0.47, 0.11, gb, 10, 8).scale.set(1, 0.6, 0.6); sph(0.08, "#7a9a52", -0.1, 0.36, 0.15, gb, 10, 8).scale.set(1, 0.7, 0.5);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.012, 6, 32), mat("#c9a45a")); ring.position.y = 0.42; gb.add(ring); plants.push(gb);
+  framed(signTex([{ t: "請保持安靜", s: 30, b: 1 }, { t: "SILENCE PLEASE", s: 16 }], { bg: "#2a180e", fg: "#e8d3a0", w: 256, h: 110 }), 0.9, 0.39, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#c9a45a");
+  const warm = new THREE.PointLight(0xffc070, 0.7, 5, 1.6); warm.position.set(-1.6, 2.6, -3.2); scene.add(warm);
+}
+// 自習室：日光燈、大時鐘、公告欄、安靜標示
+function studyDecor() {
+  [[-1.0, 0.4], [2.4, 0.4], [-1.0, 3.6], [2.4, 3.6], [5.0, 1.8]].forEach(([x, z]) => {
+    [-0.5, 0.5].forEach((d) => box(0.006, 1.3, 0.006, "#8e96a0", x + d, 3.4, z, scene));
+    box(1.3, 0.06, 0.32, "#d8dde2", x, 2.75, z, scene).castShadow = false;
+    const tube = box(1.2, 0.02, 0.24, new THREE.MeshBasicMaterial({ color: 0xf4fbff }), x, 2.715, z, scene); tube.castShadow = false;
+  });
+  const cool = new THREE.PointLight(0xe8f4ff, 1.4, 12, 1.2); cool.position.set(1.5, 2.8, 1.7); scene.add(cool);
+  const cg = new THREE.Group(); cg.position.set(SPOT_BACK.x, SPOT_BACK.y + 0.1, -3.94); scene.add(cg);
+  cyl(0.4, 0.4, 0.06, "#2a2f38", 0, 0, 0, cg, 32).rotation.x = Math.PI / 2;
+  cyl(0.36, 0.36, 0.07, "#ffffff", 0, 0, 0.01, cg, 32).rotation.x = Math.PI / 2;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; box(0.025, 0.07, 0.01, "#2a2f38", Math.sin(a) * 0.3, Math.cos(a) * 0.3, 0.05, cg).rotation.z = -a; }
+  box(0.025, 0.24, 0.01, "#2a2f38", 0, 0.11, 0.06, cg); box(0.03, 0.16, 0.01, "#2a2f38", 0.06, -0.04, 0.06, cg).rotation.z = 2.2;
+  box(0.05, 0.85, 1.9, "#b48a5a", -4.99, SPOT_LEFT.y, SPOT_LEFT.z, scene);
+  [["#fff8dc", -0.6, 0.15, 0.1], ["#ffe08a", 0.05, -0.2, -0.08], ["#cfe8ff", 0.65, 0.18, 0.05], ["#ffd0d6", -0.3, -0.25, 0.12], ["#ffffff", 0.45, -0.22, -0.1]].forEach(([c, dz, dy, r]) => box(0.01, 0.3, 0.3, c, -4.955, SPOT_LEFT.y + dy * 0.7, SPOT_LEFT.z + dz, scene).rotation.x = r);
+  framed(signTex([{ t: "請保持安靜", s: 30, b: 1 }, { t: "QUIET ZONE", s: 16 }], { bg: "#3f6fa0", w: 256, h: 110 }), 0.9, 0.39, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#d8dde2");
+}
+// 太空艙：圓窗看星空和地球、霓虹燈條、螢幕
+function spaceDecor() {
+  const stars = canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = "#050814"; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 160; i++) { g.fillStyle = "#fff"; g.globalAlpha = 0.3 + (i % 7) / 10; g.fillRect((i * 97) % w, (i * 61) % h, 1.5, 1.5); }
+    g.globalAlpha = 1; const gr = g.createRadialGradient(170, 200, 10, 170, 200, 90); gr.addColorStop(0, "#5ab0ff"); gr.addColorStop(0.7, "#2a5aa0"); gr.addColorStop(1, "rgba(40,80,160,0)");
+    g.fillStyle = gr; g.beginPath(); g.arc(170, 200, 90, 0, 7); g.fill(); g.fillStyle = "#6aa86a"; g.beginPath(); g.ellipse(150, 180, 26, 14, 0.4, 0, 7); g.fill();
+  });
+  [1.45, 2.55].forEach((z, i) => {
+    const pw = new THREE.Mesh(new THREE.CircleGeometry(0.36, 40), new THREE.MeshBasicMaterial({ map: stars })); pw.rotation.y = Math.PI / 2; pw.position.set(-4.96, SPOT_LEFT.y, z); if (i) pw.rotation.x = 1.4; scene.add(pw);
+    const fr = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.06, 10, 40), mat("#9aa4b0", { metalness: 0.6, roughness: 0.3 })); fr.rotation.y = Math.PI / 2; fr.position.set(-4.95, SPOT_LEFT.y, z); scene.add(fr);
+  });
+  const neonM = new THREE.MeshBasicMaterial({ color: 0x4ad8ff });
+  [[12.8, 0.04, 0.04, 1.4, 0.2, -3.95], [0.04, 0.04, 11, -4.95, 0.2, 1.5], [12.8, 0.04, 0.04, 1.4, 3.0, -3.93], [0.04, 0.04, 11, -4.93, 3.0, 1.5]].forEach(([w, h, d, x, y, z]) => { box(w, h, d, neonM, x, y, z, scene).castShadow = false; });
+  const bl = new THREE.PointLight(0x4ad8ff, 1.0, 8, 1.4); bl.position.set(1.5, 2.8, -3.0); scene.add(bl);
+  const scr = canvasTex(256, 160, (g, w, h) => { g.fillStyle = "#06121e"; g.fillRect(0, 0, w, h); g.strokeStyle = "#4ad8ff"; g.lineWidth = 2; g.beginPath(); for (let x = 0; x < w; x += 4) g.lineTo(x, 100 + Math.sin(x / 12) * 22); g.stroke(); g.fillStyle = "#7cffb2"; g.font = "bold 18px monospace"; g.fillText("O2 98%", 12, 28); g.fillText("FOCUS MODE ON", 12, 52); g.fillStyle = "#ffd84a"; g.fillText("ORBIT 421 km", 12, 150); });
+  framed(scr, 1.05, 0.7, SPOT_BACK.x, SPOT_BACK.y, -3.99, "back", "#9aa4b0");
+  framed(signTex([{ t: "🚀 KAIDA-1", s: 34, b: 1, c: "#4ad8ff" }], { bg: "#0b1020", glow: 1, w: 256, h: 90 }), 1.05, 0.37, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#9aa4b0");
+}
+// 學校：大黑板、時鐘、三角旗、班牌
+function schoolDecor() {
+  const today = new Date();
+  const bt = signTex([{ t: (today.getMonth() + 1) + " 月 " + today.getDate() + " 日", s: 24, y: 34 }, { t: "今天的目標：專心讀書！", s: 36, b: 1, y: 110, c: "#fff8dc" }, { t: "值日生：小熊、Mia", s: 22, y: 180, c: "#ffd0d6" }, { t: "加油 ✿", s: 24, y: 226, c: "#ffe08a" }], { bg: "#2f5a46", w: 512, h: 256 });
+  framed(bt, 1.9, 0.8, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left", "#8a6a3a");
+  box(0.16, 0.05, 1.9, "#8a6a3a", -4.88, SPOT_LEFT.y - 0.45, SPOT_LEFT.z, scene);
+  [[1.4, "#f3efe6"], [1.55, "#ffe08a"], [2.6, "#ffd0d6"]].forEach(([z, c]) => box(0.05, 0.04, 0.12, c, -4.84, SPOT_LEFT.y - 0.4, z, scene));
+  const cg = new THREE.Group(); cg.position.set(SPOT_BACK.x, SPOT_BACK.y + 0.1, -3.94); scene.add(cg);
+  cyl(0.32, 0.32, 0.05, "#c2453b", 0, 0, 0, cg, 28).rotation.x = Math.PI / 2; cyl(0.28, 0.28, 0.06, "#ffffff", 0, 0, 0.01, cg, 28).rotation.x = Math.PI / 2;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; box(0.02, 0.05, 0.01, "#2a2620", Math.sin(a) * 0.23, Math.cos(a) * 0.23, 0.05, cg).rotation.z = -a; }
+  box(0.02, 0.18, 0.01, "#2a2620", 0, 0.08, 0.05, cg); box(0.025, 0.12, 0.01, "#2a2620", 0.05, -0.02, 0.05, cg).rotation.z = 1.9;
+  const cols = ["#c2453b", "#e0b04f", "#5d7fa8", "#8fae7a", "#e7a6a8"];
+  for (let i = 0; i < 15; i++) {
+    const x = -4.5 + i * 0.68, y = 2.95 - Math.sin(i / 14 * Math.PI) * 0.2;
+    const f = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.28, 3), mat(cols[i % cols.length])); f.rotation.z = Math.PI; f.position.set(x, y - 0.14, -3.9); scene.add(f);
+  }
+  framed(signTex([{ t: "三年二班", s: 36, b: 1 }], { bg: "#f8f4ec", fg: "#2a2620", w: 256, h: 90 }), 1.0, 0.35, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#8a6a3a");
+}
+
 function buildRoom() {
-  const floorTex = woodTexture("#c08a5a", "#6b3f20", 8, false, 512, 512); floorTex.repeat.set(3.2, 2.7);
-  const wallTex = woodTexture("#dcb58a", "#8a5a38", 10, false, 512, 512); wallTex.repeat.set(2.5, 1);
-  const wallTex2 = wallTex.clone(); wallTex2.needsUpdate = true; wallTex2.repeat.set(1.6, 1);
+  const TH = T(); REMAP = TH.remap || null;
+  let floorTex, wallTex;
+  if (TH.floor) floorTex = TH.floor(); else { floorTex = woodTexture("#c08a5a", "#6b3f20", 8, false, 512, 512); floorTex.repeat.set(3.2, 2.7); }
+  if (TH.wall) wallTex = TH.wall(); else { wallTex = woodTexture("#dcb58a", "#8a5a38", 10, false, 512, 512); wallTex.repeat.set(2.5, 1); }
+  const wallTex2 = wallTex.clone(); wallTex2.needsUpdate = true; wallTex2.repeat.set(wallTex.repeat.x * 0.64, wallTex.repeat.y);
   const floor = new THREE.Mesh(new THREE.BoxGeometry(12.8, 0.2, 11), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.75 }));
   floor.position.set(1.4, -0.1, 1.5); floor.receiveShadow = true; scene.add(floor);
   const back = new THREE.Mesh(new THREE.BoxGeometry(12.8, 4.6, 0.2), new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.9 }));
@@ -781,7 +998,8 @@ function buildRoom() {
   });
 
   // 地毯
-  const rug = new THREE.Mesh(new THREE.CircleGeometry(2.6, 48), new THREE.MeshStandardMaterial({ map: rugTexture(), roughness: 1 }));
+  const rug = new THREE.Mesh(new THREE.CircleGeometry(2.6, 48), new THREE.MeshStandardMaterial({ map: rugTexture(TH.rug), roughness: 1 }));
+  rug.visible = TH.rug !== null;
   rug.rotation.x = -Math.PI / 2; rug.position.set(0.3, 0.005, 1.1); rug.scale.set(1.35, 0.8, 1); rug.receiveShadow = true; scene.add(rug);
   const rug2 = new THREE.Mesh(new THREE.CircleGeometry(0.9, 32), mat("#d9a77e")); rug2.rotation.x = -Math.PI / 2; rug2.position.set(-3.6, 0.006, -1.6); rug2.scale.set(0.8, 1.2, 1); rug2.receiveShadow = true; scene.add(rug2);
 
@@ -808,12 +1026,14 @@ function buildRoom() {
   }
   const wire = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(Array.from({ length: 16 }, (_, i) => { const t = i / 15; return new THREE.Vector3(-4.7 + t * 12, 3.05 - Math.sin(t * Math.PI * 3) * 0.18, -3.93); })), 64, 0.008, 4), mat("#5a3a22"));
   scene.add(wire);
-  // 牆上的畫
+  // 牆上的畫（主題房間換成自己的裝飾）
+  if (!TH.decor) {
   box(0.7, 0.5, 0.04, "#8a5a38", -1.6, 2.2, -3.98, scene);
   const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), new THREE.MeshBasicMaterial({ map: skyTexture("day") })); pic.position.set(-1.6, 2.2, -3.955); scene.add(pic);
   box(0.6, 0.45, 0.04, "#8a5a38", 2.5, 2.25, -3.98, scene);
   const pic2 = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.35), mat("#e7a6a8")); pic2.position.set(2.5, 2.25, -3.955); scene.add(pic2);
   sph(0.09, "#c2453b", 2.5, 2.25, -3.94, scene);
+  }
 
   // 書桌與椅子
   SEATS.forEach((st, i) => {
@@ -826,13 +1046,14 @@ function buildRoom() {
       cyl(0.07, 0.08, 0.02, "#5a3a22", -0.42, 0.67, 0.12, d, 10); cyl(0.01, 0.01, 0.3, "#5a3a22", -0.42, 0.82, 0.12, d, 4);
       const sh = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.1, 14, 1, true), mat("#e0b04f", { side: THREE.DoubleSide, emissive: 0xffc070, emissiveIntensity: 0.5 })); sh.position.set(-0.42, 0.98, 0.12); d.add(sh);
     } else { cyl(0.05, 0.04, 0.08, "#c98f6a", -0.42, 0.7, 0.14, d); sph(0.07, "#8fae7a", -0.42, 0.79, 0.14, d); }
-    if (st.booth === "plants") {
+    const booth = TH.allBooth ? "board" : st.booth;
+    if (booth === "plants") {
       // 長條花槽擋在書桌前面，像咖啡廳的座位
       box(1.3, 0.42, 0.26, "#8a5a38", 0, 0.21, 0.55, d); box(1.24, 0.04, 0.2, "#5a3a22", 0, 0.42, 0.55, d);
       for (let k = 0; k < 6; k++) { const lf = sph(0.17, k % 2 ? "#7b9c68" : "#8fae7a", -0.52 + k * 0.21, 0.6 + (k % 3) * 0.1, 0.55 + (k % 2 ? 0.04 : -0.04), d, 12, 10); lf.scale.set(0.9, 1.5, 0.8); }
       [-1, 1].forEach((sd) => { const tall = cap(0.03, 0.5, "#6f9a62", d); tall.position.set(sd * 0.58, 0.85, 0.55); const top2 = sph(0.15, "#7b9c68", sd * 0.58, 1.15, 0.55, d, 10, 8); top2.scale.y = 1.4; });
       plants.push(d);
-    } else if (st.booth) {
+    } else if (booth) {
       // 自習室隔板：前面和兩側，矮一點才看得到人
       const pc = ["#e8d3b0", "#c9d8c0", "#d9c3d9"][i % 3];
       box(1.24, 0.42, 0.04, pc, 0, 0.88, 0.33, d); box(1.28, 0.03, 0.06, "#8a5a38", 0, 1.1, 0.33, d);
@@ -854,6 +1075,9 @@ function buildRoom() {
   embers = makeParticles(40, 0xffa040, 0.06, () => new THREE.Vector3(-4.25 + Math.random() * 0.15, 0.3 + Math.random() * 0.6, -1.6 + (Math.random() - 0.5) * 0.6));
   dust = makeParticles(70, 0xfff1d0, 0.035, () => new THREE.Vector3(-0.8 + Math.random() * 2.4, 0.2 + Math.random() * 2.4, -3.6 + Math.random() * 2.6));
   steam = makeParticles(14, 0xffffff, 0.1, () => new THREE.Vector3(2.2 + (Math.random() - 0.5) * 0.06, 1.62, -3.6));
+  if (TH.fire) { fireMeshes.forEach((f, i) => f.material.color.setHex(TH.fire[i % 3])); fireLight.color.setHex(TH.fire[0]); embers.pts.material.color.setHex(TH.fire[1]); }
+  if (TH.decor) TH.decor();
+  REMAP = null;
 }
 function makeParticles(n, color, size, spawn) {
   const geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), life = [];
@@ -920,6 +1144,7 @@ function walkTo(st, to, then) {
 }
 
 function update(members) {
+  lastList = members;
   if (!mounted) return;
   const list = members.slice(0, 6), ids = {};
   list.forEach((m, i) => {
@@ -1189,5 +1414,18 @@ function mount(el) {
   return true;
 }
 
-window.KaidaScene3D = { mount, update, findPath, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; } };
+// 換主題：清掉整個房間重蓋，角色在下一次 update 時重新放回去
+let lastList = null;
+function setTheme(name) {
+  if (!THEMES[name]) name = "home";
+  if (name === THEME) return;
+  THEME = name;
+  if (!mounted) return;
+  Object.keys(chars).forEach((id) => removeChar(id)); chars = {}; reserved = {};
+  while (scene.children.length) scene.remove(scene.children[0]);
+  fireMeshes = []; bulbs = []; curtains = []; plants = []; speakers = []; notes = []; seatProps = [];
+  buildRoom(); lighting(); envNext = 0;
+  if (lastList) update(lastList);
+}
+window.KaidaScene3D = { mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; } };
 window.dispatchEvent(new Event("kaida3d-ready"));

@@ -1,6 +1,6 @@
 /* 番茄讀書會：房間背景音樂（瀏覽器即時合成，不用下載音檔）
-   爵士：走路貝斯 + 七和弦鋼琴 + 刷鼓；輕音樂：溫柔的和弦鋪底 + 鈴聲旋律；白噪音：柔和的棕色噪音；柴火：低沉的火焰聲 + 隨機的劈啪聲；
-   雨聲：細密的雨 + 偶爾滴在窗台的水滴；Lo-fi：慢板的悶鋼琴 + 鼓 + 黑膠雜訊；森林：微風 + 小溪 + 鳥叫 */
+   爵士：走路貝斯 + 七和弦鋼琴 + 刷鼓；輕音樂：溫柔的和弦鋪底 + 鈴聲旋律；白噪音：柔和的棕色噪音；柴火：隨機的劈啪聲；
+   雨聲：細密的雨 + 偶爾滴在窗台的水滴；Lo-fi：慢板的悶鋼琴 + 鼓 + 黑膠雜訊；森林：鳥叫 */
 (function () {
   var ctx = null, master = null, verb = null, cur = "", timer = null, nextT = 0, step = 0, vol = 0.6, noiseSrc = null, nodes = [];
 
@@ -107,19 +107,7 @@
   }
 
   /* 柴火：底下一層低沉的燃燒聲，上面隨機的劈啪、偶爾木頭裂開的大聲一點 */
-  function startFire() {
-    var len = ctx.sampleRate * 4, buf = ctx.createBuffer(2, len, ctx.sampleRate);
-    for (var c = 0; c < 2; c++) {
-      var d = buf.getChannelData(c), last = 0;
-      for (var i = 0; i < len; i++) { var w = Math.random() * 2 - 1; last = (last + 0.03 * w) / 1.03; d[i] = last * 3; }
-    }
-    noiseSrc = ctx.createBufferSource(); noiseSrc.buffer = buf; noiseSrc.loop = true;
-    var f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 300;
-    var g = ctx.createGain(); g.gain.value = 0.16;
-    var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.23; lg.gain.value = 0.04; lfo.connect(lg); lg.connect(g.gain); lfo.start();
-    noiseSrc.connect(f); f.connect(g); g.connect(master); noiseSrc.start();
-    nodes = [lfo];
-  }
+  function startFire() {}   // 只留劈啪聲，不再墊一層底噪
   function crackle(t, big) {
     var s = ctx.createBufferSource(); s.buffer = noise();
     var f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = big ? 900 + Math.random() * 900 : 1800 + Math.random() * 3500; f.Q.value = big ? 0.8 : 1.5;
@@ -132,7 +120,7 @@
   }
   function fireBeat(t) {
     // 一小段時間內丟幾個劈啪聲，有時一串連著響
-    var spb = 0.25, n = Math.random() < 0.35 ? 0 : 1 + Math.floor(Math.random() * 3);
+    var spb = 0.25, n = Math.random() < 0.25 ? 0 : 1 + Math.floor(Math.random() * 3);
     if (Math.random() < 0.08) n += 4;
     for (var i = 0; i < n; i++) crackle(t + Math.random() * spb, false);
     if (Math.random() < 0.03) crackle(t + Math.random() * spb, true);
@@ -198,11 +186,7 @@
   }
 
   /* 森林 */
-  function startForest() {
-    bed(0.02, "bandpass", 380, 0.6, 0.12, 0.06, 0.06);  // 樹葉間的風（輕輕的）
-    bed(1, "highpass", 3200, 0.5, 0.03, 0.3, 0.006);     // 小溪
-    bed(0.05, "bandpass", 1200, 1.2, 0.05, 0.4, 0.015);
-  }
+  function startForest() {}   // 只留鳥叫，不再墊風聲
   function bird(t, pan) {
     var kind = Math.floor(Math.random() * 3), base = 2600 + Math.random() * 1600, v = 0.35;
     if (kind === 0) for (var i = 0; i < 2 + Math.floor(Math.random() * 3); i++) sweep(base, base * 1.35, t + i * 0.11, 0.07, 0.05 * v, pan);            // 啾啾啾
@@ -211,7 +195,7 @@
   }
   function forestBeat(t) {
     var spb = 0.5;
-    if (Math.random() < 0.1) bird(t + Math.random() * spb, Math.random() * 1.6 - 0.8);
+    if (Math.random() < 0.14) bird(t + Math.random() * spb, Math.random() * 1.6 - 0.8);
     return spb;
   }
 
