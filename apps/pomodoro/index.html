@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n-title="app.title">番茄讀書會</title>
+<meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。不用註冊，資料只存在你的手機。">
+<meta name="theme-color" content="#f2ece1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="番茄讀書會">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="../shared/kaida-app.css">
+<style>
+  .hero { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .hero img { flex: none; border-radius: 14px; }
+  .room { display: flex; align-items: center; gap: 12px; }
+  .room .info { flex: 1; min-width: 0; }
+  .room h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .room .live { font-size: 13px; color: var(--muted); }
+  .room .live b { color: var(--ink); font-weight: 600; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .dot.focus { background: var(--fail); } .dot.break { background: var(--pass); }
+
+  .timer { text-align: center; padding: 8px 0 4px; }
+  .ring { width: min(280px, 78vw); height: min(280px, 78vw); display: block; margin: 0 auto; }
+  .ring .track { stroke: var(--sunk); }
+  .ring .bar { stroke: var(--fail); transition: stroke-dashoffset .9s linear; }
+  .ring.break .bar { stroke: var(--pass); }
+  .ring text.big { font-family: var(--f-mono); font-size: 46px; font-weight: 600; fill: var(--ink); }
+  .ring text.lab { font-size: 15px; fill: var(--muted); }
+  .phase-line { margin: 10px 0 2px; font-size: 15px; }
+  .sync-note { font-size: 13px; color: var(--muted); margin: 0 0 16px; }
+
+  .opts { display: flex; flex-direction: column; gap: 6px; margin: 16px 0; }
+  .opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; padding: 6px 0; }
+  .switch { position: relative; width: 46px; height: 26px; flex: none; }
+  .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; cursor: pointer; }
+  .switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--sunk); border: 1px solid var(--line); pointer-events: none; }
+  .switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--muted); transition: transform .15s; }
+  .switch input:checked + span { background: var(--signal); border-color: var(--signal); }
+  .switch input:checked + span::after { transform: translateX(20px); background: var(--accent-ink); }
+  .switch input:focus-visible + span { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
+  .stat .n { font-family: var(--f-mono); font-size: 24px; font-weight: 600; line-height: 1.2; }
+  .stat .l { font-size: 12px; color: var(--muted); }
+  .week { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-top: 8px; }
+  .week .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .week .b { width: 100%; max-width: 32px; background: var(--signal); border-radius: 2px 2px 0 0; min-height: 2px; }
+  .week .col.today .b { background: var(--fail); }
+  .week .v { font-size: 11px; color: var(--muted); font-family: var(--f-mono); }
+  .week .d { font-size: 12px; color: var(--muted); }
+  .note { border-left: 2px solid var(--signal); padding: 2px 0 2px 10px; margin: 0 0 10px; }
+  .note .when { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="hero"><img src="logo.svg" alt="" width="64" height="64"><h1 data-i18n="app.title">番茄讀書會</h1></div>
+  <p class="lede" data-i18n="app.lede">打開就能加入一間安靜的讀書房。同一間房的每個人都照同一個時鐘開始、一起休息，不用註冊。</p>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-rooms" aria-selected="true" data-i18n="tab.rooms">讀書房</button>
+    <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">我的紀錄</button>
+  </nav>
+
+  <!-- 讀書房列表 -->
+  <section id="view-rooms">
+    <div id="room-list"></div>
+    <p class="small muted" data-i18n="rooms.how">讀書房照「台灣時間的整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。</p>
+  </section>
+
+  <!-- 進行中的讀書房 -->
+  <section id="view-session" hidden>
+    <div class="timer">
+      <svg class="ring" id="ring" viewBox="0 0 200 200" role="img" aria-live="off">
+        <circle class="track" cx="100" cy="100" r="88" fill="none" stroke-width="10"/>
+        <circle class="bar" id="ring-bar" cx="100" cy="100" r="88" fill="none" stroke-width="10" stroke-linecap="round"
+          transform="rotate(-90 100 100)" stroke-dasharray="552.92" stroke-dashoffset="0"/>
+        <text class="big" id="ring-time" x="100" y="108" text-anchor="middle">25:00</text>
+        <text class="lab" id="ring-phase" x="100" y="138" text-anchor="middle"></text>
+      </svg>
+      <p class="phase-line"><b id="s-room"></b></p>
+      <p class="sync-note" id="s-next"></p>
+    </div>
+
+    <div class="card" id="mid-join" hidden><p class="small" style="margin:0" data-i18n="s.midjoin">你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來。下一輪開始時一起從頭來。</p></div>
+
+    <div class="card" id="break-box" hidden>
+      <label class="field" style="margin-bottom:8px">
+        <span data-i18n="s.notelabel">休息時間，留一句話給自己（只存在這支手機）</span>
+        <textarea id="note-text" maxlength="140" data-i18n-ph="s.noteph" placeholder="剛剛讀完第三章，下一輪寫習題"></textarea>
+      </label>
+      <button class="btn ghost" id="note-save" type="button" data-i18n="s.notesave">留下這句話</button>
+    </div>
+
+    <div class="opts card">
+      <div class="opt"><span data-i18n="opt.sound">換段時響一聲、震動</span><label class="switch"><input type="checkbox" id="opt-sound" checked aria-labelledby=""><span></span></label></div>
+      <div class="opt" id="row-wake"><span data-i18n="opt.wake">讀書時保持螢幕亮著</span><label class="switch"><input type="checkbox" id="opt-wake"><span></span></label></div>
+      <div class="opt" id="row-notify"><span data-i18n="opt.notify">換段時跳出通知（電腦瀏覽器較穩）</span><label class="switch"><input type="checkbox" id="opt-notify"><span></span></label></div>
+    </div>
+
+    <button class="btn ghost block" id="leave" type="button" data-i18n="s.leave">離開讀書房</button>
+  </section>
+
+  <!-- 我的紀錄 -->
+  <section id="view-me" hidden>
+    <div class="stats">
+      <div class="stat"><div class="n" id="st-today-min">0</div><div class="l" data-i18n="st.todaymin">今天專注分鐘</div></div>
+      <div class="stat"><div class="n" id="st-today-pomo">0</div><div class="l" data-i18n="st.todaypomo">今天完成番茄</div></div>
+      <div class="stat"><div class="n" id="st-streak">0</div><div class="l" data-i18n="st.streak">連續讀書天數</div></div>
+    </div>
+    <h2 data-i18n="st.week">最近 7 天（分鐘）</h2>
+    <div class="card"><div class="week" id="week"></div><p class="small muted" style="margin:8px 0 0" id="week-total"></p></div>
+    <h2 data-i18n="st.notes">休息時留的話</h2>
+    <div id="notes"></div>
+    <p class="small muted" data-i18n="st.privacy">紀錄只存在這個瀏覽器裡，不會上傳。換手機或清除瀏覽資料就會不見。</p>
+    <button class="btn danger" id="clear" type="button" data-i18n="st.clear">清除我的所有紀錄</button>
+  </section>
+
+  <h2 data-i18n="beta.h">封測任務</h2>
+  <div class="card beta">
+    <h3 data-i18n="beta.sub">做完這兩件事，再回開達留下回饋</h3>
+    <ol id="beta-tasks"></ol>
+    <p class="small" style="margin:10px 0 0"><a href="../../" data-i18n="beta.back">回開達 Kaida 留回饋 →</a></p>
+  </div>
+
+  <footer class="foot">
+    <p data-i18n="foot.1">番茄讀書會是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。</p>
+    <p data-i18n="foot.2">提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。</p>
+  </footer>
+</div>
+
+<script src="../shared/kaida-app.js"></script>
+<script>
+(function () {
+  var K = window.Kaida, t = K.t;
+
+  K.addStrings({
+    zh: {
+      "app.title": "番茄讀書會",
+      "app.lede": "打開就能加入一間安靜的讀書房。同一間房的每個人都照同一個時鐘開始、一起休息，不用註冊。",
+      "tab.rooms": "讀書房", "tab.me": "我的紀錄",
+      "rooms.how": "讀書房照「整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。",
+      "room.hour.name": "整點房", "room.hour.desc": "25 分專注 · 5 分休息 · 每個 :00 和 :30 開始",
+      "room.deep.name": "深度房", "room.deep.desc": "50 分專注 · 10 分休息 · 每個整點開始",
+      "room.solo.name": "自己開一顆", "room.solo.desc": "25 分專注 · 5 分休息 · 按下去馬上開始",
+      "room.join": "加入", "room.joined": "已在房裡",
+      "live.focus": "專注中，剩 {t}", "live.break": "休息中，{t} 後開始下一輪",
+      "live.solo": "按下加入就從 25:00 開始",
+      "ph.focus": "專注中", "ph.break": "休息中",
+      "s.nextFocus": "下一輪專注 {time} 開始", "s.nextBreak": "{time} 休息",
+      "s.sync": "跟所有在 {room} 的人同步", "s.solo": "你自己的番茄鐘",
+      "s.midjoin": "你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來。下一輪開始時一起從頭來。",
+      "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
+      "s.noteph": "剛剛讀完第三章，下一輪寫習題",
+      "s.notesave": "留下這句話", "s.notesaved": "記下來了",
+      "s.leave": "離開讀書房",
+      "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
+      "opt.sound": "換段時響一聲、震動", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
+      "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
+      "toast.done": "完成一顆番茄！休息 {m} 分鐘", "toast.focus": "休息結束，開始專注",
+      "toast.away": "你離開太久了，已經自動結束讀書房，之前的專注時間都有記下來",
+      "n.focusTitle": "開始專注", "n.focusBody": "{room}：{m} 分鐘，加油",
+      "n.breakTitle": "休息一下", "n.breakBody": "完成一顆番茄，休息 {m} 分鐘",
+      "st.todaymin": "今天專注分鐘", "st.todaypomo": "今天完成番茄", "st.streak": "連續讀書天數",
+      "st.week": "最近 7 天（分鐘）", "st.weektotal": "這 7 天一共專注 {m} 分鐘，完成 {p} 顆番茄",
+      "st.notes": "休息時留的話", "st.nonotes": "還沒有留言。下次休息時寫一句給自己吧。",
+      "st.privacy": "紀錄只存在這個瀏覽器裡，不會上傳。換手機或清除瀏覽資料就會不見。",
+      "st.clear": "清除我的所有紀錄", "st.clearconfirm": "要清除所有專注紀錄、留言和封測任務進度嗎？這個動作沒辦法復原。", "st.cleared": "已清除",
+      "beta.h": "封測任務", "beta.sub": "做完這兩件事，再回開達留下回饋",
+      "beta.t1": "加入一間讀書房", "beta.t2": "完成一顆番茄鐘（專注到最後）",
+      "beta.back": "回開達 Kaida 留回饋 →",
+      "foot.1": "番茄讀書會是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。",
+      "foot.2": "提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。",
+      "wd": "日,一,二,三,四,五,六"
+    },
+    en: {
+      "app.title": "Pomodoro Study Club",
+      "app.lede": "Join a quiet study room in one tap. Everyone in a room follows the same clock, so you focus and take breaks together. No sign-up.",
+      "tab.rooms": "Rooms", "tab.me": "My stats",
+      "rooms.how": "Rooms run on the clock: the Half-hour room starts every :00 and :30 (25 min focus, 5 min break), the Deep room starts every hour (50 min focus, 10 min break). Anyone opening a room at the same moment sees the same countdown.",
+      "room.hour.name": "Half-hour room", "room.hour.desc": "25 focus · 5 break · starts at :00 and :30",
+      "room.deep.name": "Deep room", "room.deep.desc": "50 focus · 10 break · starts every hour",
+      "room.solo.name": "Solo timer", "room.solo.desc": "25 focus · 5 break · starts when you tap",
+      "room.join": "Join", "room.joined": "You're in",
+      "live.focus": "Focusing, {t} left", "live.break": "On break, next round in {t}",
+      "live.solo": "Starts from 25:00 when you join",
+      "ph.focus": "Focus", "ph.break": "Break",
+      "s.nextFocus": "Next focus starts at {time}", "s.nextBreak": "Break at {time}",
+      "s.sync": "In sync with everyone in the {room}", "s.solo": "Your own timer",
+      "s.midjoin": "You joined mid-round, so this one won't count as a full pomodoro, but your focus minutes are still logged. Everyone starts fresh next round.",
+      "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
+      "s.noteph": "Finished chapter 3, exercises next round",
+      "s.notesave": "Save note", "s.notesaved": "Saved",
+      "s.leave": "Leave room",
+      "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
+      "opt.sound": "Chime and vibrate between phases", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
+      "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
+      "toast.done": "Pomodoro done! Take {m} minutes off", "toast.focus": "Break's over, time to focus",
+      "toast.away": "You were away a long time, so the room was closed. Your focus time was saved.",
+      "n.focusTitle": "Focus time", "n.focusBody": "{room}: {m} minutes, you got this",
+      "n.breakTitle": "Take a break", "n.breakBody": "One pomodoro done. {m} minute break",
+      "st.todaymin": "Focus min today", "st.todaypomo": "Pomodoros today", "st.streak": "Day streak",
+      "st.week": "Last 7 days (minutes)", "st.weektotal": "{m} focus minutes and {p} pomodoros in the last 7 days",
+      "st.notes": "Break notes", "st.nonotes": "No notes yet. Leave yourself one on your next break.",
+      "st.privacy": "Your stats stay in this browser and are never uploaded. They're gone if you switch phones or clear browser data.",
+      "st.clear": "Clear all my data", "st.clearconfirm": "Clear all focus stats, notes and beta task progress? This can't be undone.", "st.cleared": "Cleared",
+      "beta.h": "Beta tasks", "beta.sub": "Do these two things, then leave feedback on Kaida",
+      "beta.t1": "Join a study room", "beta.t2": "Finish one pomodoro (stay to the end)",
+      "beta.back": "Back to Kaida to leave feedback →",
+      "foot.1": "Pomodoro Study Club is one of Kaida's first beta apps. It's a plain web page with no account; your data stays in your browser.",
+      "foot.2": "Note: phones may pause the browser while locked. When you come back the countdown re-syncs to the clock and focus minutes are counted by real time.",
+      "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat"
+    }
+  });
+
+  var MIN = 60000;
+  var ROOMS = {
+    hour: { focus: 25, brk: 5, synced: true },
+    deep: { focus: 50, brk: 10, synced: true },
+    solo: { focus: 25, brk: 5, synced: false }
+  };
+  var MAX_AWAY = 3 * 60 * MIN; // 超過 3 小時沒回來就自動結束
+
+  var STORE = "kaida-pomodoro-v1";
+  var data = K.load(STORE, null) || {};
+  data.days = data.days || {};
+  data.notes = data.notes || [];
+  data.tasks = data.tasks || {};
+  data.opts = data.opts || { sound: true, wake: false, notify: false };
+  var session = data.session || null;
+  function persist() { data.session = session; K.save(STORE, data); }
+
+  // 以本地時間的午夜為基準，讓「整點」對齊使用者所在時區
+  function tzOffset(t) { return new Date(t).getTimezoneOffset() * MIN; }
+  function roomOrigin(id) { return id === "solo" && session ? session.origin : 0; }
+  function phaseAt(id, t, origin) {
+    var r = ROOMS[id], cyc = (r.focus + r.brk) * MIN;
+    var o = origin != null ? origin : (r.synced ? 0 : t);
+    var local = r.synced ? t - tzOffset(t) : t;
+    var el = ((local - o) % cyc + cyc) % cyc;
+    var cycStart = t - el;
+    var inFocus = el < r.focus * MIN;
+    return {
+      focus: inFocus,
+      start: inFocus ? cycStart : cycStart + r.focus * MIN,
+      end: inFocus ? cycStart + r.focus * MIN : cycStart + cyc,
+      cycStart: cycStart,
+      len: (inFocus ? r.focus : r.brk) * MIN
+    };
+  }
+  function fmt(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000)), m = Math.floor(s / 60);
+    return String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function clock(t) { var d = new Date(t); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+  function roomName(id) { return t("room." + id + ".name"); }
+
+  function addFocus(endT, ms, full) {
+    var k = K.dayKey(new Date(endT - 1));
+    var d = data.days[k] || (data.days[k] = { min: 0, pomo: 0 });
+    d.min = Math.round((d.min + ms / MIN) * 10) / 10;
+    if (full) { d.pomo += 1; data.tasks.t2 = true; }
+  }
+
+  // 把 session.credited 到 upTo 之間已經結束的專注段記進紀錄
+  function creditUntil(upTo) {
+    if (!session) return { finished: 0 };
+    var r = ROOMS[session.room], finished = 0, guard = 0;
+    var c = session.credited;
+    while (guard++ < 500) {
+      var p = phaseAt(session.room, c, roomOrigin(session.room));
+      var fStart = p.focus ? p.start : p.cycStart + (r.focus + r.brk) * MIN;
+      var fEnd = fStart + r.focus * MIN;
+      if (fEnd > upTo) break;
+      var segStart = Math.max(fStart, c, session.joinedAt);
+      var ms = fEnd - segStart;
+      if (ms > 0) {
+        var full = segStart <= fStart + 1000;
+        addFocus(fEnd, ms, full);
+        if (full) finished++;
+      }
+      c = fEnd;
+    }
+    session.credited = c;
+    return { finished: finished };
+  }
+
+  function join(id) {
+    K.unlockAudio();
+    var now = Date.now();
+    if (session) leave(true);
+    session = { room: id, joinedAt: now, credited: now, origin: id === "solo" ? now : 0, lastSeen: now };
+    data.tasks.t1 = true;
+    var p = phaseAt(id, now, roomOrigin(id));
+    session.wasFocus = p.focus;
+    session.midJoin = p.focus && now - p.start > 5000;
+    persist();
+    show("session");
+    applyWake();
+  }
+
+  function leave(silent) {
+    if (!session) return;
+    var now = Date.now();
+    creditUntil(now);
+    var p = phaseAt(session.room, now, roomOrigin(session.room));
+    if (p.focus) {
+      var segStart = Math.max(p.start, session.credited, session.joinedAt);
+      if (now > segStart) addFocus(now, now - segStart, false);
+    }
+    session = null;
+    persist();
+    releaseWake();
+    document.title = t("app.title");
+    if (!silent) show("rooms");
+  }
+
+  // 每秒更新
+  function tick() {
+    var now = Date.now();
+    if (session) {
+      if (now - session.lastSeen > MAX_AWAY) {
+        creditUntil(session.lastSeen + MAX_AWAY);
+        session.credited = Math.max(session.credited, session.lastSeen);
+        session = null; persist(); releaseWake();
+        K.toast(t("toast.away"));
+        show("rooms");
+        return;
+      }
+      var res = creditUntil(now);
+      var p = phaseAt(session.room, now, roomOrigin(session.room));
+      var r = ROOMS[session.room];
+      if (p.focus !== session.wasFocus) {
+        if (p.focus) {
+          session.midJoin = false;
+          if (data.opts.sound) K.chime("start");
+          K.toast(t("toast.focus"));
+          if (data.opts.notify) K.notify(t("n.focusTitle"), t("n.focusBody", { room: roomName(session.room), m: r.focus }));
+        } else {
+          if (data.opts.sound) K.chime("end");
+          K.toast(t("toast.done", { m: r.brk }));
+          if (data.opts.notify) K.notify(t("n.breakTitle"), t("n.breakBody", { m: r.brk }));
+        }
+        session.wasFocus = p.focus;
+      }
+      session.lastSeen = now;
+      if (res.finished || now % 10000 < 1000) persist();
+      renderSession(now, p);
+    }
+    if (current === "rooms") renderRooms(now);
+  }
+
+  var current = "rooms";
+  function show(v) {
+    if (v === "rooms" && session) v = "session";
+    current = v;
+    document.getElementById("view-rooms").hidden = v !== "rooms";
+    document.getElementById("view-session").hidden = v !== "session";
+    document.getElementById("view-me").hidden = v !== "me";
+    document.getElementById("tab-rooms").setAttribute("aria-selected", v !== "me");
+    document.getElementById("tab-me").setAttribute("aria-selected", v === "me");
+    if (v === "me") renderMe();
+    if (v === "rooms") renderRooms(Date.now());
+    if (v === "session") renderSession(Date.now());
+    renderTasks();
+  }
+
+  function renderRooms(now) {
+    var html = ["hour", "deep", "solo"].map(function (id) {
+      var live;
+      if (id === "solo") live = t("live.solo");
+      else {
+        var p = phaseAt(id, now, 0);
+        live = '<span class="dot ' + (p.focus ? "focus" : "break") + '"></span>' +
+          t(p.focus ? "live.focus" : "live.break", { t: "<b class=mono>" + fmt(p.end - now) + "</b>" });
+      }
+      return '<div class="card room"><div class="info"><h3>' + K.esc(roomName(id)) + '</h3>' +
+        '<div class="small muted">' + K.esc(t("room." + id + ".desc")) + '</div>' +
+        '<div class="live">' + live + '</div></div>' +
+        '<button class="btn" type="button" data-join="' + id + '">' + K.esc(t("room.join")) + '</button></div>';
+    }).join("");
+    var list = document.getElementById("room-list");
+    // 只換文字，避免每秒重建按鈕導致點擊失效
+    if (list.dataset.lang !== K.lang()) { list.innerHTML = html; list.dataset.lang = K.lang(); }
+    else {
+      var tmp = document.createElement("div"); tmp.innerHTML = html;
+      list.querySelectorAll(".live").forEach(function (el, i) { el.innerHTML = tmp.querySelectorAll(".live")[i].innerHTML; });
+    }
+  }
+
+  var CIRC = 2 * Math.PI * 88;
+  function renderSession(now, p) {
+    if (!session) return;
+    p = p || phaseAt(session.room, now, roomOrigin(session.room));
+    var r = ROOMS[session.room], left = p.end - now;
+    var ring = document.getElementById("ring");
+    ring.classList.toggle("break", !p.focus);
+    document.getElementById("ring-bar").setAttribute("stroke-dashoffset", String(CIRC * (1 - left / p.len)));
+    document.getElementById("ring-time").textContent = fmt(left);
+    document.getElementById("ring-phase").textContent = t(p.focus ? "ph.focus" : "ph.break");
+    ring.setAttribute("aria-label", t(p.focus ? "ph.focus" : "ph.break") + " " + fmt(left));
+    document.getElementById("s-room").textContent = r.synced ? t("s.sync", { room: roomName(session.room) }) : t("s.solo");
+    document.getElementById("s-next").textContent = p.focus ? t("s.nextBreak", { time: clock(p.end) }) : t("s.nextFocus", { time: clock(p.end) });
+    document.getElementById("mid-join").hidden = !(p.focus && session.midJoin);
+    document.getElementById("break-box").hidden = p.focus;
+    document.title = fmt(left) + " · " + t(p.focus ? "ph.focus" : "ph.break");
+  }
+
+  function streak() {
+    var n = 0, d = new Date();
+    if (!(data.days[K.dayKey(d)] || {}).min) d.setDate(d.getDate() - 1); // 今天還沒讀不算斷
+    while ((data.days[K.dayKey(d)] || {}).min > 0) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+
+  function renderMe() {
+    var today = data.days[K.dayKey()] || { min: 0, pomo: 0 };
+    document.getElementById("st-today-min").textContent = Math.floor(today.min);
+    document.getElementById("st-today-pomo").textContent = today.pomo;
+    document.getElementById("st-streak").textContent = streak();
+    var wd = t("wd").split(","), days = [], max = 1, totM = 0, totP = 0;
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var v = data.days[K.dayKey(d)] || { min: 0, pomo: 0 };
+      days.push({ d: d, v: v, today: i === 0 }); max = Math.max(max, v.min); totM += v.min; totP += v.pomo;
+    }
+    document.getElementById("week").innerHTML = days.map(function (x) {
+      return '<div class="col' + (x.today ? " today" : "") + '"><span class="v">' + Math.floor(x.v.min) + '</span>' +
+        '<div class="b" style="height:' + Math.round(x.v.min / max * 80) + '%"></div><span class="d">' + wd[x.d.getDay()] + '</span></div>';
+    }).join("");
+    document.getElementById("week-total").textContent = t("st.weektotal", { m: Math.floor(totM), p: totP });
+    var notes = data.notes.slice().reverse();
+    document.getElementById("notes").innerHTML = notes.length ? notes.map(function (n) {
+      var d = new Date(n.at);
+      return '<div class="note"><div class="when mono">' + K.dayKey(d) + " " + clock(n.at) + '</div><div>' + K.esc(n.text) + '</div></div>';
+    }).join("") : '<p class="small muted">' + K.esc(t("st.nonotes")) + '</p>';
+  }
+
+  function renderTasks() {
+    document.getElementById("beta-tasks").innerHTML = ["t1", "t2"].map(function (id) {
+      var done = !!data.tasks[id];
+      return '<li class="' + (done ? "done" : "") + '"><span class="tick">' + (done ? "✓" : "") + '</span><span class="txt">' + K.esc(t("beta." + id)) + '</span></li>';
+    }).join("");
+  }
+
+  // 螢幕常亮
+  var wakeLock = null;
+  function applyWake() {
+    if (!data.opts.wake || !session || !("wakeLock" in navigator)) return;
+    navigator.wakeLock.request("screen").then(function (w) { wakeLock = w; }).catch(function () {});
+  }
+  function releaseWake() { if (wakeLock) { wakeLock.release().catch(function () {}); wakeLock = null; } }
+
+  // 事件
+  document.getElementById("room-list").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-join]"); if (b) join(b.dataset.join);
+  });
+  document.getElementById("leave").addEventListener("click", function () {
+    var p = phaseAt(session.room, Date.now(), roomOrigin(session.room));
+    if (p.focus && !confirm(t("s.leaveconfirm"))) return;
+    leave();
+  });
+  document.getElementById("tab-rooms").addEventListener("click", function () { show("rooms"); });
+  document.getElementById("tab-me").addEventListener("click", function () { if (session) creditUntil(Date.now()); show("me"); });
+  document.getElementById("note-save").addEventListener("click", function () {
+    var el = document.getElementById("note-text"), v = el.value.trim();
+    if (!v) return;
+    data.notes.push({ at: Date.now(), text: v.slice(0, 140) });
+    if (data.notes.length > 200) data.notes.shift();
+    el.value = ""; persist(); K.toast(t("s.notesaved"));
+  });
+  document.getElementById("clear").addEventListener("click", function () {
+    if (!confirm(t("st.clearconfirm"))) return;
+    data.days = {}; data.notes = []; data.tasks = {};
+    if (session) data.tasks.t1 = true;
+    persist(); renderMe(); renderTasks(); K.toast(t("st.cleared"));
+  });
+
+  var optSound = document.getElementById("opt-sound"), optWake = document.getElementById("opt-wake"), optNotify = document.getElementById("opt-notify");
+  optSound.checked = data.opts.sound; optWake.checked = data.opts.wake; optNotify.checked = data.opts.notify && "Notification" in window && Notification.permission === "granted";
+  optSound.addEventListener("change", function () { data.opts.sound = optSound.checked; persist(); if (optSound.checked) K.chime("start"); });
+  if (!("wakeLock" in navigator)) document.getElementById("row-wake").hidden = true;
+  optWake.addEventListener("change", function () { data.opts.wake = optWake.checked; persist(); if (optWake.checked) applyWake(); else releaseWake(); });
+  if (!("Notification" in window)) document.getElementById("row-notify").hidden = true;
+  optNotify.addEventListener("change", function () {
+    if (!optNotify.checked) { data.opts.notify = false; persist(); return; }
+    Notification.requestPermission().then(function (perm) {
+      data.opts.notify = perm === "granted"; optNotify.checked = data.opts.notify; persist();
+      if (perm !== "granted") K.toast(t("opt.notifydenied"));
+    });
+  });
+  ["opt-sound", "opt-wake", "opt-notify"].forEach(function (id) {
+    var inp = document.getElementById(id);
+    inp.setAttribute("aria-label", inp.closest(".opt").querySelector("span").textContent);
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") { tick(); applyWake(); }
+  });
+
+  K.mountTopbar(document.getElementById("topbar"));
+  K.applyStatic();
+  K.onLang(function () { document.getElementById("room-list").dataset.lang = ""; show(current); });
+
+  if (session) {
+    // 重新整理後回到房間；離開太久會在 tick 裡自動結束
+    session.wasFocus = phaseAt(session.room, session.lastSeen || Date.now(), roomOrigin(session.room)).focus;
+    show("session");
+  } else show("rooms");
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>

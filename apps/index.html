@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>開達 Kaida 封測作品</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="shared/kaida-app.css">
+<style>
+  .app { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+  .app img { flex: none; border-radius: 14px; }
+  .app h3 { margin: 0; font-size: 18px; }
+  .app p { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar" id="topbar"></header>
+  <h1>封測作品</h1>
+  <p class="lede">開達 Kaida 第一批可以直接在手機瀏覽器試用的作品。試完記得回開達留下回饋。</p>
+  <a class="card app" href="pomodoro/"><img src="pomodoro/logo.svg" alt="" width="64" height="64"><div><h3>番茄讀書會</h3><p>跟同一時間打開的人一起開 25 分鐘番茄鐘</p></div></a>
+  <a class="card app" href="meds/"><img src="meds/logo.svg" alt="" width="64" height="64"><div><h3>吃藥了沒</h3><p>幫長輩記吃藥，逾時一鍵通知家人</p></div></a>
+</div>
+<script src="shared/kaida-app.js"></script>
+<script>
+  Kaida.mountTopbar(document.getElementById("topbar"));
+  document.querySelector(".brand").setAttribute("href", "../");
+  Kaida.applyStatic();
+</script>
+</body>
+</html>

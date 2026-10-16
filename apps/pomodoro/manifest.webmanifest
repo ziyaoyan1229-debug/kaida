@@ -1,0 +1,13 @@
+{
+  "name": "番茄讀書會",
+  "short_name": "番茄讀書會",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2ece1",
+  "theme_color": "#f2ece1",
+  "icons": [
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
