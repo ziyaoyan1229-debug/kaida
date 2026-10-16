@@ -26,7 +26,7 @@
     L.skin = Math.max(0, Math.min(2, +look.skin || 0)); L.hair = Math.max(0, Math.min(3, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
-      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
+      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
     };
   }
 
@@ -47,7 +47,7 @@
     this.code = opts.code; this.meId = opts.me.id; this.members = {}; this.meta = null;
     var base = PREFIX + opts.code;
     var mine = base + "/m/" + opts.me.id;
-    this.me = { name: opts.me.name, look: opts.me.look, act: opts.me.act, joined: Date.now(), ts: Date.now() };
+    this.me = { name: opts.me.name, look: opts.me.look, act: opts.me.act, av: opts.me.av, fl: opts.me.fl, up: opts.me.up, joined: Date.now(), ts: Date.now() };
     return new Promise(function (resolve) {
       var done = false;
       function finish(r) { if (!done) { done = true; resolve(r); } }
@@ -86,6 +86,7 @@
             if (opts.create) {
               if (alive) { self.leave(); finish({ ok: false, reason: "taken" }); return; }
               meta = { focus: opts.cfg.focus, brk: opts.cfg.brk, origin: now, created: now, test: !!opts.cfg.test };
+              if (opts.cfg.pub) { meta.pub = 1; meta.mode = String(opts.cfg.pub).slice(0, 8); }
               c.publish(base + "/meta", JSON.stringify(meta), { retain: true, qos: 1 });
               self.meta = meta;
             } else {
@@ -95,6 +96,7 @@
               meta.created = now;
               c.publish(base + "/meta", JSON.stringify(meta), { retain: true, qos: 1 });
             }
+            self.lobby = meta.pub && meta.mode ? PREFIX + "lobby/" + meta.mode + "/" + opts.code : null;
             self.publishMe();
             self.hb = setInterval(function () { self.publishMe(); }, 30000);
             finish({ ok: true, meta: meta });
@@ -115,6 +117,8 @@
     var mine = PREFIX + this.code + "/m/" + this.meId;
     this.members[this.meId] = cleanMember(this.meId, this.me);
     this.client.publish(mine, JSON.stringify(this.me), { retain: true, qos: 1 });
+    // 公開房間：順便更新大廳裡的人數，讓「直接開始」的人配得到
+    if (this.lobby) this.client.publish(this.lobby, JSON.stringify({ n: this.fresh().length, ts: Date.now() }), { retain: true, qos: 1 });
   };
 
   Room.prototype.leave = function () {
@@ -122,12 +126,41 @@
     var c = this.client; this.client = null;
     if (c) {
       try {
+        var self = this, alone = !this.fresh().some(function (m) { return m.id !== self.meId; });
+        if (c.connected && this.lobby) c.publish(this.lobby, alone ? "" : JSON.stringify({ n: this.fresh().length - 1, ts: Date.now() }), { retain: true, qos: 1 });
         if (c.connected && this.code && this.meId) c.publish(PREFIX + this.code + "/m/" + this.meId, "", { retain: true, qos: 1 }, function () { c.end(true); });
         else c.end(true);
       } catch (e) {}
     }
-    this.me = null;
+    this.me = null; this.lobby = null;
   };
+
+  /* 直接開始：看大廳裡同一種時間、還有空位的公開房間，人多的排前面 → Promise<[code]> */
+  function findPublic(mode) {
+    if (!window.mqtt) return Promise.resolve(null);
+    return new Promise(function (resolve) {
+      var found = {}, c, done = false;
+      function finish(r) { if (done) return; done = true; try { c && c.end(true); } catch (e) {} resolve(r); }
+      try { c = window.mqtt.connect(BROKER, { clientId: "kl_" + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 9000, reconnectPeriod: 0 }); }
+      catch (e) { finish(null); return; }
+      var timer = setTimeout(function () { finish(null); }, 12000);
+      var base = PREFIX + "lobby/" + mode + "/";
+      c.on("message", function (topic, payload) {
+        var m = parse(payload), code = topic.slice(base.length);
+        if (/^\d{4}$/.test(code) && m && m.n > 0 && m.n < MAX && Date.now() - (+m.ts || 0) < 90 * 1000) found[code] = m.n; else delete found[code];
+      });
+      c.on("connect", function () {
+        c.subscribe(base + "+", { qos: 1 }, function (err) {
+          if (err) { clearTimeout(timer); finish(null); return; }
+          setTimeout(function () {
+            clearTimeout(timer);
+            finish(Object.keys(found).sort(function (a, b) { return found[b] - found[a] || Math.random() - 0.5; }));
+          }, 1500);
+        });
+      });
+      c.on("error", function () { clearTimeout(timer); finish(null); });
+    });
+  }
 
   /* 好友上線狀態與聊天：每個人有自己的狀態頻道和收件匣
      u/<id>/st  保留訊息 {focus, ts}；斷線時伺服器自動改成 {off:1}
@@ -189,5 +222,5 @@
   };
   Social.prototype.online = function () { return !!(this.client && this.client.connected); };
 
-  window.KaidaNet = { Room: Room, Social: Social, MAX: MAX, BROKER: function () { return BROKER; } };
+  window.KaidaNet = { Room: Room, Social: Social, findPublic: findPublic, MAX: MAX, BROKER: function () { return BROKER; } };
 })();

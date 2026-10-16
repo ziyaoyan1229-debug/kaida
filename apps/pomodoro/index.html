@@ -166,6 +166,10 @@
   .cats::-webkit-scrollbar { display: none; }
   .cats button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; min-height: 38px; cursor: pointer; font-size: 14px; }
   .cats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+  .flags { display: flex; gap: 4px; overflow-x: auto; padding: 4px 0 8px; margin-bottom: 8px; scrollbar-width: none; }
+  .flags::-webkit-scrollbar { display: none; }
+  .flags button { flex: 0 0 auto; font-size: 24px; line-height: 1; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
+  .flags button[aria-pressed="true"] { border: 2px solid var(--signal); background: var(--sunk); }
   .welcome { border: 2px solid var(--signal); }
   .welcome h3 { margin: 0 0 4px; font-size: 18px; }
   .mini-win { padding: 0; overflow: hidden; }
@@ -215,7 +219,7 @@
   <!-- 進行中的讀書房 -->
   <section id="view-session" hidden>
     <div class="s-head"><div><span class="small muted" id="s-label"></span><span class="code" id="s-code"></span></div>
-      <div style="text-align:right;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">退出</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button><span class="net" id="s-net"></span></div></div>
+      <div style="text-align:right;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button><span class="net" id="s-net"></span></div></div>
     <div class="scene-wrap"><div class="k3" id="scene3d" hidden><span class="k3-hint" data-i18n="s.drag">拖曳可以轉視角</span></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg></div>
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
@@ -318,7 +322,7 @@
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
-      "s.leave": "離開讀書房", "s.exit": "← 退出", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
+      "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "番茄鐘還在跑，隨時可以回去。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
@@ -342,7 +346,7 @@
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.private": "私人房間", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -354,7 +358,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以回「角色」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.vol": "音量", "s.st.up": "起來走走", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以回「角色」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.vol": "音量", "s.st.up": "起來走走", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -402,7 +406,7 @@
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
-      "s.leave": "Leave room", "s.exit": "← Exit", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
+      "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "The timer keeps running. Come back anytime.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
       "opt.sound": "Chime and vibrate between phases", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
@@ -426,7 +430,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.private": "Private room", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -438,7 +442,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits on the Avatar tab anytime.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.vol": "Volume", "s.st.up": "Walking around", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits on the Avatar tab anytime.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.vol": "Volume", "s.st.up": "Walking around", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -562,7 +566,7 @@
     net.onChange = function () { if (current === "session") renderScene(true); };
     net.onStatus = function (st) { netStatus = st; if (current === "session") renderNet(); };
   }
-  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅" }; }
+  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag }; }
   function needName() {
     if (data.me.name) return false;
     K.toast(t("r.needName")); show("char"); return true;
@@ -585,16 +589,37 @@
   }
 
   var busy = false;
-  function openRoom(create, code, tries) {
+  // 直接開始：先找同時間、有空位的公開房間，一間一間試；都沒有就自己開一間公開的
+  function quickMatch() {
     if (busy || needName()) return;
     if (!net || !window.mqtt) { K.toast(t("r.err.offline")); return; }
-    busy = true; K.toast(t("r.connecting"));
+    busy = true; K.toast(t("r.matching"));
+    window.KaidaNet.findPublic(data.mode).then(function (codes) {
+      busy = false;
+      if (codes === null) { K.toast(t("r.err.offline")); return; }
+      (function next(i) {
+        if (i >= codes.length) { openRoom(true, null, 0, true); return; }
+        busy = true;
+        net.join({ code: codes[i], create: false, me: meInfo(), cfg: MODES[data.mode] }).then(function (res) {
+          busy = false;
+          if (!res.ok) { next(i + 1); return; }
+          K.toast(t("r.matched"));
+          var m = res.meta;
+          startSession("room", { focus: +m.focus || 25, brk: +m.brk || 5, test: !!m.test }, +m.origin || Date.now(), codes[i]);
+        });
+      })(0);
+    });
+  }
+  function openRoom(create, code, tries, pub) {
+    if (busy || needName()) return;
+    if (!net || !window.mqtt) { K.toast(t("r.err.offline")); return; }
+    busy = true; K.toast(t(pub ? "r.matchNew" : "r.connecting"));
     if (create) code = String(Math.floor(1000 + Math.random() * 9000));
-    var cfg = MODES[data.mode];
+    var cfg = Object.assign({}, MODES[data.mode], pub ? { pub: data.mode } : {});
     net.join({ code: code, create: create, me: meInfo(), cfg: cfg }).then(function (res) {
       busy = false;
       if (!res.ok) {
-        if (res.reason === "taken" && create && (tries || 0) < 3) return openRoom(true, null, (tries || 0) + 1);
+        if (res.reason === "taken" && create && (tries || 0) < 3) return openRoom(true, null, (tries || 0) + 1, pub);
         K.toast(t("r.err." + res.reason)); return;
       }
       var m = res.meta;
@@ -604,11 +629,11 @@
 
   /* 模擬室友 */
   var BOTS = [
-    { id: "bot1", name: "小熊", act: "pc", look: { g: "girl", skin: 0, hair: 1, top: "hoodie", face: "glasses", style: "bob" } },
-    { id: "bot2", name: "Mia", act: "draw", look: { g: "girl", skin: 1, hair: 2, top: "sweater", hat: "beret", style: "long", pet: "bunny" } },
-    { id: "bot3", name: "阿凱", act: "homework", look: { g: "boy", skin: 2, hair: 3, top: "stripe", ears: "phones", style: "spiky", back: "backpack" } },
-    { id: "bot4", name: "柚子", act: "read", look: { g: "girl", skin: 0, hair: 0, top: "tee-pink", hat: "straw", neck: "scarf" } },
-    { id: "bot5", name: "小林", act: "pc", look: { g: "boy", skin: 1, hair: 0, top: "tee-blue", hat: "beanie", pet: "cat" } }
+    { id: "bot1", fl: "TW", name: "小熊", act: "pc", look: { g: "girl", skin: 0, hair: 1, top: "hoodie", face: "glasses", style: "bob" } },
+    { id: "bot2", fl: "SG", name: "Mia", act: "draw", look: { g: "girl", skin: 1, hair: 2, top: "sweater", hat: "beret", style: "long", pet: "bunny" } },
+    { id: "bot3", fl: "HK", name: "阿凱", act: "homework", look: { g: "boy", skin: 2, hair: 3, top: "stripe", ears: "phones", style: "spiky", back: "backpack" } },
+    { id: "bot4", fl: "JP", name: "柚子", act: "read", look: { g: "girl", skin: 0, hair: 0, top: "tee-pink", hat: "straw", neck: "scarf" } },
+    { id: "bot5", fl: "MY", name: "小林", act: "pc", look: { g: "boy", skin: 1, hair: 0, top: "tee-blue", hat: "beanie", pet: "cat" } }
   ];
   var sim = {
     says: {}, up: {}, timer: null,
@@ -735,24 +760,27 @@
     renderTasks();
   }
 
-  var pendingCode = "", roomTab = "join";
+  var pendingCode = "", roomTab = "join", awayFrom = null;
   function renderRooms() {
     var modes = ["std", "deep", "test"].map(function (m) {
       return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m)).replace("\n", "<br>") + '</button>';
     }).join("");
-    var tabs = ["join", "private"].map(function (k) {
+    var tabs = ["join", "quick", "private"].map(function (k) {
       return '<button type="button" role="tab" data-rtab="' + k + '" aria-selected="' + (roomTab === k) + '">' + K.esc(t("r.tab." + k)) + '</button>';
     }).join("");
     var pane = roomTab === "join"
       ? '<p class="small muted">' + K.esc(t("r.joinP")) + '</p><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '">'
-      : '<p class="small muted" style="margin:0">' + K.esc(t("r.createP")) + '</p>';
+      : '<p class="small muted" style="margin:0">' + K.esc(t(roomTab === "quick" ? "r.quickP" : "r.createP")) + '</p>';
+    var awayName = awayFrom ? (awayFrom.kind === "room" ? t("s.label.room") + " " + awayFrom.code : t(awayFrom.kind === "sim" ? "s.label.sim" : "s.label.solo")) : "";
     document.getElementById("room-list").innerHTML =
+      (awayFrom ? '<div class="card room-card welcome"><h3>' + K.esc(t("s.away", { r: awayName })) + '</h3><p class="small muted">' + K.esc(t("s.awayP")) + '</p>' +
+        '<button class="btn block start-btn" type="button" data-act="back">' + K.esc(t("s.back")) + '</button></div>' : "") +
       '<div class="card room-card mini-win"><div class="win-tabs" role="tablist">' + tabs + '</div><div class="win-pane">' + pane + '</div></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.doH")) + '</h3><p class="small muted">' + K.esc(t("r.doP")) + '</p><div class="seg acts">' +
         S.ACTS.map(function (a) { return '<button type="button" data-pickact="' + a + '" aria-pressed="' + (data.act === a) + '">' + K.esc(t("act." + a)) + '</button>'; }).join("") + '</div></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.timeH")) + '</h3>' +
         (roomTab === "join" ? '<p class="small muted">' + K.esc(t("r.timeJoin")) + '</p>' : '<div class="seg">' + modes + '</div>') +
-        '<button class="btn block start-btn" type="button" data-act="' + (roomTab === "join" ? "join" : "create") + '">' + K.esc(t("r.start")) + '</button></div>' +
+        '<button class="btn block start-btn" type="button" data-act="' + (roomTab === "join" ? "join" : roomTab === "quick" ? "quick" : "create") + '">' + K.esc(t("r.start")) + '</button></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.simH")) + '</h3><p class="small muted">' + K.esc(t("r.simP")) + '</p>' +
         '<button class="btn ghost block" type="button" data-act="sim">' + K.esc(t("r.sim")) + '</button></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.soloH")) + '</h3><p class="small muted">' + K.esc(t("r.soloP")) + '</p>' +
@@ -761,18 +789,18 @@
 
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { id: data.me.id, name: data.me.name || t("f.you"), look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
+        else list.push({ id: m.id, name: m.name, fl: m.fl, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
       list.push(me);
       if (session.kind === "sim") BOTS.forEach(function (b) {
         var sy = sim.says[b.id];
-        list.push({ id: b.id, name: b.name, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "" });
+        list.push({ id: b.id, name: b.name, fl: b.fl, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "" });
       });
     }
     return list.slice(0, 6);
@@ -877,7 +905,9 @@
       '<div style="flex:1;min-width:0"><label class="field"><span>' + K.esc(t("c.name")) + '</span><input type="text" id="c-name" maxlength="16" value="' + K.esc(data.me.name) + '" placeholder="' + K.esc(t("f.nameph")) + '"></label>' +
       '<div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
       '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("c.woodP")) + '</p></div>';
-    html += '<div class="card"><span class="small muted">' + K.esc(t("c.gender")) + '</span><div class="seg">' +
+    html += '<div class="card"><span class="small muted">' + K.esc(t("c.flag")) + '</span><div class="flags">' +
+      FLAGS.map(function (c) { return '<button type="button" data-flag="' + c + '" aria-pressed="' + (data.me.flag === c) + '" aria-label="' + c + '">' + S.flag(c) + '</button>'; }).join("") + '</div>' +
+      '<span class="small muted">' + K.esc(t("c.gender")) + '</span><div class="seg">' +
       ["girl", "boy"].map(function (g) { return '<button type="button" data-g="' + g + '" aria-pressed="' + (L.g === g) + '">' + K.esc(t("c." + g)) + '</button>'; }).join("") + '</div>' +
       '<span class="small muted">' + K.esc(t("c.skin")) + '</span><div class="swatches">' + S.SKINS.map(function (c, i) { return '<button type="button" data-skin="' + i + '" aria-pressed="' + (L.skin === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.skin")) + ' ' + (i + 1) + '"></button>'; }).join("") + '</div>' +
       '<span class="small muted">' + K.esc(t("c.hair")) + '</span><div class="swatches">' + S.HAIRS.map(function (c, i) { return '<button type="button" data-hair="' + i + '" aria-pressed="' + (L.hair === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.hair")) + ' ' + (i + 1) + '"></button>'; }).join("") + '</div>' +
@@ -902,7 +932,7 @@
     el.innerHTML = html;
   }
   function syncMe() {
-    if (session && session.kind === "room" && net) net.publishMe({ name: data.me.name, look: data.look, act: data.act });
+    if (session && session.kind === "room" && net) net.publishMe({ name: data.me.name, look: data.look, act: data.act, fl: data.me.flag });
   }
   document.getElementById("view-char").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
@@ -921,6 +951,7 @@
       data.wood -= bi.price; data.owned.push(bi.id);
       if (bi.slot === "top") L.top = bi.id; else L[bi.slot] = bi.id;
       K.toast(t("c.bought", { n: K.lang() === "en" ? bi.en : bi.zh }));
+    } else if (ds.flag) { data.me.flag = ds.flag;
     } else if (ds.act === "save-char") {
       if (!data.me.name) { K.toast(t("f.needName")); document.getElementById("c-name").focus(); return; }
       var first = !data.me.named; data.me.named = true;
@@ -999,6 +1030,12 @@
   var AVATARS = ["🍅", "📚", "✏️", "🎧", "☕", "🌱", "🌙", "🐱", "🐶", "🦊", "🐼", "🐧", "🦉", "🐢", "🚀", "🔥"];
   data.me = data.me || { id: Math.random().toString(36).slice(2, 10), name: "", avatar: "🍅" };
   if (data.me.name) data.me.named = true;
+  var FLAGS = ["TW", "HK", "MO", "CN", "SG", "MY", "JP", "KR", "TH", "VN", "PH", "ID", "IN", "US", "CA", "GB", "IE", "FR", "DE", "ES", "IT", "NL", "SE", "AU", "NZ", "BR", "MX"];
+  if (!data.me.flag) {
+    var lg = (navigator.language || "").toUpperCase(), rg = (lg.match(/-([A-Z]{2})\b/) || [])[1];
+    if (!rg && /^ZH-HANT/.test(lg)) rg = "TW";
+    data.me.flag = FLAGS.indexOf(rg) >= 0 ? rg : "TW";
+  }
   data.friends = data.friends || {};
   data.cheers = data.cheers || [];
   var draftAvatar = data.me.avatar;
@@ -1119,7 +1156,7 @@
     var m = sceneMembers().filter(function (x) { return x.id === e.detail.id; })[0]; if (!m) return;
     var card = document.getElementById("modal-card");
     card.innerHTML = '<div style="display:flex;justify-content:center"><svg viewBox="-60 -100 120 116" width="120" height="116" aria-hidden="true">' + S.preview(m.look) + '</svg></div>' +
-      '<p class="msg" style="margin:4px 0">' + K.esc(m.name) + (m.me ? ' <span class="small muted">(' + K.esc(t("p.self")) + ')</span>' : "") + '</p>' +
+      '<p class="msg" style="margin:4px 0">' + (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(m.name) + (m.me ? ' <span class="small muted">(' + K.esc(t("p.self")) + ')</span>' : "") + '</p>' +
       '<p class="small muted" style="margin:0">' + K.esc(t("p.now")) + '：' + K.esc(memberStatus(m)) + '</p>' +
       '<div class="btn-row" style="justify-content:center;margin-top:16px">' +
       (m.me ? "" : data.friends[m.id] ? '<button class="btn" type="button" data-pchat="' + K.esc(m.id) + '">' + K.esc(t("p.chat")) + '</button>' : '<button class="btn" type="button" data-padd="' + K.esc(m.id) + '">' + K.esc(t("p.add")) + '</button>') +
@@ -1328,11 +1365,19 @@
     if (b.dataset.rtab) { var jc = document.getElementById("join-code"); if (jc) pendingCode = jc.value; roomTab = b.dataset.rtab; renderRooms(); return; }
     if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     var a = b.dataset.act;
+    if (a === "back" && awayFrom) {
+      var af = awayFrom; awayFrom = null;
+      if (af.kind === "room") { pendingCode = af.code; openRoom(false, af.code); }
+      else startSession(af.kind, Object.assign({}, MODES[af.mode] || MODES[data.mode], af.cfg), af.origin);
+      return;
+    }
+    if (a === "join" || a === "create" || a === "quick" || a === "sim" || a === "solo") awayFrom = null;
     if (a === "join") {
       var code = (document.getElementById("join-code").value || "").replace(/\D/g, "");
       if (code.length !== 4) { K.toast(t("r.err.code")); return; }
       pendingCode = code; openRoom(false, code);
     } else if (a === "create") openRoom(true);
+    else if (a === "quick") quickMatch();
     else if (a === "sim") { if (needName()) return; var mc = MODES[data.mode]; startSession("sim", mc, Date.now()); }
     else if (a === "solo") { var mc2 = MODES[data.mode]; startSession("solo", mc2, Date.now()); }
   });
@@ -1343,7 +1388,12 @@
     if (e.target.closest("[data-up]")) { setUp(!session.up); return; }
     var b = e.target.closest("[data-say]"); if (b) say(b.dataset.say);
   });
-  document.getElementById("s-exit").addEventListener("click", function () { document.getElementById("leave").click(); });
+  // 暫離：先離開房間，但記住是哪一間，讀書房頁最上面可以一鍵回去
+  document.getElementById("s-exit").addEventListener("click", function () {
+    if (!session) return;
+    awayFrom = { kind: session.kind, code: session.code || "", mode: data.mode, cfg: session.cfg, origin: session.origin };
+    leave();
+  });
   document.getElementById("s-invite").addEventListener("click", function () {
     if (!session || !session.code) return;
     shareLink(t("s.inviteText", { code: session.code }), location.origin + location.pathname + "#room=" + session.code);

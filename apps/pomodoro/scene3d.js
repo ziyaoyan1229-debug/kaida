@@ -887,12 +887,16 @@ function pickSpot(id) {
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
+function tagText(m) {
+  const f = /^[A-Z]{2}$/.test(m.fl || "") ? String.fromCodePoint(0x1F1E6 + m.fl.charCodeAt(0) - 65, 0x1F1E6 + m.fl.charCodeAt(1) - 65) + " " : "";
+  return f + m.name;
+}
 function addChar(m, seat) {
   const c = makeChar(m.look);
   scene.add(c.root);
   if (c.cat) scene.add(c.cat);
   c.root.userData.cid = m.id;
-  const tag = document.createElement("div"); tag.className = "k3-tag" + (m.me ? " me" : ""); tag.textContent = m.name;
+  const tag = document.createElement("div"); tag.className = "k3-tag" + (m.me ? " me" : ""); tag.textContent = tagText(m);
   tag.addEventListener("click", () => window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id: st.m.id } })));
   const bub = document.createElement("div"); bub.className = "k3-bubble"; bub.hidden = true;
   overlay.appendChild(tag); overlay.appendChild(bub);
@@ -925,7 +929,7 @@ function update(members) {
     if (st && st.lookKey !== lk) { const keep = { pos: st.pos.clone(), ry: st.ry, mode: st.mode, spot: st.spot }; removeChar(m.id); st = addChar(m, i); if (keep.mode !== "sit" || m.up) { st.pos.copy(keep.pos); st.ry = keep.ry; st.mode = keep.mode === "walk" ? "idle" : keep.mode; st.spot = keep.spot; if (keep.spot >= 0) reserved[keep.spot] = m.id; } }
     if (!st) st = addChar(m, i);
     const wasUp = st.m.up;
-    st.m = m; st.tag.textContent = m.name;
+    st.m = m; st.tag.textContent = tagText(m);
     if (st.seat !== i) { st.seat = i; if (!m.up) { const p = seatPos(i); walkTo(st, p, "sit"); } }
     if (m.up && !wasUp) {
       // 起身：從椅子後面站起來，走去一個地方
