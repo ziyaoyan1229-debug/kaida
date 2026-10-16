@@ -287,6 +287,18 @@
   .shop .it b { display: block; font-size: 14px; font-weight: 600; }
   .shop .it .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; margin-top: 6px; width: 100%; }
   .shop .it.on { border: 2px solid var(--signal); }
+  /* 寬螢幕（手機橫放、平板、電腦）：版面放寬，房間裡畫面在左、控制在右 */
+  @media (min-width: 700px) { .wrap { max-width: 720px; } }
+  @media (min-width: 640px) and (orientation: landscape), (min-width: 1000px) {
+    body.in-room .wrap { max-width: 1280px; }
+    .s-body { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
+    .s-body .scene-wrap { margin: 0; position: sticky; top: var(--rb-h, 72px); border-radius: 14px; overflow: hidden; }
+    .s-body .k3 { aspect-ratio: auto; height: calc(100vh - var(--rb-h, 72px) - 16px); height: calc(100dvh - var(--rb-h, 72px) - 16px); min-height: 260px; max-height: none; }
+    .s-side { min-width: 0; }
+    .s-side > .music { margin-top: 0; }
+    .s-side .timer-row { gap: 10px; }
+    .s-side .timer-row .ring { width: 104px; height: 104px; }
+  }
 </style>
 </head>
 <body>
@@ -322,7 +334,9 @@
         <div class="rb-room"><span id="s-label"></span><span class="code" id="s-code"></span><span class="net" id="s-net"></span></div></div>
       <div class="rb-acts"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button></div>
     </div>
+    <div class="s-body">
     <div class="scene-wrap"><div class="k3" id="scene3d" hidden><span class="k3-hint" data-i18n="s.drag">拖曳可以轉視角</span></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg></div>
+    <div class="s-side">
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
     <div class="says" id="says"></div>
@@ -357,6 +371,7 @@
     </div>
 
     <button class="btn ghost block" id="leave" type="button" data-i18n="s.leave">離開讀書房</button>
+    </div></div>
   </section>
 
   <section id="view-char" hidden></section>
@@ -1887,6 +1902,8 @@
 
   K.mountTopbar(document.getElementById("topbar"));
   // 語言切換放在個人設定旁邊
+  // 寬螢幕時，房間畫面黏在房間列下方，高度扣掉房間列
+  (function () { var rb = document.querySelector(".roombar"); if (!rb || !window.ResizeObserver) return; new ResizeObserver(function () { document.documentElement.style.setProperty("--rb-h", (rb.offsetHeight + 10) + "px"); }).observe(rb); })();
   (function () { var lb = document.getElementById("k-lang"), chip = document.getElementById("tab-char"); if (lb && chip) chip.parentNode.insertBefore(lb, chip); })();
   K.applyStatic();
   K.onLang(function () { lastSig = ""; show(current); updateBadge(); });
