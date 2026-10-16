@@ -154,7 +154,9 @@
           if (err) { clearTimeout(timer); finish(null); return; }
           setTimeout(function () {
             clearTimeout(timer);
-            finish(Object.keys(found).sort(function (a, b) { return found[b] - found[a] || Math.random() - 0.5; }));
+            var list = Object.keys(found).sort(function (a, b) { return found[b] - found[a] || Math.random() - 0.5; });
+            list.counts = found;
+            finish(list);
           }, 1500);
         });
       });
