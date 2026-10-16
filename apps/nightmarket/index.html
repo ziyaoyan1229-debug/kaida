@@ -57,6 +57,7 @@
     <ol class="list" id="list"></ol>
     <footer class="foot">
       <p id="sourceNote"></p>
+      <p class="credit">縣市界線：<a href="https://data.gov.tw/dataset/7442" target="_blank" rel="noopener">內政部國土測繪中心</a>（政府資料開放授權條款）</p>
       <p class="credit osm-credit">地圖 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者 · <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a></p>
     </footer>
   </section>
@@ -108,7 +109,12 @@
     <h2 id="sName"></h2>
     <p class="s-rating" id="sRating"></p>
     <p class="s-addr" id="sAddr"></p>
-    <div class="photos" id="sPhotos" hidden></div>
+    <div class="gallery" id="sGallery" hidden>
+      <div class="photos" id="sPhotos"></div>
+      <button class="g-nav prev" id="gPrev" type="button" aria-label="上一張">‹</button>
+      <button class="g-nav next" id="gNext" type="button" aria-label="下一張">›</button>
+      <span class="g-count" id="gCount"></span>
+    </div>
     <h3 data-i18n="reviewsTitle">饕客評論</h3>
     <ul class="reviews" id="sReviews"></ul>
     <div class="d-actions">
@@ -140,6 +146,7 @@
 
 <script src="config.js"></script>
 <script src="vendor/leaflet.js"></script>
+<script src="taiwan-counties.js"></script>
 <script src="map-leaflet.js"></script>
 <script src="map-google.js"></script>
 <script src="data.js"></script>

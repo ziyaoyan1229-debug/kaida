@@ -87,30 +87,96 @@
   window.NMGoogleMap = async function (el, opts) {
     var g = window.google.maps;
     var mapsLib = await g.importLibrary("maps");
-    var markerLib = await g.importLibrary("marker");
     var placesLib = await g.importLibrary("places");
     var Place = placesLib.Place;
 
+    // 自訂 HTML 標記（OverlayView）：不需要地圖 ID，所以可以自己決定地圖配色
+    function HtmlMarker(o) {
+      this._pos = o.position; this.content = o.content; this._z = o.zIndex || 0; this.center = !!o.center;
+      this.content.style.position = "absolute";
+      if (o.title) this.content.title = o.title;
+      var self = this;
+      this.content.addEventListener("click", function (e) { e.stopPropagation(); (self._click || []).forEach(function (f) { f(); }); });
+      if (o.map) this.setMap(o.map);
+    }
+    HtmlMarker.prototype = new g.OverlayView();
+    HtmlMarker.prototype.onAdd = function () { this.getPanes().overlayMouseTarget.appendChild(this.content); };
+    HtmlMarker.prototype.onRemove = function () { this.content.remove(); };
+    HtmlMarker.prototype.draw = function () {
+      var p = this.getProjection().fromLatLngToDivPixel(new g.LatLng(this._pos.lat, this._pos.lng));
+      if (!p) return;
+      this.content.style.left = p.x + "px"; this.content.style.top = p.y + "px";
+      this.content.style.transform = this.center ? "translate(-50%,-50%)" : "translate(-50%,-100%)";
+      this.content.style.zIndex = this._z;
+    };
+    HtmlMarker.prototype.addEventListener = function (type, fn) { (this._click = this._click || []).push(fn); };
+    HtmlMarker.prototype.moveTo = function (p) { this._pos = p; if (this.getMap()) this.draw(); };
+    HtmlMarker.prototype.setZ = function (z) { this._z = z; this.content.style.zIndex = z; };
+
     var map, skin = opts.skin;
-    var marketMarkers = {}, stallMarkers = [], polygon = null, meMarker = null;
+    var marketMarkers = {}, stallMarkers = [], polygon = null, meMarker = null, countyLabels = [];
     var cache = {};
     var token = 0;
-    var lastView = { center: { lat: 23.75, lng: 120.95 }, zoom: 7 };
+
+    // 只看台灣（本島與澎湖）
+    var TAIWAN = { north: 25.75, south: 21.55, west: 119.1, east: 122.45 };
+    var DETAIL_ZOOM = 12; // 放大到這裡以上才顯示街道，縣市底色變淡
+    function palette() {
+      var cs = getComputedStyle(document.documentElement);
+      var v = function (k) { return cs.getPropertyValue(k).trim(); };
+      return skin === "cyber"
+        ? { sea: "#05060a", land: "#0b0f17", county: "#0f1724", line: "#22e8ff", label: "#7fe9ff", road: "#1c2638", roadHi: "#26324a" }
+        : { sea: v("--sunk") || "#ebe3d5", land: "#e9e0d0", county: "#f6efe2", line: "#9a7440", label: "#6b5434", road: "#e2d6c2", roadHi: "#d8c8ae" };
+    }
+    function mapStyles() {
+      var c = palette();
+      return [
+        { elementType: "labels", stylers: [{ visibility: "off" }] },
+        { featureType: "administrative", stylers: [{ visibility: "off" }] },
+        { featureType: "poi", stylers: [{ visibility: "off" }] },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+        { featureType: "water", stylers: [{ color: c.sea }] },
+        { featureType: "landscape", stylers: [{ color: c.land }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: c.road }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: c.roadHi }] }
+      ];
+    }
+    function countyStyle() {
+      var c = palette(), detail = map.getZoom() >= DETAIL_ZOOM;
+      return { fillColor: c.county, fillOpacity: detail ? 0 : 1, strokeColor: c.line, strokeOpacity: detail ? .35 : .8, strokeWeight: detail ? 1 : 1.2, clickable: false };
+    }
+    function drawCounties() {
+      if (!window.NM_COUNTIES) return;
+      map.data.addGeoJson(window.NM_COUNTIES);
+      map.data.setStyle(countyStyle);
+      window.NM_COUNTIES.features.forEach(function (f) {
+        var p = f.properties;
+        var small = /基隆|新竹市|嘉義市/.test(p.zh);
+        var el = document.createElement("div");
+        el.className = "county-label" + (small ? " small" : "");
+        el.dataset.zh = p.zh; el.dataset.en = p.en;
+        el.textContent = opts.lang() === "en" ? p.en : p.zh;
+        countyLabels.push({ m: new HtmlMarker({ map: map, position: { lat: p.label[0], lng: p.label[1] }, content: el, center: true, zIndex: 0 }), el: el, small: small });
+      });
+      updateCountyLabels();
+    }
+    function updateCountyLabels() {
+      var z = map.getZoom();
+      countyLabels.forEach(function (c) {
+        c.el.hidden = z >= DETAIL_ZOOM || (c.small && z < 9);
+        c.el.textContent = opts.lang() === "en" ? c.el.dataset.en : c.el.dataset.zh;
+      });
+    }
 
     function makeMap() {
-      if (map) { lastView = { center: ll(map.getCenter()), zoom: map.getZoom() }; }
-      el.innerHTML = "";
       map = new mapsLib.Map(el, {
-        center: lastView.center, zoom: lastView.zoom,
-        mapId: opts.mapId || "DEMO_MAP_ID",
-        colorScheme: skin === "cyber" ? "DARK" : "LIGHT",
-        disableDefaultUI: true, zoomControl: true, clickableIcons: false, gestureHandling: "greedy"
+        center: { lat: 23.7, lng: 120.95 }, zoom: 7, minZoom: 6,
+        restriction: { latLngBounds: TAIWAN, strictBounds: false },
+        styles: mapStyles(), backgroundColor: palette().sea,
+        disableDefaultUI: true, zoomControl: true, clickableIcons: false, gestureHandling: "greedy", keyboardShortcuts: false
       });
-      // 換風格時地圖會重建，把已經畫好的東西搬過去
-      Object.keys(marketMarkers).forEach(function (id) { if (marketMarkers[id].map) marketMarkers[id].map = map; });
-      stallMarkers.forEach(function (s) { s.marker.map = map; });
-      if (polygon) polygon.setMap(map);
-      if (meMarker) meMarker.map = map;
+      drawCounties();
+      map.addListener("zoom_changed", function () { map.data.setStyle(countyStyle); updateCountyLabels(); });
     }
     makeMap();
     el.classList.add("is-google");
@@ -120,7 +186,7 @@
 
     function clearArea() {
       token++;
-      stallMarkers.forEach(function (s) { s.marker.map = null; });
+      stallMarkers.forEach(function (s) { s.marker.setMap(null); });
       stallMarkers = [];
       if (polygon) { polygon.setMap(null); polygon = null; }
     }
@@ -181,7 +247,7 @@
       polygon = new mapsLib.Polygon({ paths: path, strokeColor: col, strokeOpacity: .9, strokeWeight: 2, fillColor: col, fillOpacity: .12, clickable: false, map: map });
       area.stalls.forEach(function (s, i) {
         var content = div("stall-pin", "<span>" + (i + 1) + "</span>");
-        var mk = new markerLib.AdvancedMarkerElement({ map: map, position: { lat: s.lat, lng: s.lng }, content: content, title: s.name, zIndex: 500 - i, gmpClickable: true });
+        var mk = new HtmlMarker({ map: map, position: { lat: s.lat, lng: s.lng }, content: content, title: s.name, zIndex: 500 - i, gmpClickable: true });
         onClick(mk, function () { opts.onStallClick(s.id); });
         stallMarkers.push({ id: s.id, marker: mk, el: content });
       });
@@ -197,16 +263,16 @@
           var mk = marketMarkers[m.id];
           var html = opts.pinHtml(selectedId === m.id, isOff(m));
           if (!mk) {
-            mk = marketMarkers[m.id] = new markerLib.AdvancedMarkerElement({ position: { lat: m.lat, lng: m.lng }, content: div("gm-pin", html), title: opts.label(m), gmpClickable: true });
+            mk = marketMarkers[m.id] = new HtmlMarker({ position: { lat: m.lat, lng: m.lng }, content: div("gm-pin", html), title: opts.label(m), gmpClickable: true });
             onClick(mk, function () { opts.onMarketClick(m.id); });
           } else {
             mk.content.innerHTML = html;
-            mk.title = opts.label(m);
+            mk.content.title = opts.label(m);
           }
-          mk.zIndex = selectedId === m.id ? 1000 : 1;
+          mk.setZ(selectedId === m.id ? 1000 : 1);
           var show = visibleIds.indexOf(m.id) >= 0;
-          if (show && !mk.map) mk.map = map;
-          if (!show && mk.map) mk.map = null;
+          if (show && !mk.getMap()) mk.setMap(map);
+          if (!show && mk.getMap()) mk.setMap(null);
         });
       },
       fit: function (pts, maxZoom) {
@@ -219,10 +285,17 @@
       },
       focus: function (lat, lng, minZoom) { map.panTo({ lat: lat, lng: lng }); if (map.getZoom() < minZoom) map.setZoom(minZoom); },
       setMe: function (lat, lng) {
-        if (meMarker) { meMarker.position = { lat: lat, lng: lng }; return; }
-        meMarker = new markerLib.AdvancedMarkerElement({ map: map, position: { lat: lat, lng: lng }, content: div("me-dot", ""), zIndex: 2000 });
+        if (meMarker) { meMarker.moveTo({ lat: lat, lng: lng }); return; }
+        meMarker = new HtmlMarker({ map: map, position: { lat: lat, lng: lng }, content: div("me-dot", ""), zIndex: 2000 });
       },
-      setSkin: function (s) { if (s !== skin) { skin = s; makeMap(); } },
+      setSkin: function (s) {
+        if (s === skin) return;
+        skin = s;
+        map.setOptions({ styles: mapStyles(), backgroundColor: palette().sea });
+        map.data.setStyle(countyStyle);
+        if (polygon) { var col = getComputedStyle(document.documentElement).getPropertyValue("--lantern").trim(); polygon.setOptions({ strokeColor: col, fillColor: col }); }
+      },
+      setLang: updateCountyLabels,
       // 放大到夜市、畫外框和攤位；回傳攤位清單
       showArea: async function (m) {
         clearArea();
@@ -236,7 +309,7 @@
       },
       clearArea: clearArea,
       selectStall: function (id) {
-        stallMarkers.forEach(function (s) { s.el.classList.toggle("sel", s.id === id); s.marker.zIndex = s.id === id ? 900 : 500; });
+        stallMarkers.forEach(function (s) { s.el.classList.toggle("sel", s.id === id); s.marker.setZ(s.id === id ? 900 : 500); });
       },
       // 評論：Google 每家店最多提供 5 則
       fetchReviews: function (stall) {
