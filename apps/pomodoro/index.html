@@ -559,7 +559,7 @@
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
-      "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
+      "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
@@ -643,7 +643,7 @@
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
-      "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.boughtColor": "Changed, {n} logs spent",
+      "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
@@ -983,6 +983,7 @@
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session && !session.away) v = "session";
     if (v === "session" && current !== "session") window.scrollTo(0, 0);
+    if (current === "char" && v !== "char") dropTrialColors();
     current = v;
     document.body.classList.toggle("in-room", v === "session");
     ["rooms", "session", "me", "friends", "char", "team"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
@@ -1247,6 +1248,15 @@
     var mc = document.querySelector('meta[name="theme-color"]'); if (mc) mc.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#f2ece1");
   }
   applyPal();
+  // 已付費（或建角色時免費選）的膚色、髮色；試穿中的新顏色不算
+  function colorCost() {
+    if (!data.me.named) return 0;
+    return ((data.ownSkin.indexOf(data.look.skin) < 0) + (data.ownHair.indexOf(data.look.hair) < 0)) * COLOR_PRICE;
+  }
+  function dropTrialColors() {
+    if (!colorCost()) return;
+    data.look.skin = paidColor.skin; data.look.hair = paidColor.hair; persist(); syncMe(); renderChip();
+  }
   function colorTag(own, i) { return data.me.named && own.indexOf(i) < 0 ? '<span class="pr">🪵' + COLOR_PRICE + '</span>' : ""; }
   function renderChar() {
     var el = document.getElementById("view-char"), L = data.look, html = "";
@@ -1302,11 +1312,9 @@
     else if (ds.skin != null || ds.hair != null) {
       // 建好角色後，換沒買過的膚色／髮色要小木頭；買過的可以隨時換回來
       var key = ds.skin != null ? "skin" : "hair", v = +(ds.skin != null ? ds.skin : ds.hair), own = key === "skin" ? data.ownSkin : data.ownHair;
+      // 沒買過的顏色先試穿，按「儲存」才扣小木頭；沒儲存就離開會換回原本的顏色
       if (!data.me.named) { own.length = 0; own.push(v); }
-      else if (own.indexOf(v) < 0) {
-        if (data.wood < COLOR_PRICE) { K.toast(t("c.needWood", { n: COLOR_PRICE })); return; }
-        data.wood -= COLOR_PRICE; own.push(v); updateWood(); K.toast(t("c.boughtColor", { n: COLOR_PRICE }));
-      }
+      else if (own.indexOf(v) < 0 && colorCost() === 0) K.toast(t("c.tryColor", { n: COLOR_PRICE }));
       L[key] = v;
     }
     else if (ds.actpick) data.act = ds.actpick;
@@ -1321,8 +1329,16 @@
     } else if (ds.flag) { data.me.flag = ds.flag;
     } else if (ds.act === "save-char") {
       if (!data.me.name) { K.toast(t("f.needName")); document.getElementById("c-name").focus(); return; }
+      var cost = colorCost();
+      if (cost) {
+        if (data.wood < cost) { K.toast(t("c.needWood", { n: cost })); return; }
+        data.wood -= cost; updateWood(); K.toast(t("c.boughtColor", { n: cost }));
+        if (data.ownSkin.indexOf(L.skin) < 0) data.ownSkin.push(L.skin);
+        if (data.ownHair.indexOf(L.hair) < 0) data.ownHair.push(L.hair);
+      }
+      paidColor = data.paidColor = { skin: L.skin, hair: L.hair };
       data.me.named = true;
-      persist(); syncMe(); K.toast(t("c.saved"));
+      persist(); syncMe(); if (!cost) K.toast(t("c.saved"));
       show("rooms"); window.scrollTo(0, 0); return;
     } else return;
     persist(); syncMe();
@@ -1449,6 +1465,13 @@
   data.reqIn = data.reqIn || {}; data.reqOut = data.reqOut || {};
   var COLOR_PRICE = 2;
   if (data.me.name) data.me.named = true;
+  var pc0 = data.paidColor || {};
+  var paidColor = {
+    skin: data.ownSkin.indexOf(data.look.skin) >= 0 ? data.look.skin : data.ownSkin.indexOf(pc0.skin) >= 0 ? pc0.skin : data.ownSkin[data.ownSkin.length - 1],
+    hair: data.ownHair.indexOf(data.look.hair) >= 0 ? data.look.hair : data.ownHair.indexOf(pc0.hair) >= 0 ? pc0.hair : data.ownHair[data.ownHair.length - 1]
+  };
+  data.paidColor = paidColor;
+  if (data.me.named) { data.look.skin = paidColor.skin; data.look.hair = paidColor.hair; }
   var FLAGS = ["TW", "HK", "MO", "CN", "SG", "MY", "JP", "KR", "TH", "VN", "PH", "ID", "IN", "US", "CA", "GB", "IE", "FR", "DE", "ES", "IT", "NL", "SE", "AU", "NZ", "BR", "MX"];
   if (!data.me.flag) {
     var lg = (navigator.language || "").toUpperCase(), rg = (lg.match(/-([A-Z]{2})\b/) || [])[1];
