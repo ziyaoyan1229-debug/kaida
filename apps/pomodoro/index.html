@@ -122,7 +122,11 @@
   .k3-tag.me { background: #2a2620; color: #f8f4ec; border-color: #2a2620; }
   .k3-bubble { font-size: 13px; line-height: 1.35; padding: 4px 10px; border-radius: 12px; background: #fffdf8; color: #2a2620; box-shadow: 0 2px 6px rgba(60, 40, 20, .18); max-width: 160px; white-space: normal; text-align: center; }
   .k3-hint { position: absolute; right: 8px; bottom: 6px; font-size: 11px; color: rgba(255, 253, 248, .9); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; }
-  .music { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0 0; }
+  .music { margin: 10px 0 0; }
+  .mu-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .mu-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .mu-row::-webkit-scrollbar { display: none; }
+  .mu-row button { flex: 0 0 auto; }
   .music .lab { font-size: 13px; color: var(--muted); margin-right: 2px; }
   .music button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 14px; min-height: 36px; }
   .music button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
@@ -162,6 +166,8 @@
   .cats::-webkit-scrollbar { display: none; }
   .cats button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; min-height: 38px; cursor: pointer; font-size: 14px; }
   .cats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+  .welcome { border: 2px solid var(--signal); }
+  .welcome h3 { margin: 0 0 4px; font-size: 18px; }
   .mini-win { padding: 0; overflow: hidden; }
   .win-tabs { display: flex; background: var(--sunk); border-bottom: 1px solid var(--line); }
   .win-tabs button { flex: 1; border: 0; background: none; padding: 10px 8px; min-height: 44px; font-size: 15px; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; }
@@ -348,7 +354,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "mu.noise": "白噪音", "mu.vol": "音量", "s.st.up": "起來走走", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以回「角色」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.vol": "音量", "s.st.up": "起來走走", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -432,7 +438,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "mu.noise": "White noise", "mu.vol": "Volume", "s.st.up": "Walking around", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits on the Avatar tab anytime.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.vol": "Volume", "s.st.up": "Walking around", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -711,6 +717,8 @@
 
   var current = "rooms";
   function show(v) {
+    // 第一次打開：先取暱稱、選好角色才能進讀書房
+    if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session) v = "session";
     current = v;
     ["rooms", "session", "me", "friends", "char"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
@@ -807,11 +815,11 @@
   function music() { if (!data.music) data.music = { kind: "", vol: 0.6 }; return data.music; }
   function renderMusic() {
     var mu = music(), playing = window.KaidaMusic ? window.KaidaMusic.current() : "";
-    document.getElementById("music").innerHTML = '<span class="lab">' + K.esc(t("mu.lab")) + '</span>' +
-      ["", "jazz", "light", "noise"].map(function (k) {
+    document.getElementById("music").innerHTML = '<div class="mu-head"><span class="lab">' + K.esc(t("mu.lab")) + '</span>' +
+      '<input type="range" id="mu-vol" min="0" max="100" value="' + Math.round(mu.vol * 100) + '" aria-label="' + K.esc(t("mu.vol")) + '"></div><div class="mu-row">' +
+      ["", "jazz", "light", "lofi", "noise", "fire", "rain", "forest"].map(function (k) {
         return '<button type="button" data-mu="' + k + '" aria-pressed="' + (playing === k) + '">' + K.esc(t(k ? "mu." + k : "mu.off")) + '</button>';
-      }).join("") +
-      '<input type="range" id="mu-vol" min="0" max="100" value="' + Math.round(mu.vol * 100) + '" aria-label="' + K.esc(t("mu.vol")) + '">';
+      }).join("") + '</div>';
   }
   function playMusic(k) {
     var mu = music(); mu.kind = k; K.save(STORE, data);
@@ -864,6 +872,7 @@
   var shopCat = "top";
   function renderChar() {
     var el = document.getElementById("view-char"), L = data.look, html = "";
+    if (!data.me.name) html += '<div class="card welcome"><h3>' + K.esc(t("c.firstH")) + '</h3><p class="small muted" style="margin:0">' + K.esc(t("c.firstP")) + '</p></div>';
     html += '<div class="card"><div class="char-top"><svg viewBox="-62 -102 124 120" aria-hidden="true">' + S.preview(L) + '</svg>' +
       '<div style="flex:1;min-width:0"><label class="field"><span>' + K.esc(t("c.name")) + '</span><input type="text" id="c-name" maxlength="16" value="' + K.esc(data.me.name) + '" placeholder="' + K.esc(t("f.nameph")) + '"></label>' +
       '<div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
@@ -914,8 +923,9 @@
       K.toast(t("c.bought", { n: K.lang() === "en" ? bi.en : bi.zh }));
     } else if (ds.act === "save-char") {
       if (!data.me.name) { K.toast(t("f.needName")); document.getElementById("c-name").focus(); return; }
+      var first = !data.me.named; data.me.named = true;
       persist(); syncMe(); K.toast(t("c.saved"));
-      if (pendingCode) { show("rooms"); return; }
+      if (pendingCode || first) { show("rooms"); window.scrollTo(0, 0); return; }
       return;
     } else return;
     persist(); syncMe();
@@ -988,6 +998,7 @@
   /* 好友與排行：不經過伺服器，成績寫在分享連結的 #f= 裡 */
   var AVATARS = ["🍅", "📚", "✏️", "🎧", "☕", "🌱", "🌙", "🐱", "🐶", "🦊", "🐼", "🐧", "🦉", "🐢", "🚀", "🔥"];
   data.me = data.me || { id: Math.random().toString(36).slice(2, 10), name: "", avatar: "🍅" };
+  if (data.me.name) data.me.named = true;
   data.friends = data.friends || {};
   data.cheers = data.cheers || [];
   var draftAvatar = data.me.avatar;
