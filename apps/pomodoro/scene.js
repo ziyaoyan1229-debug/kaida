@@ -94,10 +94,10 @@
     if (look.back === "cape") s += '<path d="M-11 -29 L-17 -8 Q0 -4 17 -8 L11 -29 Z" fill="#b0302a"/>';
     if (look.back === "backpack") s += '<rect x="-15" y="-27" width="30" height="16" rx="5" fill="#e0b04f"/>';
     // 長髮（在頭後面）
-    if (style === "long") s += '<path d="M-17 -44 C-19 -26 -17 -16 -12 -14 L12 -14 C17 -16 19 -26 17 -44 Z" fill="' + hair + '"/>';
-    else if (style === "bob") s += '<path d="M-17.5 -46 C-19 -36 -18 -31 -15 -30 L15 -30 C18 -31 19 -36 17.5 -46 Z" fill="' + hair + '"/>';
+    if (style === "long") s += '<path d="M-8 -56 C-17 -54.5 -19.5 -28 -17 -17 C-16 -14.5 -14 -14 -12 -14 L12 -14 C14 -14 16 -14.5 17 -17 C19.5 -28 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
+    else if (style === "bob") s += '<path d="M-8 -56 C-17.5 -55 -19.5 -35 -15 -30 L15 -30 C19.5 -35 17.5 -55 8 -56 Z" fill="' + hair + '"/>';
     else if (style === "pony") s += '<path d="M14 -52 C24 -50 25 -36 19 -28 C17 -34 17 -42 12 -48 Z" fill="' + hair + '"/>';
-    else if (girl && !style) s += '<path d="M-17 -44 C-19 -30 -16 -22 -11 -20 L11 -20 C16 -22 19 -30 17 -44 Z" fill="' + hair + '"/>';
+    else if (girl && !style) s += '<path d="M-8 -56 C-17 -54.5 -19.5 -29 -16 -22.5 C-15 -20.5 -13 -20 -11 -20 L11 -20 C13 -20 15 -20.5 16 -22.5 C19.5 -29 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
     s += '<path d="M-12 -12 C-13 -22 -11 -29 0 -29 C11 -29 13 -22 12 -12 Z" fill="' + top.color + '"/>';
     if (top.stripe) s += '<g fill="' + top.stripe + '"><rect x="-12.5" y="-25" width="25" height="2.2"/><rect x="-12.8" y="-20" width="25.6" height="2.2"/><rect x="-12.8" y="-15" width="25.6" height="2.2"/></g>';
     if (top.hood) s += '<path d="M-9 -29 C-6 -24 6 -24 9 -29" fill="none" stroke="#6f8f5c" stroke-width="2.4" stroke-linecap="round"/><path d="M-2 -25 L-2.5 -19 M2 -25 L2.5 -19" stroke="#f3efe6" stroke-width="1.2"/>';
