@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../shared/kaida-app.css">
 <style>
   /* 國旗字型：Windows 的 Chrome/Edge 沒有國旗表情，只會顯示「TW」字母，所以自帶一份（只用在國旗字元） */
@@ -316,6 +316,61 @@
   .req-row { display: flex; align-items: center; gap: 8px; padding: 10px 0 0; margin-top: 10px; border-top: 1px solid var(--line); }
   .req-row .who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .req-row .btn { min-height: 36px; padding: 4px 12px; font-size: 14px; }
+
+  /* ===== A4 書刊排版：襯線標題、細線分隔、大字時間 ===== */
+  :root { --f-display: "Noto Serif TC", "Songti TC", serif; --h-weight: 700; }
+  .hero { gap: 10px; padding-bottom: 12px; margin-bottom: 0; }
+  .hero img { width: 40px; height: 40px; border-radius: 10px; }
+  .hero h1 { font-family: var(--f-display); font-weight: 700; letter-spacing: .12em; font-size: clamp(18px, 5.4vw, 26px); }
+  @media (max-width: 440px) { .hero h1 { letter-spacing: .03em; font-size: 20px; } .hero { gap: 4px; } .me-chip { width: 54px; height: 54px; } .me-chip svg { width: 52px; height: 52px; } }
+  @media (max-width: 360px) { .hero h1 { font-size: 0; } }
+  .hero #k-lang { border: 0; background: transparent; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); padding: 0 6px; }
+  .wood-pill, .reload-btn { border: 0; background: transparent; padding: 0 4px; }
+  .wood-pill b { font-weight: 500; }
+  .me-chip { width: 58px; height: 58px; border-radius: 50%; border: 1px solid var(--ink); background: var(--surface); padding: 0; }
+  .me-chip svg { width: 56px; height: 56px; }
+  .me-chip .nm { display: none; }
+  .me-chip[aria-selected="true"] { border: 2px solid var(--ink); background: var(--sunk); }
+  .tabs { justify-content: flex-start; gap: 22px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .tabs button { flex: none; padding: 10px 0; font-size: 15px; border-bottom: 0; margin-bottom: 0; }
+  .tabs button[aria-selected="true"] { font-weight: 700; }
+  .tabs button[aria-selected="true"]::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #D6361F; margin-right: 6px; vertical-align: 3px; }
+  h2, h3, .room-card h3, .welcome h3, .motto-txt { font-family: var(--f-display); }
+  .card { border-radius: 0; }
+  .quote { background: transparent; border-left: 2px solid var(--signal); border-radius: 0; padding: 2px 0 2px 14px; margin: 0 0 18px; }
+  .quote p { font-family: var(--f-display); font-weight: 500; font-size: 17px; }
+  .quote cite { font-size: 12px; letter-spacing: .05em; }
+  .pick-card.a4 { padding: 0; }
+  .a4-time { display: flex; align-items: flex-end; justify-content: space-between; margin: 4px 0 14px; }
+  .a4-time .lab { display: block; font-size: 11px; color: var(--muted); letter-spacing: .25em; }
+  .a4-time .big { display: block; font-family: var(--f-display); font-size: 96px; font-weight: 700; line-height: .9; letter-spacing: -.02em; }
+  .a4-time .big i { font-style: normal; font-size: 28px; color: var(--signal); letter-spacing: 0; }
+  .a4-time .side { text-align: right; padding-bottom: 6px; }
+  .a4-time .side b { display: block; font-family: var(--f-display); font-size: 28px; font-weight: 500; color: var(--muted); }
+  .a4-time .side span { font-size: 11px; color: var(--muted); letter-spacing: .15em; }
+  .a4-seg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .a4-seg button { min-height: 42px; border: 0; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; padding: 0 2px; white-space: nowrap; }
+  .a4-seg button.mono { font-size: 13px; }
+  .a4-seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); font-weight: 600; }
+  .pick-card.a4 .cust { padding: 12px 0 0; }
+  .a4-grid { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); }
+  .a4-cell { display: flex; flex-direction: column; gap: 2px; padding: 14px 12px 12px 0; min-width: 0; }
+  .a4-cell + .a4-cell { border-left: 1px solid var(--line); padding-left: 14px; padding-right: 0; }
+  .a4-cell > span { font-size: 11px; color: var(--muted); letter-spacing: .15em; }
+  .a4-select { appearance: none; -webkit-appearance: none; width: 100%; min-height: 34px; padding: 0 22px 0 0; border: 0; border-radius: 0; font-size: 17px; font-weight: 500; color: var(--ink); cursor: pointer;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a7440' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 2px center no-repeat; }
+  .a4-sub { margin: 8px 0 14px; }
+  .pick-card.a4 .prow h4 { margin: 0 0 8px; font-weight: 500; letter-spacing: .15em; font-size: 11px; }
+  .pick-card.a4 .rail { padding-left: 0; padding-right: 0; margin: 0 -16px; padding: 2px 16px 4px; }
+  .pick-card.a4 .pick-foot { padding: 6px 0 0; border-top: 0; }
+  .pick-card.a4 .pick-foot p { text-align: left; letter-spacing: .08em; margin: 4px 0 10px; }
+  .start-btn { border-radius: 0; font-family: var(--f-display); letter-spacing: .3em; }
+  .a4-go { justify-content: space-between; padding: 0 20px; min-height: 56px; font-weight: 500; }
+  .rail button, .says button, .music button, .cats button, .presets button { border-radius: 4px; }
+  .rail .mcard, .rail .tcard { border-radius: 4px; }
+  .tcard .sw { border-radius: 2px; }
+  .pick-select { border-radius: 0; }
+  .btn { border-radius: 0; }
 </style>
 </head>
 <body>
@@ -614,7 +669,7 @@
   K.addStrings({
     zh: {
       "me.mottoH": "我的留言板", "me.mottoDef": "今天多讀一頁，明天就多懂一點。", "me.mottoEdit": "編輯", "me.mottoSave": "儲存",
-      "r.custom": "自訂", "r.rand": "隨機", "r.custF": "專注（分鐘）", "r.custB": "休息（分鐘）",
+      "r.custom": "自訂", "r.rand": "隨機", "r.round": "這一輪", "r.brkLab": "休息", "r.randBig": "開始時抽", "r.custF": "專注（分鐘）", "r.custB": "休息（分鐘）",
       "c.pal": "介面配色", "pal.kraft": "牛皮紙", "pal.tomato": "烤番茄", "pal.matcha": "抹茶", "pal.night": "深夜書房", "pal.sea": "海鹽藍",
       "c.country": "國家", "c.noCountry": "不顯示",
       "tm.simH": "模擬公會", "tm.simP": "先跟五個模擬室友組一隊，看看排行和時數怎麼算。只存在這支手機。", "tm.simGo": "加入模擬公會", "tm.simName": "番茄模擬讀書會",
@@ -622,7 +677,7 @@
     },
     en: {
       "me.mottoH": "My motto", "me.mottoDef": "One more page today, a little more understanding tomorrow.", "me.mottoEdit": "Edit", "me.mottoSave": "Save",
-      "r.custom": "Custom", "r.rand": "Random", "r.custF": "Focus (min)", "r.custB": "Break (min)",
+      "r.custom": "Custom", "r.rand": "Random", "r.round": "This round", "r.brkLab": "break", "r.randBig": "drawn at start", "r.custF": "Focus (min)", "r.custB": "Break (min)",
       "c.pal": "Colour scheme", "pal.kraft": "Kraft", "pal.tomato": "Tomato", "pal.matcha": "Matcha", "pal.night": "Night", "pal.sea": "Sea salt",
       "c.country": "Country", "c.noCountry": "Don't show",
       "tm.simH": "Practice team", "tm.simP": "Team up with five practice buddies to see how the board and hours work. Saved on this device only.", "tm.simGo": "Join practice team", "tm.simName": "Tomato Practice Club",
@@ -948,6 +1003,12 @@
   var START_KEYS = ["quick", "join", "private", "sim", "solo"];
   var THEME_SW = { home: ["#c08a5a", "#f3e3c6"], cafe: ["#6e4a34", "#e8d3b0"], library: ["#7a2a2a", "#c9a45a"], study: ["#9aa6b2", "#eef0f2"], space: ["#1a2440", "#4ad8ff"], school: ["#7d9a86", "#f1e7cf"], konbini: ["#2f9a6a", "#f4f6f7"], washitsu: ["#c9c08a", "#5a4030"], cabin: ["#5a3a26", "#3f6a3a"], beach: ["#7ac4c4", "#f2a65a"], rooftop: ["#2e3236", "#ff6ab0"], lodge: ["#b0302a", "#f2ece0"] };
   var TIME_LABEL = { std: "25/5", deep: "50/10", test: "1/0.5 TEST" };
+  // A4：這一輪的時間放大當主角
+  function bigTime() {
+    if (data.mode === "rand") return '<div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">?</b></div><div class="side"><b>' + K.esc(t("r.rand")) + '</b><span>' + K.esc(t("r.randBig")) + '</span></div>';
+    var c = modeCfg();
+    return '<div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">' + c.focus + '<i>′</i></b></div><div class="side"><b>＋' + c.brk + '′</b><span>' + K.esc(t("r.brkLab")) + '</span></div>';
+  }
   function timeLabel(m) { return m === "custom" ? t("r.custom") + " " + modeCfg().focus + "/" + modeCfg().brk : m === "rand" ? t("r.rand") : TIME_LABEL[m] || ""; }
   function startSummary() {
     var bits = [t("r.tab." + roomTab), t("act." + (S.ACTS.indexOf(data.act) >= 0 ? data.act : "read"))];
@@ -997,16 +1058,15 @@
     var el = document.getElementById("room-list"), keep = {};
     el.querySelectorAll("[data-rail]").forEach(function (r) { keep[r.dataset.rail] = r.scrollLeft; });
     var row = function (key, title, inner) { return '<div class="prow"><h4>' + K.esc(title) + '</h4><div class="rail-wrap"><button type="button" class="rail-arr l" data-rail-go="-1" aria-label="' + K.esc(t("r.prev")) + '">‹</button><div class="rail" data-rail="' + key + '">' + inner + '</div><button type="button" class="rail-arr r" data-rail-go="1" aria-label="' + K.esc(t("r.next")) + '">›</button></div></div>'; };
-    var starts = '<div class="prow pad"><h4 style="margin:0 0 8px">' + K.esc(t("r.howH")) + '</h4><select id="pick-start" class="pick-select" aria-label="' + K.esc(t("r.howH")) + '">' +
-      START_KEYS.map(function (k) { return '<option value="' + k + '"' + (roomTab === k ? " selected" : "") + '>' + K.esc(t("r.tab." + k)) + '</option>'; }).join("") +
-      '</select><p class="small muted" style="margin:6px 0 0">' + K.esc(t("r.sub." + roomTab)) + '</p></div>';
-    var acts = '<div class="prow pad"><h4 style="margin:0 0 8px">' + K.esc(t("r.doH")) + '</h4><select id="pick-act" class="pick-select" aria-label="' + K.esc(t("r.doH")) + '">' +
-      S.ACTS.map(function (a) { return '<option value="' + a + '"' + (data.act === a ? " selected" : "") + '>' + K.esc(t("act." + a)) + '</option>'; }).join("") + '</select></div>';
+    var starts = '<label class="a4-cell"><span>' + K.esc(t("r.howH")) + '</span><select id="pick-start" class="a4-select">' +
+      START_KEYS.map(function (k) { return '<option value="' + k + '"' + (roomTab === k ? " selected" : "") + '>' + K.esc(t("r.tab." + k)) + '</option>'; }).join("") + '</select></label>';
+    var acts = '<label class="a4-cell"><span>' + K.esc(t("r.doH").replace(/[？?]$/, "")) + '</span><select id="pick-act" class="a4-select">' +
+      S.ACTS.map(function (a) { return '<option value="' + a + '"' + (data.act === a ? " selected" : "") + '>' + K.esc(t("act." + a)) + '</option>'; }).join("") + '</select></label>';
     var themes = THEME_KEYS.map(function (k) {
       var c = THEME_SW[k] || ["#c08a5a", "#f3e3c6"];
       return '<button type="button" class="tcard" data-theme="' + k + '" aria-pressed="' + (data.theme === k) + '"><span class="sw" style="background:url(thumbs/' + k + '.jpg) center/cover,linear-gradient(135deg,' + c[0] + ' 0 60%,' + c[1] + ' 60% 100%)"></span>' + K.esc(themeName(k, data.me.name)) + '</button>';
     }).join("");
-    var times = ["rand", "std", "deep", "custom", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(m === "custom" ? t("r.custom") : m === "rand" ? t("r.rand") : TIME_LABEL[m]) + '</button>'; }).join("");
+    var times = ["rand", "std", "deep", "custom", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '"' + (m === "std" || m === "deep" || m === "test" ? ' class="mono"' : "") + '>' + K.esc(m === "custom" ? t("r.custom") : m === "rand" ? t("r.rand") : m === "test" ? "TEST" : TIME_LABEL[m]) + '</button>'; }).join("");
     var mins = function (id, lo, hi, step, v, lab) {
       var o = []; for (var x = lo; x <= hi; x += step) o.push('<option value="' + x + '"' + (x === v ? " selected" : "") + '>' + x + '</option>');
       return '<label class="cust-f"><span>' + K.esc(lab) + '</span><select id="' + id + '" class="pick-select">' + o.join("") + '</select></label>';
@@ -1019,14 +1079,15 @@
     el.innerHTML =
       (away ? '<div class="card room-card welcome"><h3>' + K.esc(t("s.away", { r: awayName })) + '</h3><p class="small muted">' + K.esc(t("s.awayP")) + '</p>' +
         '<button class="btn block start-btn" type="button" data-act="back">' + K.esc(t("s.back")) + '</button></div>' : "") +
-      '<div class="card pick-card">' +
-        starts +
-        (roomTab === "join" ? '<div class="prow pad"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '"></div>' : "") +
-        acts +
+      '<div class="pick-card a4">' +
+        (roomTab === "join" ? "" : '<div class="a4-time" id="big-time">' + bigTime() + '</div>' +
+          '<div class="a4-seg" role="group" aria-label="' + K.esc(t("r.timeH")) + '">' + times + '</div>' + custom) +
+        '<div class="a4-grid">' + starts + acts + '</div>' +
+        '<p class="small muted a4-sub">' + K.esc(t("r.sub." + roomTab)) + '</p>' +
+        (roomTab === "join" ? '<div class="prow"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '"><p class="small muted">' + K.esc(t("r.timeJoin")) + '</p></div>' : "") +
         (hasTheme ? row("theme", t("r.themeH"), themes) : "") +
-        (roomTab === "join" ? '<div class="prow"><h4>' + K.esc(t("r.timeH")) + '</h4><p class="small muted pad">' + K.esc(t("r.timeJoin")) + '</p></div>' : row("time", t("r.timeH"), times) + custom) +
         '<div class="pick-foot"><p class="small muted" id="start-sum">' + K.esc(startSummary()) + '</p>' +
-        '<button class="btn block start-btn" type="button" data-act="' + act + '">' + K.esc(t("r.start")) + '</button></div>' +
+        '<button class="btn block start-btn a4-go" type="button" data-act="' + act + '"><span>' + K.esc(t("r.start")) + '</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></div>' +
       '</div>';
     el.querySelectorAll("[data-rail]").forEach(function (r) { var on = r.querySelector('[aria-pressed="true"]'); if (keep[r.dataset.rail] != null) r.scrollLeft = keep[r.dataset.rail]; else if (on) r.scrollLeft = Math.max(0, on.offsetLeft - r.firstElementChild.offsetLeft - 40); railArrows(r); });
   }
@@ -1976,7 +2037,7 @@
     if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); mark(); return; }
     if (b.dataset.rtab) { var jc = document.getElementById("join-code"); if (jc) pendingCode = jc.value; roomTab = b.dataset.rtab; renderRooms(); return; }
     if (b.dataset.theme) { data.theme = b.dataset.theme; persist(); mark(); return; }
-    if (b.dataset.mode) { var wasC = data.mode === "custom"; data.mode = b.dataset.mode; persist(); if (wasC || data.mode === "custom") renderRooms(); else mark(); return; }
+    if (b.dataset.mode) { var wasC = data.mode === "custom"; data.mode = b.dataset.mode; persist(); if (wasC || data.mode === "custom") renderRooms(); else { mark(); var bt = document.getElementById("big-time"); if (bt) bt.innerHTML = bigTime(); } return; }
     var a = b.dataset.act;
     if (a === "back") { comeBack(); return; }
     // 暫離中改去別的房間：先正式離開原本那間
@@ -1999,6 +2060,7 @@
     else if (id === "cust-b") data.custom.b = +e.target.value;
     else return;
     persist(); var sm = document.getElementById("start-sum"); if (sm) sm.textContent = startSummary();
+    var bt = document.getElementById("big-time"); if (bt) bt.innerHTML = bigTime();
   });
   document.getElementById("room-list").addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target.id === "join-code") document.querySelector('[data-act="join"]').click();
