@@ -37,7 +37,9 @@
       stallsError: "暫時載入不了店家，稍後再試。", seeMap: function (n) { return "在地圖上看 " + n + " 家店"; },
       back: "‹ 回夜市", ratings: function (n) { return n + " 則評分"; }, noRating: "還沒有評分", reviewsTitle: "饕客評論",
       reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
-      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。"
+      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。",
+      stallQPh: "在這個夜市找店家（例如：臭豆腐）", stallFound: function (n, q) { return "「" + q + "」找到 " + n + " 家"; },
+      stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…"
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
@@ -70,7 +72,9 @@
       stallsError: "Couldn't load places right now. Try again later.", seeMap: function (n) { return "See " + n + " places on the map"; },
       back: "‹ Back to market", ratings: function (n) { return n + " ratings"; }, noRating: "No ratings yet", reviewsTitle: "Reviews",
       reviewsLoading: "Loading reviews…", noReviews: "No reviews yet.", reviewsError: "Couldn't load reviews right now.",
-      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them."
+      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.",
+      stallQPh: "Search this market (e.g. stinky tofu)", stallFound: function (n, q) { return n + " found for “" + q + "”"; },
+      stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…"
     }
   };
 
@@ -348,6 +352,7 @@
   /* ---------- 夜市範圍與攤位（Google 地圖） ---------- */
   var stalls = [];
   var stallFor = null;
+  var stallQ = "", stallHits = {}, stallBusy = false, stallTimer = null;
   function byId(id) { return MARKETS.filter(function (x) { return x.id === id; })[0]; }
   function stars(r) {
     var full = Math.round(r || 0);
@@ -356,6 +361,7 @@
   function showArea(m) {
     if (!mapReady || !view.supportsStalls) return;
     stallFor = m.id; stalls = [];
+    stallQ = ""; $("dStallQ").value = ""; stallHits = {};
     renderStalls("loading");
     view.showArea(m).then(function (list) {
       if (stallFor !== m.id) return;
@@ -366,19 +372,53 @@
       if (stallFor === m.id) renderStalls("error");
     });
   }
+  function norm(x) { return String(x || "").toLowerCase().replace(/\s+/g, ""); }
+  // 店家關鍵字：先比對店名和類型，再加上 Google 地圖用這個關鍵字在夜市範圍內找到的店
+  function matchStalls() {
+    var q = norm(stallQ);
+    if (!q) return null;
+    var hits = stallHits[stallQ] || {};
+    // 店名有關鍵字的排前面，其餘照 Google 的相關度
+    function rank(s) { return norm(s.name).indexOf(q) >= 0 ? 0 : norm(s.type).indexOf(q) >= 0 ? 1 : 2 + (hits[s.id] || 0); }
+    return stalls.filter(function (s) { return hits[s.id] || norm(s.name + " " + s.type).indexOf(q) >= 0; })
+      .sort(function (a, b) { return rank(a) - rank(b); });
+  }
   function renderStalls(mode) {
     var box = $("dStalls");
     if (!view.supportsStalls) { $("dStallsWrap").hidden = true; return; }
     $("dStallsWrap").hidden = false;
+    var loaded = mode !== "loading" && mode !== "error" && stalls.length;
+    $("dStallQWrap").hidden = !loaded;
+    if (!loaded) $("dStallHint").textContent = "";
     if (mode === "loading") { box.innerHTML = '<li class="muted">' + esc(t("stallsLoading")) + "</li>"; $("dSeeMap").hidden = true; return; }
     if (mode === "error" || !stalls.length) { box.innerHTML = '<li class="muted">' + esc(mode === "error" ? t("stallsError") : t("stallsNone")) + "</li>"; $("dSeeMap").hidden = true; return; }
-    $("dSeeMap").hidden = false;
-    $("dSeeMap").textContent = t("seeMap")(stalls.length);
-    box.innerHTML = stalls.map(function (s, i) {
+    var shown = matchStalls();
+    if (view.filterStalls) view.filterStalls(shown ? shown.map(function (s) { return s.id; }) : null);
+    var list = shown || stalls;
+    $("dSeeMap").hidden = !list.length;
+    $("dSeeMap").textContent = t("seeMap")(list.length);
+    $("dStallHint").textContent = !shown ? "" : stallBusy && !list.length ? t("stallSearching") : list.length ? t("stallFound")(list.length, stallQ) + (stallBusy ? " · " + t("stallSearching") : "") : t("stallNoMatch")(stallQ);
+    box.innerHTML = list.map(function (s) {
+      var i = stalls.indexOf(s);
       return '<li><button type="button" class="stall-row" data-stall="' + esc(s.id) + '"><span class="thumb">' + (s.thumb ? '<img src="' + esc(s.thumb) + '" alt="" loading="lazy" onerror="this.remove()">' : "") + '<span class="no">' + (i + 1) + '</span></span><span class="nm">' + esc(s.name) +
         "<small>" + esc(s.type) + "</small></span>" +
         (s.rating ? '<span class="rt">' + s.rating.toFixed(1) + " ★<small>(" + s.count + ")</small></span>" : "") + "</button></li>";
     }).join("");
+  }
+  function searchStalls() {
+    var q = stallQ, id = stallFor, m = byId(id);
+    renderStalls();
+    if (!q || !m || !view.searchStalls || stallHits[q]) return;
+    stallBusy = true; renderStalls();
+    view.searchStalls(m, q).then(function (ids) {
+      if (stallFor !== id) return;
+      var h = {}; ids.forEach(function (x, i) { h[x] = i + 1; });
+      stallHits[q] = h;
+    }).catch(function (e) { console.warn("[stall search]", e); }).then(function () {
+      if (stallFor !== id) return;
+      stallBusy = false;
+      if (stallQ === q) renderStalls();
+    });
   }
   function openStall(id) {
     var s = stalls.filter(function (x) { return x.id === id; })[0];
@@ -548,6 +588,15 @@
 
   $("dStalls").addEventListener("click", function (e) {
     var b = e.target.closest("[data-stall]"); if (b) openStall(b.getAttribute("data-stall"));
+  });
+  $("dStallQ").addEventListener("input", function () {
+    stallQ = this.value.trim();
+    clearTimeout(stallTimer);
+    renderStalls();
+    stallTimer = setTimeout(searchStalls, 600);
+  });
+  $("dStallQ").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); clearTimeout(stallTimer); searchStalls(); this.blur(); }
   });
   $("dSeeMap").onclick = function () { closeSheet($("detail")); revealMap(); };
   $("sBack").onclick = function () { closeSheet($("stall")); if (stallFor) { openDetail(stallFor); } };
