@@ -299,6 +299,15 @@
     .s-side .timer-row { gap: 10px; }
     .s-side .timer-row .ring { width: 104px; height: 104px; }
   }
+  .mono { font-family: var(--f-mono); letter-spacing: .06em; }
+  .addf-card .myid { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+  .addf-card .myid b { color: var(--ink); font-size: 17px; }
+  .addf-card .myid .btn { min-height: 34px; padding: 4px 12px; font-size: 13px; margin-left: auto; }
+  .req-form { display: flex; gap: 8px; }
+  .req-form input { flex: 1; min-width: 0; font-size: 16px; }
+  .req-row { display: flex; align-items: center; gap: 8px; padding: 10px 0 0; margin-top: 10px; border-top: 1px solid var(--line); }
+  .req-row .who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .req-row .btn { min-height: 36px; padding: 4px 12px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -487,13 +496,13 @@
       "q.next": "換一句",
       "f.avNote": "頭像就是你的角色，到個人設定換造型", "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
       "f.nameph": "例如：小番茄", "f.save": "儲存", "f.edit": "改暱稱",
-      "f.boardH": "本週專注排行", "f.boardEmpty": "還沒有好友。把你的好友卡傳給同學，他打開就會出現在這裡。",
+      "f.boardH": "本週專注排行", "f.boardEmpty": "還沒有好友。把你的 ID 給同學，或輸入對方的 ID 送出邀請，對方同意後就會出現在這裡。",
       "f.you": "你", "f.updated": "{d}更新", "f.today": "今天", "f.daysago": "{n} 天前", "f.oldweek": "還沒傳本週成績",
       "f.pomos": "{n} 顆", "f.cheer": "打氣", "f.remove": "移除", "f.removeConfirm": "要把「{n}」從好友移除嗎？",
       "f.invite": "邀請好友／更新我的成績", "f.inviteP": "傳出你的好友卡連結。好友打開就會加你，排行榜也會更新成你最新的成績。之後讀完書再傳一次，好友那邊才會看到新分數。",
       "f.cheersH": "收到的打氣", "f.noCheers": "還沒有人為你打氣。先為好友打氣看看？",
       "f.cheerBack": "回他打氣",
-      "f.composeH": "幫 {n} 打氣", "f.composeCustom": "或自己寫一句（40 字內）", "f.composeSend": "傳出去", "f.cheerSent": "已送出打氣給 {n}", "f.cheerLink": "{n} 不在線上，改用連結傳過去", "f.botThanks": "謝謝你！一起加油💪|收到了，好開心😊|你也要加油喔！|有你打氣，我再讀一輪📖",
+      "f.composeH": "幫 {n} 打氣", "f.composeCustom": "或自己寫一句（40 字內）", "f.composeSend": "傳出去", "f.addH": "加好友", "f.myId": "我的 ID", "f.copy": "複製", "f.copied": "已複製", "f.idph": "輸入好友的 ID", "f.sendReq": "送出邀請", "f.reqSent": "已送出好友邀請給 {n}", "f.reqWait": "已邀請", "f.reqIn": "想加你為好友", "f.reqOut": "已送出邀請，等對方同意", "f.accept": "同意", "f.decline": "回絕", "f.reqGot": "{n} 想加你為好友", "f.reqOk": "{n} 同意了，你們現在是好友", "f.reqNo": "{n} 回絕了好友邀請", "f.badId": "ID 是 4 到 16 個英文字母或數字", "f.selfId": "這是你自己的 ID", "f.already": "{n} 已經是你的好友", "f.cheerSent": "已送出打氣給 {n}", "f.cheerLink": "{n} 不在線上，改用連結傳過去", "f.botThanks": "謝謝你！一起加油💪|收到了，好開心😊|你也要加油喔！|有你打氣，我再讀一輪📖",
       "f.presets": "加油！一起讀完這週|今天也一起專注 25 分鐘|你的排行好猛，我要追上了|休息一下再繼續，你可以的|考試順利！|我先開一顆番茄，等你",
       "f.shareText": "{n} 邀你一起在番茄讀書會讀書。本週已專注 {m} 分鐘，打開連結加好友、看排行：",
       "f.shareCheer": "{n} 給你打氣：「{c}」打開連結看排行，一起讀書：",
@@ -501,7 +510,7 @@
       "f.added": "已加 {n} 為好友", "f.updatedFriend": "已更新 {n} 的成績", "f.self": "這是你自己的好友卡",
       "f.badLink": "這個好友連結壞掉了", "f.gotCheer": "{n} 給你打氣",
       "f.ok": "好", "f.cheerReply": "回個打氣",
-      "f.how": "好友和排行不用註冊、不經過伺服器：成績寫在你傳出去的連結裡，好友打開後只存在他自己的手機。所以排行顯示的是每位好友最後一次傳給你的成績。",
+      "f.how": "好友不用註冊：用 ID 互相邀請，同意後就是好友。好友在線上時，排行會自動更新成對方最新的本週成績；讀書紀錄還是只存在你自己的手機。",
       "f.needName": "請先輸入暱稱", "f.cancel": "取消",
       "beta.t3": "加一位好友，或為好友打氣一次",
       "toast.doneShare": "完成一顆番茄！到「好友」把新成績傳給朋友"
@@ -571,13 +580,13 @@
       "q.next": "Another",
       "f.avNote": "Your avatar is your character. Change the look in Profile.", "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
       "f.nameph": "e.g. Tomato", "f.save": "Save", "f.edit": "Edit nickname",
-      "f.boardH": "This week's focus ranking", "f.boardEmpty": "No friends yet. Send your friend card to a classmate; once they open it they'll show up here.",
+      "f.boardH": "This week's focus ranking", "f.boardEmpty": "No friends yet. Share your ID, or enter a classmate's ID and send a request. Once they accept, they show up here.",
       "f.you": "You", "f.updated": "updated {d}", "f.today": "today", "f.daysago": "{n}d ago", "f.oldweek": "no score this week yet",
       "f.pomos": "{n} 🍅", "f.cheer": "Cheer", "f.remove": "Remove", "f.removeConfirm": "Remove \"{n}\" from friends?",
       "f.invite": "Invite friends / send my score", "f.inviteP": "Share your friend card link. Friends who open it add you, and their leaderboard updates to your latest score. Send it again after studying so they see your new numbers.",
       "f.cheersH": "Cheers you got", "f.noCheers": "No cheers yet. Why not cheer on a friend first?",
       "f.cheerBack": "Cheer back",
-      "f.composeH": "Cheer on {n}", "f.composeCustom": "Or write your own (40 chars max)", "f.composeSend": "Send", "f.cheerSent": "Cheer sent to {n}", "f.cheerLink": "{n} is offline, sending it as a link instead", "f.botThanks": "Thanks! Let's keep going 💪|Got it, that made my day 😊|You've got this too!|Thanks to you, one more round 📖",
+      "f.composeH": "Cheer on {n}", "f.composeCustom": "Or write your own (40 chars max)", "f.composeSend": "Send", "f.addH": "Add a friend", "f.myId": "My ID", "f.copy": "Copy", "f.copied": "Copied", "f.idph": "Your friend's ID", "f.sendReq": "Send request", "f.reqSent": "Friend request sent to {n}", "f.reqWait": "Requested", "f.reqIn": "wants to be your friend", "f.reqOut": "Request sent, waiting for them", "f.accept": "Accept", "f.decline": "Decline", "f.reqGot": "{n} sent you a friend request", "f.reqOk": "{n} accepted, you're friends now", "f.reqNo": "{n} declined your friend request", "f.badId": "An ID is 4 to 16 letters or numbers", "f.selfId": "That's your own ID", "f.already": "{n} is already your friend", "f.cheerSent": "Cheer sent to {n}", "f.cheerLink": "{n} is offline, sending it as a link instead", "f.botThanks": "Thanks! Let's keep going 💪|Got it, that made my day 😊|You've got this too!|Thanks to you, one more round 📖",
       "f.presets": "You got this, let's finish the week!|Let's do 25 focused minutes today|Your rank is wild, I'm catching up|Take a break, then keep going|Good luck on the exam!|Starting a pomodoro now, join me",
       "f.shareText": "{n} invited you to Pomodoro Study Club. {m} focus minutes this week. Open the link to add them and see the ranking:",
       "f.shareCheer": "{n} is cheering you on: \"{c}\" Open the link to see the ranking and study together:",
@@ -585,7 +594,7 @@
       "f.added": "Added {n} as a friend", "f.updatedFriend": "Updated {n}'s score", "f.self": "This is your own friend card",
       "f.badLink": "This friend link is broken", "f.gotCheer": "{n} is cheering you on",
       "f.ok": "OK", "f.cheerReply": "Cheer back",
-      "f.how": "Friends and rankings need no sign-up and no server: your score travels inside the link you send, and stays only on your friend's phone. So the ranking shows each friend's score from the last link they sent you.",
+      "f.how": "No sign-up needed: send each other requests by ID, and once accepted you're friends. While a friend is online the ranking updates to their latest weekly score; your study history stays on your own phone.",
       "f.needName": "Enter a nickname first", "f.cancel": "Cancel",
       "beta.t3": "Add a friend or cheer one on",
       "toast.doneShare": "Pomodoro done! Send your new score to friends from the Friends tab"
@@ -892,7 +901,7 @@
       if (res.finished || now % 10000 < 1000) persist();
       if (current === "session") { renderSession(now, p); renderScene(); }
     }
-    if (social) { if (!social.client && data.me.name) startSocial(); social.setState({ focus: myFocus() }); }
+    if (social) { if (!social.client && data.me.name) startSocial(); var sw = myWeek(); social.setState({ focus: myFocus(), k: weekKey(), m: sw.m, p: sw.p, s: streak() }); }
   }
 
   var current = "rooms";
@@ -1044,7 +1053,7 @@
     } else if (!p.focus) S.move(document.getElementById("scene"), ms, Date.now());
     document.getElementById("scene").setAttribute("aria-label", ms.map(function (m) { return m.name; }).join("、"));
     document.getElementById("s-members").innerHTML = ms.map(function (m) {
-      var fb = m.me ? "" : data.friends[m.id] ? '<span class="st"> · ' + K.esc(t("s.isFriend")) + '</span>' : '<button type="button" class="addf" data-addf="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>';
+      var fb = m.me ? "" : data.friends[m.id] ? '<span class="st"> · ' + K.esc(t("s.isFriend")) + '</span>' : data.reqOut[m.id] ? '<span class="st"> · ' + K.esc(t("f.reqWait")) + '</span>' : '<button type="button" class="addf" data-addf="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>';
       return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + fb + '</span><span class="st">' +
         K.esc(m.away ? t("s.st.away") : m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break")) + '</span></li>';
     }).join("");
@@ -1316,6 +1325,7 @@
   /* 好友與排行：不經過伺服器，成績寫在分享連結的 #f= 裡 */
   var AVATARS = ["🍅", "📚", "✏️", "🎧", "☕", "🌱", "🌙", "🐱", "🐶", "🦊", "🐼", "🐧", "🦉", "🐢", "🚀", "🔥"];
   data.me = data.me || { id: Math.random().toString(36).slice(2, 10), name: "", avatar: "🍅" };
+  data.reqIn = data.reqIn || {}; data.reqOut = data.reqOut || {};
   if (data.me.name) data.me.named = true;
   var FLAGS = ["TW", "HK", "MO", "CN", "SG", "MY", "JP", "KR", "TH", "VN", "PH", "ID", "IN", "US", "CA", "GB", "IE", "FR", "DE", "ES", "IT", "NL", "SE", "AU", "NZ", "BR", "MX"];
   if (!data.me.flag) {
@@ -1437,7 +1447,7 @@
         '<div class="stat"><div class="n">' + hnum(st.week) + '</div><div class="l">' + K.esc(t("tm.total")) + '</div></div>' +
         '<div class="stat"><div class="n">' + st.all + '</div><div class="l">' + K.esc(t("tm.bonus")) + '</div></div></div>' +
         mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + K.esc(m.n) +
-          (m.id === data.me.id ? "" : data.friends[m.id] ? '<span class="small muted"> · ' + K.esc(t("s.isFriend")) + '</span>' : '<button type="button" class="addf" data-tfriend="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>') + '</span><span class="small">' + hrs(m.tot || 0) + '</span></div>'; }).join("") +
+          (m.id === data.me.id ? "" : data.friends[m.id] ? '<span class="small muted"> · ' + K.esc(t("s.isFriend")) + '</span>' : data.reqOut[m.id] ? '<span class="small muted"> · ' + K.esc(t("f.reqWait")) + '</span>' : '<button type="button" class="addf" data-tfriend="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>') + '</span><span class="small">' + hrs(m.tot || 0) + '</span></div>'; }).join("") +
         '<div class="btn-row" style="margin-top:12px">' + (data.team.sim ? "" : '<button class="btn" type="button" data-tm="invite">' + K.esc(t("tm.invite")) + '</button>') + '<button class="btn ghost" type="button" data-tm="quit">' + K.esc(t("tm.quit")) + '</button></div></div>';
     }
     var rows2 = boardRows().slice(0, 30);
@@ -1464,11 +1474,7 @@
     if (fb) {
       var fid = fb.dataset.tfriend, tm0 = data.team && teamOf(data.team.id), mm = tm0 && tm0.members[fid];
       if (!mm || data.friends[fid] || fid === data.me.id) return;
-      var bi = BOTS.map(function (x) { return x.id; }).indexOf(fid);
-      data.friends[fid] = { n: String(mm.n).slice(0, 20), a: bi >= 0 ? SIM_AV[bi] : "🍅", k: "", m: 0, p: 0, s: 0, t: Date.now() };
-      data.tasks.t3 = true; persist();
-      if (social && !isBot(fid)) { startSocial(); social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); })); social.send(fid, { type: "friend", from: data.me.id, n: data.me.name, av: data.me.avatar, t: Date.now() }); }
-      K.toast(t("s.added", { n: mm.n })); return renderTeam();
+      sendFriendReq(fid, String(mm.n).slice(0, 20)); return renderTeam();
     }
     var b = e.target.closest("[data-tm]"); if (!b) return;
     var a = b.dataset.tm;
@@ -1561,12 +1567,68 @@
     if (!st || !st.online) return "off";
     return st.focus ? "busy" : "free";
   }
+  /* 好友邀請：輸入對方 ID 送出邀請，對方同意才成為好友 */
+  function friendSocial() { startSocial(); if (social) social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); })); }
+  function makeFriend(id, n, av) {
+    data.friends[id] = { n: String(n || "?").slice(0, 20), a: av || "🍅", k: "", m: 0, p: 0, s: 0, t: 0 };
+    delete data.reqIn[id]; delete data.reqOut[id]; data.tasks.t3 = true; persist(); friendSocial();
+  }
+  function sendFriendReq(id, name) {
+    id = String(id || "").trim().toLowerCase();
+    if (!/^[a-z0-9]{4,16}$/.test(id)) { K.toast(t("f.badId")); return false; }
+    if (id === data.me.id) { K.toast(t("f.selfId")); return false; }
+    if (data.friends[id]) { K.toast(t("f.already", { n: data.friends[id].n })); return false; }
+    if (data.reqIn[id]) { acceptReq(id); return true; }
+    var nm = name || (data.reqOut[id] && data.reqOut[id].n) || id;
+    if (isBot(id)) {
+      var bi = BOTS.map(function (x) { return x.id; }).indexOf(id);
+      setTimeout(function () { onReq({ from: id, k: "acc", n: nm, av: SIM_AV[bi] || "🍅", t: Date.now() }); }, 1500 + Math.random() * 1500);
+    } else {
+      startSocial();
+      if (!social || !social.request(id, { k: "req", n: data.me.name, av: data.me.avatar, t: Date.now() })) { K.toast(t("c.noNet")); return false; }
+    }
+    data.reqOut[id] = { n: name || "", t: Date.now() }; persist();
+    K.toast(t("f.reqSent", { n: nm }));
+    return true;
+  }
+  function acceptReq(id) {
+    var r = data.reqIn[id]; if (!r) return;
+    if (social) { social.request(id, { k: "acc", n: data.me.name, av: data.me.avatar, t: Date.now() }); social.clearRequest(id); }
+    makeFriend(id, r.n, r.av);
+    K.toast(t("f.added", { n: r.n })); updateBadge();
+  }
+  function declineReq(id) {
+    if (!data.reqIn[id]) return;
+    if (social) { social.request(id, { k: "no", n: data.me.name, av: data.me.avatar, t: Date.now() }); social.clearRequest(id); }
+    delete data.reqIn[id]; persist(); updateBadge();
+  }
+  function cancelReq(id) {
+    if (social && !isBot(id)) social.request(id, null);
+    delete data.reqOut[id]; persist();
+  }
+  function onReq(m) {
+    if (social && !isBot(m.from)) social.clearRequest(m.from);
+    if (m.k === "req") {
+      if (data.friends[m.from] || data.reqOut[m.from]) {   // 已經是好友，或我也邀過他：直接成為好友
+        if (social) social.request(m.from, { k: "acc", n: data.me.name, av: data.me.avatar, t: Date.now() });
+        if (!data.friends[m.from]) { makeFriend(m.from, m.n, m.av); K.toast(t("f.added", { n: m.n })); }
+      } else if (!data.reqIn[m.from]) {
+        data.reqIn[m.from] = { n: m.n, av: m.av, t: m.t }; persist(); updateBadge();
+        K.toast(t("f.reqGot", { n: m.n }));
+      }
+    } else if (m.k === "acc") {
+      if (!data.friends[m.from] && data.reqOut[m.from]) { makeFriend(m.from, m.n, m.av); K.toast(t("f.reqOk", { n: m.n })); }
+    } else if (m.k === "no") {
+      if (data.reqOut[m.from]) { delete data.reqOut[m.from]; persist(); K.toast(t("f.reqNo", { n: m.n })); }
+    }
+    if (current === "friends") renderFriends(); else if (current === "team") renderTeam(); else if (current === "session") renderScene(true);
+  }
   function startSocial() {
     if (!social || !data.me.name) return;
     social.start(data.me.id, Object.keys(data.friends).filter(function (id) { return !isBot(id); }));
   }
   function updateBadge() {
-    var n = Object.keys(data.unread).reduce(function (a, k) { return a + (data.friends[k] ? data.unread[k] : 0); }, 0);
+    var n = Object.keys(data.unread).reduce(function (a, k) { return a + (data.friends[k] ? data.unread[k] : 0); }, 0) + Object.keys(data.reqIn).length;
     var tab = document.getElementById("tab-friends");
     tab.innerHTML = K.esc(t("tab.friends")) + (n ? '<span class="dot">' + n + '</span>' : "");
   }
@@ -1578,10 +1640,7 @@
   function addFriendFromRoom(id) {
     var m = sceneMembers().filter(function (x) { return x.id === id; })[0];
     if (!m || data.friends[id] || id === data.me.id) return;
-    data.friends[id] = { n: String(m.name).slice(0, 20), a: m.av || "🍅", k: "", m: 0, p: 0, s: 0, t: Date.now() };
-    data.tasks.t3 = true; persist();
-    if (social && !isBot(id)) { startSocial(); social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); })); social.send(id, { type: "friend", from: data.me.id, n: data.me.name, av: data.me.avatar, t: Date.now() }); }
-    K.toast(t("s.added", { n: m.name }));
+    sendFriendReq(id, String(m.name).slice(0, 20));
     renderScene(true);
   }
   // 點房間裡的人物：看狀態、加好友
@@ -1601,7 +1660,10 @@
       '<div class="pc-name">' + K.esc(m.name) + '</div>' +
       row("p.joined", jt ? K.esc(String(jt.getHours()).padStart(2, "0") + ":" + String(jt.getMinutes()).padStart(2, "0")) : "—") +
       row("p.hours", K.esc(hrs(m.hr || 0))) +
-      row("p.country", cn ? (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(cn) : "—");
+      row("p.country", cn ? (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(cn) : "—") +
+      '<div class="pc-row"><span>ID</span><b><span class="mono">' + K.esc(m.id) + '</span> <button class="linkbtn" type="button" data-copy="' + K.esc(m.id) + '">' + K.esc(t("f.copy")) + '</button></b></div>' +
+      (m.me ? "" : '<div class="btn-row" style="justify-content:center;margin-top:10px">' + (data.friends[m.id] ? '<button class="btn ghost" type="button" data-pchat="' + K.esc(m.id) + '">' + K.esc(t("c.chat")) + '</button>'
+        : data.reqOut[m.id] ? '<span class="small muted">' + K.esc(t("f.reqWait")) + '</span>' : '<button class="btn" type="button" data-padd="' + K.esc(m.id) + '">' + K.esc(t("f.sendReq")) + '</button>') + '</div>');
     document.getElementById("modal").hidden = false;
   });
   document.getElementById("modal").addEventListener("click", function (e) {
@@ -1689,7 +1751,13 @@
   }
   if (social) {
     social.onMessage = receive;
-    social.onStatus = function () { if (current === "friends") { if (chatWith) renderChat(); renderFriendsSoon(); } };
+    social.onStatus = function (id, sc) {
+      // 好友在線上時，排行直接用他最新的成績
+      var f = data.friends[id];
+      if (f && sc && sc.ts >= (f.t || 0) && (f.k !== sc.k || f.m !== sc.m || f.p !== sc.p || f.s !== sc.s)) { f.k = sc.k; f.m = sc.m; f.p = sc.p; f.s = sc.s; f.t = sc.ts; K.save(STORE, data); }
+      if (current === "friends") { if (chatWith) renderChat(); renderFriendsSoon(); }
+    };
+    social.onRequest = onReq;
   }
   var rfTimer = null;
   function renderFriendsSoon() {
@@ -1755,8 +1823,16 @@
     var medals = ["🥇", "🥈", "🥉"];
     html += '<div class="me-line" style="margin-bottom:12px"><span class="av">' + avOf("me") + '</span><b style="flex:1">' + K.esc(data.me.name) + '</b>' +
       '<button class="linkbtn" type="button" data-act="edit-me">' + K.esc(t("f.edit")) + '</button></div>';
-    html += '<button class="btn block" type="button" data-act="invite">' + K.esc(t("f.invite")) + '</button>' +
-      '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("f.inviteP")) + '</p>';
+    html += '<div class="card addf-card"><h3 style="margin:0 0 8px">' + K.esc(t("f.addH")) + '</h3>' +
+      '<div class="myid">' + K.esc(t("f.myId")) + ' <b class="mono">' + K.esc(data.me.id) + '</b><button class="btn ghost" type="button" data-copy="' + K.esc(data.me.id) + '">' + K.esc(t("f.copy")) + '</button></div>' +
+      '<form class="req-form" id="req-form"><input type="text" id="f-id" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + K.esc(t("f.idph")) + '"><button class="btn" type="submit">' + K.esc(t("f.sendReq")) + '</button></form>' +
+      Object.keys(data.reqIn).map(function (id) { var r = data.reqIn[id];
+        return '<div class="req-row"><span class="av">' + K.esc(r.av) + '</span><span class="who"><b>' + K.esc(r.n) + '</b><span class="small muted">' + K.esc(t("f.reqIn")) + '</span></span>' +
+          '<button class="btn" type="button" data-racc="' + K.esc(id) + '">' + K.esc(t("f.accept")) + '</button><button class="btn ghost" type="button" data-rno="' + K.esc(id) + '">' + K.esc(t("f.decline")) + '</button></div>'; }).join("") +
+      Object.keys(data.reqOut).map(function (id) { var r = data.reqOut[id];
+        return '<div class="req-row"><span class="who"><b>' + K.esc(r.n || id) + '</b><span class="small muted">' + K.esc(t("f.reqOut")) + '</span></span>' +
+          '<button class="linkbtn" type="button" data-rcancel="' + K.esc(id) + '">' + K.esc(t("f.cancel")) + '</button></div>'; }).join("") +
+      '</div>';
     if (chatWith && data.friends[chatWith]) html += '<div class="card chat" id="chat-box"></div>';
     html += '<h2>' + K.esc(t("f.boardH")) + '</h2><div class="card"><ol class="board">' + rows.map(function (r, i) {
       var sub = r.me ? t("f.you") : (r.stale ? t("f.oldweek") : t("f.updated", { d: ago(r.t) }));
@@ -1792,6 +1868,8 @@
     html += '<p class="small muted">' + K.esc(t("f.how")) + '</p>';
     el.innerHTML = html;
     renderChat();
+    var rf = document.getElementById("req-form");
+    if (rf) rf.addEventListener("submit", function (e) { e.preventDefault(); var inp = document.getElementById("f-id"); if (sendFriendReq(inp.value)) renderFriends(); });
     if (cheerTo) { var cp = document.getElementById("composer"); if (cp) cp.scrollIntoView({ block: "center" }); }
   }
 
@@ -1800,6 +1878,9 @@
     var ds = b.dataset;
     if (ds.preset != null) { cheerPick = +ds.preset; return sendCheer(t("f.presets").split("|")[cheerPick]); }
     if (ds.cheer) { cheerTo = ds.cheer; cheerPick = 0; return renderFriends(); }
+    if (ds.racc) { acceptReq(ds.racc); return renderFriends(); }
+    if (ds.rno) { declineReq(ds.rno); return renderFriends(); }
+    if (ds.rcancel) { cancelReq(ds.rcancel); return renderFriends(); }
     if (ds.chat) { openChat(ds.chat); return; }
     if (ds.act === "close-chat") { chatWith = null; return renderFriends(); }
     if (ds.act === "send-chat") { sendChat(); return; }
@@ -1832,7 +1913,13 @@
     if (e.target.id === "modal" || (b && b.dataset.act === "close-modal")) { this.hidden = true; return; }
     if (b && b.dataset.cheer) { this.hidden = true; cheerTo = b.dataset.cheer; cheerPick = 0; show("friends"); }
   });
+  function copyText(v) {
+    var done = function () { K.toast(t("f.copied")); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, function () { window.prompt("", v); });
+    else window.prompt("", v);
+  }
   document.addEventListener("click", function (e) {
+    var cb = e.target.closest("[data-copy]"); if (cb) { copyText(cb.dataset.copy); return; }
     var b = e.target.closest('[data-act="next-quote"]'); if (b) { qi++; renderQuotes(); }
   });
   window.addEventListener("hashchange", readHash);

@@ -169,7 +169,7 @@
      u/<id>/in  收件匣：{type:"chat"|"friend", from, n, av, text, t} */
   function Social() {
     this.client = null; this.meId = null; this.status = {}; this.friends = [];
-    this.onMessage = function () {}; this.onStatus = function () {}; this.state = { focus: false };
+    this.onMessage = function () {}; this.onStatus = function () {}; this.onRequest = function () {}; this.state = { focus: false };
   }
   Social.prototype.start = function (meId, friendIds) {
     if (!window.mqtt || this.client) { if (this.client) this.setFriends(friendIds); return; }
@@ -184,6 +184,7 @@
     } catch (e) { this.client = null; return; }
     this.client.on("connect", function () {
       self.client.subscribe(PREFIX + "u/" + meId + "/in", { qos: 1 });
+      self.client.subscribe(PREFIX + "u/" + meId + "/rq/+", { qos: 1 });
       var ids = self.friends; self.friends = []; self.setFriends(ids.length ? ids : friendIds);
       self.publishState();
     });
@@ -193,7 +194,10 @@
       if (parts[2] === "st") {
         var id = parts[1];
         self.status[id] = m && !m.off && Date.now() - (+m.ts || 0) < 15 * 60 * 1000 ? { online: true, focus: !!m.focus, ts: +m.ts || 0 } : { online: false };
-        self.onStatus(id);
+        self.onStatus(id, m && typeof m.k === "string" ? { k: m.k.slice(0, 12), m: Math.max(0, Math.min(10080, +m.m || 0)), p: Math.max(0, +m.p || 0), s: Math.max(0, +m.s || 0), ts: +m.ts || 0 } : null);
+      } else if (parts[2] === "rq" && m && /^[a-z0-9]{4,16}$/i.test(parts[3] || "") && parts[3] !== meId && (m.k === "req" || m.k === "acc" || m.k === "no")) {
+        // 好友邀請／同意／回絕：保留訊息放在 u/<收件人>/rq/<寄件人>，對方不在線上也收得到
+        self.onRequest({ from: parts[3], k: m.k, n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), t: +m.t || Date.now() });
       } else if (parts[2] === "in" && m && typeof m.from === "string" && m.from !== meId) {
         self.onMessage({ type: m.type === "friend" || m.type === "cheer" ? m.type : "chat", from: m.from.slice(0, 16), n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), text: String(m.text || "").slice(0, 200), t: +m.t || Date.now() });
       }
@@ -215,12 +219,22 @@
   };
   Social.prototype.publishState = function () {
     if (!this.client || !this.client.connected) return;
-    this.client.publish(PREFIX + "u/" + this.meId + "/st", JSON.stringify({ focus: !!this.state.focus, ts: Date.now() }), { retain: true, qos: 1 });
+    var st = this.state;
+    this.client.publish(PREFIX + "u/" + this.meId + "/st", JSON.stringify({ focus: !!st.focus, k: st.k, m: st.m, p: st.p, s: st.s, ts: Date.now() }), { retain: true, qos: 1 });
   };
   Social.prototype.send = function (to, msg) {
     if (!this.client || !this.client.connected) return false;
     this.client.publish(PREFIX + "u/" + to + "/in", JSON.stringify(msg), { qos: 1 });
     return true;
+  };
+  Social.prototype.request = function (to, msg) {
+    if (!this.client || !this.client.connected) return false;
+    this.client.publish(PREFIX + "u/" + to + "/rq/" + this.meId, msg == null ? "" : JSON.stringify(msg), { retain: true, qos: 1 });
+    return true;
+  };
+  // 處理完就把那則保留訊息清掉
+  Social.prototype.clearRequest = function (from) {
+    if (this.client && this.client.connected) this.client.publish(PREFIX + "u/" + this.meId + "/rq/" + from, "", { retain: true, qos: 1 });
   };
   Social.prototype.online = function () { return !!(this.client && this.client.connected); };
 
