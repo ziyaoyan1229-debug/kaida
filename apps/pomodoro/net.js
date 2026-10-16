@@ -22,7 +22,7 @@
     if (!m || typeof m !== "object") return null;
     var look = m.look && typeof m.look === "object" ? m.look : {};
     var L = {};
-    ["g", "top", "hat", "face", "neck", "ears", "pet"].forEach(function (k) { if (typeof look[k] === "string") L[k] = look[k].slice(0, 16); });
+    ["g", "top", "style", "hat", "face", "neck", "ears", "back", "pet"].forEach(function (k) { if (typeof look[k] === "string") L[k] = look[k].slice(0, 16); });
     L.skin = Math.max(0, Math.min(2, +look.skin || 0)); L.hair = Math.max(0, Math.min(3, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),

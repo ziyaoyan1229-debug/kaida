@@ -6,7 +6,7 @@ const ACTS3 = ["read", "novel", "homework", "research", "report", "code", "pc", 
 const WRITE_ACTS = ["homework", "draw", "report", "vocab", "journal", "calligraphy"];
 const SKINS = ["#f6d7bd", "#e9b994", "#c98e64"];
 const HAIRS = ["#3b2a20", "#7a4a2a", "#c58b4c", "#2c2c34"];
-const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f" };
+const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f", cardigan: "#e6d3b3", plaid: "#c8574a", sport: "#3f6f6a", overalls: "#f3efe6" };
 
 /* ===== 小工具 ===== */
 const mats = {};
@@ -269,6 +269,14 @@ function makeChar(look) {
   if (look.top === "stripe") [0.12, 0.2, 0.28].forEach((y) => { const s = cyl(0.172, 0.172, 0.035, "#5d7fa8", 0, y, 0, torso); s.scale.z = 0.85; });
   if (look.top === "hoodie") { const hd = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.045, 8, 20), mat("#7a9a66")); hd.rotation.x = Math.PI / 2; hd.position.set(0, 0.4, -0.04); torso.add(hd); }
   if (look.top === "sweater") { const hm = cyl(0.175, 0.175, 0.05, "#c99a3e", 0, 0.06, 0, torso); hm.scale.z = 0.85; }
+  if (look.top === "cardigan") { box(0.1, 0.3, 0.02, "#f8f4ec", 0, 0.2, 0.15, torso); [0.26, 0.18].forEach((y) => sph(0.012, "#a08a6a", -0.06, y, 0.155, torso, 6, 4)); }
+  if (look.top === "plaid") { [0.1, 0.2, 0.3].forEach((y) => { const b2 = cyl(0.173, 0.173, 0.018, "#8a3a32", 0, y, 0, torso); b2.scale.z = 0.85; }); [-0.07, 0, 0.07].forEach((x) => box(0.016, 0.34, 0.02, "#8a3a32", x, 0.2, 0.142, torso)); }
+  if (look.top === "sport") { box(0.012, 0.32, 0.02, "#f3efe6", 0, 0.2, 0.145, torso); }
+  if (look.top === "overalls") { box(0.2, 0.16, 0.03, "#5d7fa8", 0, 0.14, 0.14, torso); const lw = cyl(0.172, 0.172, 0.12, "#5d7fa8", 0, 0.03, 0, torso); lw.scale.z = 0.85; [-0.07, 0.07].forEach((x) => { box(0.035, 0.22, 0.02, "#5d7fa8", x, 0.3, 0.13, torso); sph(0.015, "#e8b93a", x, 0.22, 0.15, torso, 6, 4); }); }
+  if (look.back === "backpack") { const bp = box(0.3, 0.32, 0.16, "#e0b04f", 0, 0.22, -0.2, torso); box(0.22, 0.12, 0.04, "#c99a3e", 0, 0.14, -0.29, torso); [-0.09, 0.09].forEach((x) => box(0.035, 0.3, 0.02, "#b98a30", x, 0.24, 0.135, torso)); bp.castShadow = true; }
+  if (look.back === "wings") { [-1, 1].forEach((sd) => { const w = sph(0.22, "#fffdf8", sd * 0.18, 0.3, -0.2, torso, 14, 10); w.scale.set(0.9, 0.55, 0.15); w.rotation.z = sd * -0.5; w.rotation.y = sd * 0.4; }); }
+  if (look.neck === "bowtie") [-1, 1].forEach((sd) => { const b3 = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.09, 8), mat("#c2453b")); b3.rotation.z = sd * Math.PI / 2; b3.position.set(sd * 0.045, 0.37, 0.15); torso.add(b3); });
+  if (look.neck === "pearls") { for (let i = 0; i < 9; i++) { const a = Math.PI * (0.15 + i * 0.0875); sph(0.022, mat("#fffdf8", { roughness: 0.2 }), Math.cos(a) * 0.14, 0.35 - Math.sin(a) * 0.03, Math.sin(a) * 0.13, torso, 8, 6); } }
   if (look.neck === "scarf") { const sc = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.055, 8, 20), mat("#c2453b")); sc.rotation.x = Math.PI / 2; sc.position.y = 0.4; torso.add(sc); box(0.08, 0.18, 0.04, "#c2453b", 0.07, 0.3, 0.14, torso); }
   // 手臂
   const arms = [];
@@ -285,7 +293,14 @@ function makeChar(look) {
   // 頭髮
   const capG = new THREE.SphereGeometry(0.325, 28, 16, 0, Math.PI * 2, 0, Math.PI * (girl ? 0.5 : 0.46));
   const hairCap = new THREE.Mesh(capG, mat(hair)); hairCap.castShadow = true; hairCap.rotation.x = -0.32; hairCap.position.set(0, 0.02, -0.01); hairCap.scale.set(1.05, 1, 1.02); head.add(hairCap);
-  if (girl) {
+  const style = look.style || "";
+  if (style === "bob") { const b4 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), mat(hair)); b4.rotation.x = -0.55; b4.position.set(0, 0.02, -0.03); b4.scale.set(1.08, 1, 1.02); head.add(b4); const fr2 = box(0.46, 0.08, 0.06, hair, 0, 0.17, 0.26, head); fr2.rotation.x = -0.25; }
+  else if (style === "long") { const bk = cap(0.27, 0.42, hair, head); bk.position.set(0, -0.25, -0.12); bk.scale.set(1.1, 1, 0.6); const fr2 = sph(0.12, hair, -0.1, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
+  else if (style === "pony") { sph(0.12, hair, 0, 0.12, -0.3, head); const tl = cap(0.08, 0.28, hair, head); tl.position.set(0, -0.12, -0.36); tl.rotation.x = 0.25; sph(0.045, "#e7a6a8", 0, 0.12, -0.2, head); const fr2 = sph(0.11, hair, 0.08, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
+  else if (style === "buns") { [-1, 1].forEach((sd) => sph(0.12, hair, sd * 0.2, 0.3, -0.03, head, 14, 10)); const fr2 = sph(0.12, hair, 0, 0.17, 0.22, head); fr2.scale.set(1.6, 0.5, 0.8); }
+  else if (style === "curly") { for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r0 = 0.28; sph(0.1, hair, Math.cos(a) * r0, 0.14 + Math.sin(i * 1.7) * 0.06, Math.sin(a) * r0 * 0.95 - 0.02, head, 10, 8); } for (let i = 0; i < 5; i++) sph(0.11, hair, -0.16 + i * 0.08, 0.3, -0.02 + (i % 2) * 0.05, head, 10, 8); }
+  else if (style === "spiky") { for (let i = 0; i < 9; i++) { const k2 = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.2, 6), mat(hair)); const a = (i - 4) * 0.28; k2.position.set(Math.sin(a) * 0.22, 0.3 + Math.cos(a) * 0.05, (i % 2 ? -0.05 : 0.08)); k2.rotation.z = -a * 0.9; k2.rotation.x = i % 2 ? -0.4 : 0.3; head.add(k2); } }
+  else if (girl) {
     const back = cap(0.25, 0.18, hair, head); back.position.set(0, -0.14, -0.1); back.scale.set(1.15, 1, 0.75);
     sph(0.06, "#e7a6a8", 0.24, 0.2, 0.08, head);
   } else {
@@ -298,6 +313,12 @@ function makeChar(look) {
   const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.008, 6, 12, Math.PI), mat("#7a4a3a")); mouth.rotation.z = Math.PI; mouth.position.set(0, -0.1, 0.29); head.add(mouth);
   // 配件
   if (look.face === "glasses") [-0.1, 0.1].forEach((x) => { const gl = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.01, 6, 18), mat("#4a3a2c")); gl.position.set(x, -0.01, 0.3); head.add(gl); });
+  if (look.face === "shades") { [-0.1, 0.1].forEach((x) => { const sg = cyl(0.07, 0.07, 0.02, "#2a2620", x, -0.005, 0.3, head, 16); sg.rotation.x = Math.PI / 2; }); box(0.06, 0.015, 0.015, "#2a2620", 0, 0.01, 0.31, head); }
+  if (look.face === "star") { const st2 = cyl(0.04, 0.04, 0.01, "#e8b93a", 0.17, -0.06, 0.255, head, 5); st2.rotation.x = Math.PI / 2; st2.rotation.y = 0.3; }
+  if (look.ears === "muffs") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.022, 8, 24, Math.PI), mat("#c98e9a")); band.position.y = 0.02; head.add(band); [-0.33, 0.33].forEach((x) => sph(0.1, "#f2c4c8", x, 0, 0, head, 12, 10)); }
+  if (look.hat === "cap") { const cp = new THREE.Mesh(new THREE.SphereGeometry(0.335, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.42), mat("#5d7fa8")); cp.position.y = 0.04; cp.rotation.x = -0.12; head.add(cp); const brim = cyl(0.2, 0.2, 0.025, "#4a6a90", 0, 0.12, 0.3, head, 20); brim.scale.z = 0.8; brim.rotation.x = 0.15; sph(0.025, "#4a6a90", 0, 0.36, 0, head, 6, 4); }
+  if (look.hat === "bunnyband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.02, 6, 20, Math.PI), mat("#e7a6a8")); band.position.y = 0.05; band.rotation.y = Math.PI / 2; band.rotation.x = 0; head.add(band); [-1, 1].forEach((sd) => { const e = cap(0.055, 0.26, "#fffdf8", head); e.position.set(sd * 0.11, 0.48, -0.02); e.rotation.z = -sd * 0.18; const inn = cap(0.025, 0.2, "#f2c4c8", head); inn.position.set(sd * 0.11, 0.48, 0.03); inn.rotation.z = -sd * 0.18; }); }
+  if (look.hat === "flower") { const fl = new THREE.Group(); fl.position.set(-0.24, 0.22, 0.12); head.add(fl); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; sph(0.04, "#e7a6a8", Math.cos(a) * 0.045, Math.sin(a) * 0.045, 0, fl, 8, 6); } sph(0.03, "#f2cc4a", 0, 0, 0.02, fl, 8, 6); }
   if (look.ears === "phones") {
     const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.025, 8, 24, Math.PI), mat("#5a6b7a")); band.position.y = 0.02; head.add(band);
     [-0.33, 0.33].forEach((x) => { const e = cyl(0.08, 0.08, 0.07, "#5a6b7a", x, 0.0, 0, head); e.rotation.z = Math.PI / 2; });
@@ -306,16 +327,8 @@ function makeChar(look) {
   if (look.hat === "straw") { cyl(0.55, 0.55, 0.025, "#e6c27a", 0, 0.2, -0.02, head, 28); cyl(0.24, 0.27, 0.18, "#e6c27a", 0, 0.29, -0.02, head); cyl(0.272, 0.272, 0.04, "#c2453b", 0, 0.23, -0.02, head); }
   if (look.hat === "beret") { const b = sph(0.3, "#3d3a4a", 0.04, 0.24, -0.03, head); b.scale.set(1.05, 0.35, 1); sph(0.03, "#3d3a4a", 0.04, 0.34, -0.03, head); }
   if (look.hat === "crown") { const cr = cyl(0.16, 0.16, 0.12, mat("#e8b93a", { metalness: 0.5, roughness: 0.35 }), 0, 0.33, 0, head, 10); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; const k = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.09, 6), mat("#e8b93a", { metalness: 0.5, roughness: 0.35 })); k.position.set(Math.cos(a) * 0.15, 0.43, Math.sin(a) * 0.15); head.add(k); } sph(0.03, "#c2453b", 0, 0.34, 0.16, head); cr.castShadow = true; }
-  // 小貓
-  let cat = null;
-  if (look.pet === "cat") {
-    cat = new THREE.Group();
-    const c1 = sph(0.13, "#e3a35b", 0, 0.12, 0, cat); c1.scale.set(0.9, 0.8, 1.3);
-    sph(0.1, "#e3a35b", 0, 0.25, 0.14, cat);
-    [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.07, 4), mat("#e3a35b")); e.position.set(x, 0.35, 0.14); cat.add(e); sph(0.015, "#2f2622", x * 0.8, 0.26, 0.23, cat, 6, 6); });
-    const tail = cap(0.025, 0.18, "#e3a35b", cat); tail.position.set(0, 0.22, -0.16); tail.rotation.x = -0.6;
-    cat.userData.tail = tail;
-  }
+  // 寵物夥伴
+  const cat = look.pet ? makePet(look.pet) : null;
   // 手上的小東西：書（翻頁）、杯子、餅乾，依動作顯示
   const book = new THREE.Group(); book.position.set(0, 0.3, 0.26); book.rotation.x = -0.75; torso.add(book);
   box(0.36, 0.012, 0.24, "#7a5c8a", 0, -0.008, 0, book);
@@ -332,6 +345,34 @@ function makeChar(look) {
   [[-0.02, 0.01], [0.02, -0.015], [0.015, 0.025]].forEach(([x, y]) => sph(0.009, "#5a3a22", x, y, 0.012, cookie, 6, 4));
   cookie.visible = false;
   return { root, hips, torso, head, legs, arms, eyes, cat, book, cup, cookie };
+}
+
+/* ===== 寵物 ===== */
+function makePet(kind) {
+  const g = new THREE.Group();
+  const col = { cat: "#e3a35b", shiba: "#d9914a", bunny: "#fffdf8", chick: "#f2cc4a", panda: "#fffdf8" }[kind] || "#e3a35b";
+  let tail;
+  if (kind === "chick") {
+    const b = sph(0.14, col, 0, 0.14, 0, g); b.scale.set(1, 0.95, 1.05);
+    const bk = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.06, 6), mat("#e0a830")); bk.rotation.x = Math.PI / 2; bk.position.set(0, 0.16, 0.15); g.add(bk);
+    [-0.05, 0.05].forEach((x) => sph(0.015, "#2f2622", x, 0.2, 0.12, g, 6, 6));
+    tail = sph(0.05, col, 0, 0.18, -0.12, g, 8, 6); tail.scale.set(1, 0.6, 1);
+    [-0.1, 0.1].forEach((x) => { const w = sph(0.06, "#e8bf3a", x * 1.3, 0.13, 0, g, 8, 6); w.scale.set(0.4, 0.8, 1); });
+  } else {
+    const c1 = sph(0.13, col, 0, 0.12, 0, g); c1.scale.set(0.9, 0.8, 1.3);
+    const hd = sph(0.1, col, 0, 0.25, 0.14, g);
+    if (kind === "panda") { [-0.06, 0.06].forEach((x) => { sph(0.035, "#2a2620", x, 0.34, 0.12, g, 8, 6); const p2 = sph(0.028, "#2a2620", x * 0.7, 0.26, 0.225, g, 8, 6); p2.scale.set(0.8, 1, 0.5); }); [-0.08, 0.08].forEach((x) => sph(0.05, "#2a2620", x, 0.06, 0.1, g, 8, 6)); c1.scale.set(1, 0.85, 1.25); }
+    else if (kind === "bunny") { [-0.035, 0.035].forEach((x) => { const e = cap(0.025, 0.14, "#fffdf8", g); e.position.set(x, 0.42, 0.12); e.rotation.z = x * 3; const inn = cap(0.012, 0.1, "#f2c4c8", g); inn.position.set(x, 0.42, 0.14); inn.rotation.z = x * 3; }); }
+    else { [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.07, 4), mat(col)); e.position.set(x, 0.35, 0.14); g.add(e); }); }
+    if (kind === "shiba") { const m2 = sph(0.06, "#fff4e4", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.8); }
+    if (kind !== "panda") [-0.04, 0.04].forEach((x) => sph(0.015, "#2f2622", x, 0.26, 0.23, g, 6, 6));
+    if (kind === "bunny") { tail = sph(0.05, "#fffdf8", 0, 0.14, -0.17, g, 8, 6); }
+    else if (kind === "shiba") { tail = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.022, 6, 12, Math.PI * 1.5), mat(col)); tail.position.set(0, 0.24, -0.15); tail.rotation.y = Math.PI / 2; g.add(tail); }
+    else if (kind === "panda") { tail = sph(0.03, "#fffdf8", 0, 0.14, -0.16, g, 6, 6); }
+    else { tail = cap(0.025, 0.18, col, g); tail.position.set(0, 0.22, -0.16); tail.rotation.x = -0.6; }
+  }
+  g.userData.tail = tail;
+  return g;
 }
 
 /* ===== 書桌上的東西 ===== */
