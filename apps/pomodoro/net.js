@@ -26,7 +26,7 @@
     L.skin = Math.max(0, Math.min(2, +look.skin || 0)); L.hair = Math.max(0, Math.min(3, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
-      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0
+      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0, hr: Math.max(0, Math.min(1e7, Math.floor(+m.hr || 0)))
     };
   }
 
@@ -47,7 +47,7 @@
     this.code = opts.code; this.meId = opts.me.id; this.members = {}; this.meta = null;
     var base = PREFIX + opts.code;
     var mine = base + "/m/" + opts.me.id;
-    this.me = { name: opts.me.name, look: opts.me.look, act: opts.me.act, av: opts.me.av, fl: opts.me.fl, up: opts.me.up, joined: Date.now(), ts: Date.now() };
+    this.me = { name: opts.me.name, look: opts.me.look, act: opts.me.act, av: opts.me.av, fl: opts.me.fl, hr: opts.me.hr, up: opts.me.up, joined: Date.now(), ts: Date.now() };
     return new Promise(function (resolve) {
       var done = false;
       function finish(r) { if (!done) { done = true; resolve(r); } }

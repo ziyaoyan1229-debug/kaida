@@ -483,7 +483,7 @@ function makeProp(act) {
 
 /* ===== 場景 ===== */
 let renderer, scene, camera, container, overlay, clock, raf = 0, mounted = false;
-let fillLight, envNext = 0, fireLight, fireMeshes = [], embers, dust, steam, bulbs = [], pendulum, curtains = [], beam, sunLight, hemi, lampLight, skyMat, plants = [];
+let skyNext = 0, fillLight, envNext = 0, fireLight, fireMeshes = [], embers, dust, steam, bulbs = [], pendulum, curtains = [], beam, sunLight, hemi, lampLight, skyMat, plants = [];
 let seatProps = [], chars = {}, reserved = {};
 let barLight, tvTex, tvLight, record, speakers = [], notes = [], floorLight, houseCat;
 let yaw = 0.64, pitch = 0.72, dragYaw = 0, dragPitch = 0;
@@ -542,11 +542,15 @@ function drawSky(e) {
     g.globalAlpha = Math.min(1, e.dark * 1.3); g.fillStyle = "#fff4d2"; g.beginPath(); g.arc(x, y, 15, 0, 7); g.fill();
     g.fillStyle = e.top; g.beginPath(); g.arc(x + 7, y - 5, 13, 0, 7); g.fill(); g.globalAlpha = 1;
   }
+  if (T().rain) { g.fillStyle = "rgba(60,70,88,.5)"; g.fillRect(0, 0, W, H); }
   // 雲
   g.globalAlpha = 0.8 * (1 - e.dark * 0.8); g.fillStyle = lerpC("#ffffff", e.bot, 0.35);
   const drift = (h * 18) % 300;
   [[40, 90], [150, 60], [210, 100]].forEach(([x, y]) => { x = ((x + drift) % 300) - 30; g.beginPath(); g.ellipse(x, y, 26, 9, 0, 0, 7); g.ellipse(x + 14, y - 6, 16, 9, 0, 0, 7); g.fill(); });
   g.globalAlpha = 1;
+  const land = LAND[T().sky];
+  if (land) land(g, e, W, H, performance.now() / 1000);
+  else {
   // 遠山與樹
   g.fillStyle = lerpC("#9cbf8a", "#1c2a44", e.dark);
   g.beginPath(); g.moveTo(0, 160); g.quadraticCurveTo(60, 120, 120, 150); g.quadraticCurveTo(190, 115, 256, 150); g.lineTo(256, 192); g.lineTo(0, 192); g.fill();
@@ -554,8 +558,82 @@ function drawSky(e) {
   for (let i = 0; i < 8; i++) { const x = 10 + i * 34; g.beginPath(); g.moveTo(x, 192); g.lineTo(x + 10, 150 + (i % 3) * 8); g.lineTo(x + 20, 192); g.fill(); }
   // 遠方人家的燈
   if (e.dark > 0.3) { g.fillStyle = "#ffd27a"; g.globalAlpha = e.dark; [[60, 168], [150, 172], [205, 165]].forEach(([x, y]) => g.fillRect(x, y, 3, 3)); g.globalAlpha = 1; }
+  }
   skyTex.needsUpdate = true;
 }
+// 各主題窗外的景色（天空、太陽月亮共用，這裡畫地面那一層）
+function pine(g, x, base, h, col, snow) {
+  g.fillStyle = col; for (let k = 0; k < 3; k++) { const w = h * (0.42 - k * 0.09), y = base - h * k * 0.28; g.beginPath(); g.moveTo(x - w, y); g.lineTo(x, y - h * 0.5); g.lineTo(x + w, y); g.fill(); }
+  if (snow) { g.fillStyle = snow; for (let k = 0; k < 3; k++) { const w = h * (0.2 - k * 0.04), y = base - h * k * 0.28 - h * 0.5 + h * 0.2; g.beginPath(); g.moveTo(x - w, y); g.lineTo(x, y - h * 0.2); g.lineTo(x + w, y); g.fill(); } }
+}
+const LAND = {
+  city: (g, e, W, H, t) => {
+    const d = e.dark;
+    let x = 0, i = 0; g.fillStyle = lerpC("#8a9bb0", "#1c2540", d);
+    while (x < W) { const bw = 18 + (i * 7) % 16, bh = 50 + (i * 29) % 60; g.fillRect(x, H - bh - 10, bw, bh + 10); if (i % 4 === 1) g.fillRect(x + bw / 2 - 1, H - bh - 24, 2, 14); x += bw + 2; i++; }
+    x = -6; i = 3;
+    while (x < W) {
+      const bw = 24 + (i * 11) % 20, bh = 30 + (i * 37) % 45;
+      g.fillStyle = lerpC("#6f8098", "#121a2c", d); g.fillRect(x, H - bh, bw, bh);
+      for (let wy = H - bh + 6; wy < H - 4; wy += 8) for (let wx = x + 4; wx < x + bw - 4; wx += 6) {
+        const on = (wx * 7 + wy * 13 + i) % 5 < 3;
+        g.fillStyle = on && d > 0.3 ? "rgba(255,214,130," + (0.4 + d * 0.6) + ")" : lerpC("#b8c6d4", "#1e2840", d); g.fillRect(wx, wy, 3, 4);
+      }
+      x += bw + 3; i++;
+    }
+    if (d > 0.3) { g.fillStyle = "#ff4a4a"; g.globalAlpha = (Math.sin(t * 3) + 1) / 2 * d; g.fillRect(60, H - 112, 3, 3); g.globalAlpha = 1; }
+    if (T().rain) { g.strokeStyle = "rgba(200,220,255,.45)"; g.lineWidth = 1; const off = (t * 260) % H; for (let k = 0; k < 80; k++) { const rx = (k * 53) % W, ry = ((k * 97) % H + off) % H; g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx - 3, ry + 12); g.stroke(); } }
+  },
+  sea: (g, e, W, H, t) => {
+    const d = e.dark, hz = 118;
+    const sea = g.createLinearGradient(0, hz, 0, H); sea.addColorStop(0, lerpC("#4aa0cc", "#16284a", d)); sea.addColorStop(1, lerpC("#2a7aa8", "#0c1830", d));
+    g.fillStyle = sea; g.fillRect(0, hz, W, H - hz);
+    g.strokeStyle = "rgba(255,255,255," + (0.55 - d * 0.3) + ")"; g.lineWidth = 1.5;
+    for (let r = 0; r < 6; r++) { const y = hz + 8 + r * 9, ph = t * (0.8 + r * 0.2) + r; for (let k = 0; k < 5; k++) { const wx = ((k * 61 + r * 23 + ph * 12) % (W + 40)) - 20; g.beginPath(); g.moveTo(wx, y); g.quadraticCurveTo(wx + 6, y - 2, wx + 12, y); g.stroke(); } }
+    const fx = 30 + ((t * 18) % 60); g.fillStyle = "rgba(255,255,255," + (0.8 - d * 0.4) + ")"; g.beginPath(); g.moveTo(0, 170); for (let k = 0; k <= 8; k++) g.quadraticCurveTo(k * 32 + 16, 166 + Math.sin(t * 1.5 + k) * 3, k * 32 + 32, 170); g.lineTo(W, 175); g.lineTo(0, 175); g.fill();
+    g.fillStyle = lerpC("#f0d8a8", "#3a3448", d); g.beginPath(); g.moveTo(0, H); g.lineTo(0, 174); g.quadraticCurveTo(128, 168, 256, 178); g.lineTo(W, H); g.fill();
+    // 椰子樹
+    const pc = lerpC("#4a7a3a", "#0c1422", d), tc = lerpC("#8a6a4a", "#14141e", d);
+    g.strokeStyle = tc; g.lineWidth = 5; g.beginPath(); g.moveTo(222, H); g.quadraticCurveTo(232, 140, 212, 100); g.stroke();
+    g.fillStyle = pc; for (let k = 0; k < 6; k++) { const a = -Math.PI + k * Math.PI / 5 + Math.sin(t + k) * 0.05; g.beginPath(); g.moveTo(212, 100); g.quadraticCurveTo(212 + Math.cos(a) * 26, 100 + Math.sin(a) * 26 - 8, 212 + Math.cos(a) * 44, 108 + Math.sin(a) * 30); g.quadraticCurveTo(212 + Math.cos(a) * 22, 100 + Math.sin(a) * 20 + 4, 212, 100); g.fill(); }
+    if (d < 0.5) { g.fillStyle = "#fff"; g.fillRect(70 + ((t * 4) % 120), hz - 9, 2, 9); g.beginPath(); g.moveTo(72 + ((t * 4) % 120), hz - 9); g.lineTo(80 + ((t * 4) % 120), hz - 2); g.lineTo(72 + ((t * 4) % 120), hz - 2); g.fill(); }
+  },
+  forest: (g, e, W, H, t) => {
+    const d = e.dark;
+    [["#7ea880", "#1a2a30", 120, 34, 13], ["#5e8a5e", "#121e24", 150, 46, 21], ["#3f6a44", "#0a141a", 182, 64, 29]].forEach(([a, b, base, h, step], L) => {
+      for (let x = -10, k = 0; x < W + 20; x += step, k++) pine(g, x + (k % 2) * 4, base + (k % 3) * 4, h + (k * 7 % 3) * 8, lerpC(a, b, d));
+      g.fillStyle = lerpC(a, b, d); g.fillRect(0, base, W, H - base);
+    });
+    if (d > 0.4) for (let k = 0; k < 18; k++) { const fx = (k * 47 + Math.sin(t * 0.7 + k) * 14 + 256) % W, fy = 110 + (k * 29) % 70 + Math.cos(t * 0.9 + k * 2) * 8; g.globalAlpha = d * (0.4 + 0.6 * Math.max(0, Math.sin(t * 2.2 + k * 1.7))); g.fillStyle = "#e8ff8a"; g.beginPath(); g.arc(fx, fy, 1.8, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+  },
+  bamboo: (g, e, W, H, t) => {
+    const d = e.dark;
+    g.fillStyle = lerpC("#cfc8b0", "#2a2a30", d); g.fillRect(0, 168, W, H - 168);
+    g.fillStyle = lerpC("#e8e2d0", "#3a3a40", d); for (let k = 0; k < 60; k++) g.fillRect((k * 41) % W, 170 + (k * 13) % 20, 2, 1);
+    for (let k = 0; k < 14; k++) {
+      const x = (k * 37 + (k % 3) * 9) % W, sw = 4 + (k % 3) * 2, sway = Math.sin(t * 0.8 + k) * 2;
+      g.fillStyle = lerpC(k % 2 ? "#6a9a4a" : "#88b05a", "#14261e", d);
+      g.beginPath(); g.moveTo(x, 172); g.lineTo(x + sway, 0); g.lineTo(x + sway + sw, 0); g.lineTo(x + sw, 172); g.fill();
+      g.fillStyle = lerpC("#4a7a34", "#0c1a14", d); for (let y = 20 + (k * 13) % 30; y < 168; y += 34) g.fillRect(x + sway * (1 - y / 172) - 1, y, sw + 2, 2);
+      g.fillStyle = lerpC("#5a8a3e", "#10201a", d); for (let y = 30 + (k * 17) % 40; y < 140; y += 46) { g.beginPath(); g.ellipse(x + sw + 8 + sway, y, 10, 3, 0.4, 0, 7); g.ellipse(x - 8 + sway, y + 10, 10, 3, -0.4, 0, 7); g.fill(); }
+    }
+    // 石燈籠
+    g.fillStyle = lerpC("#9a968a", "#3a3a40", d); g.fillRect(186, 150, 8, 22); g.fillRect(178, 140, 24, 10); g.beginPath(); g.moveTo(174, 140); g.lineTo(190, 128); g.lineTo(206, 140); g.fill();
+    if (d > 0.3) { g.fillStyle = "rgba(255,200,110," + d + ")"; g.fillRect(185, 142, 10, 6); }
+  },
+  snow: (g, e, W, H, t) => {
+    const d = e.dark;
+    g.fillStyle = lerpC("#b8c8d8", "#2a3450", d); g.beginPath(); g.moveTo(0, 150); g.lineTo(60, 80); g.lineTo(110, 140); g.lineTo(170, 70); g.lineTo(256, 150); g.lineTo(256, H); g.lineTo(0, H); g.fill();
+    g.fillStyle = lerpC("#ffffff", "#c8d0e0", d); [[60, 80, 18], [170, 70, 22]].forEach(([x, y, w]) => { g.beginPath(); g.moveTo(x - w, y + w * 0.9); g.lineTo(x, y); g.lineTo(x + w, y + w * 0.9); g.lineTo(x + w * 0.4, y + w * 0.7); g.lineTo(x, y + w); g.lineTo(x - w * 0.4, y + w * 0.7); g.fill(); });
+    g.fillStyle = lerpC("#f4f8fc", "#8a96b0", d); g.beginPath(); g.moveTo(0, H); g.lineTo(0, 165); g.quadraticCurveTo(128, 150, 256, 168); g.lineTo(W, H); g.fill();
+    for (let k = 0; k < 9; k++) pine(g, 8 + k * 30 + (k % 2) * 6, 178 + (k % 3) * 4, 40 + (k % 3) * 10, lerpC("#2f5a44", "#0e1a20", d), lerpC("#ffffff", "#b0bccc", d));
+    if (d > 0.3) { g.fillStyle = "rgba(255,210,130," + d + ")"; g.fillRect(120, 160, 4, 3); g.fillRect(127, 160, 4, 3); }
+    g.fillStyle = "#fff";
+    for (let k = 0; k < 70; k++) { const sp = 14 + (k % 5) * 6, fy = ((k * 37) % H + t * sp) % H, fx = ((k * 59) % W + Math.sin(t + k) * 6 + W) % W; g.globalAlpha = 0.6 + (k % 3) * 0.13; g.beginPath(); g.arc(fx, fy, 0.8 + (k % 3) * 0.5, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+  }
+};
 function applyEnv(e) {
   hemi.intensity = e.hemi;
   sunLight.intensity = e.sun; sunLight.color.set(e.sunC);
@@ -635,7 +713,41 @@ const TEX = {
       g.fillStyle = "#3a2216"; g.fillRect(0, y0 + 100, w, 14);
     }
   }, 1, 1),
-  wood: (a, b, n) => { const t = woodTexture(a, b, n || 8, false, 512, 512); t.repeat.set(3.2, 2.7); return t; }
+  wood: (a, b, n) => { const t = woodTexture(a, b, n || 8, false, 512, 512); t.repeat.set(3.2, 2.7); return t; },
+  // 便利商店：白牆加三色招牌條
+  stripe: (base, bands) => canvasTex(256, 512, (g, w, h) => {
+    g.fillStyle = base; g.fillRect(0, 0, w, h); speckle(g, w, h, 300, "#90a0b0", 0.06);
+    bands.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, h * 0.62 + i * 14, w, 10); });
+  }, 3, 1),
+  // 榻榻米：草蓆紋路加深色布邊
+  tatami: () => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = "#c9c08a"; g.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 3) { g.fillStyle = y % 6 ? "rgba(120,110,60,.10)" : "rgba(255,250,200,.10)"; g.fillRect(0, y, w, 2); }
+    g.fillStyle = "#3a3a2a"; [[0, 0, w, 10], [0, h / 2 - 5, w, 10], [0, 0, 10, h], [w / 2 - 5, 0, 10, h / 2], [w - 10, 0, 10, h]].forEach((r) => g.fillRect(...r));
+    speckle(g, w, h, 800, "#6a6030", 0.12);
+  }, 3.2, 2.7),
+  // 和室牆：米色土牆加木柱
+  shoji: () => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = "#e8dcc0"; g.fillRect(0, 0, w, h); speckle(g, w, h, 1400, "#a08a60", 0.12);
+    g.fillStyle = "#5a4030"; for (let x = 0; x < w; x += 256) g.fillRect(x, 0, 18, h);
+    g.fillRect(0, h * 0.2, w, 12); g.fillRect(0, h - 26, w, 26);
+  }, 3, 1),
+  // 原木牆：一根根橫放的圓木
+  logs: (base) => canvasTex(512, 512, (g, w, h) => {
+    const n = 8, lh = h / n;
+    for (let i = 0; i < n; i++) {
+      const gr = g.createLinearGradient(0, i * lh, 0, (i + 1) * lh);
+      gr.addColorStop(0, lerpC(base, "#000000", 0.35)); gr.addColorStop(0.3, lerpC(base, "#ffffff", 0.12)); gr.addColorStop(0.75, base); gr.addColorStop(1, lerpC(base, "#000000", 0.45));
+      g.fillStyle = gr; g.fillRect(0, i * lh, w, lh);
+      g.strokeStyle = lerpC(base, "#000000", 0.25); g.lineWidth = 1.5; for (let k = 0; k < 5; k++) { g.beginPath(); const y = i * lh + 8 + ((k * 17 + i * 5) % (lh - 16)); g.moveTo((k * 131 + i * 47) % w, y); g.lineTo(((k * 131 + i * 47) % w) + 60 + k * 9, y + 1); g.stroke(); }
+    }
+    speckle(g, w, h, 600, "#2a1a10", 0.15);
+  }, 2.5, 1.6),
+  // 頂樓水泥：灰色板塊和縫
+  concrete: (base, s) => canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = base; g.fillRect(0, 0, w, h); speckle(g, w, h, 2500, "#000", 0.08); speckle(g, w, h, 900, "#fff", 0.05);
+    g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 3; for (let i = 0; i <= w; i += s) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); }
+  }, 3.2, 2.7)
 };
 // 每個主題：地板、牆、家具換色（舊色 → 新色）、窗外、火的顏色、要不要每張桌子都有隔板
 const THEMES = {
@@ -669,6 +781,42 @@ const THEMES = {
     floor: () => TEX.wood("#d4a874", "#8a5a38", 12), wall: () => TEX.school(),
     remap: { "#b07a4f": "#d9b98a", "#9a6640": "#c9a878", "#8a5a38": "#6b7a88", "#a06a42": "#3f6fa0", "#7a4a2a": "#56636f", "#c26f5e": "#d98c4a", "#d27d6b": "#e3a060", "#c9746a": "#e8d8a8", "#b5655c": "#d8c898" },
     bg: "#8a7050", decor: schoolDecor
+  },
+  konbini: {
+    rug: null, sky: "city", rain: true, skyAnim: true,
+    floor: () => TEX.vinyl("#eceef0", "#e1e4e7"), wall: () => TEX.stripe("#f4f6f7", ["#2f9a6a", "#f08a3c", "#3a78c8"]),
+    remap: { "#8a5a38": "#9aa2ab", "#7a4a2a": "#7d8792", "#a06a42": "#e8ecef", "#b07a4f": "#dfe3e6", "#9a6640": "#c4cad0", "#5a3a22": "#4a525c", "#c26f5e": "#2f9a6a", "#d27d6b": "#43b07e", "#c9746a": "#e6eef2", "#b5655c": "#cfd8de", "#b4a08c": "#a8b0b8", "#9c8b7a": "#8a929a", "#d9a77e": "#f08a3c", "#e0b04f": "#f6c445", "#6b4a32": "#7d8792" },
+    bg: "#1e2632", decor: konbiniDecor
+  },
+  washitsu: {
+    rug: null, sky: "bamboo", skyAnim: true,
+    floor: () => TEX.tatami(), wall: () => TEX.shoji(),
+    remap: { "#8a5a38": "#5a4030", "#7a4a2a": "#4a3426", "#a06a42": "#8a6a4a", "#b07a4f": "#a8835a", "#9a6640": "#7a5a3e", "#c26f5e": "#5e6e4a", "#d27d6b": "#7a8a5a", "#c9746a": "#f1ead8", "#b5655c": "#d8ccb0", "#b4a08c": "#8a8478", "#9c8b7a": "#6e6a60", "#e0b04f": "#f1ead8", "#d9a77e": "#a8b47a" },
+    bg: "#2a2218", decor: washitsuDecor
+  },
+  cabin: {
+    rug: ["#5a3a26", "#c9a45a", "#3f6a3a"], sky: "forest", skyAnim: true,
+    floor: () => TEX.wood("#8a5a3a", "#4a2a18", 8), wall: () => TEX.logs("#9a6a42"),
+    remap: { "#c26f5e": "#a83a2e", "#d27d6b": "#c25a44", "#c9746a": "#3f6a3a", "#b5655c": "#2f5230", "#d9a77e": "#8a6a4a" },
+    bg: "#1e2416", decor: cabinDecor
+  },
+  beach: {
+    rug: ["#7ac4c4", "#f6f2e8", "#f2a65a"], sky: "sea", skyAnim: true,
+    floor: () => TEX.wood("#d8b88a", "#a07a50", 10), wall: () => { const t = woodTexture("#eef4f4", "#b8ccd0", 12, false, 512, 512); t.repeat.set(2.5, 1); return t; },
+    remap: { "#8a5a38": "#e8eef0", "#7a4a2a": "#c8d4d8", "#a06a42": "#d8c8a8", "#b07a4f": "#e2cfa8", "#9a6640": "#c9b48a", "#5a3a22": "#7a6a50", "#c26f5e": "#3a8ab0", "#d27d6b": "#f2f0e6", "#c9746a": "#f6f2e8", "#b5655c": "#e6e0d0", "#e0b04f": "#f2a65a", "#d9a77e": "#7ac4c4", "#b4a08c": "#e0d6c4", "#9c8b7a": "#c4b8a4" },
+    bg: "#3a6a8a", decor: beachDecor
+  },
+  rooftop: {
+    rug: ["#2e3236", "#f2a65a", "#c94a6a"], sky: "city", skyAnim: true,
+    floor: () => TEX.concrete("#8a8e94", 128), wall: () => { const t = TEX.concrete("#6e7278", 256); t.repeat.set(2.5, 1); return t; },
+    remap: { "#8a5a38": "#3a3e44", "#7a4a2a": "#2e3236", "#a06a42": "#b08a5a", "#b07a4f": "#c49a68", "#9a6640": "#9a7a52", "#c26f5e": "#e8d8b8", "#d27d6b": "#f2a65a", "#c9746a": "#3a3e44", "#b5655c": "#2e3236", "#b4a08c": "#6a6e74", "#9c8b7a": "#4a4e54", "#d9a77e": "#c94a6a" },
+    bg: "#1c2030", decor: rooftopDecor
+  },
+  lodge: {
+    rug: ["#b0302a", "#f2ece0", "#2f5a44"], sky: "snow", skyAnim: true,
+    floor: () => TEX.wood("#a8784a", "#5a3a20", 8), wall: () => TEX.logs("#b08458"),
+    remap: { "#c26f5e": "#b0302a", "#d27d6b": "#e8e2d6", "#c9746a": "#a8302a", "#b5655c": "#7a2420", "#8fae7a": "#2f5a44", "#9cbf7a": "#3f6a54", "#e0b04f": "#e8e2d6" },
+    bg: "#3a4458", decor: lodgeDecor
   }
 };
 function T() { return THEMES[THEME] || THEMES.home; }
@@ -770,6 +918,124 @@ function schoolDecor() {
     const f = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.28, 3), mat(cols[i % cols.length])); f.rotation.z = Math.PI; f.position.set(x, y - 0.14, -3.9); scene.add(f);
   }
   framed(signTex([{ t: "三年二班", s: 36, b: 1 }], { bg: "#f8f4ec", fg: "#2a2620", w: 256, h: 90 }), 1.0, 0.35, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#8a6a3a");
+}
+
+function tubeLights(list, col) {
+  list.forEach(([x, z]) => {
+    [-0.5, 0.5].forEach((d) => box(0.006, 1.3, 0.006, "#8e96a1", x + d, 3.4, z, scene));
+    box(1.3, 0.06, 0.32, "#d8dde3", x, 2.75, z, scene).castShadow = false;
+    box(1.2, 0.02, 0.24, new THREE.MeshBasicMaterial({ color: col || 0xf4fbff }), x, 2.715, z, scene).castShadow = false;
+  });
+}
+function hangLantern(x, y, z, body, glowC, s) {
+  box(0.008, 3.3 - y, 0.008, "#2a2620", x, (3.3 + y) / 2 + 0.1, z, scene);
+  const l = sph(0.16 * (s || 1), new THREE.MeshStandardMaterial({ color: body, emissive: body, emissiveIntensity: 0.55, roughness: 0.9 }), x, y, z, scene, 16, 12); l.scale.y = 1.25; l.castShadow = false;
+  cyl(0.07 * (s || 1), 0.07 * (s || 1), 0.04, "#2a2620", x, y + 0.2 * (s || 1), z, scene, 10); cyl(0.07 * (s || 1), 0.07 * (s || 1), 0.04, "#2a2620", x, y - 0.2 * (s || 1), z, scene, 10);
+  glowBulb(x, y, z, glowC, 0.7 * (s || 1));
+}
+// 深夜便利商店：發光飲料櫃、日光燈、招牌、特價海報
+function konbiniDecor() {
+  tubeLights([[-1.0, 0.4], [2.4, 0.4], [-1.0, 3.6], [2.4, 3.6], [5.0, 1.8]]);
+  const cool = new THREE.PointLight(0xeef6ff, 1.6, 12, 1.2); cool.position.set(1.5, 2.8, 1.7); scene.add(cool);
+  const fr = new THREE.Group(); fr.position.set(SPOT_BACK.x, 0, -3.82); scene.add(fr);
+  box(1.12, 2.3, 0.34, "#dfe4e9", 0, 1.15, 0, fr);
+  box(1.0, 2.0, 0.02, new THREE.MeshBasicMaterial({ color: 0xd8f0ff }), 0, 1.1, 0.06, fr).castShadow = false;
+  const bc = ["#e8473a", "#3a8ad8", "#f6c445", "#43b07e", "#f08a3c", "#e86aa0", "#ffffff"];
+  [0.35, 0.82, 1.29, 1.76].forEach((y, r) => { box(1.0, 0.02, 0.2, "#c4cad0", 0, y - 0.11, 0.08, fr); for (let k = 0; k < 8; k++) cyl(0.04, 0.04, 0.18 + (k % 2) * 0.04, new THREE.MeshBasicMaterial({ color: bc[(k + r * 3) % 7] }), -0.42 + k * 0.12, y, 0.1, fr, 8); });
+  box(1.02, 2.02, 0.01, new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.18, roughness: 0.05 }), 0, 1.1, 0.19, fr).castShadow = false;
+  box(1.12, 0.14, 0.02, new THREE.MeshBasicMaterial({ color: 0x2f9a6a }), 0, 2.22, 0.18, fr);
+  const fl = new THREE.PointLight(0xcfeaff, 0.9, 3, 1.6); fl.position.set(SPOT_BACK.x, 1.2, -3.2); scene.add(fl);
+  wallPlane(signTex([{ t: "KAIDA MART", s: 40, b: 1, c: "#ffffff" }, { t: "24H · 讀書補給站", s: 20, c: "#ffe08a" }], { bg: "#2f9a6a", w: 256, h: 128 }), 0.9, 0.45, SPOT_SNACK.x, SPOT_SNACK.y, -3.93, "back", {});
+  framed(signTex([{ t: "本日特價", s: 34, b: 1, c: "#e8473a" }, { t: "關東煮 ……… 2 串 50", s: 18, c: "#2a2620" }, { t: "飯糰 ………… 第二件 6 折", s: 18, c: "#2a2620" }, { t: "熱拿鐵 ……… 45", s: 18, c: "#2a2620" }, { t: "考生加油 ✿", s: 20, c: "#f08a3c" }], { bg: "#fff8dc", w: 300, h: 160 }), 1.8, 0.78, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left", "#f08a3c");
+}
+// 日式和室：掛軸、紙拉門、燈籠
+function washitsuDecor() {
+  const scroll = canvasTex(128, 320, (g, w, h) => {
+    g.fillStyle = "#4a6a5a"; g.fillRect(0, 0, w, h); g.fillStyle = "#f4ecd8"; g.fillRect(12, 30, w - 24, h - 60);
+    g.fillStyle = "#1a1a1a"; g.font = "bold 76px serif"; g.textAlign = "center"; g.fillText("靜", w / 2, 130); g.fillText("心", w / 2, 220);
+    g.fillStyle = "#c2302a"; g.fillRect(w / 2 + 18, 240, 14, 14);
+  });
+  wallPlane(scroll, 0.5, 1.25, SPOT_BACK.x, SPOT_BACK.y + 0.1, -3.96, "back");
+  [0.75, -0.55].forEach((dy) => { const r = cyl(0.025, 0.025, 0.62, "#3a2618", SPOT_BACK.x, SPOT_BACK.y + 0.1 + dy * 0.98, -3.94, scene, 8); r.rotation.z = Math.PI / 2; });
+  const shoji = canvasTex(256, 128, (g, w, h) => {
+    g.fillStyle = "#fbf3dc"; g.fillRect(0, 0, w, h); g.strokeStyle = "#6a4a30"; g.lineWidth = 3;
+    for (let x = 0; x <= w; x += 32) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y <= h; y += 32) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    g.lineWidth = 8; g.strokeRect(0, 0, w, h); g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.stroke();
+  });
+  framed(shoji, 1.9, 0.95, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left", "#6a4a30").material = new THREE.MeshBasicMaterial({ map: shoji, color: 0xfff0d0 });
+  framed(signTex([{ t: "一期一會", s: 40, b: 1, c: "#1a1a1a" }], { bg: "#e8d8b0", w: 256, h: 96 }), 0.9, 0.34, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#3a2618");
+  [[-1.2, 0.8], [2.2, 1.5], [0.3, 3.4], [4.6, 0.3]].forEach(([x, z]) => hangLantern(x, 2.55, z, "#f4ecd8", 0xffd9a0));
+  [[-3.2, -3.7], [3.6, -3.7]].forEach(([x, z]) => hangLantern(x, 2.35, z, "#d8402e", 0xff8a5a, 0.8));
+  const warm = new THREE.PointLight(0xffd090, 0.9, 8, 1.5); warm.position.set(1.0, 2.4, 1.6); scene.add(warm);
+}
+// 森林木屋：木招牌、步道地圖、油燈、柴堆
+function cabinDecor() {
+  framed(signTex([{ t: "森林小屋", s: 40, b: 1, c: "#f4e2b8" }, { t: "歡迎光臨 · 慢慢讀", s: 18, c: "#e8c890" }], { bg: "#5a3a20", w: 256, h: 120 }), 0.9, 0.42, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#3a2414");
+  const map = canvasTex(300, 160, (g, w, h) => {
+    g.fillStyle = "#efe0bc"; g.fillRect(0, 0, w, h); speckle(g, w, h, 500, "#8a6a3a", 0.15);
+    g.fillStyle = "#7aa070"; [[60, 60, 30], [120, 110, 26], [230, 50, 34], [200, 120, 22]].forEach(([x, y, r]) => { g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); });
+    g.fillStyle = "#6aa0c8"; g.beginPath(); g.ellipse(160, 70, 26, 14, 0.3, 0, 7); g.fill();
+    g.strokeStyle = "#c2302a"; g.setLineDash([6, 5]); g.lineWidth = 3; g.beginPath(); g.moveTo(20, 140); g.quadraticCurveTo(90, 60, 150, 100); g.quadraticCurveTo(220, 140, 270, 30); g.stroke(); g.setLineDash([]);
+    g.fillStyle = "#3a2414"; g.font = "bold 18px sans-serif"; g.fillText("步道地圖", 12, 24); g.font = "14px sans-serif"; g.fillText("▲ 山頂", 248, 22); g.fillText("🏠 你在這裡", 16, 155);
+  });
+  framed(map, 1.8, 0.95, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left", "#5a3a20");
+  const leaf = canvasTex(128, 160, (g, w, h) => { g.fillStyle = "#f4ecd8"; g.fillRect(0, 0, w, h); [["#c25a2a", 40, 50, 0.4], ["#e0a030", 88, 70, -0.5], ["#6a8a3a", 60, 115, 0.1]].forEach(([c, x, y, r]) => { g.save(); g.translate(x, y); g.rotate(r); g.fillStyle = c; g.beginPath(); g.ellipse(0, 0, 14, 28, 0, 0, 7); g.fill(); g.strokeStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.moveTo(0, -26); g.lineTo(0, 34); g.stroke(); g.restore(); }); });
+  framed(leaf, 0.6, 0.75, SPOT_BACK.x, SPOT_BACK.y + 0.1, -3.97, "back", "#5a3a20");
+  [[-1.2, 0.8], [2.2, 1.5], [0.3, 3.4], [4.6, 0.3]].forEach(([x, z]) => {
+    box(0.008, 0.75, 0.008, "#2a2620", x, 3.0, z, scene);
+    box(0.16, 0.03, 0.16, "#2a2620", x, 2.6, z, scene); box(0.16, 0.03, 0.16, "#2a2620", x, 2.36, z, scene);
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => box(0.012, 0.24, 0.012, "#2a2620", x + a * 0.07, 2.48, z + b * 0.07, scene));
+    glowBulb(x, 2.48, z, 0xffb050, 0.55);
+  });
+  for (let r = 0; r < 3; r++) for (let k = 0; k < 4 - r; k++) { const l = cyl(0.07, 0.07, 0.55, "#6b4a32", -4.62, 0.08 + r * 0.13, -0.15 + k * 0.15 + r * 0.075, scene, 8); l.rotation.z = Math.PI / 2; }
+  const warm = new THREE.PointLight(0xffb060, 0.8, 8, 1.5); warm.position.set(1.0, 2.3, 1.6); scene.add(warm);
+}
+// 海邊露台：衝浪板、救生圈、ALOHA 招牌、彩色小燈
+function beachDecor() {
+  const sb = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.4, 6, 16), mat("#f2a65a")); sb.scale.z = 0.14; sb.position.set(SPOT_BACK.x, 1.05, -3.86); sb.rotation.z = 0.12; sb.castShadow = true; scene.add(sb);
+  const st = box(0.08, 1.6, 0.04, new THREE.MeshStandardMaterial({ color: 0x3a8ab0 }), SPOT_BACK.x - 0.09, 1.05, -3.82, scene); st.rotation.z = 0.12;
+  framed(signTex([{ t: "ALOHA", s: 46, b: 1, c: "#e8574a" }, { t: "🌺 study by the sea 🌊", s: 16, c: "#2a7aa8" }], { bg: "#fff6e0", w: 256, h: 120 }), 0.9, 0.42, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#7ac4c4");
+  const lb = new THREE.Group(); lb.position.set(-4.9, SPOT_LEFT.y, SPOT_LEFT.z - 0.45); lb.rotation.y = Math.PI / 2; scene.add(lb);
+  for (let k = 0; k < 8; k++) { const seg = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 10, 8, Math.PI / 4), mat(k % 2 ? "#ffffff" : "#e8473a")); seg.rotation.z = k * Math.PI / 4; lb.add(seg); }
+  const pic = canvasTex(200, 140, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#ffb07a"); gr.addColorStop(0.55, "#ffd8a0"); gr.addColorStop(0.56, "#3a8ab0"); gr.addColorStop(1, "#1a5a80"); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = "#fff0c0"; g.beginPath(); g.arc(100, 78, 22, Math.PI, 0); g.fill(); g.fillStyle = "rgba(255,240,192,.6)"; for (let i = 0; i < 6; i++) g.fillRect(84 + (i % 2) * 8, 84 + i * 8, 32 - i * 4, 2); });
+  framed(pic, 0.8, 0.56, -4.99, SPOT_LEFT.y, SPOT_LEFT.z + 0.5, "left", "#e8eef0");
+  const cols = [0xff6a6a, 0xffd04a, 0x6ad0ff, 0x8aff9a, 0xff9ad8];
+  for (let i = 0; i < 12; i++) { const x = -4.6 + i * 0.95, y = 2.95 - Math.sin(i / 11 * Math.PI) * 0.35; hangLantern(x, y, -2.9, "#" + cols[i % 5].toString(16).padStart(6, "0"), cols[i % 5], 0.45); }
+  const sun = new THREE.PointLight(0xffc890, 0.8, 9, 1.4); sun.position.set(0.5, 2.5, -2.4); scene.add(sun);
+}
+// 頂樓天台：霓虹字、塗鴉牆、頭頂一串串燈泡
+function rooftopDecor() {
+  wallPlane(signTex([{ t: "ROOFTOP", s: 44, b: 1, c: "#ff6ab0" }, { t: "夜讀俱樂部", s: 26, c: "#6ae8ff" }], { bg: "#14161c", glow: 1, w: 256, h: 140 }), 1.05, 0.58, SPOT_BACK.x, SPOT_BACK.y, -3.96, "back", {});
+  const neon = new THREE.PointLight(0xff6ab0, 1.2, 3.5, 1.6); neon.position.set(SPOT_BACK.x, 1.9, -3.4); scene.add(neon);
+  wallPlane(signTex([{ t: "★ OPEN AIR ★", s: 30, b: 1, c: "#ffe06a" }], { bg: "#14161c", glow: 1, w: 256, h: 90 }), 0.9, 0.32, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", {});
+  const graf = canvasTex(320, 160, (g, w, h) => {
+    g.fillStyle = "#5a5e66"; g.fillRect(0, 0, w, h);
+    [["#ff6ab0", 70, 70, 60], ["#6ae8ff", 180, 90, 70], ["#ffe06a", 270, 60, 46]].forEach(([c, x, y, r]) => { g.fillStyle = c; g.globalAlpha = 0.85; g.beginPath(); g.ellipse(x, y, r, r * 0.55, 0.3, 0, 7); g.fill(); });
+    g.globalAlpha = 1; g.font = "bold 64px sans-serif"; g.textAlign = "center"; g.lineWidth = 8; g.strokeStyle = "#14161c"; g.strokeText("KAIDA", w / 2, 102); g.fillStyle = "#ffffff"; g.fillText("KAIDA", w / 2, 102);
+    g.fillStyle = "#ffe06a"; g.font = "bold 20px sans-serif"; g.fillText("study hard · dream big", w / 2, 140);
+  });
+  wallPlane(graf, 1.9, 0.95, -4.98, SPOT_LEFT.y, SPOT_LEFT.z, "left");
+  [[-4.6, -1.0, 6.6, 0.5], [-4.6, 1.8, 6.6, 2.8], [-4.6, 4.3, 6.6, 4.8]].forEach(([x0, z0, x1, z1], L) => {
+    for (let i = 0; i <= 12; i++) { const k = i / 12, x = x0 + (x1 - x0) * k, z = z0 + (z1 - z0) * k, y = 3.0 - Math.sin(k * Math.PI) * 0.35; glowBulb(x, y, z, [0xffd27a, 0xffb8a0, 0xfff0c0][(i + L) % 3], 0.4); }
+  });
+  const warm = new THREE.PointLight(0xffc880, 1.0, 10, 1.4); warm.position.set(1.0, 2.6, 2.0); scene.add(warm);
+}
+// 雪山小屋：交叉的雪板、窗台積雪、熱可可招牌、雪花
+function lodgeDecor() {
+  [[-0.32, "#c2302a"], [0.32, "#2a5aa8"]].forEach(([r, c]) => { const sk = box(0.1, 1.7, 0.03, c, SPOT_BACK.x, SPOT_BACK.y, -3.94, scene); sk.rotation.z = r; box(0.11, 0.12, 0.04, "#2a2620", SPOT_BACK.x + Math.sin(-r) * 0.1, SPOT_BACK.y - 0.1, -3.92, scene).rotation.z = r; });
+  [[-0.6, 0.15], [0.6, -0.15]].forEach(([dx, r]) => { const pl = cyl(0.012, 0.012, 1.3, "#c9c3b8", SPOT_BACK.x + dx * 0.55, SPOT_BACK.y - 0.1, -3.93, scene, 6); pl.rotation.z = r; });
+  box(2.4, 0.06, 0.32, "#ffffff", 0.2, 1.25, -3.84, scene); box(2.3, 0.05, 0.1, "#ffffff", 0.2, 2.83, -3.88, scene);
+  framed(signTex([{ t: "熱可可 ☕", s: 34, b: 1, c: "#f4e2b8" }, { t: "雪屋限定 · 暖暖讀書", s: 18, c: "#ffd0c0" }], { bg: "#6a2a20", w: 256, h: 120 }), 0.9, 0.42, SPOT_SNACK.x, SPOT_SNACK.y, -3.94, "back", "#3a2414");
+  const flake = canvasTex(300, 160, (g, w, h) => {
+    g.fillStyle = "#2f4a6a"; g.fillRect(0, 0, w, h); g.strokeStyle = "#ffffff"; g.lineWidth = 3;
+    [[60, 70, 34], [160, 60, 24], [240, 100, 30], [110, 125, 16]].forEach(([x, y, r]) => { for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); g.moveTo(x + Math.cos(a) * r * 0.6, y + Math.sin(a) * r * 0.6); g.lineTo(x + Math.cos(a + 0.5) * r * 0.85, y + Math.sin(a + 0.5) * r * 0.85); g.stroke(); } });
+    g.fillStyle = "#ffffff"; g.font = "bold 26px sans-serif"; g.textAlign = "center"; g.fillText("SNOW LODGE", w / 2, 150);
+  });
+  framed(flake, 1.8, 0.95, -4.99, SPOT_LEFT.y, SPOT_LEFT.z, "left", "#5a3a20");
+  const gw = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.07, 8, 20), mat("#2f5a44")); gw.position.set(-4.92, 2.45, -0.4); gw.rotation.y = Math.PI / 2; scene.add(gw);
+  sph(0.04, "#c2302a", -4.88, 2.27, -0.4, scene);
+  [[-1.2, 0.8], [2.2, 1.5], [0.3, 3.4], [4.6, 0.3]].forEach(([x, z]) => hangLantern(x, 2.6, z, "#f4e2b8", 0xffc070, 0.7));
+  const warm = new THREE.PointLight(0xffb070, 0.9, 8, 1.5); warm.position.set(1.0, 2.3, 1.6); scene.add(warm);
 }
 
 function buildRoom() {
@@ -1111,10 +1377,7 @@ function pickSpot(id) {
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
-function tagText(m) {
-  const f = /^[A-Z]{2}$/.test(m.fl || "") ? String.fromCodePoint(0x1F1E6 + m.fl.charCodeAt(0) - 65, 0x1F1E6 + m.fl.charCodeAt(1) - 65) + " " : "";
-  return f + m.name;
-}
+function tagText(m) { return m.name; }   // 國旗不放頭上，點人物看資料卡
 function addChar(m, seat) {
   const c = makeChar(m.look);
   scene.add(c.root);
@@ -1353,6 +1616,7 @@ function frame() {
   floorLight.intensity = env.floor + Math.sin(t * 0.7) * 0.05;
   lampLight.intensity = env.lamp;
   if (now > envNext) { env = envAt(hourNow()); applyEnv(env); envNext = now + 20000; }
+  else if (T().skyAnim && now > skyNext) { drawSky(env); skyNext = now + 80; }
   curtains.forEach((c) => { c.rotation.x = Math.sin(t * 0.8 + c.userData.s) * 0.03; c.rotation.z = Math.sin(t * 0.6) * 0.015 * c.userData.s; });
   plants.forEach((p, i) => { p.rotation.z = Math.sin(t * 0.7 + i) * 0.02; });
   // 角色

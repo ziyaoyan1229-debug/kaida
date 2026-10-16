@@ -113,6 +113,11 @@
   .modal { position: fixed; inset: 0; background: rgba(42, 38, 32, .5); display: grid; place-items: center; z-index: 40; padding: 16px; }
   .modal .card { max-width: 400px; width: 100%; margin: 0; text-align: center; padding: 24px 20px; }
   .modal .big-av { font-size: 48px; line-height: 1; }
+  .modal .pcard { max-width: 240px; padding: 12px 16px 14px; text-align: left; }
+  .pcard svg { display: block; margin: 0 auto; }
+  .pcard .pc-name { text-align: center; font-weight: 700; font-size: 17px; margin: 2px 0 8px; }
+  .pcard .pc-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 4px 0; border-top: 1px solid var(--line); }
+  .pcard .pc-row span { color: var(--muted, #8a8070); }
   .modal .msg { font-size: 20px; font-weight: 600; margin: 12px 0 6px; }
 
   .scene-wrap { margin: 0 -16px 12px; background: #c8976a; position: relative; }
@@ -344,7 +349,7 @@
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
-      "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
+      "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
@@ -368,7 +373,7 @@
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -428,7 +433,7 @@
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
-      "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
+      "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
       "opt.sound": "Chime and vibrate between phases", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
@@ -452,7 +457,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -589,7 +594,7 @@
     net.onChange = function () { if (current === "session") renderScene(true); };
     net.onStatus = function (st) { netStatus = st; if (current === "session") renderNet(); };
   }
-  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag }; }
+  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
   function needName() {
     if (data.me.name) return false;
     K.toast(t("r.needName")); show("char"); return true;
@@ -789,8 +794,8 @@
 
   var pendingCode = "", roomTab = "join";
   /* 房間主題：開房的人選，同一間房大家看到一樣的 */
-  var THEME_KEYS = ["home", "cafe", "library", "study", "space", "school"];
-  var THEME_ICON = { home: "🏠", cafe: "☕", library: "📚", study: "✏️", space: "🚀", school: "🏫" };
+  var THEME_KEYS = ["home", "cafe", "library", "study", "space", "school", "konbini", "washitsu", "cabin", "beach", "rooftop", "lodge"];
+  var THEME_ICON = { home: "🏠", cafe: "☕", library: "📚", study: "✏️", space: "🚀", school: "🏫", konbini: "🏪", washitsu: "🍵", cabin: "🌲", beach: "🏖️", rooftop: "🌃", lodge: "❄️" };
   if (THEME_KEYS.indexOf(data.theme) < 0) data.theme = "home";
   function themeName(k, host) { return k === "home" ? t("theme.home", { n: host || data.me.name || t("f.you") }) : t("theme." + k); }
   function renderRooms() {
@@ -828,21 +833,22 @@
     var k = text ? t("s.says").split("|").indexOf(text) : -1;
     return k >= 0 ? EMOS[k] || "" : "";
   }
+  function botSeed(id) { var h = 7; for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 100003; return h; }
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, hr: myTotal(), away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, fl: m.fl, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ id: m.id, name: m.name, fl: m.fl, joined: m.joined, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
       list.push(me);
       if (session.kind === "sim") BOTS.forEach(function (b) {
         var sy = sim.says[b.id];
-        list.push({ id: b.id, name: b.name, fl: b.fl, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
+        list.push({ id: b.id, name: b.name, fl: b.fl, joined: session.joinedAt - botSeed(b.id) % 40 * 60000, hr: 600 + botSeed(b.id) % 9000, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
       });
     }
     return list.slice(0, 6);
@@ -910,9 +916,11 @@
     if (window.KaidaMusic) window.KaidaMusic.setVolume(music().vol);
   });
   // 重新整理後，手機要等使用者點一下才能出聲
-  document.addEventListener("pointerdown", function resumeMusic() {
-    if (session && music().kind && window.KaidaMusic && !window.KaidaMusic.current()) { playMusic(music().kind); }
-  }, true);
+  function resumeMusic() {
+    if (!session || !music().kind || !window.KaidaMusic) return;
+    if (!window.KaidaMusic.current()) playMusic(music().kind); else window.KaidaMusic.unlock();
+  }
+  ["pointerdown", "touchend", "click"].forEach(function (ev) { document.addEventListener(ev, resumeMusic, true); });
 
   function renderSays() {
     document.getElementById("says").innerHTML = '<button type="button" data-up="1" class="' + (session.up ? "up" : "") + '" aria-pressed="' + !!session.up + '">' + K.esc(t(session.up ? "s.down" : "s.up")) + '</button>' +
@@ -1339,12 +1347,15 @@
     if (!session) return;
     var m = sceneMembers().filter(function (x) { return x.id === e.detail.id; })[0]; if (!m) return;
     var card = document.getElementById("modal-card");
-    card.innerHTML = '<div style="display:flex;justify-content:center"><svg viewBox="-60 -100 120 116" width="120" height="116" aria-hidden="true">' + S.preview(m.look) + '</svg></div>' +
-      '<p class="msg" style="margin:4px 0">' + (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(m.name) + (m.me ? ' <span class="small muted">(' + K.esc(t("p.self")) + ')</span>' : "") + '</p>' +
-      '<p class="small muted" style="margin:0">' + K.esc(t("p.now")) + '：' + K.esc(memberStatus(m)) + '</p>' +
-      '<div class="btn-row" style="justify-content:center;margin-top:16px">' +
-      (m.me ? "" : data.friends[m.id] ? '<button class="btn" type="button" data-pchat="' + K.esc(m.id) + '">' + K.esc(t("p.chat")) + '</button>' : '<button class="btn" type="button" data-padd="' + K.esc(m.id) + '">' + K.esc(t("p.add")) + '</button>') +
-      '<button class="btn ghost" type="button" data-act="close-modal">' + K.esc(t("p.close")) + '</button></div>';
+    var lang = K.lang() === "en" ? "en" : "zh-TW", cn = "";
+    try { cn = m.fl ? new Intl.DisplayNames([lang], { type: "region" }).of(m.fl) : ""; } catch (er) { cn = m.fl || ""; }
+    var jt = m.joined ? new Date(m.joined) : null, row = function (k, v) { return '<div class="pc-row"><span>' + K.esc(t(k)) + '</span><b>' + v + '</b></div>'; };
+    card.className = "card pcard";
+    card.innerHTML = '<svg viewBox="-60 -100 120 116" width="84" height="81" aria-hidden="true">' + S.preview(m.look) + '</svg>' +
+      '<div class="pc-name">' + K.esc(m.name) + '</div>' +
+      row("p.joined", jt ? K.esc(String(jt.getHours()).padStart(2, "0") + ":" + String(jt.getMinutes()).padStart(2, "0")) : "—") +
+      row("p.hours", K.esc(hrs(m.hr || 0))) +
+      row("p.country", cn ? (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(cn) : "—");
     document.getElementById("modal").hidden = false;
   });
   document.getElementById("modal").addEventListener("click", function (e) {
@@ -1432,6 +1443,7 @@
 
   function showCheerModal(f, msg, fid) {
     var card = document.getElementById("modal-card");
+    card.className = "card";
     card.innerHTML = '<div class="big-av">' + K.esc(f.a) + '</div><p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.gotCheer", { n: f.n })) + '</p>' +
       '<p class="msg">「' + K.esc(msg) + '」</p><div class="btn-row" style="justify-content:center;margin-top:16px">' +
       '<button class="btn" type="button" data-cheer="' + K.esc(fid) + '">' + K.esc(t("f.cheerReply")) + '</button>' +

@@ -342,7 +342,7 @@
     var body = pose === "sofa" ? '<g transform="translate(0 -14)">' + character(m.look, "desk", { smile: true, noPet: true }) + '</g>'
                                : '<g class="' + (walking ? "walk" : "") + '">' + character(m.look, pose, { smile: true, petX: spot.x > 300 ? -22 : 22, noPet: walking }) + '</g>';
     var ty = pose === "sofa" ? -78 : -64;
-    return body + nameTag(m.name, ty, m.me, m.fl) + (m.bubble ? bubble(m.bubble, ty - 10) : "");
+    return body + nameTag(m.name, ty, m.me, "") + (m.bubble ? bubble(m.bubble, ty - 10) : "");
   }
 
   /*
@@ -381,7 +381,7 @@
           '<g transform="translate(0 -8)">' + character(m.look, "desk", { focus: true, lookDown: act !== "pc", glow: act === "pc", noPet: true }) + '</g>' +
           desk(act, true) +
           (m.look && m.look.pet ? pet(m.look.pet, 36, 8) : "") +
-          nameTag(m.name, -72, m.me, m.fl) + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
+          nameTag(m.name, -72, m.me, "") + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
       }
       if (m && !focus) {
         var sp = SPOTS[spots[m.id]];
