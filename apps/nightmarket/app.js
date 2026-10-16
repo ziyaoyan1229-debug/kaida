@@ -379,7 +379,15 @@
   // 主頁搜尋的關鍵字帶進夜市：去掉夜市名稱和縣市，剩下的（例如「臭豆腐」）拿來找店家
   function carryQuery(m) {
     var hay = [m.zh, m.en, cityName(m.city)].concat(CITIES.filter(function (c) { return c.key === m.city; }).map(function (c) { return c.zh + " " + c.en; })).join(" ").toLowerCase();
-    return state.q.trim().split(/\s+/).filter(function (w) { return w && hay.indexOf(w.toLowerCase()) < 0 && w.toLowerCase().indexOf("夜市") < 0 && w.toLowerCase() !== "night" && w.toLowerCase() !== "market"; }).join(" ");
+    var foods = m.foodsZh.concat(m.foodsEn);
+    return state.q.trim().split(/\s+/).filter(function (w) { return w && hay.indexOf(w.toLowerCase()) < 0 && w.toLowerCase().indexOf("夜市") < 0 && w.toLowerCase() !== "night" && w.toLowerCase() !== "market"; })
+      .map(function (w) {
+        // 打一半（例如「香」）時，換成這個夜市符合的小吃名（「烤香腸」），才不會找到香舖之類不相干的店
+        var hit = foods.filter(function (f) { return f.toLowerCase().indexOf(w.toLowerCase()) >= 0; }).sort(function (a, b) { return a.length - b.length; })[0];
+        if (!hit || hit.toLowerCase() === w.toLowerCase()) return w;
+        var trimmed = hit.replace(m.zh.replace(/夜市$/, ""), "").trim();
+        return trimmed.length >= w.length ? trimmed : hit;
+      }).join(" ");
   }
   function norm(x) { return String(x || "").toLowerCase().replace(/\s+/g, ""); }
   // 店家關鍵字：先比對店名和類型，再加上 Google 地圖用這個關鍵字在夜市範圍內找到的店
@@ -388,7 +396,8 @@
     if (!q) return null;
     var hits = stallHits[stallQ] || {};
     // 店名有關鍵字的排前面，其餘照 Google 的相關度
-    function rank(s) { return norm(s.name).indexOf(q) >= 0 ? 0 : norm(s.type).indexOf(q) >= 0 ? 1 : 2 + (hits[s.id] || 0); }
+    var core = q.length >= 3 ? q.slice(-2) : null; // 「烤香腸」的「香腸」
+    function rank(s) { var n = norm(s.name); return n.indexOf(q) >= 0 ? 0 : core && n.indexOf(core) >= 0 ? 1 : norm(s.type).indexOf(q) >= 0 ? 2 : 3 + (hits[s.id] || 0); }
     return stalls.filter(function (s) { return hits[s.id] || norm(s.name + " " + s.type).indexOf(q) >= 0; })
       .sort(function (a, b) { return rank(a) - rank(b); });
   }
