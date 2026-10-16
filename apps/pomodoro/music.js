@@ -207,6 +207,37 @@
     return spb;
   }
 
+  /* 波沙諾瓦：Am7 D7 Gmaj7 Cmaj7 / F#m7b5 B7 Em7 E7，尼龍吉他切分 + 沙鈴 */
+  var BS = [[45, [55, 60, 64, 67]], [38, [54, 57, 60, 64]], [43, [54, 59, 62, 66]], [36, [55, 59, 62, 64]],
+            [42, [52, 57, 60, 64]], [35, [51, 57, 59, 63]], [40, [50, 55, 59, 62]], [40, [50, 56, 59, 62]]];
+  var BS_COMP = [[1, 0, 0, 1, 0, 0, 1, 0], [0, 0, 1, 0, 0, 1, 0, 0]];
+  function nylon(midi, t, dur, gain) { tone("triangle", midi, t, dur, gain, { rev: true, lp: 1800 }); tone("sine", midi, t, dur * 0.4, gain * 0.5, { rev: false }); }
+  function bossaBeat(t, beat) {
+    var spb = 60 / 132 / 2, bar = Math.floor(beat / 8) % BS.length, b = beat % 8, ch = BS[bar];
+    // 貝斯：根音、五度來回
+    if (b === 0 || b === 4) tone("triangle", ch[0], t, spb * 2.6, 0.26, { lp: 600 });
+    if (b === 3 || b === 7) tone("triangle", ch[0] + 7, t, spb * 1.4, 0.18, { lp: 600 });
+    // 吉他和弦切分
+    if (BS_COMP[Math.floor(beat / 8) % 2][b]) ch[1].forEach(function (m, i) { nylon(m, t + i * 0.012, spb * 1.6, 0.04); });
+    // 沙鈴
+    hat(t, b % 2 ? 0.035 : 0.022, 0.06);
+    // 偶爾一句旋律
+    if (b === 5 && Math.random() < 0.35) piano(ch[1][1 + Math.floor(Math.random() * 3)] + 12, t, spb * 3, 0.05);
+    return spb;
+  }
+
+  /* 音樂盒：C G Am F，高音小鈴分解和弦，慢慢轉 */
+  var MB = [[48, [72, 76, 79, 84, 79, 76]], [43, [71, 74, 79, 83, 79, 74]], [45, [72, 76, 81, 84, 81, 76]], [41, [72, 77, 81, 84, 81, 77]]];
+  function musicboxBeat(t, beat) {
+    var spb = 60 / 84 / 2, bar = Math.floor(beat / 6) % MB.length, b = beat % 6, ch = MB[bar];
+    var m = ch[1][b];
+    tone("sine", m, t, 1.4, 0.07, { rev: true });
+    tone("sine", m + 24, t, 0.25, 0.012, { rev: true, detune: 6 });   // 金屬片的泛音
+    if (b === 0) tone("sine", ch[0] + 24, t, spb * 6, 0.05, { rev: true });
+    if (b === 3 && Math.random() < 0.4) tone("sine", ch[1][3] + 12, t + spb / 2, 0.9, 0.035, { rev: true });
+    return spb;
+  }
+
   /* 海浪 */
   function startWaves() {
     bed(0.02, "lowpass", 700, 0.7, 0.35, 0.09, 0.28);   // 一波波湧上來的浪
@@ -222,7 +253,8 @@
     while (nextT < ctx.currentTime + 0.4) {
       var d = cur === "jazz" ? jazzBeat(nextT, step) : cur === "fire" ? fireBeat(nextT) : cur === "rain" ? rainBeat(nextT) :
         cur === "lofi" ? lofiBeat(nextT, step) : cur === "forest" ? forestBeat(nextT) :
-        cur === "piano" ? pianoBeat(nextT, step) : cur === "waves" ? wavesBeat(nextT) : lightBeat(nextT, step);
+        cur === "piano" ? pianoBeat(nextT, step) : cur === "waves" ? wavesBeat(nextT) :
+        cur === "bossa" ? bossaBeat(nextT, step) : cur === "musicbox" ? musicboxBeat(nextT, step) : lightBeat(nextT, step);
       nextT += d; step++;
     }
   }
