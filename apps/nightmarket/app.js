@@ -344,7 +344,10 @@
     if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
     render();
     openSheet("detail");
-    if (view.supportsStalls && stallFor === id && stalls.length) renderStalls();
+    if (view.supportsStalls && stallFor === id && stalls.length) {
+      var cq = carryQuery(m);
+      if (cq && cq !== stallQ) { stallQ = cq; $("dStallQ").value = cq; searchStalls(); } else renderStalls();
+    }
     else { view.focus(m.lat, m.lng, 15); renderStalls(); showArea(m); }
     if (st.today === true) doneTask("today");
   }
@@ -361,16 +364,21 @@
   function showArea(m) {
     if (!mapReady || !view.supportsStalls) return;
     stallFor = m.id; stalls = [];
-    stallQ = ""; $("dStallQ").value = ""; stallHits = {};
+    stallQ = carryQuery(m); $("dStallQ").value = stallQ; stallHits = {};
     renderStalls("loading");
     view.showArea(m).then(function (list) {
       if (stallFor !== m.id) return;
       stalls = list || [];
-      renderStalls();
+      if (stallQ) searchStalls(); else renderStalls();
     }).catch(function (e) {
       console.warn("[stalls]", e);
       if (stallFor === m.id) renderStalls("error");
     });
+  }
+  // 主頁搜尋的關鍵字帶進夜市：去掉夜市名稱和縣市，剩下的（例如「臭豆腐」）拿來找店家
+  function carryQuery(m) {
+    var hay = [m.zh, m.en, cityName(m.city)].concat(CITIES.filter(function (c) { return c.key === m.city; }).map(function (c) { return c.zh + " " + c.en; })).join(" ").toLowerCase();
+    return state.q.trim().split(/\s+/).filter(function (w) { return w && hay.indexOf(w.toLowerCase()) < 0 && w.toLowerCase().indexOf("夜市") < 0 && w.toLowerCase() !== "night" && w.toLowerCase() !== "market"; }).join(" ");
   }
   function norm(x) { return String(x || "").toLowerCase().replace(/\s+/g, ""); }
   // 店家關鍵字：先比對店名和類型，再加上 Google 地圖用這個關鍵字在夜市範圍內找到的店
