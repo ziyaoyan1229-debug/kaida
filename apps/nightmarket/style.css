@@ -224,3 +224,39 @@ textarea:focus { outline: none; border-color: var(--signal); box-shadow: var(--g
   transition: opacity .2s, transform .2s; max-width: calc(100vw - 32px); text-align: center;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Google 地圖：夜市範圍裡的店家 */
+body.has-stalls .osm-credit { display: none; }
+.stall-pin {
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  background: var(--surface); color: var(--ink); border: 2px solid var(--lantern); font: 600 11px/1 var(--f-mono);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .25); transition: transform .15s;
+}
+.stall-pin.sel { background: var(--lantern); color: #fff; transform: scale(1.3); }
+:root[data-skin="cyber"] .stall-pin { box-shadow: 0 0 8px rgba(255, 62, 165, .6); }
+.see-map { width: 100%; margin-bottom: 8px; }
+.stalls { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+.stalls .muted, .reviews .muted { color: var(--muted); font-size: 13.5px; padding: 6px 0; }
+.stall-row {
+  width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--paper);
+}
+.stall-row:hover { border-color: var(--signal); }
+.stall-row .no { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--lantern); display: grid; place-items: center; font: 600 11px/1 var(--f-mono); }
+.stall-row .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.stall-row .nm small, .stall-row .rt small { color: var(--muted); font-size: 12px; }
+.stall-row .rt { flex: none; font-family: var(--f-mono); font-size: 13px; color: var(--accent-text); white-space: nowrap; }
+.link-btn { border: 0; background: none; padding: 0; margin: 0 0 6px; color: var(--accent-text); font-size: 14px; }
+.stars { color: #e3a33a; letter-spacing: 1px; font-size: 14px; }
+.stars i { font-style: normal; color: var(--line); }
+.s-rating { margin: 0 0 4px; }
+.s-rating small { color: var(--muted); }
+.s-addr { margin: 0; color: var(--muted); font-size: 13.5px; }
+.reviews { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.review { display: flex; gap: 10px; }
+.review img, .review .av { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--sunk); }
+.review > div { min-width: 0; }
+.rv-head { margin: 0; font-size: 14px; font-weight: 500; }
+.rv-head a { color: var(--ink); text-decoration: none; }
+.rv-when { color: var(--muted); font-weight: 400; font-size: 12.5px; margin-left: 4px; }
+.rv-text { margin: 2px 0 0; font-size: 14px; white-space: pre-line; overflow-wrap: anywhere; }

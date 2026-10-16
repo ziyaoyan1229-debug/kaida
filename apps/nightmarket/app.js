@@ -32,7 +32,12 @@
       resetDone: "任務已重新開始", taskDone: function (t) { return "封測任務完成：" + t; }, allDone: "4 個任務都完成了，謝謝你！",
       source: function (d) { return "夜市資料由開達整理自公開資訊（" + d + "），未逐一實地查證，座標為大致位置。看到錯誤請按「回報資料錯誤」。"; },
       km: function (k) { return k < 1 ? Math.round(k * 1000) + " 公尺" : k.toFixed(1) + " 公里"; },
-      langBtn: "EN", shareText: function (n) { return n + "：今天有開嗎？必吃什麼？"; }
+      langBtn: "EN", shareText: function (n) { return n + "：今天有開嗎？必吃什麼？"; },
+      stallsTitle: "夜市裡的店家（Google 地圖）", stallsLoading: "正在從 Google 地圖找店家…", stallsNone: "Google 地圖上沒找到這裡的店家。",
+      stallsError: "暫時載入不了店家，稍後再試。", seeMap: function (n) { return "在地圖上看 " + n + " 家店"; },
+      back: "‹ 回夜市", ratings: function (n) { return n + " 則評分"; }, noRating: "還沒有評分", reviewsTitle: "饕客評論",
+      reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
+      allReviews: "在 Google 地圖看全部評論", reviewsFrom: "評論與店家資料來自 Google 地圖，開達不會修改或保存。"
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
@@ -60,7 +65,12 @@
       resetDone: "Tasks restarted", taskDone: function (t) { return "Beta task done: " + t; }, allDone: "All 4 tasks done. Thank you!",
       source: function (d) { return "Market data compiled by Kaida from public sources (" + d + "), not verified on site; pins are approximate. Spot a mistake? Tap “Report an error”."; },
       km: function (k) { return k < 1 ? Math.round(k * 1000) + " m" : k.toFixed(1) + " km"; },
-      langBtn: "中", shareText: function (n) { return n + ": open today? What to eat?"; }
+      langBtn: "中", shareText: function (n) { return n + ": open today? What to eat?"; },
+      stallsTitle: "Places inside (Google Maps)", stallsLoading: "Finding places on Google Maps…", stallsNone: "No places found here on Google Maps.",
+      stallsError: "Couldn't load places right now. Try again later.", seeMap: function (n) { return "See " + n + " places on the map"; },
+      back: "‹ Back to market", ratings: function (n) { return n + " ratings"; }, noRating: "No ratings yet", reviewsTitle: "Reviews",
+      reviewsLoading: "Loading reviews…", noReviews: "No reviews yet.", reviewsError: "Couldn't load reviews right now.",
+      allReviews: "See all reviews on Google Maps", reviewsFrom: "Reviews and place info come from Google Maps. Kaida doesn't edit or store them."
     }
   };
 
@@ -170,48 +180,59 @@
   }
 
   /* ---------- 地圖 ---------- */
-  var map = L.map("map", { zoomControl: true, attributionControl: true, tap: true }).setView([23.75, 120.95], 7);
-  map.attributionControl.setPrefix(false);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, attribution: "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>"
-  }).addTo(map);
-
   var PIN = '<svg viewBox="0 0 30 38" aria-hidden="true"><path class="b" d="M15 37C10 29 2 22.5 2 14a13 13 0 0 1 26 0c0 8.5-8 15-13 23z"/>' +
     '<path class="i" d="M8 10h14v4a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0z"/>' +
     '<rect class="i" x="8.5" y="15" width="1.4" height="5"/><rect class="i" x="20.1" y="15" width="1.4" height="5"/><rect class="i" x="7.5" y="19.5" width="15" height="2" rx=".6"/></svg>';
-  var markers = {};
-  function pinIcon(m) {
-    var st = status(m);
-    var cls = "nm-pin" + (st.today === false ? " off" : "") + (state.selected === m.id ? " sel" : "");
-    return L.divIcon({ className: "", html: '<div class="' + cls + '">' + PIN + "</div>", iconSize: [30, 38], iconAnchor: [15, 37] });
+  var mapOpts = {
+    pinHtml: function (sel, off) { return '<div class="nm-pin' + (off ? " off" : "") + (sel ? " sel" : "") + '">' + PIN + "</div>"; },
+    label: function (m) { return name(m); },
+    lang: function () { return lang; },
+    skin: document.documentElement.getAttribute("data-skin") === "cyber" ? "cyber" : "beige",
+    mapId: (window.NM_CONFIG || {}).googleMapId,
+    onMarketClick: function (id) { openDetail(id); },
+    onStallClick: function (id) { openStall(id); }
+  };
+  // 地圖還沒準備好之前先用空殼，所有呼叫都安全
+  var noop = function () {};
+  var view = { supportsStalls: false, syncMarkets: noop, fit: noop, focus: noop, setMe: noop, setSkin: noop, showArea: function () { return Promise.resolve(null); }, clearArea: noop, selectStall: noop };
+  var mapReady = false;
+
+  function useLeaflet() {
+    if (view.destroy) view.destroy();
+    view = window.NMLeafletMap($("map"), mapOpts);
+    afterMap();
   }
-  MARKETS.forEach(function (m) {
-    var mk = L.marker([m.lat, m.lng], { icon: pinIcon(m), title: m.zh, keyboard: true, riseOnHover: true });
-    mk.on("click", function () { openDetail(m.id); });
-    markers[m.id] = mk;
-  });
-  var meMarker = null;
+  function afterMap() {
+    mapReady = true;
+    document.body.classList.toggle("has-stalls", !!view.supportsStalls);
+    if (state.me) view.setMe(state.me.lat, state.me.lng);
+    render({ fit: !state.selected });
+    if (state.selected) { var m = byId(state.selected); if (m) showArea(m); }
+  }
+  function startMap() {
+    var key = (window.NM_CONFIG || {}).googleMapsKey;
+    if (!key) { useLeaflet(); return; }
+    var failed = false;
+    var fallback = function (why) {
+      if (failed) return; failed = true;
+      console.warn("[map] Google 地圖無法使用，改用 OpenStreetMap：", why);
+      useLeaflet();
+    };
+    window.NMLoadGoogle(key, lang, function () { fallback("金鑰無效或未授權這個網址"); })
+      .then(function () { return window.NMGoogleMap($("map"), mapOpts); })
+      .then(function (v) { if (failed) { v.destroy(); return; } view = v; afterMap(); })
+      .catch(fallback);
+  }
 
   function syncMarkers(list) {
     var ids = list.map(function (m) { return m.id; });
-    MARKETS.forEach(function (m) {
-      var mk = markers[m.id];
-      if (ids.indexOf(m.id) >= 0) {
-        mk.setIcon(pinIcon(m));
-        mk.options.title = name(m);
-        if (!map.hasLayer(mk)) mk.addTo(map);
-        mk.setZIndexOffset(state.selected === m.id ? 1000 : 0);
-      } else if (map.hasLayer(mk)) {
-        map.removeLayer(mk);
-      }
-    });
+    view.syncMarkets(MARKETS, ids, state.selected, function (m) { return status(m).today === false; });
   }
   function fitTo(list) {
     var pts = list.map(function (m) { return [m.lat, m.lng]; });
     if (state.me && state.near && state.city === "all") pts.push([state.me.lat, state.me.lng]);
-    if (!pts.length) return;
-    if (pts.length === 1) { map.setView(pts[0], 15); return; }
-    map.fitBounds(pts, { padding: [36, 36], maxZoom: 15 });
+    view.clearArea(); stalls = [];
+    view.fit(pts, 15);
   }
 
   /* ---------- 清單 ---------- */
@@ -318,9 +339,76 @@
     fillFavBtn(id);
     if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
     render();
-    map.setView([m.lat, m.lng], Math.max(map.getZoom(), 14), { animate: true });
     openSheet("detail");
+    if (view.supportsStalls && stallFor === id && stalls.length) renderStalls();
+    else { view.focus(m.lat, m.lng, 15); renderStalls(); showArea(m); }
     if (st.today === true) doneTask("today");
+  }
+
+  /* ---------- 夜市範圍與攤位（Google 地圖） ---------- */
+  var stalls = [];
+  var stallFor = null;
+  function byId(id) { return MARKETS.filter(function (x) { return x.id === id; })[0]; }
+  function stars(r) {
+    var full = Math.round(r || 0);
+    return '<span class="stars" aria-label="' + (r ? r.toFixed(1) : "0") + '">' + "★★★★★".slice(0, full) + '<i>' + "★★★★★".slice(full) + "</i></span>";
+  }
+  function showArea(m) {
+    if (!mapReady || !view.supportsStalls) return;
+    stallFor = m.id; stalls = [];
+    renderStalls("loading");
+    view.showArea(m).then(function (list) {
+      if (stallFor !== m.id) return;
+      stalls = list || [];
+      renderStalls();
+    }).catch(function (e) {
+      console.warn("[stalls]", e);
+      if (stallFor === m.id) renderStalls("error");
+    });
+  }
+  function renderStalls(mode) {
+    var box = $("dStalls");
+    if (!view.supportsStalls) { $("dStallsWrap").hidden = true; return; }
+    $("dStallsWrap").hidden = false;
+    if (mode === "loading") { box.innerHTML = '<li class="muted">' + esc(t("stallsLoading")) + "</li>"; $("dSeeMap").hidden = true; return; }
+    if (mode === "error" || !stalls.length) { box.innerHTML = '<li class="muted">' + esc(mode === "error" ? t("stallsError") : t("stallsNone")) + "</li>"; $("dSeeMap").hidden = true; return; }
+    $("dSeeMap").hidden = false;
+    $("dSeeMap").textContent = t("seeMap")(stalls.length);
+    box.innerHTML = stalls.map(function (s, i) {
+      return '<li><button type="button" class="stall-row" data-stall="' + esc(s.id) + '"><span class="no">' + (i + 1) + '</span><span class="nm">' + esc(s.name) +
+        "<small>" + esc(s.type) + "</small></span>" +
+        (s.rating ? '<span class="rt">' + s.rating.toFixed(1) + " ★<small>(" + s.count + ")</small></span>" : "") + "</button></li>";
+    }).join("");
+  }
+  function openStall(id) {
+    var s = stalls.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    view.selectStall(id);
+    if (!$("detail").hidden) { $("detail").hidden = true; }
+    $("sName").textContent = s.name;
+    $("sMeta").textContent = (byId(stallFor) ? name(byId(stallFor)) : "") + (s.type ? " · " + s.type : "");
+    $("sRating").innerHTML = s.rating ? stars(s.rating) + " <b>" + s.rating.toFixed(1) + "</b> <small>" + esc(t("ratings")(s.count)) + "</small>" : '<small>' + esc(t("noRating")) + "</small>";
+    $("sAddr").textContent = s.address;
+    $("sGmaps").href = s.url || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s.name) + "&query_place_id=" + encodeURIComponent(s.id));
+    $("sReviews").innerHTML = '<li class="muted">' + esc(t("reviewsLoading")) + "</li>";
+    openSheet("stall");
+    view.fetchReviews(s).then(function (rs) {
+      if ($("stall").hidden || $("sName").textContent !== s.name) return;
+      if (!rs.length) { $("sReviews").innerHTML = '<li class="muted">' + esc(t("noReviews")) + "</li>"; return; }
+      $("sReviews").innerHTML = rs.map(function (r) {
+        var who = r.authorUrl ? '<a href="' + esc(r.authorUrl) + '" target="_blank" rel="noopener">' + esc(r.author) + "</a>" : esc(r.author);
+        return '<li class="review">' + (r.photo ? '<img src="' + esc(r.photo) + '" alt="" width="32" height="32" referrerpolicy="no-referrer">' : '<span class="av"></span>') +
+          '<div><p class="rv-head">' + who + ' <span class="rv-when">' + esc(r.when) + "</span></p>" + stars(r.rating) +
+          '<p class="rv-text">' + esc(r.text) + "</p></div></li>";
+      }).join("");
+    }).catch(function (e) {
+      console.warn("[reviews]", e);
+      $("sReviews").innerHTML = '<li class="muted">' + esc(t("reviewsError")) + "</li>";
+    });
+  }
+  function revealMap() {
+    var el = $("map");
+    if (el.getBoundingClientRect().top < 0) window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   /* ---------- 封測任務 ---------- */
@@ -348,8 +436,7 @@
     toast(t("locating"));
     navigator.geolocation.getCurrentPosition(function (pos) {
       state.me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      if (meMarker) meMarker.setLatLng([state.me.lat, state.me.lng]);
-      else meMarker = L.marker([state.me.lat, state.me.lng], { icon: L.divIcon({ className: "", html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, zIndexOffset: 2000 }).addTo(map);
+      view.setMe(state.me.lat, state.me.lng);
       $("toast").classList.remove("show");
       cb && cb();
     }, function () {
@@ -373,6 +460,8 @@
     if (skin === "cyber") document.documentElement.setAttribute("data-skin", "cyber");
     else document.documentElement.removeAttribute("data-skin");
     document.querySelector('meta[name="theme-color"]').content = skin === "cyber" ? "#07080d" : "#2a2620";
+    mapOpts.skin = skin;
+    view.setSkin(skin);
   }
 
   /* ---------- 事件 ---------- */
@@ -394,10 +483,10 @@
     locate(function () {
       render();
       var first = visible()[0];
-      if (first) { map.fitBounds([[state.me.lat, state.me.lng], [first.lat, first.lng]], { padding: [50, 50], maxZoom: 15 }); doneTask("near"); }
+      if (first) { view.clearArea(); view.fit([[state.me.lat, state.me.lng], [first.lat, first.lng]], 15); doneTask("near"); }
     });
   };
-  $("locateBtn").onclick = function () { locate(function () { map.setView([state.me.lat, state.me.lng], 14); render(); }); };
+  $("locateBtn").onclick = function () { locate(function () { view.fit([[state.me.lat, state.me.lng]], 14); render(); }); };
 
   $("list").addEventListener("click", function (e) {
     var s = e.target.closest("[data-fav]");
@@ -431,6 +520,11 @@
     ta.focus(); ta.setSelectionRange(t("reportPre")(m.zh).length, t("reportPre")(m.zh).length);
   };
 
+  $("dStalls").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-stall]"); if (b) openStall(b.getAttribute("data-stall"));
+  });
+  $("dSeeMap").onclick = function () { closeSheet($("detail")); revealMap(); };
+  $("sBack").onclick = function () { closeSheet($("stall")); if (stallFor) { openDetail(stallFor); } };
   $("tasksBtn").onclick = function () { renderTasks(); openSheet("tasks"); };
   $("fbText").value = load("nm-feedback-draft", "");
   $("fbText").addEventListener("input", function (e) { save("nm-feedback-draft", e.target.value); });
@@ -449,6 +543,7 @@
 
   $("langBtn").onclick = function () {
     lang = lang === "zh" ? "en" : "zh";
+    stallFor = null; stalls = []; view.clearArea();
     try { localStorage.setItem("kaida-lang", lang); } catch (e) { /* 忽略 */ }
     applyLang();
   };
@@ -466,6 +561,7 @@
   /* ---------- 開始 ---------- */
   applySkin(document.documentElement.getAttribute("data-skin") === "cyber" ? "cyber" : "beige");
   applyLang();
+  startMap();
   // 每分鐘更新營業狀態
   setInterval(function () { render(); }, 60000);
   var startId = location.hash.slice(1);

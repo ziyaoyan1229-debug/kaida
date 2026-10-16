@@ -57,7 +57,7 @@
     <ol class="list" id="list"></ol>
     <footer class="foot">
       <p id="sourceNote"></p>
-      <p class="credit">地圖 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者 · <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a></p>
+      <p class="credit osm-credit">地圖 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者 · <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a></p>
     </footer>
   </section>
   <section class="map-wrap" aria-label="地圖">
@@ -76,6 +76,11 @@
     <h2 id="dName"></h2>
     <p class="d-status" id="dStatus"></p>
     <p class="d-note" id="dNote"></p>
+    <div id="dStallsWrap" hidden>
+      <h3 data-i18n="stallsTitle">夜市裡的店家（Google 地圖）</h3>
+      <button class="btn primary see-map" id="dSeeMap" type="button" hidden></button>
+      <ol class="stalls" id="dStalls"></ol>
+    </div>
     <h3 data-i18n="mustEat">必吃小吃</h3>
     <ul class="foods" id="dFoods"></ul>
     <dl class="facts">
@@ -91,6 +96,24 @@
       <button class="btn ghost" id="dShare" type="button" data-i18n="share">分享</button>
       <button class="btn ghost" id="dReport" type="button" data-i18n="report">回報資料錯誤</button>
     </div>
+  </div>
+</div>
+
+<!-- 店家與評論 -->
+<div class="sheet" id="stall" role="dialog" aria-modal="true" aria-labelledby="sName" hidden>
+  <div class="sheet-card">
+    <button class="close" type="button" data-close aria-label="關閉">×</button>
+    <button class="link-btn" id="sBack" type="button" data-i18n="back">‹ 回夜市</button>
+    <p class="d-meta" id="sMeta"></p>
+    <h2 id="sName"></h2>
+    <p class="s-rating" id="sRating"></p>
+    <p class="s-addr" id="sAddr"></p>
+    <h3 data-i18n="reviewsTitle">饕客評論</h3>
+    <ul class="reviews" id="sReviews"></ul>
+    <div class="d-actions">
+      <a class="btn primary" id="sGmaps" target="_blank" rel="noopener" data-i18n="allReviews">在 Google 地圖看全部評論</a>
+    </div>
+    <p class="fine" data-i18n="reviewsFrom">評論與店家資料來自 Google 地圖，開達不會修改或保存。</p>
   </div>
 </div>
 
@@ -114,7 +137,10 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="config.js"></script>
 <script src="vendor/leaflet.js"></script>
+<script src="map-leaflet.js"></script>
+<script src="map-google.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>
