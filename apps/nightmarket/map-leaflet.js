@@ -19,14 +19,16 @@ window.NMLeafletMap = function (el, opts) {
     });
   }
   function countyStyle() {
-    var detail = map.getZoom() >= DETAIL_ZOOM;
+    var detail = map.getZoom() >= DETAIL_ZOOM, night = opts.night && opts.night();
     var cs = getComputedStyle(el);
-    return { color: cs.getPropertyValue("--signal").trim(), weight: detail ? 1 : 1.2, opacity: detail ? .35 : .8, fillColor: cs.getPropertyValue("--surface").trim(), fillOpacity: detail ? 0 : 1 };
+    return { color: cs.getPropertyValue("--signal").trim(), weight: detail ? 1 : 1.2, opacity: detail ? .35 : .8, fillColor: cs.getPropertyValue("--surface").trim(), fillOpacity: detail || !night ? 0 : 1 };
   }
   function onZoom() {
-    var z = map.getZoom(), detail = z >= DETAIL_ZOOM;
-    if (detail && !map.hasLayer(tiles)) tiles.addTo(map);
-    if (!detail && map.hasLayer(tiles)) map.removeLayer(tiles);
+    // 白天一直顯示原色地圖；夜晚模式縮小時只畫縣市
+    var z = map.getZoom(), detail = z >= DETAIL_ZOOM, showTiles = detail || !(opts.night && opts.night());
+    if (showTiles && !map.hasLayer(tiles)) tiles.addTo(map);
+    if (!showTiles && map.hasLayer(tiles)) map.removeLayer(tiles);
+    el.classList.toggle("show-names", z >= 10);
     if (counties) { counties.setStyle(countyStyle()); counties.bringToFront(); }
     labels.forEach(function (l) {
       var show = !detail && !(l.small && z < 9);
@@ -40,7 +42,7 @@ window.NMLeafletMap = function (el, opts) {
   var markers = {};
   var meMarker = null;
   function icon(m, sel, off) {
-    return L.divIcon({ className: "", html: opts.pinHtml(sel, off), iconSize: [30, 38], iconAnchor: [15, 37] });
+    return L.divIcon({ className: "", html: opts.pinHtml(sel, off, opts.label(m)), iconSize: [30, 38], iconAnchor: [15, 37] });
   }
 
   return {
@@ -73,7 +75,7 @@ window.NMLeafletMap = function (el, opts) {
       meMarker = L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, zIndexOffset: 2000 }).addTo(map);
     },
     setSkin: function () { if (counties) counties.setStyle(countyStyle()); },
-    setNight: function () { if (counties) counties.setStyle(countyStyle()); },
+    setNight: onZoom,
     setLang: function () {
       labels.forEach(function (l) { var e = l.mk.getElement(); if (e) e.firstChild.textContent = opts.lang() === "en" ? l.p.en : l.p.zh; });
     },
