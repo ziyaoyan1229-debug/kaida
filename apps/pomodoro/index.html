@@ -961,6 +961,16 @@
     w.classList.toggle("at-start", r.scrollLeft < 20);
     w.classList.toggle("at-end", r.scrollLeft + r.clientWidth > r.scrollWidth - 20);
   }
+  // 背景更新（好友上線、團隊變動）不要在打字時重畫，不然輸入框會被換掉、鍵盤收起；離開輸入框後再補畫
+  var pendingRender = null;
+  function typing() {
+    var a = document.activeElement;
+    return !!a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && /^(text|search|tel|number|email|url)$/.test(a.type)));
+  }
+  function softRender(fn) { if (typing()) { pendingRender = fn; return; } pendingRender = null; fn(); }
+  document.addEventListener("focusout", function () {
+    setTimeout(function () { if (pendingRender && !typing()) { var fn = pendingRender; pendingRender = null; fn(); } }, 50);
+  });
   var HSCROLL = ".rail, .mu-row, .says, .cats, .flags";
   (function () {
     var drag = null, moved = false;
@@ -1487,7 +1497,7 @@
   }
   if (teams) teams.onUpdate = function () {
     if (teamJoinTry && teams.teams[teamJoinTry] && teams.teams[teamJoinTry].name) finishJoinTeam(teamJoinTry);
-    if (current === "team") { clearTimeout(teams.rt); teams.rt = setTimeout(renderTeam, 150); }
+    if (current === "team") { clearTimeout(teams.rt); teams.rt = setTimeout(function () { if (current === "team") softRender(renderTeam); }, 150); }
   };
   function finishJoinTeam(id) {
     var tm = teams.teams[id]; teamJoinTry = null;
@@ -1646,7 +1656,7 @@
     } else if (m.k === "no") {
       if (data.reqOut[m.from]) { delete data.reqOut[m.from]; persist(); K.toast(t("f.reqNo", { n: m.n })); }
     }
-    if (current === "friends") renderFriends(); else if (current === "team") renderTeam(); else if (current === "session") renderScene(true);
+    if (current === "friends") softRender(renderFriends); else if (current === "team") softRender(renderTeam); else if (current === "session") renderScene(true);
   }
   function startSocial() {
     if (!social || !data.me.name) return;
@@ -1751,7 +1761,7 @@
         data.friends[m.from] = { n: m.n, a: m.av, k: "", m: 0, p: 0, s: 0, t: m.t };
         persist(); startSocial(); social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); }));
         K.toast(t("c.addedYou", { n: m.n }));
-        if (current === "friends") renderFriends(); else if (current === "session") renderScene(true);
+        if (current === "friends") softRender(renderFriends); else if (current === "session") renderScene(true);
       }
       return;
     }
@@ -1763,7 +1773,7 @@
       if (data.cheers.length > 100) data.cheers.shift();
       persist();
       if (current === "session") K.toast(t("f.gotCheer", { n: data.friends[m.from].n }) + "「" + cm + "」");
-      else { showCheerModal(data.friends[m.from], cm, m.from); if (current === "friends") renderFriends(); }
+      else { showCheerModal(data.friends[m.from], cm, m.from); if (current === "friends") softRender(renderFriends); }
       return;
     }
     pushChat(m.from, { me: false, text: m.text, t: m.t });
@@ -1771,7 +1781,7 @@
     else {
       data.unread[m.from] = (data.unread[m.from] || 0) + 1; K.save(STORE, data); updateBadge();
       K.toast(t("c.new", { n: data.friends[m.from].n, t: m.text.slice(0, 30) }));
-      if (current === "friends") renderFriends();
+      if (current === "friends") softRender(renderFriends);
     }
   }
   if (social) {
@@ -1787,7 +1797,7 @@
   var rfTimer = null;
   function renderFriendsSoon() {
     clearTimeout(rfTimer);
-    rfTimer = setTimeout(function () { if (current === "friends" && !(document.activeElement && document.activeElement.id === "chat-in")) renderFriends(); }, 400);
+    rfTimer = setTimeout(function () { if (current === "friends") softRender(renderFriends); }, 400);
   }
 
   // 打氣：對方在線上就直接送到；不在線才改用分享連結
@@ -1827,13 +1837,15 @@
     if (!look) return K.esc(fallback || "🍅");
     return '<svg viewBox="-21 -66 42 44" aria-hidden="true">' + S.bust(look, true) + '</svg>';
   }
+  var nameEdit = false;
   function renderFriends() {
     var el = document.getElementById("view-friends"), html = "";
-    if (!data.me.name) {
+    if (!data.me.name || nameEdit) {
       html += '<div class="card"><h2 style="margin-top:0">' + K.esc(t("f.setupH")) + '</h2><p class="small muted">' + K.esc(t("f.setupP")) + '</p>' +
         '<div class="me-line" style="margin-bottom:10px"><span class="av">' + avOf("me") + '</span><span class="small muted">' + K.esc(t("f.avNote")) + '</span></div>' +
-        '<label class="field"><input type="text" id="f-name" maxlength="16" placeholder="' + K.esc(t("f.nameph")) + '"></label>' +
-        '<button class="btn" type="button" data-act="save-me">' + K.esc(t("f.save")) + '</button></div>';
+        '<label class="field"><input type="text" id="f-name" maxlength="16" value="' + K.esc(data.me.name || "") + '" placeholder="' + K.esc(t("f.nameph")) + '"></label>' +
+        '<div class="btn-row"><button class="btn" type="button" data-act="save-me">' + K.esc(t("f.save")) + '</button>' +
+        (data.me.name ? '<button class="btn ghost" type="button" data-act="cancel-name">' + K.esc(t("f.cancel")) + '</button>' : "") + '</div></div>';
       html += '<p class="small muted">' + K.esc(t("f.how")) + '</p>';
       el.innerHTML = html; return;
     }
@@ -1917,8 +1929,9 @@
       case "save-me":
         var nm = document.getElementById("f-name").value.trim().slice(0, 16);
         if (!nm) { K.toast(t("f.needName")); return; }
-        data.me.name = nm; data.me.avatar = draftAvatar; persist(); startSocial(); return renderFriends();
-      case "edit-me": draftAvatar = data.me.avatar; var keep = data.me.name; data.me.name = ""; renderFriends(); document.getElementById("f-name").value = keep; data.me.name = keep; return;
+        data.me.name = nm; data.me.avatar = draftAvatar; nameEdit = false; persist(); startSocial(); syncMe(); renderChip(); return renderFriends();
+      case "edit-me": draftAvatar = data.me.avatar; nameEdit = true; renderFriends(); var fi = document.getElementById("f-name"); if (fi) fi.focus(); return;
+      case "cancel-name": nameEdit = false; return renderFriends();
       case "invite": var w = myWeek(); return shareLink(t("f.shareText", { n: data.me.name, m: w.m }), cardLink(myCard()));
       case "cancel-cheer": cheerTo = null; return renderFriends();
       case "sim-on":
