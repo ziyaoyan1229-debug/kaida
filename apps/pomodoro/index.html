@@ -341,12 +341,9 @@
   .quote { background: transparent; border-left: 2px solid var(--signal); border-radius: 0; padding: 2px 0 2px 14px; margin: 0 0 18px; }
   .quote p { font-family: var(--f-display); font-weight: 500; font-size: 17px; }
   .quote cite { font-size: 12px; letter-spacing: .05em; }
-  #view-rooms { perspective: 900px; }
-  #quote-rooms { transform-origin: 0 50%; backface-visibility: hidden; min-height: 84px; box-sizing: border-box; }
-  #quote-rooms.flip-out { animation: pageOut .32s ease-in forwards; }
-  #quote-rooms.flip-in { animation: pageIn .38s ease-out; }
-  @keyframes pageOut { to { transform: rotateY(-88deg); opacity: .2; } }
-  @keyframes pageIn { from { transform: rotateY(70deg); opacity: .2; } to { transform: none; opacity: 1; } }
+  #quote-rooms { min-height: 84px; box-sizing: border-box; }
+  #quote-rooms > p, #quote-rooms > cite { transition: opacity .6s ease; }
+  #quote-rooms.fade-out > p, #quote-rooms.fade-out > cite { opacity: 0; }
   .pick-card.a4 { padding: 0; }
   .a4-time { display: flex; align-items: flex-end; justify-content: space-between; margin: 4px 0 14px; }
   .a4-time .lab { display: block; font-size: 11px; color: var(--muted); letter-spacing: .25em; }
@@ -1429,17 +1426,19 @@
     document.getElementById("quote-rooms").innerHTML = html;
     document.getElementById("quote-session").innerHTML = html;
   }
-  // 主頁名言：每 10 秒像翻書一樣換一頁（按「換一句」也一樣翻）
+  // 主頁名言：每 10 秒淡出、換一句、再淡入（按「換一句」也一樣）
   var flipping = false;
   function flipQuote() {
     var el = document.getElementById("quote-rooms");
     if (flipping) return;
     if (!el.offsetParent || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { qi++; renderQuotes(); return; }
-    flipping = true; el.classList.add("flip-out");
+    flipping = true; el.classList.add("fade-out");
     setTimeout(function () {
-      qi++; renderQuotes(); el.classList.remove("flip-out"); el.classList.add("flip-in");
-      setTimeout(function () { el.classList.remove("flip-in"); flipping = false; }, 380);
-    }, 320);
+      qi++; renderQuotes();
+      el.getBoundingClientRect(); // 先讓新字以透明狀態畫出來，再淡入
+      el.classList.remove("fade-out");
+      setTimeout(function () { flipping = false; }, 600);
+    }, 600);
   }
   var quoteTimer = setInterval(function () { if (current === "rooms" && !document.hidden) flipQuote(); }, 10000);
   function resetQuoteTimer() { clearInterval(quoteTimer); quoteTimer = setInterval(function () { if (current === "rooms" && !document.hidden) flipQuote(); }, 10000); }
