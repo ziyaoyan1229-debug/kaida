@@ -348,9 +348,11 @@
   .a4-time .side { text-align: right; padding-bottom: 6px; }
   .a4-time .side b { display: block; font-family: var(--f-display); font-size: 28px; font-weight: 500; color: var(--muted); }
   .a4-time .side span { font-size: 11px; color: var(--muted); letter-spacing: .15em; }
-  .a4-seg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .a4-seg { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
   .a4-seg button { min-height: 42px; border: 0; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; padding: 0 2px; white-space: nowrap; }
   .a4-seg button.mono { font-size: 13px; }
+  .a4-seg button.mono { letter-spacing: 0; }
+  @media (max-width: 400px) { .a4-seg button { font-size: 13px; } .a4-seg button.mono { font-size: 11.5px; } }
   .a4-seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); font-weight: 600; }
   .pick-card.a4 .cust { padding: 12px 0 0; }
   .a4-grid { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); }
@@ -535,7 +537,7 @@
       "app.lede": "開一間溫馨的小讀書房，用四碼房號約朋友進來。大家一起專注、一起休息，完成番茄就拿小木頭幫角色買裝備。",
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
-      "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
+      "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.long": "100 分專注\n20 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
       "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "隨機配到有空位的房間", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
@@ -552,7 +554,7 @@
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
-      "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
+      "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
@@ -619,7 +621,7 @@
       "app.lede": "Open a cozy little study room and invite friends with a 4-digit code. Focus and take breaks together, and earn little logs to dress up your character.",
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
-      "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.test": "Quick test\n1 min / 30 s",
+      "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.long": "100 focus\n20 break", "r.mode.test": "Quick test\n1 min / 30 s",
       "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Random room with a free seat", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
@@ -636,7 +638,7 @@
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
-      "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.boughtColor": "Changed, {n} logs spent",
+      "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
@@ -684,7 +686,7 @@
       "f.simH": "Practice friends", "f.simP": "Add five practice friends to try chatting and the leaderboard.", "f.simOn": "Add practice friends", "f.simOff": "Remove practice friends", "f.simAdded": "Added 5 practice friends"
     }
   });
-  var MODES = { std: { focus: 25, brk: 5, wood: 3 }, deep: { focus: 50, brk: 10, wood: 6 }, test: { focus: 1, brk: 0.5, wood: 1, test: true } };
+  var MODES = { std: { focus: 25, brk: 5, wood: 3 }, deep: { focus: 50, brk: 10, wood: 6 }, long: { focus: 100, brk: 20, wood: 12 }, test: { focus: 1, brk: 0.5, wood: 1, test: true } };
   // 目前這場的計時設定，key 一律是 "cur"
   var ROOMS = { cur: { focus: 25, brk: 5, synced: false } };
   var MAX_AWAY = 3 * 60 * MIN; // 超過 3 小時沒回來就自動結束
@@ -1002,7 +1004,7 @@
   // 開房前的設定全部收在一張卡：每一列左右滑動選
   var START_KEYS = ["quick", "join", "private", "sim", "solo"];
   var THEME_SW = { home: ["#c08a5a", "#f3e3c6"], cafe: ["#6e4a34", "#e8d3b0"], library: ["#7a2a2a", "#c9a45a"], study: ["#9aa6b2", "#eef0f2"], space: ["#1a2440", "#4ad8ff"], school: ["#7d9a86", "#f1e7cf"], konbini: ["#2f9a6a", "#f4f6f7"], washitsu: ["#c9c08a", "#5a4030"], cabin: ["#5a3a26", "#3f6a3a"], beach: ["#7ac4c4", "#f2a65a"], rooftop: ["#2e3236", "#ff6ab0"], lodge: ["#b0302a", "#f2ece0"] };
-  var TIME_LABEL = { std: "25/5", deep: "50/10", test: "1/0.5 TEST" };
+  var TIME_LABEL = { std: "25/5", deep: "50/10", long: "100/20", test: "1/0.5 TEST" };
   // A4：這一輪的時間放大當主角
   function bigTime() {
     if (data.mode === "rand") return '<div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">?</b></div><div class="side"><b>' + K.esc(t("r.rand")) + '</b><span>' + K.esc(t("r.randBig")) + '</span></div>';
@@ -1066,7 +1068,7 @@
       var c = THEME_SW[k] || ["#c08a5a", "#f3e3c6"];
       return '<button type="button" class="tcard" data-theme="' + k + '" aria-pressed="' + (data.theme === k) + '"><span class="sw" style="background:url(thumbs/' + k + '.jpg) center/cover,linear-gradient(135deg,' + c[0] + ' 0 60%,' + c[1] + ' 60% 100%)"></span>' + K.esc(themeName(k, data.me.name)) + '</button>';
     }).join("");
-    var times = ["rand", "std", "deep", "custom", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '"' + (m === "std" || m === "deep" || m === "test" ? ' class="mono"' : "") + '>' + K.esc(m === "custom" ? t("r.custom") : m === "rand" ? t("r.rand") : m === "test" ? "TEST" : TIME_LABEL[m]) + '</button>'; }).join("");
+    var times = ["rand", "std", "deep", "long", "custom", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '"' + (m === "std" || m === "deep" || m === "long" || m === "test" ? ' class="mono"' : "") + '>' + K.esc(m === "custom" ? t("r.custom") : m === "rand" ? t("r.rand") : m === "test" ? "TEST" : TIME_LABEL[m]) + '</button>'; }).join("");
     var mins = function (id, lo, hi, step, v, lab) {
       var o = []; for (var x = lo; x <= hi; x += step) o.push('<option value="' + x + '"' + (x === v ? " selected" : "") + '>' + x + '</option>');
       return '<label class="cust-f"><span>' + K.esc(lab) + '</span><select id="' + id + '" class="pick-select">' + o.join("") + '</select></label>';
