@@ -230,12 +230,12 @@
   function nameTag(name, y, me, fl) {
     var f = flag(fl), w = Math.min(84, 10 + String(name).length * 7.5 + (f ? 10 : 0));
     return '<g transform="translate(0 ' + y + ')"><rect x="' + (-w / 2) + '" y="-8" width="' + w + '" height="11" rx="5.5" fill="' + (me ? "#9a7440" : "rgba(42,38,32,.72)") + '"/>' +
-      '<text x="0" y="0.5" text-anchor="middle" font-size="7" fill="#f8f4ec" font-family="Noto Sans TC, sans-serif">' + (f ? f + " " : "") + esc(String(name).slice(0, 8)) + '</text></g>';
+      '<text x="0" y="0.5" text-anchor="middle" font-size="7" fill="#f8f4ec" font-family="Twemoji Country Flags, Noto Sans TC, sans-serif">' + (f ? f + " " : "") + esc(String(name).slice(0, 8)) + '</text></g>';
   }
   function bubble(text, y) {
     var w = Math.min(110, 14 + String(text).length * 8);
     return '<g class="bubble" transform="translate(0 ' + y + ')"><rect x="' + (-w / 2) + '" y="-14" width="' + w + '" height="14" rx="7" fill="#fff" stroke="#ddd2c0"/><path d="M-3 0 l3 4 l3 -4" fill="#fff" stroke="#ddd2c0"/><rect x="-3.5" y="-1.5" width="7" height="2" fill="#fff"/>' +
-      '<text x="0" y="-4" text-anchor="middle" font-size="8" fill="#2a2620" font-family="Noto Sans TC, sans-serif">' + esc(text) + '</text></g>';
+      '<text x="0" y="-4" text-anchor="middle" font-size="8" fill="#2a2620" font-family="Twemoji Country Flags, Noto Sans TC, sans-serif">' + esc(text) + '</text></g>';
   }
 
   /* ===== 房間 ===== */

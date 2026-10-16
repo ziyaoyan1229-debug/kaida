@@ -26,7 +26,7 @@
     L.skin = Math.max(0, Math.min(2, +look.skin || 0)); L.hair = Math.max(0, Math.min(3, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
-      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
+      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
     };
   }
 
@@ -242,7 +242,7 @@
       if (parts[0] === "team" && parts[2] === "info") { if (m && typeof m.name === "string") tm.name = m.name.slice(0, 20); }
       else if (parts[0] === "lb" && parts[2]) {
         if (!m) delete tm.members[parts[2]];
-        else tm.members[parts[2]] = { n: String(m.n || "?").slice(0, 16), fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", w: String(m.w || "").slice(0, 10), m: Math.max(0, Math.min(7 * 24 * 60, +m.m || 0)), ts: +m.ts || 0 };
+        else tm.members[parts[2]] = { n: String(m.n || "?").slice(0, 16), fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", w: String(m.w || "").slice(0, 10), m: Math.max(0, Math.min(7 * 24 * 60, +m.m || 0)), tot: Math.max(0, Math.min(5e6, +m.tot || 0)), ts: +m.ts || 0 };
       }
       self.onUpdate();
     });

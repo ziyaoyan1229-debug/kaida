@@ -16,6 +16,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../shared/kaida-app.css">
 <style>
+  /* 國旗字型：Windows 的 Chrome/Edge 沒有國旗表情，只會顯示「TW」字母，所以自帶一份（只用在國旗字元） */
+  @font-face { font-family: "Twemoji Country Flags"; src: url("vendor/TwemojiCountryFlags.woff2") format("woff2"); unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E007F; font-display: swap; }
+  :root { --f-body: "Twemoji Country Flags", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
+  button, input, select, textarea { font-family: inherit; }
   .hero { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
   .hero img { flex: none; border-radius: 14px; }
   .room { display: flex; align-items: center; gap: 12px; }
@@ -324,7 +328,7 @@
     zh: {
       "app.title": "番茄讀書會",
       "app.lede": "打開就能加入一間安靜的讀書房。同一間房的每個人都照同一個時鐘開始、一起休息，不用註冊。",
-      "tab.team": "團隊", "chip.set": "個人設定", "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "本週分數", "tm.total": "本週總時數", "tm.bonus": "人數加成", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行（本週）", "tm.boardP": "分數 = 有讀書的成員平均分鐘 × 人數加成。每多 1 位有讀書的隊友加 0.1 倍，最多 2 倍（11 人）。每週一重新計算。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · {h} · ×{b}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "我的紀錄",
+      "tab.team": "團隊", "chip.set": "個人設定", "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "我的紀錄",
       "rooms.how": "讀書房照「整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。",
       "room.hour.name": "整點房", "room.hour.desc": "25 分專注 · 5 分休息 · 每個 :00 和 :30 開始",
       "room.deep.name": "深度房", "room.deep.desc": "50 分專注 · 10 分休息 · 每個整點開始",
@@ -339,7 +343,7 @@
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
-      "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "番茄鐘還在跑，隨時可以回去。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
+      "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
@@ -375,7 +379,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以回「角色」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.vol": "音量", "s.st.up": "起來走走", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -408,7 +412,7 @@
     en: {
       "app.title": "Pomodoro Study Club",
       "app.lede": "Join a quiet study room in one tap. Everyone in a room follows the same clock, so you focus and take breaks together. No sign-up.",
-      "tab.team": "Teams", "chip.set": "Profile", "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Score this week", "tm.total": "Hours this week", "tm.bonus": "Size bonus", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking (this week)", "tm.boardP": "Score = average minutes of members who studied × size bonus. Each extra studying member adds 0.1×, up to 2× (11 people). Resets every Monday.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} · ×{b}", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "My stats",
+      "tab.team": "Teams", "chip.set": "Profile", "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "My stats",
       "rooms.how": "Rooms run on the clock: the Half-hour room starts every :00 and :30 (25 min focus, 5 min break), the Deep room starts every hour (50 min focus, 10 min break). Anyone opening a room at the same moment sees the same countdown.",
       "room.hour.name": "Half-hour room", "room.hour.desc": "25 focus · 5 break · starts at :00 and :30",
       "room.deep.name": "Deep room", "room.deep.desc": "50 focus · 10 break · starts every hour",
@@ -423,7 +427,7 @@
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
-      "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "The timer keeps running. Come back anytime.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
+      "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
       "opt.sound": "Chime and vibrate between phases", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
@@ -459,7 +463,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits on the Avatar tab anytime.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.vol": "Volume", "s.st.up": "Walking around", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -604,6 +608,7 @@
     persist();
     show("session");
     applyWake();
+    if (music().kind && window.KaidaMusic) playMusic(music().kind);
   }
 
   var busy = false;
@@ -677,7 +682,7 @@
   function setUp(up) {
     if (!session) return;
     session.up = !!up; persist();
-    if (session.kind === "room" && net) net.publishMe({ up: session.up });
+    if (session.kind === "room" && net) net.publishMe({ up: session.up, away: !!session.away });
     renderSays(); renderScene(true);
   }
 
@@ -762,7 +767,7 @@
   function show(v) {
     // 第一次打開：先取暱稱、選好角色才能進讀書房
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
-    if (v === "rooms" && session) v = "session";
+    if (v === "rooms" && session && !session.away) v = "session";
     current = v;
     ["rooms", "session", "me", "friends", "char", "team"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
     document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
@@ -781,7 +786,7 @@
     renderTasks();
   }
 
-  var pendingCode = "", roomTab = "join", awayFrom = null;
+  var pendingCode = "", roomTab = "join";
   function renderRooms() {
     var modes = ["std", "deep", "test"].map(function (m) {
       return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m)).replace("\n", "<br>") + '</button>';
@@ -792,9 +797,10 @@
     var pane = roomTab === "join"
       ? '<p class="small muted">' + K.esc(t("r.joinP")) + '</p><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '">'
       : '<p class="small muted" style="margin:0">' + K.esc(t(roomTab === "quick" ? "r.quickP" : "r.createP")) + '</p>';
-    var awayName = awayFrom ? (awayFrom.kind === "room" ? t("s.label.room") + " " + awayFrom.code : t(awayFrom.kind === "sim" ? "s.label.sim" : "s.label.solo")) : "";
+    var away = session && session.away;
+    var awayName = away ? (session.kind === "room" ? t("s.label.room") + " " + session.code : t(session.kind === "sim" ? "s.label.sim" : "s.label.solo")) : "";
     document.getElementById("room-list").innerHTML =
-      (awayFrom ? '<div class="card room-card welcome"><h3>' + K.esc(t("s.away", { r: awayName })) + '</h3><p class="small muted">' + K.esc(t("s.awayP")) + '</p>' +
+      (away ? '<div class="card room-card welcome"><h3>' + K.esc(t("s.away", { r: awayName })) + '</h3><p class="small muted">' + K.esc(t("s.awayP")) + '</p>' +
         '<button class="btn block start-btn" type="button" data-act="back">' + K.esc(t("s.back")) + '</button></div>' : "") +
       '<div class="card room-card mini-win"><div class="win-tabs" role="tablist">' + tabs + '</div><div class="win-pane">' + pane + '</div></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.doH")) + '</h3><p class="small muted">' + K.esc(t("r.doP")) + '</p><div class="seg acts">' +
@@ -810,11 +816,11 @@
 
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, fl: m.fl, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
+        else list.push({ id: m.id, name: m.name, fl: m.fl, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
@@ -842,7 +848,7 @@
     document.getElementById("s-members").innerHTML = ms.map(function (m) {
       var fb = m.me ? "" : data.friends[m.id] ? '<span class="st"> · ' + K.esc(t("s.isFriend")) + '</span>' : '<button type="button" class="addf" data-addf="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>';
       return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + fb + '</span><span class="st">' +
-        K.esc(m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break")) + '</span></li>';
+        K.esc(m.away ? t("s.st.away") : m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break")) + '</span></li>';
     }).join("");
     document.getElementById("s-room").textContent = session.kind === "room" ? t("s.people", { n: ms.length }) : session.kind === "sim" ? t("s.sim") : t("s.alone");
   }
@@ -861,7 +867,11 @@
   }
 
   // 背景音樂：每個人自己選，不會同步給別人
-  function music() { if (!data.music) data.music = { kind: "", vol: 0.6 }; return data.music; }
+  function music() {
+    if (!data.music) data.music = { kind: "light", vol: 0.6 };
+    if (!data.music.def) { data.music.def = 1; if (!data.music.kind) data.music.kind = "light"; } // 預設輕音樂
+    return data.music;
+  }
   function renderMusic() {
     var mu = music(), playing = window.KaidaMusic ? window.KaidaMusic.current() : "";
     document.getElementById("music").innerHTML = '<div class="mu-head"><span class="lab">' + K.esc(t("mu.lab")) + '</span>' +
@@ -1103,43 +1113,42 @@
   }
 
   /* ===== 團隊排行 =====
-     分數 = 這週每位有讀書的成員平均分鐘 × 人數加成
-     人數加成 = 1 + 0.1 ×（有讀書的人數 − 1），最多 2 倍（11 人以上）
-     人越多分數越高，但一個人讀很多的小團隊也有機會贏，不會只看總和 */
+     比的是全隊「加入團隊後」累積的讀書小時，人越多累積越快 */
   var teams = window.KaidaNet && window.mqtt ? new window.KaidaNet.Teams() : null, teamJoinTry = null;
   var TEAM_MAX = 30;
   var DEMO_TEAMS = [
-    { name: "夜貓讀書團", en: "Night Owls", n: 9, avg: 410 }, { name: "國考衝刺班", en: "Exam Sprint", n: 14, avg: 300 },
-    { name: "Tokyo Study Club", en: "Tokyo Study Club", n: 5, avg: 520 }, { name: "早起寫論文", en: "Early Thesis", n: 3, avg: 610 },
-    { name: "程式自學社", en: "Self-taught Coders", n: 7, avg: 260 }
+    { name: "夜貓讀書團", en: "Night Owls", n: 9, h: 412 }, { name: "國考衝刺班", en: "Exam Sprint", n: 14, h: 655 },
+    { name: "Tokyo Study Club", en: "Tokyo Study Club", n: 5, h: 248 }, { name: "早起寫論文", en: "Early Thesis", n: 3, h: 131 },
+    { name: "程式自學社", en: "Self-taught Coders", n: 7, h: 296 }
   ];
-  function teamBonus(n) { return Math.min(2, 1 + 0.1 * Math.max(0, n - 1)); }
+  function myTotal() { var m = 0; Object.keys(data.days).forEach(function (k) { m += data.days[k].min || 0; }); return Math.floor(m); }
   function teamStats(tm) {
-    var wk = weekKey(), now = Date.now(), act = 0, sum = 0, all = 0;
+    var wk = weekKey(), all = 0, tot = 0, week = 0;
     Object.keys(tm.members).forEach(function (id) {
-      var m = tm.members[id]; all++;
-      if (m.w === wk && m.m > 0 && now - m.ts < 8 * 864e5) { act++; sum += m.m; }
+      var m = tm.members[id]; all++; tot += m.tot || 0;
+      if (m.w === wk) week += m.m;
     });
-    var avg = act ? sum / act : 0;
-    return { all: all, act: act, sum: sum, score: Math.round(avg * teamBonus(act)) };
+    return { all: all, tot: tot, week: week };
   }
   function boardRows() {
     var rows = [];
     if (teams) Object.keys(teams.teams).forEach(function (id) {
       var tm = teams.teams[id]; if (!tm.name) return;
       var st = teamStats(tm); if (!st.all) return;
-      rows.push({ id: id, name: tm.name, n: st.all, act: st.act, sum: st.sum, score: st.score });
+      rows.push({ id: id, name: tm.name, n: st.all, tot: st.tot, week: st.week });
     });
     if (rows.length < 5) DEMO_TEAMS.forEach(function (d, i) {
-      rows.push({ id: "demo" + i, demo: true, name: K.lang() === "en" ? d.en : d.name, n: d.n, act: d.n, sum: d.avg * d.n, score: Math.round(d.avg * teamBonus(d.n)) });
+      rows.push({ id: "demo" + i, demo: true, name: K.lang() === "en" ? d.en : d.name, n: d.n, tot: d.h * 60, week: Math.round(d.h * 60 / 9) });
     });
-    rows.sort(function (a, b) { return b.score - a.score || b.sum - a.sum; });
+    rows.sort(function (a, b) { return b.tot - a.tot || b.n - a.n; });
     return rows;
   }
   function teamSync() {
     if (!teams || !data.team || !data.me.name) return;
-    teams.publish(data.team.id, data.me.id, { n: data.me.name, fl: data.me.flag, w: weekKey(), m: myWeek().m });
+    if (data.team.base == null) data.team.base = myTotal();
+    teams.publish(data.team.id, data.me.id, { n: data.me.name, fl: data.me.flag, w: weekKey(), m: myWeek().m, tot: Math.max(0, myTotal() - data.team.base) });
   }
+  function hnum(min) { return String(Math.round(min / 6) / 10); }
   function hrs(min) { return (Math.round(min / 6) / 10) + (K.lang() === "en" ? " h" : " 小時"); }
   function renderTeam() {
     var el = document.getElementById("view-team"); if (!el) return;
@@ -1151,16 +1160,16 @@
         '<div class="card room-card"><h3>' + K.esc(t("tm.newH")) + '</h3><p class="small muted">' + K.esc(t("tm.newP")) + '</p>' +
         '<div style="display:flex;gap:8px"><input type="text" id="tm-name" maxlength="20" placeholder="' + K.esc(t("tm.nameph")) + '" style="flex:1;min-width:0"><button class="btn" type="button" data-tm="create">' + K.esc(t("tm.create")) + '</button></div></div>';
     } else {
-      var tm = teams && teams.teams[data.team.id], st = tm ? teamStats(tm) : { all: 1, act: 0, sum: 0, score: 0 };
+      var tm = teams && teams.teams[data.team.id], st = tm ? teamStats(tm) : { all: 1, tot: 0, week: 0 };
       var rows = boardRows(), rank = rows.findIndex(function (r) { return r.id === data.team.id; }) + 1;
       var mem = tm ? Object.keys(tm.members).map(function (id) { return Object.assign({ id: id }, tm.members[id]); }) : [];
-      mem.sort(function (a, b) { return (b.w === weekKey() ? b.m : 0) - (a.w === weekKey() ? a.m : 0); });
+      mem.sort(function (a, b) { return (b.tot || 0) - (a.tot || 0); });
       html += '<div class="card room-card welcome"><h3>' + K.esc(data.team.name) + '</h3>' +
         '<p class="small muted">' + K.esc(t("tm.code")) + ' <b style="font-family:var(--f-mono);letter-spacing:.15em">' + K.esc(data.team.id) + '</b> · ' + K.esc(t("tm.members", { n: st.all })) + (rank ? ' · ' + K.esc(t("tm.rank", { n: rank })) : "") + '</p>' +
-        '<div class="stats" style="margin:8px 0 12px"><div class="stat"><div class="n">' + st.score + '</div><div class="l">' + K.esc(t("tm.score")) + '</div></div>' +
-        '<div class="stat"><div class="n">' + hrs(st.sum) + '</div><div class="l">' + K.esc(t("tm.total")) + '</div></div>' +
-        '<div class="stat"><div class="n">×' + teamBonus(st.act).toFixed(1) + '</div><div class="l">' + K.esc(t("tm.bonus")) + '</div></div></div>' +
-        mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(m.n) + '</span><span class="small">' + hrs(m.w === weekKey() ? m.m : 0) + '</span></div>'; }).join("") +
+        '<div class="stats" style="margin:8px 0 12px"><div class="stat"><div class="n">' + hnum(st.tot) + '</div><div class="l">' + K.esc(t("tm.score")) + '</div></div>' +
+        '<div class="stat"><div class="n">' + hnum(st.week) + '</div><div class="l">' + K.esc(t("tm.total")) + '</div></div>' +
+        '<div class="stat"><div class="n">' + st.all + '</div><div class="l">' + K.esc(t("tm.bonus")) + '</div></div></div>' +
+        mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(m.n) + '</span><span class="small">' + hrs(m.tot || 0) + '</span></div>'; }).join("") +
         '<div class="btn-row" style="margin-top:12px"><button class="btn" type="button" data-tm="invite">' + K.esc(t("tm.invite")) + '</button><button class="btn ghost" type="button" data-tm="quit">' + K.esc(t("tm.quit")) + '</button></div></div>';
     }
     var rows2 = boardRows().slice(0, 30);
@@ -1168,8 +1177,8 @@
       rows2.map(function (r, i) {
         return '<div class="lb-row' + (data.team && r.id === data.team.id ? " mine" : "") + '"><span class="rk">' + (i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1) + '</span>' +
           '<div style="min-width:0"><div class="tn">' + K.esc(r.name) + (r.demo ? '<span class="demo-tag">' + K.esc(t("tm.demo")) + '</span>' : "") + '</div>' +
-          '<div class="small muted">' + K.esc(t("tm.rowInfo", { n: r.n, h: hrs(r.sum), b: teamBonus(r.act).toFixed(1) })) + '</div></div>' +
-          '<span class="sc">' + r.score + '</span></div>';
+          '<div class="small muted">' + K.esc(t("tm.rowInfo", { n: r.n, h: hrs(r.week) })) + '</div></div>' +
+          '<span class="sc">' + hrs(r.tot) + '</span></div>';
       }).join("") + '</div>';
     el.innerHTML = html;
   }
@@ -1180,7 +1189,7 @@
   function finishJoinTeam(id) {
     var tm = teams.teams[id]; teamJoinTry = null;
     if (Object.keys(tm.members).length >= TEAM_MAX && !tm.members[data.me.id]) { K.toast(t("tm.full")); return; }
-    data.team = { id: id, name: tm.name }; persist(); teamSync(); K.toast(t("tm.joined", { n: tm.name })); renderTeam();
+    data.team = { id: id, name: tm.name, base: myTotal() }; persist(); teamSync(); K.toast(t("tm.joined", { n: tm.name })); renderTeam();
   }
   document.getElementById("view-team").addEventListener("click", function (e) {
     var b = e.target.closest("[data-tm]"); if (!b) return;
@@ -1191,7 +1200,7 @@
       var nm = (document.getElementById("tm-name").value || "").trim().slice(0, 20);
       if (!nm) { K.toast(t("tm.needName")); return; }
       var id = Math.random().toString(36).slice(2, 7).replace(/[^a-z0-9]/g, "x"); while (id.length < 5) id += "x";
-      teams.create(id, nm); data.team = { id: id, name: nm }; persist(); teamSync(); K.toast(t("tm.created")); renderTeam();
+      teams.create(id, nm); data.team = { id: id, name: nm, base: myTotal() }; persist(); teamSync(); K.toast(t("tm.created")); renderTeam();
     } else if (a === "join") {
       var code = (document.getElementById("tm-code").value || "").trim().toLowerCase();
       if (!/^[a-z0-9]{5}$/.test(code)) { K.toast(t("tm.badCode")); return; }
@@ -1289,7 +1298,7 @@
   // 點房間裡的人物：看狀態、加好友
   function memberStatus(m) {
     var p = phaseAt("cur", Date.now(), roomOrigin());
-    return m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break");
+    return m.away ? t("s.st.away") : m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break");
   }
   window.addEventListener("kaida3d-pick", function (e) {
     if (!session) return;
@@ -1505,13 +1514,9 @@
     if (b.dataset.rtab) { var jc = document.getElementById("join-code"); if (jc) pendingCode = jc.value; roomTab = b.dataset.rtab; renderRooms(); return; }
     if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     var a = b.dataset.act;
-    if (a === "back" && awayFrom) {
-      var af = awayFrom; awayFrom = null;
-      if (af.kind === "room") { pendingCode = af.code; openRoom(false, af.code); }
-      else startSession(af.kind, Object.assign({}, MODES[af.mode] || MODES[data.mode], af.cfg), af.origin);
-      return;
-    }
-    if (a === "join" || a === "create" || a === "quick" || a === "sim" || a === "solo") awayFrom = null;
+    if (a === "back") { comeBack(); return; }
+    // 暫離中改去別的房間：先正式離開原本那間
+    if (session && session.away && (a === "join" || a === "create" || a === "quick" || a === "sim" || a === "solo")) leave(true);
     if (a === "join") {
       var code = (document.getElementById("join-code").value || "").replace(/\D/g, "");
       if (code.length !== 4) { K.toast(t("r.err.code")); return; }
@@ -1528,12 +1533,15 @@
     if (e.target.closest("[data-up]")) { setUp(!session.up); return; }
     var b = e.target.closest("[data-say]"); if (b) say(b.dataset.say);
   });
-  // 暫離：先離開房間，但記住是哪一間，讀書房頁最上面可以一鍵回去
+  // 暫離：人還在房間裡，角色起身離開座位走動；跳回房間才走回座位
   document.getElementById("s-exit").addEventListener("click", function () {
     if (!session) return;
-    awayFrom = { kind: session.kind, code: session.code || "", mode: data.mode, cfg: session.cfg, origin: session.origin };
-    leave();
+    session.away = true; setUp(true); show("rooms"); window.scrollTo(0, 0);
   });
+  function comeBack() {
+    if (!session) return;
+    session.away = false; setUp(false); show("session");
+  }
   document.getElementById("s-invite").addEventListener("click", function () {
     if (!session || !session.code) return;
     shareLink(t("s.inviteText", { code: session.code }), location.origin + location.pathname + "#room=" + session.code);
@@ -1599,7 +1607,7 @@
         });
       } else { leave(true); }
     }
-    show(session ? "session" : "rooms");
+    show(session && !session.away ? "session" : "rooms");
   } else show("rooms");
   readHash();
   try3d();
