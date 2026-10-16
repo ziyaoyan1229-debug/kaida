@@ -397,7 +397,7 @@
       if (!rs.length) { $("sReviews").innerHTML = '<li class="muted">' + esc(t("noReviews")) + "</li>"; return; }
       $("sReviews").innerHTML = rs.map(function (r) {
         var who = r.authorUrl ? '<a href="' + esc(r.authorUrl) + '" target="_blank" rel="noopener">' + esc(r.author) + "</a>" : esc(r.author);
-        return '<li class="review">' + (r.photo ? '<img src="' + esc(r.photo) + '" alt="" width="32" height="32" referrerpolicy="no-referrer">' : '<span class="av"></span>') +
+        return '<li class="review">' + (r.photo ? '<img src="' + esc(r.photo) + '" alt="" width="32" height="32" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'av\'}))">' : '<span class="av"></span>') +
           '<div><p class="rv-head">' + who + ' <span class="rv-when">' + esc(r.when) + "</span></p>" + stars(r.rating) +
           '<p class="rv-text">' + esc(r.text) + "</p></div></li>";
       }).join("");
