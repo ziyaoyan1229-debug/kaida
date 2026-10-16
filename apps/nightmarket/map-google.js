@@ -347,6 +347,8 @@
         var ids = [];
         list.forEach(function (p) {
           if (!p.location || distM(ll(p.location), area.center) > 750) return;
+          // 只留吃的喝的（關鍵字「香」會搜到香舖、金紙店）
+          if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
           var have = area.stalls.filter(function (s) { return s.id === p.id; })[0];
           if (!have) {
             have = toStall(p);
