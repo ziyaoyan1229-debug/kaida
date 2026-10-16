@@ -612,6 +612,11 @@ a.me[aria-current="page"] .avatar { outline: 2px solid var(--signal); outline-of
   footer { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
+/* 真的上線、可直接試用的作品 */
+.live-tag { display: inline-block; font-size: 12px; font-weight: 600; line-height: 1; padding: 4px 7px; border: 1.5px solid var(--pass); color: var(--pass); border-radius: 999px; white-space: nowrap; }
+:root[data-skin="cyber"] .live-tag { border-radius: 0; }
+.card .top .live-tag { margin-right: auto; }
+
 </style>
 <script>
   // 進場前先套用記住的風格，避免載入畫面閃一下米色
@@ -643,7 +648,7 @@ a.me[aria-current="page"] .avatar { outline: 2px solid var(--signal); outline-of
     </div>
   </div>
 </header>
-<div class="demo-strip"><div class="wrap">原型示範：所有作品、人物與金額皆為假資料，不會實際收款。網域尚未決定。</div></div>
+<div class="demo-strip"><div class="wrap">原型示範：除了標「可試用」的作品，其餘作品、人物與金額皆為假資料，不會實際收款。網域尚未決定。</div></div>
 <main class="wrap" id="app"></main>
 <footer><div class="wrap btn-row" style="justify-content:space-between;align-items:center">
   <span style="display:flex;align-items:center;gap:10px"><span data-icon></span>第一版原型 · 你新增的資料只存在這個瀏覽器</span>
@@ -776,24 +781,26 @@ window.MOCK = {
       stage: "beta",
       featured: false,
       hue: 200,
-      url: "https://example.com/pill-time",
-      description: "藥師設計的用藥提醒。拍藥袋就能帶入藥名與時間，長輩按一下「吃了」，超過 30 分鐘沒按就通知家人。",
+      url: "apps/meds/",
+      live: true,
+      description: "藥師設計的用藥提醒。替每種藥拍一張藥袋照片方便對照，長輩按一下「吃了」，超過 30 分鐘沒按就提醒你通知家人。資料只存在這支手機。",
       tasks: [
         { id: "t1", title: "建立一位長輩的用藥資料", required: true },
-        { id: "t2", title: "拍一張藥袋照片試試自動帶入", required: true },
-        { id: "t3", title: "故意不按「吃了」，看家人是否收到通知", required: true }
+        { id: "t2", title: "拍一張藥袋照片存進藥物裡", required: true },
+        { id: "t3", title: "按一次「吃了」", required: true },
+        { id: "t4", title: "讓一份藥逾時，按「通知家人」", required: true }
       ],
       beta: { target: 20, completed: 21, joined: 26, avgRating: 4.6, bugsReported: 14, bugsFixed: 9 },
       health: [
         { item: "網址可以正常開啟", status: "pass" },
-        { item: "前端程式碼沒有暴露 API 金鑰", status: "fail", note: "在前端 JS 找到疑似 OpenAI 金鑰（sk-…7Qx）" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
         { item: "手機版版面可用", status: "pass" },
         { item: "使用 HTTPS 加密連線", status: "pass" },
-        { item: "有隱私權政策頁面", status: "fail", note: "涉及健康資料，必須說明保存方式" },
+        { item: "有隱私權政策頁面", status: "warn", note: "已在設定頁說明資料只存在手機，正式版需要完整隱私權政策" },
         { item: "首頁 3 秒內載入", status: "pass" }
       ],
       feedback: [
-        { tester: "阿凱", level: "資深測試者", rating: 5, tasksDone: ["t1", "t2", "t3"], issue: "藥袋照片如果反光就讀不到藥名。", severity: "minor", device: "iPhone 15 / Safari", date: "2026-10-08", pay: "yes" }
+        { tester: "阿凱", level: "資深測試者", rating: 5, tasksDone: ["t1", "t2", "t3"], issue: "藥袋照片的縮圖有點小，長輩看不太清楚。", severity: "minor", device: "iPhone 15 / Safari", date: "2026-10-08", pay: "yes" }
       ]
     },
     {
@@ -871,28 +878,31 @@ window.MOCK = {
     {
       id: "night-market",
       cat: "life", sub: "food",
-      name: "夜市地圖",
-      tagline: "標出今晚有開的攤位，排隊多久大家一起回報",
-      author: "張育誠",
-      authorNote: "大學生，第一次參加封測",
-      tools: ["v0", "ChatGPT"],
+      name: "台灣夜市地圖",
+      tagline: "30 個台灣夜市的地圖，看今天有開、離你最近、必吃什麼",
+      author: "開達 Kaida",
+      authorNote: "開達自己做的第一批封測作品",
+      tools: ["Claude"],
       stage: "beta",
       featured: false,
       hue: 48,
-      url: "https://example.com/night-market",
-      description: "以饒河、寧夏、逢甲夜市為起點，網友回報攤位有沒有開、排隊多久。",
+      url: "apps/nightmarket/",
+      live: true,
+      description: "13 個縣市、30 個主要夜市的地圖與清單。可以依縣市篩選、搜尋小吃、看今天有沒有開、找離你最近的夜市，也能收藏想去的清單、一鍵導航。資料整理自公開資訊，營業時間以現場為準。",
       tasks: [
-        { id: "t1", title: "打開地圖並找到一個攤位", required: true },
-        { id: "t2", title: "回報一次排隊時間", required: true }
+        { id: "t1", title: "找到離你最近的夜市", required: true },
+        { id: "t2", title: "用小吃找夜市", required: true },
+        { id: "t3", title: "收藏 3 個想去的夜市", required: true },
+        { id: "t4", title: "打開一個今天有開的夜市", required: true }
       ],
       beta: { target: 25, completed: 3, joined: 6, avgRating: 3.5, bugsReported: 4, bugsFixed: 0 },
       health: [
         { item: "網址可以正常開啟", status: "pass" },
-        { item: "前端程式碼沒有暴露 API 金鑰", status: "warn", note: "地圖金鑰在前端，請在後台限制網域" },
-        { item: "手機版版面可用", status: "fail", note: "iPhone SE 寬度下地圖蓋住按鈕" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass", note: "使用 OpenStreetMap，不需要金鑰" },
+        { item: "手機版版面可用", status: "pass" },
         { item: "使用 HTTPS 加密連線", status: "pass" },
-        { item: "有隱私權政策頁面", status: "warn" },
-        { item: "首頁 3 秒內載入", status: "warn", note: "地圖載入 5.2 秒" }
+        { item: "有隱私權政策頁面", status: "warn", note: "定位只在手機上計算，正式版需要隱私權政策" },
+        { item: "首頁 3 秒內載入", status: "pass" }
       ],
       feedback: []
     },
@@ -907,7 +917,8 @@ window.MOCK = {
       stage: "launched",
       featured: false,
       hue: 10,
-      url: "https://example.com/pomodoro",
+      url: "apps/pomodoro/",
+      live: true,
       description: "打開就能加入一間安靜的讀書房，大家同時開始番茄鐘，休息時可以留一句話。不用註冊也能用，登入後會記錄每週專注時數。",
       tasks: [{ id: "t1", title: "加入一間讀書房", required: true }, { id: "t2", title: "完成一顆番茄鐘", required: true }],
       beta: { target: 20, completed: 26, joined: 30, avgRating: 4.5, bugsReported: 12, bugsFixed: 12 },
@@ -1152,7 +1163,7 @@ window.MOCK = {
     // 導覽與共用
     "首頁": "Home", "作品": "Projects", "商店": "Store", "點子區": "Ideas", "提交作品": "Submit a project", "產品地圖": "Product map", "重新整理": "Reload", "載入中": "Loading", "米色": "Beige", "成為測試者": "Become a tester",
     "登入": "Log in", "登出": "Log out", "測試者": "Tester", "取消": "Cancel", "稍後": "Later", "刪除": "Delete", "全部": "All", "免費": "Free", "付費": "Paid",
-    "原型示範：所有作品、人物與金額皆為假資料，不會實際收款。網域尚未決定。": "Prototype demo: all projects, people and amounts are made up. No real payments. Domain not decided yet.",
+    "原型示範：除了標「{q}」的作品，其餘作品、人物與金額皆為假資料，不會實際收款。網域尚未決定。": "Prototype demo: apart from projects marked “{q}”, all projects, people and amounts are made up. No real payments. Domain not decided yet.",
     "第一版原型 · 你新增的資料只存在這個瀏覽器": "First prototype · Anything you add stays in this browser only",
     "清除示範資料": "Clear demo data", "開達 Kaida 首頁": "Kaida home", "主要導覽": "Main navigation", "切換風格": "Switch style", "切換語言": "Switch language",
     "Kaida 圖示": "Kaida icon", "四個階段": "Four stages", "截圖": "Screenshots", "分享圖卡預覽": "Share card preview", "創作者示範工具": "Creator demo tools",
@@ -1223,6 +1234,16 @@ window.MOCK = {
     "月報告的圓餅圖在小螢幕上標籤重疊。": "The pie chart labels overlap on small screens.", "我媽打「{q}」找不到，要打「{q}」才行。": "My mom typed “{q}” and got nothing; it only works as “{q}”.",
     "台大醫院": "台大醫院 (simplified 台)", "臺大醫院": "臺大醫院 (traditional 臺)",
     "分享位置後等了快 {n} 秒才回。": "It took almost {n} seconds to reply after sharing location.", "藥袋照片如果反光就讀不到藥名。": "Glare on the pill bag photo stops it reading the names.",
+    "藥師設計的用藥提醒。替每種藥拍一張藥袋照片方便對照，長輩按一下「{q}」，超過 {n} 分鐘沒按就提醒你通知家人。資料只存在這支手機。": "A medication reminder designed by a pharmacist. Snap each pill bag for easy matching, the parent taps “{q}”, and if {n} minutes pass without a tap it prompts you to alert the family. Data stays on this phone.",
+    "拍一張藥袋照片存進藥物裡": "Save a pill bag photo to a medication", "按一次「{q}」": "Tap “{q}” once", "讓一份藥逾時，按「{q}」": "Let a dose go overdue, then tap “{q}”", "通知家人": "Notify family",
+    "藥袋照片的縮圖有點小，長輩看不太清楚。": "The pill bag thumbnails are a bit small for older eyes.",
+    "已在設定頁說明資料只存在手機，正式版需要完整隱私權政策": "Settings explains data stays on the phone; the full release needs a privacy policy",
+    "台灣夜市地圖": "Taiwan Night Market Map", "{n} 個台灣夜市的地圖，看今天有開、離你最近、必吃什麼": "A map of {n} Taiwan night markets: open today, nearest to you, what to eat",
+    "開達 Kaida": "Kaida", "開達自己做的第一批封測作品": "One of Kaida's own first beta projects",
+    "{n} 個縣市、{n} 個主要夜市的地圖與清單。可以依縣市篩選、搜尋小吃、看今天有沒有開、找離你最近的夜市，也能收藏想去的清單、一鍵導航。資料整理自公開資訊，營業時間以現場為準。": "A map and list of {n} major night markets in {n} cities and counties. Filter by city, search by food, see which are open today, find the nearest one, save a wish list and navigate in one tap. Data is compiled from public sources; check opening hours on site.",
+    "找到離你最近的夜市": "Find the night market nearest you", "用小吃找夜市": "Find a market by food", "收藏 {n} 個想去的夜市": "Save {n} markets you want to visit", "打開一個今天有開的夜市": "Open a market that is open today",
+    "使用 OpenStreetMap，不需要金鑰": "Uses OpenStreetMap, no key needed", "定位只在手機上計算，正式版需要隱私權政策": "Location is computed on the phone; the full release needs a privacy policy",
+    "真實可試用": "Live, try it now", "可試用": "Live",
     "補課時段沒有考慮老師的通勤時間。": "Make-up slots ignore the teacher's commute time.",
     "小問題": "Minor", "影響使用": "Major", "無法使用": "Blocking", "沒遇到問題": "No issues", "願意付費": "Would pay", "看價格": "Depends on price", "不會付費": "Wouldn't pay",
     "完成 {n}/{n} 項任務（必做全完成）": "{n}/{n} tasks done (all required)", "完成 {n}/{n} 項任務": "{n}/{n} tasks done", "· 附截圖 {n} 張": "· {n} screenshot",
@@ -1691,7 +1712,7 @@ window.MOCK = {
     const bar = w.stage === "beta" ? `<div class="mini-bar" aria-hidden="true"><i style="width:${pct(w.beta.completed, w.beta.target)}%"></i></div>`
       : w.stage === "funding" ? `<div class="mini-bar" aria-hidden="true"><i style="width:${pct(w.funding.raised, w.funding.goal)}%;background:var(--signal-2)"></i></div>` : "";
     return `<a class="card" href="#work.${w.id}">
-        <div class="top">${stagePill(w.stage)}<span class="mono-tools">${w.tools.length ? esc(w.tools.join(" + ")) : "尚未開工"}</span></div>
+        <div class="top">${stagePill(w.stage)}${w.live ? `<span class="live-tag">可試用</span>` : ""}<span class="mono-tools">${w.tools.length ? esc(w.tools.join(" + ")) : "尚未開工"}</span></div>
         ${track(w.stage, false)}
         ${catLine(w)}
         <h3>${esc(w.name)}</h3>
@@ -1963,7 +1984,7 @@ window.MOCK = {
           <section class="panel"><h2>介紹</h2><p>${esc(w.description)}</p>
             <dl class="kv">
               <dt>使用工具</dt><dd><div class="chips">${w.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join("") || "尚未開發"}</div></dd>
-              <dt>試用連結</dt><dd>${w.url ? `<a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.url)}</a> <span class="small muted">（示範網址）</span>` : "尚無"}</dd>
+              <dt>試用連結</dt><dd>${w.url ? `<a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.url)}</a> ${w.live ? `<span class="live-tag">真實可試用</span>` : `<span class="small muted">（示範網址）</span>`}` : "尚無"}</dd>
             </dl>
           </section>
           ${betaPanel}
