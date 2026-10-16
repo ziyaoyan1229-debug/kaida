@@ -236,7 +236,52 @@
     }
     var FIELDS = ["id", "displayName", "location", "types", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI", "photos"];
 
+    // 店家資料檔：有這個夜市、而且 30 天內更新過（Google 條款座標最多存 30 天）才用
+    function dbEntry(m) {
+      var db = window.NM_STALL_DB;
+      if (!db || !db.markets || !db.markets[m.id] || !db.updated) return null;
+      if (Date.now() - new Date(db.updated + "T00:00:00+08:00").getTime() > 30 * 864e5) return null;
+      return db.markets[m.id];
+    }
+    // 用資料檔：攤位位置馬上畫得出來，店名評分只搜一次；這次沒搜到的攤位等使用者要看時才載入
+    async function loadFromDb(m, entry) {
+      var center = { lat: entry.center[0], lng: entry.center[1] };
+      var bounds = box(center, 650);
+      var found = await search(m.zh + " 小吃", FIELDS, { locationRestriction: bounds, maxResultCount: 20 });
+      var byId = {};
+      found.forEach(function (p) { byId[p.id] = p; });
+      var loaded = [], pending = [], known = {};
+      entry.stalls.forEach(function (row) {
+        known[row[0]] = true;
+        var p = byId[row[0]];
+        if (p && p.location) loaded.push(toStall(p));
+        else pending.push({ id: row[0], name: "", lat: row[1], lng: row[2], rating: null, count: 0, type: "", address: "", url: "", photos: [], thumb: "", pending: true,
+          place: new Place({ id: row[0], requestedLanguage: opts.lang() === "en" ? "en" : "zh-TW" }) });
+      });
+      // 資料檔更新後才開的新攤位
+      found.forEach(function (p) {
+        if (known[p.id] || !p.location || distM(ll(p.location), center) > 700) return;
+        if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
+        loaded.push(toStall(p));
+      });
+      loaded.sort(function (a, b) { return (b.count || 0) - (a.count || 0); });
+      return { center: center, bounds: bounds, stalls: loaded.concat(pending) };
+    }
+    // 補齊還沒載入店名的攤位
+    function resolveStall(s) {
+      if (!s.pending) return Promise.resolve(s);
+      if (!s._loading) s._loading = s.place.fetchFields({ fields: FIELDS.filter(function (f) { return f !== "id"; }) }).then(function () {
+        var full = toStall(s.place);
+        Object.keys(full).forEach(function (k) { s[k] = full[k]; });
+        s.pending = false;
+        return s;
+      });
+      return s._loading;
+    }
+
     async function loadArea(m) {
+      var entry = dbEntry(m);
+      if (entry && entry.stalls.length >= 3) return loadFromDb(m, entry);
       var center = { lat: m.lat, lng: m.lng };
       var market = (await search(m.zh, ["id", "location"], { locationBias: { center: center, radius: 2000 }, maxResultCount: 1 }))[0];
       var marketId = null;
@@ -349,6 +394,7 @@
         return area.stalls;
       },
       clearArea: clearArea,
+      resolveStall: resolveStall,
       // 關鍵字找店：在夜市範圍內用 Google 地圖搜尋，新找到的店加進清單和地圖；回傳符合的店家 id
       searchStalls: async function (m, q) {
         var area = curArea;
@@ -365,6 +411,12 @@
             // 只留吃的喝的（關鍵字「香」會搜到香舖、金紙店）
             if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
             var have = area.stalls.filter(function (s) { return s.id === p.id; })[0];
+            if (have && have.pending) {
+              // 資料檔裡有、但還沒載入店名的攤位，這次搜尋剛好拿到資料就補上
+              var full = toStall(p);
+              Object.keys(full).forEach(function (k) { have[k] = full[k]; });
+              have.pending = false;
+            }
             if (!have) {
               have = toStall(p);
               area.stalls.push(have);

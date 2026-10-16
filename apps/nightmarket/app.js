@@ -40,7 +40,8 @@
       allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。", night: "夜市夜景",
       stallQPh: "在這個夜市找店家（例如：臭豆腐）", stallFound: function (n, q) { return "「" + q + "」找到 " + n + " 家"; },
       stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…",
-      stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; }
+      stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; },
+      stallMore: function (n) { return "還有 " + n + " 家攤位，點這裡載入店名"; }, stallMoreBusy: "載入中…"
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
@@ -76,7 +77,8 @@
       allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.", night: "Night",
       stallQPh: "Search this market (e.g. stinky tofu)", stallFound: function (n, q) { return n + " found for “" + q + "”"; },
       stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…",
-      stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; }
+      stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; },
+      stallMore: function (n) { return n + " more stalls on the map. Tap to load their names"; }, stallMoreBusy: "Loading…"
     }
   };
 
@@ -429,7 +431,8 @@
     if (mode === "error" || !stalls.length) { box.innerHTML = '<li class="muted">' + esc(mode === "error" ? t("stallsError") : t("stallsNone")) + "</li>"; $("dSeeMap").hidden = true; return; }
     var shown = matchStalls();
     if (view.filterStalls) view.filterStalls(shown ? shown.map(function (s) { return s.id; }) : null);
-    var list = shown || stalls;
+    var list = shown || stalls.filter(function (s) { return !s.pending; });
+    var waiting = shown ? 0 : stalls.length - list.length;
     $("dSeeMap").hidden = !list.length;
     $("dSeeMap").textContent = t("seeMap")(list.length);
     var exact = shown && list.some(function (s) { return nameHits(s.name); });
@@ -439,7 +442,21 @@
       return '<li><button type="button" class="stall-row" data-stall="' + esc(s.id) + '"><span class="thumb">' + (s.thumb ? '<img src="' + esc(s.thumb) + '" alt="" loading="lazy" onerror="this.remove()">' : "") + '<span class="no">' + (i + 1) + '</span></span><span class="nm">' + esc(s.name) +
         "<small>" + esc(s.type) + "</small></span>" +
         (s.rating ? '<span class="rt">' + s.rating.toFixed(1) + " ★<small>(" + s.count + ")</small></span>" : "") + "</button></li>";
-    }).join("");
+    }).join("") + (waiting ? '<li><button type="button" class="stall-more" id="dStallMore">' + esc(stallMoreBusy ? t("stallMoreBusy") : t("stallMore")(waiting)) + "</button></li>" : "");
+  }
+  // 資料檔裡其他攤位：使用者要看才向 Google 載入店名和評分
+  var stallMoreBusy = false;
+  function loadMoreStalls() {
+    var id = stallFor, todo = stalls.filter(function (s) { return s.pending; });
+    if (stallMoreBusy || !todo.length || !view.resolveStall) return;
+    stallMoreBusy = true; renderStalls();
+    Promise.all(todo.map(function (s) { return view.resolveStall(s).catch(function (e) { console.warn("[stall]", e); }); })).then(function () {
+      stallMoreBusy = false;
+      if (stallFor !== id) return;
+      // 載不到的就不列了
+      stalls = stalls.filter(function (s) { return !s.pending || s.name; });
+      renderStalls();
+    });
   }
   function searchStalls() {
     var q = stallQ, id = stallFor, m = byId(id);
@@ -459,6 +476,10 @@
   function openStall(id) {
     var s = stalls.filter(function (x) { return x.id === id; })[0];
     if (!s) return;
+    if (s.pending && view.resolveStall) {
+      view.resolveStall(s).then(function () { renderStalls(); openStall(id); }).catch(function (e) { console.warn("[stall]", e); });
+      return;
+    }
     view.selectStall(id);
     if (!$("detail").hidden) { $("detail").hidden = true; }
     $("sName").textContent = s.name;
@@ -634,6 +655,7 @@
   };
 
   $("dStalls").addEventListener("click", function (e) {
+    if (e.target.closest("#dStallMore")) { loadMoreStalls(); return; }
     var b = e.target.closest("[data-stall]"); if (b) openStall(b.getAttribute("data-stall"));
   });
   $("dStallQ").addEventListener("input", function () {
