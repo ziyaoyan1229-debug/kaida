@@ -114,9 +114,9 @@
       for (var i = 0; i < len; i++) { var w = Math.random() * 2 - 1; last = (last + 0.03 * w) / 1.03; d[i] = last * 3; }
     }
     noiseSrc = ctx.createBufferSource(); noiseSrc.buffer = buf; noiseSrc.loop = true;
-    var f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 420;
-    var g = ctx.createGain(); g.gain.value = 0.55;
-    var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.23; lg.gain.value = 0.18; lfo.connect(lg); lg.connect(g.gain); lfo.start();
+    var f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 300;
+    var g = ctx.createGain(); g.gain.value = 0.16;
+    var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.23; lg.gain.value = 0.04; lfo.connect(lg); lg.connect(g.gain); lfo.start();
     noiseSrc.connect(f); f.connect(g); g.connect(master); noiseSrc.start();
     nodes = [lfo];
   }
@@ -199,19 +199,19 @@
 
   /* 森林 */
   function startForest() {
-    bed(0.02, "bandpass", 380, 0.6, 0.45, 0.06, 0.3);   // 樹葉間的風
-    bed(1, "highpass", 3200, 0.5, 0.05, 0.3, 0.01);      // 小溪
-    bed(0.05, "bandpass", 1200, 1.2, 0.12, 0.4, 0.04);
+    bed(0.02, "bandpass", 380, 0.6, 0.12, 0.06, 0.06);  // 樹葉間的風（輕輕的）
+    bed(1, "highpass", 3200, 0.5, 0.03, 0.3, 0.006);     // 小溪
+    bed(0.05, "bandpass", 1200, 1.2, 0.05, 0.4, 0.015);
   }
   function bird(t, pan) {
-    var kind = Math.floor(Math.random() * 3), base = 2600 + Math.random() * 1600;
-    if (kind === 0) for (var i = 0; i < 2 + Math.floor(Math.random() * 3); i++) sweep(base, base * 1.35, t + i * 0.11, 0.07, 0.05, pan);            // 啾啾啾
-    else if (kind === 1) { sweep(base * 0.8, base * 1.2, t, 0.18, 0.05, pan); sweep(base * 1.25, base * 0.75, t + 0.2, 0.25, 0.045, pan); }       // 長鳴
-    else for (var j = 0; j < 6; j++) sweep(base * 1.1, base * 0.9, t + j * 0.045, 0.04, 0.035, pan);                                          // 顫音
+    var kind = Math.floor(Math.random() * 3), base = 2600 + Math.random() * 1600, v = 0.35;
+    if (kind === 0) for (var i = 0; i < 2 + Math.floor(Math.random() * 3); i++) sweep(base, base * 1.35, t + i * 0.11, 0.07, 0.05 * v, pan);            // 啾啾啾
+    else if (kind === 1) { sweep(base * 0.8, base * 1.2, t, 0.18, 0.05 * v, pan); sweep(base * 1.25, base * 0.75, t + 0.2, 0.25, 0.045 * v, pan); }       // 長鳴
+    else for (var j = 0; j < 6; j++) sweep(base * 1.1, base * 0.9, t + j * 0.045, 0.04, 0.035 * v, pan);                                          // 顫音
   }
   function forestBeat(t) {
     var spb = 0.5;
-    if (Math.random() < 0.18) bird(t + Math.random() * spb, Math.random() * 1.6 - 0.8);
+    if (Math.random() < 0.1) bird(t + Math.random() * spb, Math.random() * 1.6 - 0.8);
     return spb;
   }
 
