@@ -231,7 +231,7 @@
   .char-top { display: flex; gap: 16px; align-items: center; }
   .char-top svg { width: 150px; height: 150px; flex: none; }
   .wood { font-family: var(--f-mono); font-weight: 600; font-size: 18px; }
-  .swatches { display: flex; gap: 8px; margin-bottom: 12px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .swatches button { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; }
   .swatches button[aria-pressed="true"] { border: 3px solid var(--ink); }
   .shop { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -257,14 +257,12 @@
     <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">我的紀錄</button>
   </nav>
 
-  <!-- 讀書房列表 -->
   <section id="view-rooms">
     <div class="quote" id="quote-rooms"></div>
     <div id="room-list"></div>
     <p class="small muted" data-i18n="rooms.how">房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。</p>
   </section>
 
-  <!-- 進行中的讀書房 -->
   <section id="view-session" hidden>
     <div class="s-head"><div><span class="small muted" id="s-label"></span><span class="code" id="s-code"></span></div>
       <div style="text-align:right;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button><span class="net" id="s-net"></span></div></div>
@@ -305,16 +303,12 @@
     <button class="btn ghost block" id="leave" type="button" data-i18n="s.leave">離開讀書房</button>
   </section>
 
-  <!-- 角色 -->
   <section id="view-char" hidden></section>
 
-  <!-- 好友 -->
   <section id="view-friends" hidden></section>
 
-  <!-- 團隊排行 -->
   <section id="view-team" hidden></section>
 
-  <!-- 我的紀錄 -->
   <section id="view-me" hidden>
     <div class="stats">
       <div class="stat"><div class="n" id="st-today-min">0</div><div class="l" data-i18n="st.todaymin">今天專注分鐘</div></div>
@@ -757,7 +751,6 @@
     if (!silent) show("rooms");
   }
 
-  // 每秒更新
   function tick() {
     var now = Date.now();
     if (session) {
@@ -1610,7 +1603,6 @@
   });
   window.addEventListener("hashchange", readHash);
 
-  // 螢幕常亮
   var wakeLock = null;
   function applyWake() {
     if (!data.opts.wake || !session || !("wakeLock" in navigator)) return;
@@ -1618,7 +1610,6 @@
   }
   function releaseWake() { if (wakeLock) { wakeLock.release().catch(function () {}); wakeLock = null; } }
 
-  // 事件
   document.getElementById("room-list").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.railGo) { var rl = b.parentNode.querySelector(".rail"); rl.scrollBy({ left: +b.dataset.railGo * rl.clientWidth * 0.8, behavior: "smooth" }); return; }
