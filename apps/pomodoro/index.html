@@ -705,7 +705,7 @@
   var mySay = null;
   function say(text) {
     mySay = { text: text, at: Date.now() };
-    if (session && session.kind === "room" && net) net.publishMe({ say: text, sayAt: mySay.at });
+    if (session && session.kind === "room" && net) net.publishMe({ say: text, sayAt: mySay.at, emo: emoOf(text) });
     renderScene(true);
   }
 
@@ -822,20 +822,27 @@
         '<button class="btn ghost block" type="button" data-act="solo">' + K.esc(t("r.solo")) + '</button></div>';
   }
 
+  // 快速對話對應的動作（順序跟 s.says 一樣）：舉手打氣、握拳、舉書、揮手、打哈欠、點頭、喝水、端咖啡、抱頭、比讚、鞠躬
+  var EMOS = ["cheer", "fist", "book", "wave", "yawn", "nod", "fist", "drink", "coffee", "think", "cheer", "thumb", "bow", "wave"];
+  function emoOf(text) {
+    var k = text ? t("s.says").split("|").indexOf(text) : -1;
+    return k >= 0 ? EMOS[k] || "" : "";
+  }
   function sceneMembers() {
     var now = Date.now(), list = [];
     var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, fl: m.fl, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
+        else list.push({ id: m.id, name: m.name, fl: m.fl, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
       list.push(me);
       if (session.kind === "sim") BOTS.forEach(function (b) {
         var sy = sim.says[b.id];
-        list.push({ id: b.id, name: b.name, fl: b.fl, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "" });
+        list.push({ id: b.id, name: b.name, fl: b.fl, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
       });
     }
     return list.slice(0, 6);

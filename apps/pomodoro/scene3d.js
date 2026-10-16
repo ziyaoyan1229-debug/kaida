@@ -487,8 +487,8 @@ let fillLight, envNext = 0, fireLight, fireMeshes = [], embers, dust, steam, bul
 let seatProps = [], chars = {}, reserved = {};
 let barLight, tvTex, tvLight, record, speakers = [], notes = [], floorLight, houseCat;
 let yaw = 0.64, pitch = 0.72, dragYaw = 0, dragPitch = 0;
-const target = new THREE.Vector3(1.0, 0.4, 1.0);
-let camR = 13.6;
+const target = new THREE.Vector3(1.1, 0.7, 1.2);
+let camR = 16.6;
 
 /* ===== 一天的光線：跟著真實時間的日出日落慢慢變 ===== */
 let hourOverride = null;
@@ -1164,6 +1164,8 @@ function update(members) {
       releaseSpot(m.id); st.spot = -1; walkTo(st, seatPos(st.seat), "sit");
     }
     st.bub.textContent = m.bubble || ""; st.bub.hidden = !m.bubble;
+    // 說了快速對話就做對應的動作，做 3 秒
+    if (m.emo && m.emoAt && m.emoAt !== st.emoAt) { st.emoAt = m.emoAt; st.emo = m.emo; st.emoT0 = performance.now(); }
   });
   Object.keys(chars).forEach((id) => { if (!ids[id]) removeChar(id); });
   // 書桌上的東西：誰坐哪裡就放他的活動道具
@@ -1261,9 +1263,25 @@ function animChar(st, dt, now) {
     c.head.rotation.y = Math.sin(s * 0.5) * 0.5;
     c.arms.forEach((a, i) => { a.rotation.z = (i ? 1 : -1) * (0.12 + Math.sin(s * 1.2) * 0.04); });
   }
+  // 快速對話的動作，疊在原本的姿勢上
+  const emoK = st.emo ? (now - st.emoT0) / 3000 : 2;
+  if (emoK < 1) {
+    const e = st.emo, f = Math.sin(Math.min(1, emoK * 6) * Math.PI / 2) * Math.min(1, (1 - emoK) * 6); // 淡入淡出
+    const L = c.arms[0], R = c.arms[1], mix = (o, k, v) => { o[k] = o[k] + (v - o[k]) * f; };
+    if (e === "cheer") { mix(L.rotation, "z", -2.6 - Math.sin(s * 9) * 0.15); mix(R.rotation, "z", 2.6 + Math.sin(s * 9) * 0.15); mix(L.rotation, "x", 0); mix(R.rotation, "x", 0); if (pose !== "sit") c.hips.position.y += Math.abs(Math.sin(s * 9)) * 0.06 * f; }
+    else if (e === "fist") { mix(R.rotation, "x", 0); mix(R.rotation, "z", 2.3 + Math.sin(s * 10) * 0.35); c.head.rotation.x -= 0.1 * f; }
+    else if (e === "wave") { mix(R.rotation, "x", 0); mix(R.rotation, "z", 2.4 + Math.sin(s * 12) * 0.4); c.head.rotation.z = Math.sin(s * 3) * 0.08 * f; }
+    else if (e === "yawn") { mix(R.rotation, "x", -2.5); mix(R.rotation, "z", -0.5); c.head.rotation.x -= 0.3 * f; c.torso.rotation.z = Math.sin(s * 2) * 0.05 * f; c.eyes.forEach((ey) => { ey.scale.y = 1.25 * (1 - 0.85 * f); }); }
+    else if (e === "nod") { c.head.rotation.x += Math.sin(s * 8) * 0.25 * f; }
+    else if (e === "drink" || e === "coffee") { const up = e === "drink" ? Math.max(0, Math.sin(s * 2.4)) : 0; mix(R.rotation, "x", e === "drink" ? -0.8 - up * 1.5 : -1.45); mix(R.rotation, "z", -0.15 - up * 0.45); c.cup.visible = c.cup.visible || f > 0.2; c.head.rotation.x -= up * 0.25 * f; }
+    else if (e === "book") { mix(L.rotation, "x", -1.9); mix(R.rotation, "x", -1.9); mix(L.rotation, "z", 0.5); mix(R.rotation, "z", -0.5); c.book.visible = c.book.visible || f > 0.2; c.head.rotation.x -= 0.15 * f; }
+    else if (e === "think") { mix(L.rotation, "x", -2.7); mix(R.rotation, "x", -2.7); mix(L.rotation, "z", 0.75); mix(R.rotation, "z", -0.75); c.head.rotation.y = Math.sin(s * 9) * 0.25 * f; }
+    else if (e === "thumb") { mix(R.rotation, "x", -1.5); mix(R.rotation, "z", -0.1); c.head.rotation.z = 0.12 * f; }
+    else if (e === "bow") { c.torso.rotation.x += 0.55 * f * Math.max(0, Math.sin(emoK * Math.PI * 2)); mix(L.rotation, "z", -0.05); mix(R.rotation, "z", 0.05); }
+  }
   // 眨眼
   const blink = (s % 4.3) < 0.12 ? 0.15 : 1;
-  c.eyes.forEach((e) => { e.scale.y = 1.25 * blink; });
+  if (!(emoK < 1 && st.emo === "yawn")) c.eyes.forEach((e) => { e.scale.y = 1.25 * blink; });
   // 小貓跟著
   if (c.cat) {
     const off = tmpV.set(0.45, 0, 0.25).applyAxisAngle(new THREE.Vector3(0, 1, 0), st.ry);

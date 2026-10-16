@@ -26,7 +26,7 @@
     L.skin = Math.max(0, Math.min(2, +look.skin || 0)); L.hair = Math.max(0, Math.min(3, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
-      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
+      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0
     };
   }
 
