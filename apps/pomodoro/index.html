@@ -35,9 +35,9 @@
   .rb-fire .fl2 { animation-duration: 0.7s; animation-delay: -.3s; } .rb-fire .fl3 { animation-duration: 1.1s; animation-delay: -.6s; }
   @keyframes flick { 0% { transform: scale(1, 1) skewX(0); } 50% { transform: scale(.92, 1.12) skewX(3deg); } 100% { transform: scale(1.05, .9) skewX(-3deg); } }
   .rb-main { flex: 1; min-width: 0; }
-  .rb-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 14px; }
-  .rb-top span { font-family: var(--f-mono); font-weight: 600; font-size: 18px; }
-  .rb-track { height: 10px; border-radius: 5px; background: var(--sunk); overflow: hidden; }
+  .rb-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 13px; }
+  .rb-top span { font-family: var(--f-mono); font-weight: 600; font-size: 16px; }
+  .rb-track { height: 8px; border-radius: 4px; background: var(--sunk); overflow: hidden; }
   .rb-fill { height: 100%; width: 0; border-radius: 5px; background: #D6361F; transition: width .9s linear; }
   .rb-fill.break { background: var(--pass); }
   @media (prefers-reduced-motion: reduce) { .rb-fire .fl { animation: none; } }
@@ -168,12 +168,13 @@
   .music input[type=range] { flex: 1; min-width: 90px; max-width: 160px; accent-color: #9a7440; }
   .says button.up { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
   .scene { display: block; width: 100%; height: auto; }
-  .s-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-  .s-head .code { font-family: var(--f-mono); font-size: 22px; font-weight: 600; letter-spacing: .12em; }
-  .s-head .small { display: block; }
-  .s-head .btn { min-height: 38px; padding: 6px 12px; }
-  .s-head .exit { color: var(--fail); border-color: var(--fail); }
-  .s-head .net { width: 100%; text-align: right; }
+  .rb-room { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; }
+  .rb-room #s-label { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .rb-room .code { font-family: var(--f-mono); font-size: 14px; font-weight: 600; letter-spacing: .1em; color: var(--ink); }
+  .rb-room .net { margin-left: auto; flex: none; }
+  .rb-acts { flex: none; display: flex; flex-direction: column; gap: 4px; }
+  .rb-acts .btn { min-height: 32px; padding: 2px 10px; font-size: 13px; }
+  .rb-acts .exit { color: var(--fail); border-color: var(--fail); }
   .net { font-size: 12px; }
   .net.online { color: var(--pass); } .net.offline, .net.connecting { color: var(--warn); }
   .timer-row { display: flex; align-items: center; gap: 16px; }
@@ -205,7 +206,11 @@
   .flags::-webkit-scrollbar { display: none; }
   .flags button { flex: 0 0 auto; font-size: 24px; line-height: 1; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
   .flags button[aria-pressed="true"] { border: 2px solid var(--signal); background: var(--sunk); }
-  .hero h1 { flex: 1; min-width: 0; }
+  .hero h1 { flex: 1; min-width: 0; font-size: clamp(20px, 6.2vw, 28px); line-height: 1.15; }
+  .hero #k-lang { flex: none; align-self: center; }
+  .topbar.bottom { margin: 32px 0 0; border-bottom: 0; border-top: 1px solid var(--line); }
+  .topbar.bottom + .foot { margin-top: 0; border-top: 0; }
+  .wrap > .hero:first-child { margin-top: 16px; }
   .me-chip { flex: none; width: 64px; height: 64px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; border: 1px solid var(--line); background: var(--paper); border-radius: 14px; padding: 2px; cursor: pointer; color: var(--ink); overflow: hidden; }
   .me-chip svg { width: 42px; height: 42px; flex: none; }
   .me-chip .nm { font-size: 10px; font-weight: 600; line-height: 1.2; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -286,7 +291,6 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="topbar" id="topbar"></header>
 
   <div class="hero"><img src="logo.svg" alt="" width="64" height="64"><h1 data-i18n="app.title">番茄讀書會</h1>
     <button type="button" class="me-chip" id="tab-char" aria-selected="false"></button></div>
@@ -314,10 +318,10 @@
         <g transform="translate(100 44) scale(1 .6)" fill="#3E8E41"><ellipse cx="0" cy="-12" rx="6" ry="14"/><ellipse cx="0" cy="-12" rx="6" ry="14" transform="rotate(72)"/><ellipse cx="0" cy="-12" rx="6" ry="14" transform="rotate(144)"/><ellipse cx="0" cy="-12" rx="6" ry="14" transform="rotate(216)"/><ellipse cx="0" cy="-12" rx="6" ry="14" transform="rotate(288)"/></g>
         <rect x="96" y="22" width="8" height="18" rx="4" fill="#2F6E35"/>
       </svg>
-      <div class="rb-main"><div class="rb-top"><b id="rb-phase"></b><span id="rb-time">25:00</span></div><div class="rb-track"><div class="rb-fill" id="rb-fill"></div></div></div>
+      <div class="rb-main"><div class="rb-top"><b id="rb-phase"></b><span id="rb-time">25:00</span></div><div class="rb-track"><div class="rb-fill" id="rb-fill"></div></div>
+        <div class="rb-room"><span id="s-label"></span><span class="code" id="s-code"></span><span class="net" id="s-net"></span></div></div>
+      <div class="rb-acts"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button></div>
     </div>
-    <div class="s-head"><div><span class="small muted" id="s-label"></span><span class="code" id="s-code"></span></div>
-      <div style="text-align:right;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button><span class="net" id="s-net"></span></div></div>
     <div class="scene-wrap"><div class="k3" id="scene3d" hidden><span class="k3-hint" data-i18n="s.drag">拖曳可以轉視角</span></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg></div>
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
@@ -383,6 +387,7 @@
     <p class="small" style="margin:10px 0 0"><a href="../../" data-i18n="beta.back">回開達 Kaida 留回饋 →</a></p>
   </div>
 
+  <header class="topbar bottom" id="topbar"></header>
   <footer class="foot">
     <p data-i18n="foot.1">番茄讀書會是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。</p>
     <p data-i18n="foot.2">提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。</p>
@@ -1881,6 +1886,8 @@
   });
 
   K.mountTopbar(document.getElementById("topbar"));
+  // 語言切換放在個人設定旁邊
+  (function () { var lb = document.getElementById("k-lang"), chip = document.getElementById("tab-char"); if (lb && chip) chip.parentNode.insertBefore(lb, chip); })();
   K.applyStatic();
   K.onLang(function () { lastSig = ""; show(current); updateBadge(); });
 
