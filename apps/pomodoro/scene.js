@@ -225,10 +225,12 @@
     return s;
   }
 
-  function nameTag(name, y, me) {
-    var w = Math.min(70, 10 + String(name).length * 7.5);
+  // 兩碼國家代碼 → 國旗表情符號
+  function flag(c) { return /^[A-Z]{2}$/.test(c || "") ? String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65, 0x1F1E6 + c.charCodeAt(1) - 65) : ""; }
+  function nameTag(name, y, me, fl) {
+    var f = flag(fl), w = Math.min(84, 10 + String(name).length * 7.5 + (f ? 10 : 0));
     return '<g transform="translate(0 ' + y + ')"><rect x="' + (-w / 2) + '" y="-8" width="' + w + '" height="11" rx="5.5" fill="' + (me ? "#9a7440" : "rgba(42,38,32,.72)") + '"/>' +
-      '<text x="0" y="0.5" text-anchor="middle" font-size="7" fill="#f8f4ec" font-family="Noto Sans TC, sans-serif">' + esc(String(name).slice(0, 8)) + '</text></g>';
+      '<text x="0" y="0.5" text-anchor="middle" font-size="7" fill="#f8f4ec" font-family="Noto Sans TC, sans-serif">' + (f ? f + " " : "") + esc(String(name).slice(0, 8)) + '</text></g>';
   }
   function bubble(text, y) {
     var w = Math.min(110, 14 + String(text).length * 8);
@@ -340,7 +342,7 @@
     var body = pose === "sofa" ? '<g transform="translate(0 -14)">' + character(m.look, "desk", { smile: true, noPet: true }) + '</g>'
                                : '<g class="' + (walking ? "walk" : "") + '">' + character(m.look, pose, { smile: true, petX: spot.x > 300 ? -22 : 22, noPet: walking }) + '</g>';
     var ty = pose === "sofa" ? -78 : -64;
-    return body + nameTag(m.name, ty, m.me) + (m.bubble ? bubble(m.bubble, ty - 10) : "");
+    return body + nameTag(m.name, ty, m.me, m.fl) + (m.bubble ? bubble(m.bubble, ty - 10) : "");
   }
 
   /*
@@ -379,7 +381,7 @@
           '<g transform="translate(0 -8)">' + character(m.look, "desk", { focus: true, lookDown: act !== "pc", glow: act === "pc", noPet: true }) + '</g>' +
           desk(act, true) +
           (m.look && m.look.pet ? pet(m.look.pet, 36, 8) : "") +
-          nameTag(m.name, -72, m.me) + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
+          nameTag(m.name, -72, m.me, m.fl) + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
       }
       if (m && !focus) {
         var sp = SPOTS[spots[m.id]];
@@ -420,5 +422,5 @@
       '<g transform="scale(1.35)">' + character(look, "stand", { smile: true, petX: 24 }) + '</g>';
   }
 
-  window.KaidaScene = { render: render, move: move, preview: preview, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
+  window.KaidaScene = { flag: flag, render: render, move: move, preview: preview, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
 })();
