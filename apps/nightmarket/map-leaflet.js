@@ -20,7 +20,7 @@ window.NMLeafletMap = function (el, opts) {
   }
   function countyStyle() {
     var detail = map.getZoom() >= DETAIL_ZOOM;
-    var cs = getComputedStyle(document.documentElement);
+    var cs = getComputedStyle(el);
     return { color: cs.getPropertyValue("--signal").trim(), weight: detail ? 1 : 1.2, opacity: detail ? .35 : .8, fillColor: cs.getPropertyValue("--surface").trim(), fillOpacity: detail ? 0 : 1 };
   }
   function onZoom() {
@@ -73,6 +73,7 @@ window.NMLeafletMap = function (el, opts) {
       meMarker = L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, zIndexOffset: 2000 }).addTo(map);
     },
     setSkin: function () { if (counties) counties.setStyle(countyStyle()); },
+    setNight: function () { if (counties) counties.setStyle(countyStyle()); },
     setLang: function () {
       labels.forEach(function (l) { var e = l.mk.getElement(); if (e) e.firstChild.textContent = opts.lang() === "en" ? l.p.en : l.p.zh; });
     },

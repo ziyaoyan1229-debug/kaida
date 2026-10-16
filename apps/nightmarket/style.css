@@ -174,6 +174,29 @@ mark { background: color-mix(in srgb, var(--signal) 28%, transparent); color: in
 }
 .locate svg { width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 2; }
 
+/* 地圖夜晚模式：台灣夜市的燈籠紅、燈泡黃、霓虹粉，底色是夜空的深紫 */
+.night-btn {
+  position: absolute; right: 10px; top: 10px; z-index: 450; height: 34px; padding: 0 12px 0 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: flex; align-items: center; gap: 6px;
+  font: 500 13px/1 var(--f-body); box-shadow: var(--shadow); cursor: pointer;
+}
+.night-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.map-wrap.night {
+  --nm-sky: #0d0a1c; --nm-land: #161029; --nm-red: #ff4d2e; --nm-bulb: #ffd25e; --nm-neon: #ff3d8b;
+  --surface: #1c1433; --ink: #ffeccc; --line: #3b2a58; --sunk: #0d0a1c; --signal: #ff4d2e; --accent-text: #ffd25e;
+  --lantern: #ff3d8b; --pin: #ff4d2e; --pin-ink: #ffd25e; --pin-off: #4a3c63;
+  --shadow: 0 0 0 1px rgba(255, 77, 46, .25), 0 8px 20px -10px rgba(0, 0, 0, .8);
+}
+.map-wrap.night .night-btn { color: var(--nm-bulb); border-color: rgba(255, 210, 94, .45); box-shadow: 0 0 12px rgba(255, 210, 94, .35); }
+.map-wrap.night .night-btn svg { fill: var(--nm-bulb); }
+body .map-wrap.night .county-label { color: var(--nm-bulb); text-shadow: 0 0 6px rgba(255, 120, 40, .9), 0 0 14px rgba(255, 77, 46, .55), 0 0 2px #000; }
+body .map-wrap.night .nm-pin svg { filter: drop-shadow(0 0 6px rgba(255, 90, 50, .85)); }
+.map-wrap.night .nm-pin.sel .b { fill: var(--nm-neon); }
+body .map-wrap.night .stall-pin { box-shadow: 0 0 8px rgba(255, 61, 139, .75); }
+.map-wrap.night .locate svg { stroke: var(--nm-bulb); }
+.map-wrap.night #map.is-leaflet { background: var(--nm-sky); }
+.map-wrap.night .leaflet-tile-pane { filter: invert(1) hue-rotate(200deg) brightness(.8) saturate(.7) sepia(.25); }
+
 /* 底部面板 */
 .sheet { position: fixed; inset: 0; z-index: 1000; background: rgba(20, 17, 13, .45); display: flex; align-items: flex-end; justify-content: center; }
 :root[data-skin="cyber"] .sheet { background: rgba(3, 5, 10, .7); }

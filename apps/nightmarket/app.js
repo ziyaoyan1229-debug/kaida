@@ -37,7 +37,7 @@
       stallsError: "暫時載入不了店家，稍後再試。", seeMap: function (n) { return "在地圖上看 " + n + " 家店"; },
       back: "‹ 回夜市", ratings: function (n) { return n + " 則評分"; }, noRating: "還沒有評分", reviewsTitle: "饕客評論",
       reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
-      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。",
+      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。", night: "夜市夜景",
       stallQPh: "在這個夜市找店家（例如：臭豆腐）", stallFound: function (n, q) { return "「" + q + "」找到 " + n + " 家"; },
       stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…"
     },
@@ -72,7 +72,7 @@
       stallsError: "Couldn't load places right now. Try again later.", seeMap: function (n) { return "See " + n + " places on the map"; },
       back: "‹ Back to market", ratings: function (n) { return n + " ratings"; }, noRating: "No ratings yet", reviewsTitle: "Reviews",
       reviewsLoading: "Loading reviews…", noReviews: "No reviews yet.", reviewsError: "Couldn't load reviews right now.",
-      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.",
+      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.", night: "Night",
       stallQPh: "Search this market (e.g. stinky tofu)", stallFound: function (n, q) { return n + " found for “" + q + "”"; },
       stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…"
     }
@@ -191,6 +191,7 @@
     pinHtml: function (sel, off) { return '<div class="nm-pin' + (off ? " off" : "") + (sel ? " sel" : "") + '">' + PIN + "</div>"; },
     label: function (m) { return name(m); },
     lang: function () { return lang; },
+    night: function () { return night; },
     skin: document.documentElement.getAttribute("data-skin") === "cyber" ? "cyber" : "beige",
     mapId: (window.NM_CONFIG || {}).googleMapId,
     onMarketClick: function (id) { openDetail(id); },
@@ -530,6 +531,17 @@
     renderChips(); renderTasks(); render();
     if (state.selected && !$("detail").hidden) openDetail(state.selected);
   }
+  // 地圖夜晚模式：記住使用者的選擇；沒選過就看台北時間，傍晚 5 點到清晨 5 點自動開
+  var night = (function () {
+    try { var v = localStorage.getItem("nm-night"); if (v === "1" || v === "0") return v === "1"; } catch (e) { /* 忽略 */ }
+    var h = Math.floor(taipeiNow().min / 60);
+    return h >= 17 || h < 5;
+  })();
+  function applyNight() {
+    document.querySelector(".map-wrap").classList.toggle("night", night);
+    $("nightBtn").setAttribute("aria-pressed", night ? "true" : "false");
+    if (view.setNight) view.setNight(night);
+  }
   function applySkin(skin) {
     if (skin === "cyber") document.documentElement.setAttribute("data-skin", "cyber");
     else document.documentElement.removeAttribute("data-skin");
@@ -649,6 +661,11 @@
     try { localStorage.setItem("kaida-lang", lang); } catch (e) { /* 忽略 */ }
     applyLang();
   };
+  $("nightBtn").onclick = function () {
+    night = !night;
+    try { localStorage.setItem("nm-night", night ? "1" : "0"); } catch (e) { /* 忽略 */ }
+    applyNight();
+  };
   $("skinBtn").onclick = function () {
     var next = document.documentElement.getAttribute("data-skin") === "cyber" ? "beige" : "cyber";
     applySkin(next);
@@ -662,6 +679,7 @@
 
   /* ---------- 開始 ---------- */
   applySkin(document.documentElement.getAttribute("data-skin") === "cyber" ? "cyber" : "beige");
+  applyNight();
   applyLang();
   startMap();
   // 每分鐘更新營業狀態
