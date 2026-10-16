@@ -1,6 +1,7 @@
 /* 番茄讀書會：房間背景音樂（瀏覽器即時合成，不用下載音檔）
    爵士：走路貝斯 + 七和弦鋼琴 + 刷鼓；輕音樂：溫柔的和弦鋪底 + 鈴聲旋律；白噪音：柔和的棕色噪音；柴火：隨機的劈啪聲；
-   雨聲：細密的雨 + 偶爾滴在窗台的水滴；Lo-fi：慢板的悶鋼琴 + 鼓 + 黑膠雜訊；森林：鳥叫 */
+   雨聲：細密的雨 + 偶爾滴在窗台的水滴；Lo-fi：慢板的悶鋼琴 + 鼓 + 黑膠雜訊；森林：鳥叫；
+   鋼琴：慢板的分解和弦獨奏；海浪：一波波的浪潮 + 偶爾的海鷗 */
 (function () {
   var ctx = null, master = null, verb = null, cur = "", timer = null, nextT = 0, step = 0, vol = 0.6, noiseSrc = null, nodes = [];
 
@@ -196,10 +197,32 @@
     return spb;
   }
 
+  /* 鋼琴：Cmaj7 Am7 Fmaj7 G6，慢慢的分解和弦 + 右手旋律 */
+  var PN = [[36, [48, 55, 60, 64, 67, 71]], [33, [45, 52, 57, 60, 64, 67]], [29, [41, 48, 53, 57, 60, 64]], [31, [43, 50, 55, 59, 62, 64]]];
+  function pianoBeat(t, beat) {
+    var spb = 60 / 72 / 2, bar = Math.floor(beat / 8) % PN.length, b = beat % 8, ch = PN[bar];
+    if (b === 0) piano(ch[0], t, spb * 9, 0.09);
+    piano(ch[1][[0, 1, 2, 3, 4, 3, 2, 1][b]], t + Math.random() * 0.015, spb * 3.5, 0.045);
+    if ((b === 0 || b === 3 || b === 6) && Math.random() < 0.6) piano(ch[1][3 + Math.floor(Math.random() * 3)] + 12, t, spb * 4, 0.06);
+    return spb;
+  }
+
+  /* 海浪 */
+  function startWaves() {
+    bed(0.02, "lowpass", 700, 0.7, 0.35, 0.09, 0.28);   // 一波波湧上來的浪
+    bed(1, "bandpass", 3500, 0.4, 0.06, 0.09, 0.05);     // 退潮時的細沙聲
+  }
+  function wavesBeat(t) {
+    var spb = 0.5;
+    if (Math.random() < 0.03) { var b = 1500 + Math.random() * 500, p = Math.random() * 1.4 - 0.7; sweep(b, b * 0.7, t, 0.32, 0.02, p); sweep(b * 1.05, b * 0.75, t + 0.4, 0.28, 0.016, p); }   // 海鷗
+    return spb;
+  }
+
   function loop() {
     while (nextT < ctx.currentTime + 0.4) {
       var d = cur === "jazz" ? jazzBeat(nextT, step) : cur === "fire" ? fireBeat(nextT) : cur === "rain" ? rainBeat(nextT) :
-        cur === "lofi" ? lofiBeat(nextT, step) : cur === "forest" ? forestBeat(nextT) : lightBeat(nextT, step);
+        cur === "lofi" ? lofiBeat(nextT, step) : cur === "forest" ? forestBeat(nextT) :
+        cur === "piano" ? pianoBeat(nextT, step) : cur === "waves" ? wavesBeat(nextT) : lightBeat(nextT, step);
       nextT += d; step++;
     }
   }
@@ -219,7 +242,7 @@
     var t = ctx.currentTime;
     master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(vol, t + 1.2);
     if (kind === "noise") startNoise();
-    else { if (kind === "rain") startRain(); nextT = t + 0.1; step = 0; loop(); timer = setInterval(loop, 100); }
+    else { if (kind === "rain") startRain(); if (kind === "waves") startWaves(); nextT = t + 0.1; step = 0; loop(); timer = setInterval(loop, 100); }
     unlock();
     return true;
   }

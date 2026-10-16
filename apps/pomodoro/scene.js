@@ -48,7 +48,17 @@
     { id: "chick", slot: "pet", price: 8, zh: "小雞", en: "Chick", color: "#f2cc4a" },
     { id: "shiba", slot: "pet", price: 12, zh: "柴犬", en: "Shiba", color: "#d9914a" },
     { id: "bunny", slot: "pet", price: 12, zh: "小白兔", en: "Bunny", color: "#f8f4ec" },
-    { id: "panda", slot: "pet", price: 18, zh: "熊貓寶寶", en: "Baby panda", color: "#f8f4ec" }
+    { id: "panda", slot: "pet", price: 18, zh: "熊貓寶寶", en: "Baby panda", color: "#f8f4ec" },
+    { id: "denim", slot: "top", price: 6, zh: "牛仔外套", en: "Denim jacket", color: "#5d7fa8", zip: "#e8d6a8" },
+    { id: "turtle", slot: "top", price: 6, zh: "黑色高領", en: "Black turtleneck", color: "#3a3640", roll: "#2a2630" },
+    { id: "twins", slot: "style", price: 5, zh: "雙馬尾", en: "Pigtails" },
+    { id: "buzz", slot: "style", price: 3, zh: "小平頭", en: "Buzz cut" },
+    { id: "catband", slot: "hat", price: 7, zh: "貓耳髮箍", en: "Cat ears", color: "#3d3a4a" },
+    { id: "bucket", slot: "hat", price: 5, zh: "漁夫帽", en: "Bucket hat", color: "#c9b48a" },
+    { id: "tie", slot: "neck", price: 4, zh: "領帶", en: "Necktie", color: "#3a5a8a" },
+    { id: "cape", slot: "back", price: 10, zh: "紅披風", en: "Red cape", color: "#b0302a" },
+    { id: "fox", slot: "pet", price: 14, zh: "小狐狸", en: "Little fox", color: "#e07a3a" },
+    { id: "hamster", slot: "pet", price: 8, zh: "倉鼠", en: "Hamster", color: "#e8c08a" }
   ];
   // 商店分類
   var CATS = [
@@ -81,6 +91,7 @@
     var style = look.style || "";
     // 背上的東西（在身體後面）
     if (look.back === "wings") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".7"><path d="M-9 -26 C-24 -38 -32 -26 -27 -16 C-22 -12 -14 -16 -9 -20 Z"/><path d="M9 -26 C24 -38 32 -26 27 -16 C22 -12 14 -16 9 -20 Z"/></g>';
+    if (look.back === "cape") s += '<path d="M-11 -29 L-17 -8 Q0 -4 17 -8 L11 -29 Z" fill="#b0302a"/>';
     if (look.back === "backpack") s += '<rect x="-15" y="-27" width="30" height="16" rx="5" fill="#e0b04f"/>';
     // 長髮（在頭後面）
     if (style === "long") s += '<path d="M-17 -44 C-19 -26 -17 -16 -12 -14 L12 -14 C17 -16 19 -26 17 -44 Z" fill="' + hair + '"/>';
@@ -95,6 +106,7 @@
     if (top.zip) s += '<path d="M0 -28 V-12" stroke="' + top.zip + '" stroke-width="1.2"/><path d="M-12 -21 h4 M8 -21 h4" stroke="' + top.zip + '" stroke-width="1.6"/>';
     if (top.bib) s += '<path d="M-8 -22 H8 V-12 H-8 Z" fill="' + top.bib + '"/><path d="M-7 -29 L-6 -22 M7 -29 L6 -22" stroke="' + top.bib + '" stroke-width="2.2"/><circle cx="-6" cy="-21" r="1" fill="#e8b93a"/><circle cx="6" cy="-21" r="1" fill="#e8b93a"/>';
     if (look.back === "backpack") s += '<path d="M-9 -29 L-10 -15 M9 -29 L10 -15" stroke="#b98a30" stroke-width="2.2" stroke-linecap="round"/>';
+    if (top.roll) s += '<rect x="-7.5" y="-31.5" width="15" height="5" rx="2.5" fill="' + top.roll + '"/>';
     if (top.knit) s += '<path d="M-11 -14 H11" stroke="#c99a3e" stroke-width="2"/><path d="M-4 -27 L0 -23 L4 -27" fill="none" stroke="#c99a3e" stroke-width="1.6"/>';
     var arm = top.color;
     if (pose === "desk") {
@@ -116,6 +128,7 @@
     }
     if (look.neck === "scarf") s += '<path d="M-9 -29.5 C-4 -26 4 -26 9 -29.5 L9 -27 C4 -23.5 -4 -23.5 -9 -27 Z" fill="#c2453b"/><rect x="3" y="-27" width="4" height="9" rx="1.5" fill="#c2453b"/>';
     if (look.neck === "bowtie") s += '<path d="M0 -28 L-6 -31 L-6 -25 Z M0 -28 L6 -31 L6 -25 Z" fill="#c2453b"/><circle cx="0" cy="-28" r="1.6" fill="#a9363a"/>';
+    if (look.neck === "tie") s += '<path d="M-1.8 -28.5 h3.6 l-.8 2 l1.4 8 l-2.4 2.6 l-2.4 -2.6 l1.4 -8 Z" fill="#3a5a8a"/><path d="M-1 -24 l2 -1.2 M-1.2 -21 l2.2 -1.3" stroke="#e8b93a" stroke-width=".7"/>';
     if (look.neck === "pearls") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".4">' + [-7, -4.5, -1.5, 1.5, 4.5, 7].map(function (x) { return '<circle cx="' + x + '" cy="' + (-27.5 + Math.abs(x) * -0.25 + 2.2) + '" r="1.3"/>'; }).join("") + '</g>';
     var hy = -43;
     s += '<g class="head">';
@@ -125,7 +138,10 @@
     } else if (style === "curly") {
       s += '<path d="M-15.5 ' + (hy + 2) + ' C-17 ' + (hy - 21) + ' 17 ' + (hy - 21) + ' 15.5 ' + (hy + 2) + ' C12 ' + (hy - 5) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
       [[-14, -6], [-9, -13], [-2, -16], [5, -15], [11, -11], [15, -5], [-16, 1], [16, 1], [-6, -6], [3, -7]].forEach(function (c) { s += '<circle cx="' + c[0] + '" cy="' + (hy + c[1]) + '" r="4.6" fill="' + hair + '"/>'; });
-    } else if (style === "bob" || style === "long" || style === "buns" || style === "pony") {
+    } else if (style === "buzz") {
+      s += '<path d="M-15.2 ' + (hy - 1) + ' C-16 ' + (hy - 20) + ' 16 ' + (hy - 20) + ' 15.2 ' + (hy - 1) + ' C11 ' + (hy - 8) + ' -11 ' + (hy - 8) + ' -15.2 ' + (hy - 1) + ' Z" fill="' + hair + '" opacity=".9"/>';
+    } else if (style === "bob" || style === "long" || style === "buns" || style === "pony" || style === "twins") {
+      if (style === "twins") s += '<ellipse cx="-19" cy="' + (hy + 3) + '" rx="4.5" ry="10" fill="' + hair + '" transform="rotate(12 -19 ' + (hy + 3) + ')"/><ellipse cx="19" cy="' + (hy + 3) + '" rx="4.5" ry="10" fill="' + hair + '" transform="rotate(-12 19 ' + (hy + 3) + ')"/><circle cx="-16" cy="' + (hy - 7) + '" r="2.2" fill="#e7a6a8"/><circle cx="16" cy="' + (hy - 7) + '" r="2.2" fill="#e7a6a8"/>';
       s += '<path d="M-16 ' + (hy + 3) + ' C-17.5 ' + (hy - 21.5) + ' 17.5 ' + (hy - 21.5) + ' 16 ' + (hy + 3) + ' L13 ' + (hy - 4) + ' L-13 ' + (hy - 4) + ' Z" fill="' + hair + '"/>';
       if (style === "buns") s += '<circle cx="-11" cy="' + (hy - 15) + '" r="5.5" fill="' + hair + '"/><circle cx="11" cy="' + (hy - 15) + '" r="5.5" fill="' + hair + '"/>';
       if (style === "pony") s += '<circle cx="13" cy="' + (hy - 9) + '" r="2.2" fill="#e7a6a8"/>';
@@ -154,6 +170,8 @@
     if (look.hat === "beanie") s += '<path d="M-17.5 ' + (hy - 4) + ' C-17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 4) + ' Z" fill="#c8574a"/><rect x="-18.5" y="' + (hy - 7) + '" width="37" height="5" rx="2.5" fill="#a9463c"/><circle cx="0" cy="' + (hy - 19) + '" r="3.2" fill="#f3efe6"/>';
     if (look.hat === "straw") s += '<ellipse cx="0" cy="' + (hy - 8) + '" rx="23" ry="5" fill="#e6c27a"/><path d="M-11 ' + (hy - 8) + ' C-11 ' + (hy - 20) + ' 11 ' + (hy - 20) + ' 11 ' + (hy - 8) + ' Z" fill="#e6c27a"/><rect x="-11" y="' + (hy - 11) + '" width="22" height="3" fill="#c2453b"/>';
     if (look.hat === "beret") s += '<ellipse cx="2" cy="' + (hy - 13) + '" rx="19" ry="7.5" fill="#3d3a4a"/><circle cx="2" cy="' + (hy - 21) + '" r="1.6" fill="#3d3a4a"/>';
+    if (look.hat === "catband") s += '<path d="M-14 ' + (hy - 10) + ' C-14 ' + (hy - 18) + ' 14 ' + (hy - 18) + ' 14 ' + (hy - 10) + '" fill="none" stroke="#3d3a4a" stroke-width="2"/><path d="M-13 ' + (hy - 12) + ' L-10 ' + (hy - 25) + ' L-3 ' + (hy - 16) + ' Z M13 ' + (hy - 12) + ' L10 ' + (hy - 25) + ' L3 ' + (hy - 16) + ' Z" fill="#3d3a4a"/><path d="M-10.5 ' + (hy - 14) + ' L-9.6 ' + (hy - 21) + ' L-5.5 ' + (hy - 16) + ' Z M10.5 ' + (hy - 14) + ' L9.6 ' + (hy - 21) + ' L5.5 ' + (hy - 16) + ' Z" fill="#f2c4c8"/>';
+    if (look.hat === "bucket") s += '<path d="M-22 ' + (hy - 5) + ' L22 ' + (hy - 5) + ' L15 ' + (hy - 11) + ' L13 ' + (hy - 22) + ' C5 ' + (hy - 25) + ' -5 ' + (hy - 25) + ' -13 ' + (hy - 22) + ' L-15 ' + (hy - 11) + ' Z" fill="#c9b48a"/><path d="M-14.6 ' + (hy - 11) + ' H14.6" stroke="#a8916a" stroke-width="2.4"/>';
     if (look.hat === "crown") s += '<path d="M-9 ' + (hy - 12) + ' L-9 ' + (hy - 21) + ' L-4.5 ' + (hy - 16) + ' L0 ' + (hy - 23) + ' L4.5 ' + (hy - 16) + ' L9 ' + (hy - 21) + ' L9 ' + (hy - 12) + ' Z" fill="#e8b93a" stroke="#c99a2a" stroke-width=".8"/><circle cx="0" cy="' + (hy - 15) + '" r="1.6" fill="#c2453b"/>';
     s += '</g>';
     s += '</g>';
@@ -173,6 +191,12 @@
       g += '<circle cx="7" cy="-5" r="2.4" fill="#fffdf8"/><ellipse cx="0" cy="-5" rx="7.5" ry="5.5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><circle cx="-4" cy="-11" r="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/>' +
         '<ellipse cx="-6" cy="-19" rx="1.8" ry="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-2" cy="-19" rx="1.8" ry="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-6" cy="-19" rx=".8" ry="3.5" fill="#f2c4c8"/><ellipse cx="-2" cy="-19" rx=".8" ry="3.5" fill="#f2c4c8"/>' +
         '<circle cx="-5.5" cy="-11.5" r=".9" fill="#2f2622"/><circle cx="-2.5" cy="-11.5" r=".9" fill="#2f2622"/>';
+    } else if (kind === "fox") {
+      g += '<path class="tail" d="M5 -5 q10 -2 9 -12 q-1 6 -9 7 Z" fill="#e07a3a"/><path d="M13 -15 q1 -2 1 -2 q-1 4 -3 4 Z" fill="#fffdf8"/><ellipse cx="0" cy="-5" rx="7.5" ry="5" fill="#e07a3a"/><circle cx="-4" cy="-11.5" r="5.4" fill="#e07a3a"/>' +
+        '<path d="M-9 -14 l0 -7 l4 4 Z M1 -14 l0 -7 l-4 4 Z" fill="#e07a3a"/><path d="M-8 -9 q4 4 8 0 q-2 2.5 -4 2.6 q-2 -.1 -4 -2.6 Z" fill="#fffdf8"/><circle cx="-6" cy="-12" r=".9" fill="#2f2622"/><circle cx="-2" cy="-12" r=".9" fill="#2f2622"/><circle cx="-4" cy="-8.8" r=".8" fill="#2f2622"/>';
+    } else if (kind === "hamster") {
+      g += '<ellipse cx="0" cy="-5.5" rx="7.5" ry="6.5" fill="#e8c08a"/><ellipse cx="-1" cy="-3.5" rx="4.5" ry="3.8" fill="#fff4e4"/><circle cx="-5" cy="-11" r="2" fill="#e8c08a"/><circle cx="4" cy="-11" r="2" fill="#e8c08a"/><circle cx="-5" cy="-11" r="1" fill="#f2c4c8"/><circle cx="4" cy="-11" r="1" fill="#f2c4c8"/>' +
+        '<circle cx="-3" cy="-7" r=".9" fill="#2f2622"/><circle cx="2" cy="-7" r=".9" fill="#2f2622"/><circle cx="-.5" cy="-5.5" r=".6" fill="#c98e9a"/>';
     } else if (kind === "panda") {
       g += '<ellipse cx="0" cy="-5" rx="8.5" ry="6" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-5" cy="-3" rx="3" ry="3.5" fill="#2a2620"/><ellipse cx="5" cy="-3" rx="3" ry="3.5" fill="#2a2620"/><circle cx="-3" cy="-12" r="6" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/>' +
         '<circle cx="-8" cy="-17" r="2.4" fill="#2a2620"/><circle cx="2" cy="-17" r="2.4" fill="#2a2620"/><ellipse cx="-5.5" cy="-12" rx="1.8" ry="2.2" fill="#2a2620"/><ellipse cx="-0.5" cy="-12" rx="1.8" ry="2.2" fill="#2a2620"/><circle cx="-5.3" cy="-12.3" r=".6" fill="#fff"/><circle cx="-0.7" cy="-12.3" r=".6" fill="#fff"/>';
