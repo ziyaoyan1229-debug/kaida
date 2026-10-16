@@ -28,7 +28,9 @@
   ];
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
 
-  var ACTS = ["read", "pc", "homework", "draw"];
+  var ACTS = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson"];
+  // 平面畫面只有四種桌面道具，其他活動借用最像的那一種
+  var BASE = { read: "read", novel: "read", research: "read", homework: "homework", report: "homework", vocab: "homework", journal: "homework", code: "pc", pc: "pc", lesson: "pc", draw: "draw", calligraphy: "draw" };
 
   /* 預設角色 */
   function defaultLook() { return { g: "girl", skin: 0, hair: 0, top: "tee-blue", hat: "", face: "", neck: "", ears: "", pet: "" }; }
@@ -291,7 +293,7 @@
       if (!m || !focus) {
         g += '<g transform="translate(' + seat[0] + ' ' + seat[1] + ')">' + chair(0, -2) + desk("", false) + '</g>';
       } else {
-        var act = ACTS.indexOf(m.act) >= 0 ? m.act : "read";
+        var act = BASE[m.act] || "read";
         g += '<g transform="translate(' + seat[0] + ' ' + seat[1] + ')">' + chair(0, -2) +
           '<g transform="translate(0 -8)">' + character(m.look, "desk", { focus: true, lookDown: act !== "pc", glow: act === "pc", noPet: true }) + '</g>' +
           desk(act, true) +
