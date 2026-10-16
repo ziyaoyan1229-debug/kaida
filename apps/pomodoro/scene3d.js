@@ -311,9 +311,26 @@ function makeChar(look) {
   const backG = new THREE.SphereGeometry(0.322, 28, 16, Math.PI, Math.PI, 0, Math.PI * (girl ? 0.7 : 0.62));
   const hairBack = new THREE.Mesh(backG, mat(hair)); hairBack.castShadow = true; hairBack.position.set(0, 0.02, -0.012); hairBack.scale.set(1.05, 1, 1.02); head.add(hairBack);
   const style = look.style || "";
+  // 女生頭髮：從頭頂一路包住兩側和後腦，臉前開一個窗，長髮再從同一圈往下垂，整頭是連著的，不是平頭後面黏一塊
+  const shellLen = { "": 0.64, long: 0.62, bob: 0.64, pony: 0.74, twins: 0.74, buns: 0.74 };
+  if (girl && shellLen[style] != null) {
+    hairBack.visible = false;
+    const R = 0.33, T = Math.PI * shellLen[style], W = 0.95, HS = [1.06, 1, 1.04];
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 18, Math.PI / 2 + W, Math.PI * 2 - W * 2, 0, T), mat(hair, { side: THREE.DoubleSide }));
+    shell.position.set(0, 0.02, -0.01); shell.scale.set(HS[0], HS[1], HS[2]); shell.castShadow = true; head.add(shell);
+    const drop = { "": 0.14, long: 0.5, bob: 0.12 }[style];
+    if (drop) {
+      const r0 = R * Math.sin(T), y0 = 0.02 + R * Math.cos(T), flare = style === "long" ? 1.12 : style === "bob" ? 1.06 : 1.03;
+      const cur = new THREE.Mesh(new THREE.CylinderGeometry(r0, r0 * flare, drop, 32, 1, true, W, Math.PI * 2 - W * 2), mat(hair, { side: THREE.DoubleSide }));
+      cur.position.set(0, y0 - drop / 2, -0.01); cur.scale.set(HS[0], 1, HS[2]); cur.castShadow = true; head.add(cur);
+      // 髮尾收一圈，看起來有厚度
+      const tg = new THREE.TorusGeometry(r0 * flare, 0.016, 6, 32, Math.PI * 2 - W * 2); tg.rotateX(Math.PI / 2); tg.rotateY(-(Math.PI / 2 + W));
+      const tip = new THREE.Mesh(tg, mat(hair)); tip.position.set(0, y0 - drop, -0.01); tip.scale.set(HS[0], 1, HS[2]); head.add(tip);
+    }
+  }
   const hatOn = look.hat === "cap" || look.hat === "beanie" || look.hat === "straw" || look.hat === "beret" || look.hat === "bucket";
-  if (style === "bob") { const b4 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), mat(hair)); b4.rotation.x = -0.55; b4.position.set(0, 0.02, -0.03); b4.scale.set(1.08, 1, 1.02); head.add(b4); const fr2 = box(0.46, 0.08, 0.06, hair, 0, 0.17, 0.26, head); fr2.rotation.x = -0.25; }
-  else if (style === "long") { const bk = cap(0.27, 0.42, hair, head); bk.position.set(0, -0.25, -0.12); bk.scale.set(1.1, 1, 0.6); const fr2 = sph(0.12, hair, -0.1, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
+  if (style === "bob") { if (!girl) { const b4 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), mat(hair)); b4.rotation.x = -0.55; b4.position.set(0, 0.02, -0.03); b4.scale.set(1.08, 1, 1.02); head.add(b4); } const fr2 = box(0.46, 0.08, 0.06, hair, 0, 0.17, 0.26, head); fr2.rotation.x = -0.25; }
+  else if (style === "long") { if (!girl) { const bk = cap(0.27, 0.42, hair, head); bk.position.set(0, -0.25, -0.12); bk.scale.set(1.1, 1, 0.6); } const fr2 = sph(0.12, hair, -0.1, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
   else if (style === "pony") { sph(0.12, hair, 0, 0.12, -0.3, head); const tl = cap(0.08, 0.28, hair, head); tl.position.set(0, -0.12, -0.36); tl.rotation.x = 0.25; sph(0.045, "#e7a6a8", 0, 0.12, -0.2, head); const fr2 = sph(0.11, hair, 0.08, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
   else if (style === "twins") { [-1, 1].forEach((sd) => { const tl = cap(0.075, 0.24, hair, head); tl.position.set(sd * 0.36, -0.1, -0.06); tl.rotation.z = sd * 0.3; sph(0.045, "#e7a6a8", sd * 0.31, 0.06, -0.06, head, 8, 6); }); const fr2 = sph(0.12, hair, 0, 0.17, 0.22, head); fr2.scale.set(1.6, 0.5, 0.8); }
   else if (style === "buzz") { hairCap.scale.set(0.98, 0.94, 0.97); hairBack.scale.set(0.98, 0.94, 0.97); }
@@ -322,7 +339,6 @@ function makeChar(look) {
   else if (style === "curly") { for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r0 = 0.28; sph(0.1, hair, Math.cos(a) * r0, 0.14 + Math.sin(i * 1.7) * 0.06, Math.sin(a) * r0 * 0.95 - 0.02, head, 10, 8); } for (let i = 0; i < 5; i++) sph(0.11, hair, -0.16 + i * 0.08, 0.3, -0.02 + (i % 2) * 0.05, head, 10, 8); }
   else if (style === "spiky") { for (let i = 0; i < 9; i++) { const k2 = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.2, 6), mat(hair)); const a = (i - 4) * 0.28; k2.position.set(Math.sin(a) * 0.22, 0.3 + Math.cos(a) * 0.05, (i % 2 ? -0.05 : 0.08)); k2.rotation.z = -a * 0.9; k2.rotation.x = i % 2 ? -0.4 : 0.3; head.add(k2); } }
   else if (girl) {
-    const back = cap(0.25, 0.18, hair, head); back.position.set(0, -0.14, -0.1); back.scale.set(1.15, 1, 0.75);
     sph(0.06, "#e7a6a8", 0.24, 0.2, 0.08, head);
   } else {
     const fr = sph(0.11, hair, 0.1, 0.17, 0.22, head); fr.scale.set(1.3, 0.55, 0.8);
