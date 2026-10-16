@@ -825,12 +825,11 @@
   // 開房前的設定全部收在一張卡：每一列左右滑動選
   var START_KEYS = ["quick", "join", "private", "sim", "solo"];
   var THEME_SW = { home: ["#c08a5a", "#f3e3c6"], cafe: ["#6e4a34", "#e8d3b0"], library: ["#7a2a2a", "#c9a45a"], study: ["#9aa6b2", "#eef0f2"], space: ["#1a2440", "#4ad8ff"], school: ["#7d9a86", "#f1e7cf"], konbini: ["#2f9a6a", "#f4f6f7"], washitsu: ["#c9c08a", "#5a4030"], cabin: ["#5a3a26", "#3f6a3a"], beach: ["#7ac4c4", "#f2a65a"], rooftop: ["#2e3236", "#ff6ab0"], lodge: ["#b0302a", "#f2ece0"] };
-  var MU_KEYS = ["light", "jazz", "lofi", "noise", "fire", "rain", "forest", ""];
+  var TIME_LABEL = { std: "25/5", deep: "50/10", test: "1/0.5 TEST" };
   function startSummary() {
     var bits = [t("r.tab." + roomTab), t("act." + (S.ACTS.indexOf(data.act) >= 0 ? data.act : "read"))];
     if (roomTab === "private" || roomTab === "sim" || roomTab === "solo") bits.push(themeName(data.theme, data.me.name));
-    if (roomTab !== "join") bits.push(t("r.mode." + data.mode).replace("\n", " "));
-    bits.push(t(music().kind ? "mu." + music().kind : "mu.off"));
+    if (roomTab !== "join") bits.push(TIME_LABEL[data.mode] || "");
     return bits.join(" · ");
   }
   // 電腦上：左右箭頭、滑鼠拖曳、滾輪橫向捲動（手機照樣用手指滑）
@@ -872,8 +871,7 @@
       var c = THEME_SW[k] || ["#c08a5a", "#f3e3c6"];
       return '<button type="button" class="tcard" data-theme="' + k + '" aria-pressed="' + (data.theme === k) + '"><span class="sw" style="background:linear-gradient(135deg,' + c[0] + ' 0 60%,' + c[1] + ' 60% 100%)">' + THEME_ICON[k] + '</span>' + K.esc(themeName(k, data.me.name)) + '</button>';
     }).join("");
-    var times = ["std", "deep", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m).replace("\n", " ")) + '</button>'; }).join("");
-    var mus = MU_KEYS.map(function (k) { return '<button type="button" data-premu="' + k + '" aria-pressed="' + ((music().kind || "") === k) + '">' + K.esc(t(k ? "mu." + k : "mu.off")) + '</button>'; }).join("");
+    var times = ["std", "deep", "test"].map(function (m) { return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(TIME_LABEL[m]) + '</button>'; }).join("");
     var hasTheme = roomTab === "private" || roomTab === "sim" || roomTab === "solo";
     var act = { join: "join", quick: "quick", "private": "create", sim: "sim", solo: "solo" }[roomTab];
     var away = session && session.away;
@@ -887,7 +885,6 @@
         row("act", t("r.doH"), acts) +
         (hasTheme ? row("theme", t("r.themeH"), themes) : "") +
         (roomTab === "join" ? '<div class="prow"><h4>' + K.esc(t("r.timeH")) + '</h4><p class="small muted pad">' + K.esc(t("r.timeJoin")) + '</p></div>' : row("time", t("r.timeH"), times)) +
-        row("mu", t("mu.lab"), mus) +
         '<div class="pick-foot"><p class="small muted" id="start-sum">' + K.esc(startSummary()) + '</p>' +
         '<button class="btn block start-btn" type="button" data-act="' + act + '">' + K.esc(t("r.start")) + '</button></div>' +
       '</div>';
@@ -1627,7 +1624,6 @@
     if (b.dataset.railGo) { var rl = b.parentNode.querySelector(".rail"); rl.scrollBy({ left: +b.dataset.railGo * rl.clientWidth * 0.8, behavior: "smooth" }); return; }
     var mark = function () { b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); var sm = document.getElementById("start-sum"); if (sm) sm.textContent = startSummary(); };
     if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); mark(); return; }
-    if (b.dataset.premu != null) { music().kind = b.dataset.premu; K.save(STORE, data); mark(); return; }
     if (b.dataset.rtab) { var jc = document.getElementById("join-code"); if (jc) pendingCode = jc.value; roomTab = b.dataset.rtab; renderRooms(); return; }
     if (b.dataset.theme) { data.theme = b.dataset.theme; persist(); mark(); return; }
     if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); mark(); return; }
