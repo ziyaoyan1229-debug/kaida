@@ -183,6 +183,7 @@ SEATS.forEach((s) => {
 });
 
 let blocked = null;
+const COFFEE_SPOT = { x: 2.2, z: -2.75 }, BREW_MS = 5500;
 function buildGrid() {
   blocked = new Uint8Array(GRID.cols * GRID.rows);
   for (let r = 0; r < GRID.rows; r++) for (let c = 0; c < GRID.cols; c++) {
@@ -286,10 +287,12 @@ function makeChar(look) {
   const capG = new THREE.SphereGeometry(0.325, 28, 16, 0, Math.PI * 2, 0, Math.PI * (girl ? 0.5 : 0.46));
   const hairCap = new THREE.Mesh(capG, mat(hair)); hairCap.castShadow = true; hairCap.rotation.x = -0.32; hairCap.position.set(0, 0.02, -0.01); hairCap.scale.set(1.05, 1, 1.02); head.add(hairCap);
   const style = look.style || "";
+  const hatOn = look.hat === "cap" || look.hat === "beanie" || look.hat === "straw" || look.hat === "beret";
   if (style === "bob") { const b4 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), mat(hair)); b4.rotation.x = -0.55; b4.position.set(0, 0.02, -0.03); b4.scale.set(1.08, 1, 1.02); head.add(b4); const fr2 = box(0.46, 0.08, 0.06, hair, 0, 0.17, 0.26, head); fr2.rotation.x = -0.25; }
   else if (style === "long") { const bk = cap(0.27, 0.42, hair, head); bk.position.set(0, -0.25, -0.12); bk.scale.set(1.1, 1, 0.6); const fr2 = sph(0.12, hair, -0.1, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
   else if (style === "pony") { sph(0.12, hair, 0, 0.12, -0.3, head); const tl = cap(0.08, 0.28, hair, head); tl.position.set(0, -0.12, -0.36); tl.rotation.x = 0.25; sph(0.045, "#e7a6a8", 0, 0.12, -0.2, head); const fr2 = sph(0.11, hair, 0.08, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
   else if (style === "buns") { [-1, 1].forEach((sd) => sph(0.12, hair, sd * 0.2, 0.3, -0.03, head, 14, 10)); const fr2 = sph(0.12, hair, 0, 0.17, 0.22, head); fr2.scale.set(1.6, 0.5, 0.8); }
+  else if (hatOn && (style === "curly" || style === "spiky" || style === "buns")) { /* 戴帽子時，頂上的捲髮、刺刺頭、包包頭收進帽子裡 */ }
   else if (style === "curly") { for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r0 = 0.28; sph(0.1, hair, Math.cos(a) * r0, 0.14 + Math.sin(i * 1.7) * 0.06, Math.sin(a) * r0 * 0.95 - 0.02, head, 10, 8); } for (let i = 0; i < 5; i++) sph(0.11, hair, -0.16 + i * 0.08, 0.3, -0.02 + (i % 2) * 0.05, head, 10, 8); }
   else if (style === "spiky") { for (let i = 0; i < 9; i++) { const k2 = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.2, 6), mat(hair)); const a = (i - 4) * 0.28; k2.position.set(Math.sin(a) * 0.22, 0.3 + Math.cos(a) * 0.05, (i % 2 ? -0.05 : 0.08)); k2.rotation.z = -a * 0.9; k2.rotation.x = i % 2 ? -0.4 : 0.3; head.add(k2); } }
   else if (girl) {
@@ -299,23 +302,30 @@ function makeChar(look) {
     const fr = sph(0.11, hair, 0.1, 0.17, 0.22, head); fr.scale.set(1.3, 0.55, 0.8);
   }
   const eyeM = mat("#2f2622", { roughness: 0.3 });
-  const eyes = [-0.1, 0.1].map((x) => { const e = sph(0.035, eyeM, x, -0.01, 0.285, head, 10, 8); e.scale.set(0.9, 1.25, 0.6); return e; });
-  [-0.17, 0.17].forEach((x) => { const b = new THREE.Mesh(new THREE.CircleGeometry(0.045, 14), new THREE.MeshBasicMaterial({ color: 0xf0a0a0, transparent: true, opacity: 0.55 })); b.position.set(x, -0.08, 0.27); b.rotation.y = x * 1.6; head.add(b); });
-  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.008, 6, 12, Math.PI), mat("#7a4a3a")); mouth.rotation.z = Math.PI; mouth.position.set(0, -0.1, 0.29); head.add(mouth);
+  // 女生：大一點的眼睛、睫毛、粉嫩腮紅與嘴唇；男生：眉毛、小一點的眼睛、淡腮紅
+  const eyes = [-0.1, 0.1].map((x) => {
+    const e = sph(girl ? 0.042 : 0.032, eyeM, x, -0.01, 0.285, head, 10, 8); e.scale.set(0.9, 1.25, 0.6);
+    const hl = sph(girl ? 0.013 : 0.009, new THREE.MeshBasicMaterial({ color: 0xffffff }), 0.012, 0.012, 0.03, e, 6, 4); hl.castShadow = false;
+    if (girl) { const sd = Math.sign(x); [0, 1].forEach((k) => { const l = box(0.03, 0.008, 0.01, eyeM, sd * (0.034 + k * 0.01), 0.026 - k * 0.008, 0.008, e); l.rotation.z = sd * (0.5 + k * 0.45); l.castShadow = false; }); }
+    return e;
+  });
+  if (!girl) [-0.1, 0.1].forEach((x) => { const br = box(0.085, 0.018, 0.012, hair === "#f2efe8" ? "#8a7a6a" : hair, x, 0.075, 0.29, head); br.rotation.z = -Math.sign(x) * 0.12; br.castShadow = false; });
+  [-0.17, 0.17].forEach((x) => { const b = new THREE.Mesh(new THREE.CircleGeometry(girl ? 0.05 : 0.04, 14), new THREE.MeshBasicMaterial({ color: girl ? 0xf38c9a : 0xf0a0a0, transparent: true, opacity: girl ? 0.6 : 0.3 })); b.position.set(x, -0.08, 0.27); b.rotation.y = x * 1.6; head.add(b); });
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(girl ? 0.026 : 0.032, girl ? 0.01 : 0.008, 6, 12, Math.PI), mat(girl ? "#d0606a" : "#7a4a3a")); mouth.rotation.z = Math.PI; mouth.position.set(0, -0.1, 0.29); head.add(mouth);
   if (look.face === "glasses") [-0.1, 0.1].forEach((x) => { const gl = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.01, 6, 18), mat("#4a3a2c")); gl.position.set(x, -0.01, 0.3); head.add(gl); });
   if (look.face === "shades") { [-0.1, 0.1].forEach((x) => { const sg = cyl(0.07, 0.07, 0.02, "#2a2620", x, -0.005, 0.3, head, 16); sg.rotation.x = Math.PI / 2; }); box(0.06, 0.015, 0.015, "#2a2620", 0, 0.01, 0.31, head); }
   if (look.face === "star") { const st2 = cyl(0.04, 0.04, 0.01, "#e8b93a", 0.17, -0.06, 0.255, head, 5); st2.rotation.x = Math.PI / 2; st2.rotation.y = 0.3; }
   if (look.ears === "muffs") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.022, 8, 24, Math.PI), mat("#c98e9a")); band.position.y = 0.02; head.add(band); [-0.33, 0.33].forEach((x) => sph(0.1, "#f2c4c8", x, 0, 0, head, 12, 10)); }
-  if (look.hat === "cap") { const cp = new THREE.Mesh(new THREE.SphereGeometry(0.335, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.42), mat("#5d7fa8")); cp.position.y = 0.04; cp.rotation.x = -0.12; head.add(cp); const brim = cyl(0.2, 0.2, 0.025, "#4a6a90", 0, 0.12, 0.3, head, 20); brim.scale.z = 0.8; brim.rotation.x = 0.15; sph(0.025, "#4a6a90", 0, 0.36, 0, head, 6, 4); }
+  if (look.hat === "cap") { const cp = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.45), mat("#5d7fa8")); cp.position.y = 0.03; cp.rotation.x = -0.12; cp.scale.set(1.06, 1, 1.05); head.add(cp); const brim = cyl(0.22, 0.22, 0.025, "#4a6a90", 0, 0.12, 0.34, head, 20); brim.scale.z = 0.8; brim.rotation.x = 0.15; sph(0.025, "#4a6a90", 0, 0.4, 0, head, 6, 4); }
   if (look.hat === "bunnyband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.02, 6, 20, Math.PI), mat("#e7a6a8")); band.position.y = 0.05; band.rotation.y = Math.PI / 2; band.rotation.x = 0; head.add(band); [-1, 1].forEach((sd) => { const e = cap(0.055, 0.26, "#fffdf8", head); e.position.set(sd * 0.11, 0.48, -0.02); e.rotation.z = -sd * 0.18; const inn = cap(0.025, 0.2, "#f2c4c8", head); inn.position.set(sd * 0.11, 0.48, 0.03); inn.rotation.z = -sd * 0.18; }); }
   if (look.hat === "flower") { const fl = new THREE.Group(); fl.position.set(-0.24, 0.22, 0.12); head.add(fl); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; sph(0.04, "#e7a6a8", Math.cos(a) * 0.045, Math.sin(a) * 0.045, 0, fl, 8, 6); } sph(0.03, "#f2cc4a", 0, 0, 0.02, fl, 8, 6); }
   if (look.ears === "phones") {
     const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.025, 8, 24, Math.PI), mat("#5a6b7a")); band.position.y = 0.02; head.add(band);
     [-0.33, 0.33].forEach((x) => { const e = cyl(0.08, 0.08, 0.07, "#5a6b7a", x, 0.0, 0, head); e.rotation.z = Math.PI / 2; });
   }
-  if (look.hat === "beanie") { const b = new THREE.Mesh(new THREE.SphereGeometry(0.335, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.45), mat("#c8574a")); b.position.y = 0.05; b.rotation.x = -0.15; head.add(b); cyl(0.33, 0.33, 0.08, "#a9463c", 0, 0.08, -0.02, head).rotation.x = -0.15; sph(0.07, "#f3efe6", 0, 0.38, -0.04, head); }
-  if (look.hat === "straw") { cyl(0.55, 0.55, 0.025, "#e6c27a", 0, 0.2, -0.02, head, 28); cyl(0.24, 0.27, 0.18, "#e6c27a", 0, 0.29, -0.02, head); cyl(0.272, 0.272, 0.04, "#c2453b", 0, 0.23, -0.02, head); }
-  if (look.hat === "beret") { const b = sph(0.3, "#3d3a4a", 0.04, 0.24, -0.03, head); b.scale.set(1.05, 0.35, 1); sph(0.03, "#3d3a4a", 0.04, 0.34, -0.03, head); }
+  if (look.hat === "beanie") { const b = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.47), mat("#c8574a")); b.position.y = 0.04; b.rotation.x = -0.15; b.scale.set(1.06, 1.05, 1.05); head.add(b); cyl(0.38, 0.38, 0.09, "#a9463c", 0, 0.07, -0.02, head).rotation.x = -0.15; sph(0.08, "#f3efe6", 0, 0.43, -0.04, head); }
+  if (look.hat === "straw") { cyl(0.55, 0.55, 0.025, "#e6c27a", 0, 0.2, -0.02, head, 28); cyl(0.27, 0.33, 0.2, "#e6c27a", 0, 0.3, -0.02, head); cyl(0.322, 0.322, 0.04, "#c2453b", 0, 0.23, -0.02, head); }
+  if (look.hat === "beret") { const b = sph(0.36, "#3d3a4a", 0.04, 0.27, -0.03, head); b.scale.set(1.08, 0.38, 1.05); sph(0.03, "#3d3a4a", 0.04, 0.4, -0.03, head); }
   if (look.hat === "crown") { const cr = cyl(0.16, 0.16, 0.12, mat("#e8b93a", { metalness: 0.5, roughness: 0.35 }), 0, 0.33, 0, head, 10); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; const k = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.09, 6), mat("#e8b93a", { metalness: 0.5, roughness: 0.35 })); k.position.set(Math.cos(a) * 0.15, 0.43, Math.sin(a) * 0.15); head.add(k); } sph(0.03, "#c2453b", 0, 0.34, 0.16, head); cr.castShadow = true; }
   // 寵物夥伴
   const cat = look.pet ? makePet(look.pet) : null;
@@ -1535,7 +1545,11 @@ function update(members) {
     }
     st.bub.textContent = m.bubble || ""; st.bub.hidden = !m.bubble;
     // 說了快速對話就做對應的動作，做 3 秒
-    if (m.emo && m.emoAt && m.emoAt !== st.emoAt) { st.emoAt = m.emoAt; st.emo = m.emo; st.emoT0 = performance.now(); }
+    if (m.emo && m.emoAt && m.emoAt !== st.emoAt) {
+      st.emoAt = m.emoAt; st.emo = m.emo; st.emoT0 = performance.now();
+      // 「有人要咖啡嗎」：走到咖啡機泡一杯，再端回座位
+      if (m.emo === "coffee" && st.mode !== "walk" && st.mode !== "coffee") { st.emo = null; releaseSpot(m.id); st.spot = -1; walkTo(st, COFFEE_SPOT, "coffee"); }
+    }
   });
   Object.keys(chars).forEach((id) => { if (!ids[id]) removeChar(id); });
   // 書桌上的東西：誰坐哪裡就放他的活動道具
@@ -1554,7 +1568,8 @@ function animChar(st, dt, now) {
   if (st.mode === "walk") {
     const nxt = st.path[0];
     if (!nxt) {
-      if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; }
+      if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; if (st.carry) { st.carry = false; st.emo = "drink"; st.emoT0 = now; } }
+      else if (st.after === "coffee") { st.mode = "coffee"; st.ry = Math.PI; st.brewT0 = now; }
       else { const sp = SPOTS[st.spot] || { ry: st.ry }; st.mode = "idle"; st.ry = sp.ry; st.waitUntil = now + 6000 + Math.random() * 8000; }
     } else {
       const dx = nxt.x - st.pos.x, dz = nxt.z - st.pos.z, d = Math.hypot(dx, dz), sp = 1.15 * dt;
@@ -1564,15 +1579,20 @@ function animChar(st, dt, now) {
       let diff = want - st.ry; while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
       st.ry += diff * Math.min(1, dt * 10);
     }
+  } else if (st.mode === "coffee" && now - st.brewT0 > BREW_MS) {
+    st.carry = true;
+    if (st.m.up) { const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle"); } else walkTo(st, seatPos(st.seat), "sit");
   } else if (st.mode === "idle" && st.m.up && now > st.waitUntil) {
     const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle");
   }
   c.root.position.copy(st.pos); c.root.rotation.y = st.ry;
-  const pose0 = st.mode === "walk" ? "walk" : st.mode === "sit" ? "sit" : (SPOTS[st.spot] ? SPOTS[st.spot].pose : "stand");
+  const pose0 = st.mode === "walk" ? "walk" : st.mode === "sit" ? "sit" : st.mode === "coffee" ? "brew" : (SPOTS[st.spot] ? SPOTS[st.spot].pose : "stand");
+  const brewK = st.mode === "coffee" ? (now - st.brewT0) / BREW_MS : 0;
+  if (st.carry && st.mode === "idle") st.carry = false;
   c.book.visible = pose0 === "book";
-  c.cup.visible = pose0 === "mug" && st.treat !== "eat";
+  c.cup.visible = (pose0 === "mug" && st.treat !== "eat") || (pose0 === "brew" && brewK > 0.55) || (pose0 === "walk" && !!st.carry);
   c.cookie.visible = pose0 === "snack" || (pose0 === "mug" && st.treat === "eat");
-  const pose = st.mode === "walk" ? "walk" : st.mode === "sit" ? "sit" : (SPOTS[st.spot] ? SPOTS[st.spot].pose : "stand");
+  const pose = pose0;
   c.hips.position.y = 0.36; c.hips.position.z = 0; c.torso.rotation.x = 0; c.head.rotation.set(0, 0, 0);
   c.legs.forEach((l) => l.rotation.set(0, 0, 0));
   c.arms.forEach((a, i) => a.rotation.set(0, 0, (i ? 1 : -1) * 0.12));
@@ -1583,6 +1603,12 @@ function animChar(st, dt, now) {
     c.legs[0].rotation.x = w; c.legs[1].rotation.x = -w;
     c.arms[0].rotation.x = -w * 0.7; c.arms[1].rotation.x = w * 0.7;
     c.hips.position.y = 0.36 + Math.abs(Math.cos(s * 9)) * 0.04;
+    if (st.carry) { c.arms[1].rotation.x = -1.2; c.arms[1].rotation.z = -0.2; }
+  } else if (pose === "brew") {
+    // 先按咖啡機、等一下，再把杯子拿起來
+    if (brewK < 0.25) { c.arms[1].rotation.x = -1.6 + Math.sin(s * 10) * 0.12; c.arms[1].rotation.z = -0.1; }
+    else if (brewK < 0.55) { c.head.rotation.y = Math.sin(s * 1.5) * 0.15; c.head.rotation.x = 0.12; c.arms[1].rotation.z = -0.25; }
+    else { const up = Math.max(0, Math.sin((brewK - 0.55) * 9)); c.arms[1].rotation.x = -0.9 - up * 1.3; c.arms[1].rotation.z = -0.15 - up * 0.4; c.head.rotation.x = -up * 0.2; }
   } else if (pose === "sit" || pose === "sofa") {
     c.hips.position.y = pose === "sofa" ? ((SPOTS[st.spot] && SPOTS[st.spot].seat) || 0.5) : 0.44;
     c.legs.forEach((l) => { l.rotation.x = -1.45; });
@@ -1744,6 +1770,12 @@ function frame() {
   });
 }
 
+function clampYaw(v) { return Math.max(-0.55, Math.min(0.55, v)); }
+function panBy(px, py) {
+  const dx = px * 0.012 * zoomT, dy = py * 0.012 * zoomT, yy = yaw + dragYaw;
+  panT.x -= Math.cos(yy) * dx + Math.sin(yy) * dy; panT.z -= -Math.sin(yy) * dx + Math.cos(yy) * dy;
+  clampPan();
+}
 function setZoom(z) { zoomT = Math.max(0.4, Math.min(1.45, z)); if (zoomT >= 0.95) panT.multiplyScalar(0); clampPan(); if (container) container.style.touchAction = zoomT < 0.95 ? "none" : ""; }
 function clampPan() { const k = Math.max(0, 1 - zoomT) * 9; panT.x = Math.max(-k, Math.min(k, panT.x)); panT.z = Math.max(-k, Math.min(k, panT.z)); panT.y = 0; }
 function resize() {
@@ -1778,7 +1810,8 @@ function mount(el) {
   resize();
   // 拖曳轉視角
   let drag = null;
-  el.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, yaw: dragYaw, pitch: dragPitch }; });
+  el.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, yaw: dragYaw, pitch: dragPitch, pan: e.button === 2 || e.shiftKey }; });
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
   // 點人物看狀態
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   el.addEventListener("pointerup", (e) => {
@@ -1797,22 +1830,27 @@ function mount(el) {
   });
   window.addEventListener("pointermove", (e) => {
     if (!drag || pinch) return;
-    if (zoomT < 0.95) {
-      // 放大時拖曳＝平移，看房間不同角落
-      const dx = (e.clientX - drag.px) * 0.012 * zoomT, dy = (e.clientY - drag.py) * 0.012 * zoomT, yy = yaw + dragYaw;
-      drag.px = e.clientX; drag.py = e.clientY;
-      panT.x -= Math.cos(yy) * dx + Math.sin(yy) * dy; panT.z -= -Math.sin(yy) * dx + Math.cos(yy) * dy;
-      clampPan(); return;
-    }
-    dragYaw = Math.max(-0.3, Math.min(0.3, drag.yaw - (e.clientX - drag.x) * 0.005));
+    if (drag.pan) { panBy(e.clientX - drag.px, e.clientY - drag.py); drag.px = e.clientX; drag.py = e.clientY; return; }
+    // 單指或滑鼠拖曳一律轉視角，放大時也一樣
+    dragYaw = clampYaw(drag.yaw - (e.clientX - drag.x) * 0.005);
     dragPitch = Math.max(-0.12, Math.min(0.15, drag.pitch + (e.clientY - drag.y) * 0.003));
   });
   // 縮放：滾輪、兩指、雙擊還原
   el.addEventListener("wheel", (e) => { e.preventDefault(); setZoom(zoomT * Math.exp(e.deltaY * 0.0015)); }, { passive: false });
   let pinch = null;
   const tdist = (ts) => Math.hypot(ts[0].clientX - ts[1].clientX, ts[0].clientY - ts[1].clientY);
-  el.addEventListener("touchstart", (e) => { if (e.touches.length === 2) { pinch = { d: tdist(e.touches), z: zoomT }; drag = null; } }, { passive: true });
-  el.addEventListener("touchmove", (e) => { if (pinch && e.touches.length === 2) { e.preventDefault(); setZoom(pinch.z * pinch.d / Math.max(20, tdist(e.touches))); } }, { passive: false });
+  const tang = (ts) => Math.atan2(ts[1].clientY - ts[0].clientY, ts[1].clientX - ts[0].clientX);
+  const tmid = (ts) => ({ x: (ts[0].clientX + ts[1].clientX) / 2, y: (ts[0].clientY + ts[1].clientY) / 2 });
+  // 兩指：開合縮放、扭轉旋轉、一起移動平移，可以同時做
+  el.addEventListener("touchstart", (e) => { if (e.touches.length === 2) { pinch = { d: tdist(e.touches), z: zoomT, a: tang(e.touches), yaw: dragYaw, m: tmid(e.touches) }; drag = null; } }, { passive: true });
+  el.addEventListener("touchmove", (e) => {
+    if (!pinch || e.touches.length !== 2) return;
+    e.preventDefault();
+    setZoom(pinch.z * pinch.d / Math.max(20, tdist(e.touches)));
+    let da = tang(e.touches) - pinch.a; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
+    dragYaw = clampYaw(pinch.yaw - da);
+    const m = tmid(e.touches); panBy(m.x - pinch.m.x, m.y - pinch.m.y); pinch.m = m;
+  }, { passive: false });
   el.addEventListener("touchend", (e) => { if (e.touches.length < 2) pinch = null; });
   el.addEventListener("dblclick", () => setZoom(1));
   window.addEventListener("pointerup", () => { drag = null; });

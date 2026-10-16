@@ -136,22 +136,24 @@
       s += '<path d="M-15.5 ' + (hy + 2) + ' C-17.5 ' + (hy - 21.5) + ' 17.5 ' + (hy - 21.5) + ' 15.5 ' + (hy + 2) + ' C13 ' + (hy - 4) + ' 9 ' + (hy - 7) + ' 2 ' + (hy - 6) + ' C-4 ' + (hy - 9) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
     }
     var ey = opt.lookDown ? hy + 3 : hy + 1;
-    s += '<g class="eyes"><ellipse cx="-5.5" cy="' + ey + '" rx="1.8" ry="2.3" fill="#2f2622"/><ellipse cx="5.5" cy="' + ey + '" rx="1.8" ry="2.3" fill="#2f2622"/></g>';
-    s += '<ellipse cx="-9" cy="' + (hy + 5.5) + '" rx="2.6" ry="1.6" fill="#f0a0a0" opacity=".6"/><ellipse cx="9" cy="' + (hy + 5.5) + '" rx="2.6" ry="1.6" fill="#f0a0a0" opacity=".6"/>';
-    s += opt.smile ? '<path d="M-2.2 ' + (hy + 6) + ' q2.2 2.4 4.4 0" fill="none" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>'
+    if (opt.expr) s += faces(hy, girl);
+    else s += '<g class="eyes"><ellipse cx="-5.5" cy="' + ey + '" rx="' + (girl ? 2.1 : 1.6) + '" ry="' + (girl ? 2.6 : 2.1) + '" fill="#2f2622"/><ellipse cx="5.5" cy="' + ey + '" rx="' + (girl ? 2.1 : 1.6) + '" ry="' + (girl ? 2.6 : 2.1) + '" fill="#2f2622"/></g>';
+    s += faceMarks(hy, girl, hair);
+    s += '<ellipse cx="-9" cy="' + (hy + 5.5) + '" rx="2.6" ry="1.6" fill="' + (girl ? "#f38c9a" : "#f0a0a0") + '" opacity="' + (girl ? .65 : .3) + '"/><ellipse cx="9" cy="' + (hy + 5.5) + '" rx="2.6" ry="1.6" fill="' + (girl ? "#f38c9a" : "#f0a0a0") + '" opacity="' + (girl ? .65 : .3) + '"/>';
+    if (!opt.expr) s += opt.smile ? '<path d="M-2.2 ' + (hy + 6) + ' q2.2 2.4 4.4 0" fill="none" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>'
                    : '<path d="M-1.5 ' + (hy + 6.5) + ' h3" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>';
     if (opt.glow) s += '<ellipse cx="0" cy="' + (hy + 3) + '" rx="13" ry="9" fill="#bfe3ff" opacity=".22"/>';
     if (look.face === "shades") s += '<g fill="#2a2620"><rect x="-10" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><rect x="1.5" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><path d="M-1.5 ' + hy + ' h3" stroke="#2a2620" stroke-width="1"/></g>';
     if (look.face === "star") s += '<path d="M9 ' + (hy + 2) + ' l1.2 2.5 2.7 .3 -2 1.8 .6 2.7 -2.5 -1.4 -2.5 1.4 .6 -2.7 -2 -1.8 2.7 -.3 Z" fill="#e8b93a"/>';
     if (look.ears === "muffs") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#c98e9a" stroke-width="2.4"/><circle cx="-15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/><circle cx="15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/>';
-    if (look.hat === "cap") s += '<path d="M-15 ' + (hy - 6) + ' C-15 ' + (hy - 21) + ' 15 ' + (hy - 21) + ' 15 ' + (hy - 6) + ' Z" fill="#5d7fa8"/><path d="M-2 ' + (hy - 6) + ' Q12 ' + (hy - 9) + ' 22 ' + (hy - 5) + ' L14 ' + (hy - 3) + ' Z" fill="#4a6a90"/><circle cx="0" cy="' + (hy - 19) + '" r="1.5" fill="#4a6a90"/>';
+    if (look.hat === "cap") s += '<path d="M-17.5 ' + (hy - 5) + ' C-17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 5) + ' Z" fill="#5d7fa8"/><path d="M-2 ' + (hy - 6) + ' Q12 ' + (hy - 9) + ' 22 ' + (hy - 5) + ' L14 ' + (hy - 3) + ' Z" fill="#4a6a90"/><circle cx="0" cy="' + (hy - 19) + '" r="1.5" fill="#4a6a90"/>';
     if (look.hat === "bunnyband") s += '<path d="M-14 ' + (hy - 10) + ' C-14 ' + (hy - 18) + ' 14 ' + (hy - 18) + ' 14 ' + (hy - 10) + '" fill="none" stroke="#e7a6a8" stroke-width="2"/><ellipse cx="-6" cy="' + (hy - 26) + '" rx="3.6" ry="10" fill="#f8f4ec" stroke="#e0d0c0" stroke-width=".6" transform="rotate(-12 -6 ' + (hy - 26) + ')"/><ellipse cx="6" cy="' + (hy - 26) + '" rx="3.6" ry="10" fill="#f8f4ec" stroke="#e0d0c0" stroke-width=".6" transform="rotate(12 6 ' + (hy - 26) + ')"/><ellipse cx="-6" cy="' + (hy - 25) + '" rx="1.6" ry="7" fill="#f2c4c8" transform="rotate(-12 -6 ' + (hy - 25) + ')"/><ellipse cx="6" cy="' + (hy - 25) + '" rx="1.6" ry="7" fill="#f2c4c8" transform="rotate(12 6 ' + (hy - 25) + ')"/>';
     if (look.hat === "flower") s += '<g transform="translate(-11 ' + (hy - 11) + ')">' + [0, 72, 144, 216, 288].map(function (a) { return '<circle cx="' + (Math.cos(a * Math.PI / 180) * 3).toFixed(2) + '" cy="' + (Math.sin(a * Math.PI / 180) * 3).toFixed(2) + '" r="2.4" fill="#e7a6a8"/>'; }).join("") + '<circle r="1.8" fill="#f2cc4a"/></g>';
     if (look.face === "glasses") s += '<g fill="none" stroke="#4a3a2c" stroke-width="1.1"><circle cx="-5.5" cy="' + (hy + 1) + '" r="3.6"/><circle cx="5.5" cy="' + (hy + 1) + '" r="3.6"/><path d="M-1.9 ' + (hy + 1) + ' h3.8"/></g>';
     if (look.ears === "phones") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#5a6b7a" stroke-width="2.4"/><rect x="-18" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/><rect x="12.5" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/>';
-    if (look.hat === "beanie") s += '<path d="M-15 ' + (hy - 5) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 5) + ' Z" fill="#c8574a"/><rect x="-16" y="' + (hy - 7) + '" width="32" height="5" rx="2.5" fill="#a9463c"/><circle cx="0" cy="' + (hy - 19) + '" r="3.2" fill="#f3efe6"/>';
+    if (look.hat === "beanie") s += '<path d="M-17.5 ' + (hy - 4) + ' C-17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 4) + ' Z" fill="#c8574a"/><rect x="-18.5" y="' + (hy - 7) + '" width="37" height="5" rx="2.5" fill="#a9463c"/><circle cx="0" cy="' + (hy - 19) + '" r="3.2" fill="#f3efe6"/>';
     if (look.hat === "straw") s += '<ellipse cx="0" cy="' + (hy - 8) + '" rx="23" ry="5" fill="#e6c27a"/><path d="M-11 ' + (hy - 8) + ' C-11 ' + (hy - 20) + ' 11 ' + (hy - 20) + ' 11 ' + (hy - 8) + ' Z" fill="#e6c27a"/><rect x="-11" y="' + (hy - 11) + '" width="22" height="3" fill="#c2453b"/>';
-    if (look.hat === "beret") s += '<ellipse cx="2" cy="' + (hy - 12) + '" rx="15" ry="6" fill="#3d3a4a"/><circle cx="2" cy="' + (hy - 18) + '" r="1.5" fill="#3d3a4a"/>';
+    if (look.hat === "beret") s += '<ellipse cx="2" cy="' + (hy - 13) + '" rx="19" ry="7.5" fill="#3d3a4a"/><circle cx="2" cy="' + (hy - 21) + '" r="1.6" fill="#3d3a4a"/>';
     if (look.hat === "crown") s += '<path d="M-9 ' + (hy - 12) + ' L-9 ' + (hy - 21) + ' L-4.5 ' + (hy - 16) + ' L0 ' + (hy - 23) + ' L4.5 ' + (hy - 16) + ' L9 ' + (hy - 21) + ' L9 ' + (hy - 12) + ' Z" fill="#e8b93a" stroke="#c99a2a" stroke-width=".8"/><circle cx="0" cy="' + (hy - 15) + '" r="1.6" fill="#c2453b"/>';
     s += '</g>';
     s += '</g>';
@@ -395,6 +397,26 @@
     });
   }
 
+  // 個人設定的半身像：輪流換表情（眨眼微笑、開心、眨一隻眼、驚訝）
+  // 女生眼尾睫毛、男生眉毛
+  function faceMarks(hy, girl, hair) {
+    if (girl) return '<g stroke="#2f2622" stroke-width=".9" stroke-linecap="round" fill="none"><path d="M-8 ' + (hy - 1) + ' l-1.6 -1.4 M-7.6 ' + (hy - 1.8) + ' l-1 -1.8 M8 ' + (hy - 1) + ' l1.6 -1.4 M7.6 ' + (hy - 1.8) + ' l1 -1.8"/></g>';
+    return '<g stroke="' + hair + '" stroke-width="1.5" stroke-linecap="round"><path d="M-8 ' + (hy - 4) + ' L-3.4 ' + (hy - 4.6) + ' M8 ' + (hy - 4) + ' L3.4 ' + (hy - 4.6) + '"/></g>';
+  }
+  function faces(hy, girl) {
+    var ink = '#2f2622', lip = girl ? '#d0606a' : '#7a4a3a', y = hy + 1;
+    var dot = function (x) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="' + (girl ? 2.1 : 1.6) + '" ry="' + (girl ? 2.6 : 2.1) + '" fill="' + ink + '"/>'; };
+    var arc = function (x) { return '<path d="M' + (x - 2.2) + ' ' + (y + 0.8) + ' q2.2 -3 4.4 0" fill="none" stroke="' + ink + '" stroke-width="1.3" stroke-linecap="round"/>'; };
+    var smile = '<path d="M-2.2 ' + (hy + 6) + ' q2.2 2.4 4.4 0" fill="none" stroke="' + lip + '" stroke-width="1.1" stroke-linecap="round"/>';
+    return '<g class="ex ex0"><g class="blink">' + dot(-5.5) + dot(5.5) + '</g>' + smile + '</g>' +
+      '<g class="ex ex1">' + arc(-5.5) + arc(5.5) + '<path d="M-3 ' + (hy + 5.5) + ' q3 4.2 6 0 Z" fill="' + lip + '"/></g>' +
+      '<g class="ex ex2">' + arc(-5.5) + dot(5.5) + '<path d="M-2.5 ' + (hy + 6) + ' q2.5 2 5 -.6" fill="none" stroke="' + lip + '" stroke-width="1.1" stroke-linecap="round"/></g>' +
+      '<g class="ex ex3"><circle cx="-5.5" cy="' + y + '" r="2.2" fill="' + ink + '"/><circle cx="5.5" cy="' + y + '" r="2.2" fill="' + ink + '"/><ellipse cx="0" cy="' + (hy + 7) + '" rx="1.6" ry="2" fill="' + lip + '"/></g>';
+  }
+  function bust(look, still) {
+    return '<g class="bust">' + character(look, "stand", still ? { smile: true, noPet: true } : { expr: true, noPet: true }) + '</g>';
+  }
+
   /* 角色預覽（角色頁與選單用） */
   function preview(look, opt) {
     opt = opt || {};
@@ -402,5 +424,5 @@
       '<g transform="scale(1.35)">' + character(look, "stand", { smile: true, petX: 24 }) + '</g>';
   }
 
-  window.KaidaScene = { flag: flag, render: render, move: move, preview: preview, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
+  window.KaidaScene = { flag: flag, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
 })();
