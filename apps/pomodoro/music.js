@@ -216,17 +216,19 @@
   function play(kind) {
     if (!kind) { stop(); return true; }
     if (!ensure()) return false;
-    if (ctx.state === "suspended") ctx.resume();
-    if (kind === cur) return true;
+    if (ctx.state !== "running") { try { ctx.resume(); } catch (e) {} }
+    if (kind === cur) { unlock(); return true; }
     stopAll(); cur = kind;
     var t = ctx.currentTime;
     master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(vol, t + 1.2);
     if (kind === "noise") startNoise();
     else { if (kind === "fire") startFire(); else if (kind === "rain") startRain(); else if (kind === "forest") startForest(); nextT = t + 0.1; step = 0; loop(); timer = setInterval(loop, 100); }
+    unlock();
     return true;
   }
   function stop() {
     cur = "";
+    if (silent && !silent.paused) silent.pause();
     if (!ctx) return;
     var t = ctx.currentTime;
     master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0, t + 0.5);
@@ -237,5 +239,26 @@
     if (ctx && cur) master.gain.setTargetAtTime(vol, ctx.currentTime, 0.1);
   }
 
-  window.KaidaMusic = { play: play, stop: stop, setVolume: setVolume, current: function () { return cur; } };
+  // 手機（尤其 iPhone）：要在使用者點擊時解鎖，並放一段無聲的 <audio>，
+  // 不然靜音開關打開時 Web Audio 不會出聲，非同步建立的 AudioContext 也會一直停在 suspended
+  var silent = null;
+  function silentUrl() {
+    var n = 4410, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+    function w(o, str) { for (var i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); }
+    w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+    return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+  }
+  function unlock() {
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+    if (!ensure()) return;
+    if (ctx.state !== "running") { try { ctx.resume(); } catch (e) {} }
+    try {
+      if (!silent) { silent = new Audio(silentUrl()); silent.loop = true; silent.setAttribute("playsinline", ""); silent.volume = 0.01; }
+      if (cur && silent.paused) { var pr = silent.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      if (!cur && !silent.paused) silent.pause();
+    } catch (e) {}
+  }
+
+  window.KaidaMusic = { unlock: unlock, play: play, stop: stop, setVolume: setVolume, current: function () { return cur; } };
 })();
