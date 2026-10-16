@@ -1,0 +1,150 @@
+/* 開達 Kaida 封測作品共用樣式：米色（預設）與 Cyber 兩種外觀，跟主站共用 kaida-skin 設定 */
+:root {
+  --paper: #f2ece1;
+  --surface: #f8f4ec;
+  --sunk: #ebe3d5;
+  --ink: #2a2620;
+  --muted: #7d7365;
+  --line: #ddd2c0;
+  --accent: #2a2620;
+  --accent-ink: #f8f4ec;
+  --signal: #9a7440;
+  --accent-text: #86632f;
+  --pass: #5b7150;
+  --warn: #a5772a;
+  --fail: #a6463a;
+  --glow: none;
+  --r: 2px;
+  --f-display: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --f-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --h-weight: 500;
+  color-scheme: light;
+}
+:root[data-skin="cyber"] {
+  --paper: #07080d;
+  --surface: #0c1018;
+  --sunk: #131a27;
+  --ink: #e8f1ff;
+  --muted: #7f8ca8;
+  --line: #1e2840;
+  --accent: #22e8ff;
+  --accent-ink: #03141a;
+  --signal: #22e8ff;
+  --accent-text: #22e8ff;
+  --pass: #7cffb2;
+  --warn: #ffd23e;
+  --fail: #ff5470;
+  --glow: 0 0 16px rgba(34, 232, 255, .45);
+  --r: 0px;
+  --f-display: "Chakra Petch", "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --h-weight: 700;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent-text); }
+
+.wrap { max-width: 560px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* 頂列 */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 20px;
+}
+.brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--muted); font-size: 13px; }
+.brand svg { width: 26px; height: 26px; flex: none; }
+.brand b { color: var(--ink); font-weight: 600; }
+.toggles { display: flex; gap: 6px; }
+.chip-btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted);
+}
+:root[data-skin="cyber"] .chip-btn { border-radius: 0; }
+
+h1 { font-family: var(--f-display); font-weight: var(--h-weight); font-size: 28px; margin: 0 0 4px; letter-spacing: .01em; }
+h2 { font-family: var(--f-display); font-weight: var(--h-weight); font-size: 18px; margin: 28px 0 10px; }
+.lede { color: var(--muted); margin: 0 0 20px; font-size: 15px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* 卡片與按鈕 */
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 16px; margin-bottom: 12px;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 8px 18px; border-radius: var(--r);
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; cursor: pointer; text-decoration: none; box-shadow: var(--glow);
+}
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); box-shadow: none; }
+.btn.danger { background: transparent; color: var(--fail); border-color: var(--fail); box-shadow: none; }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 分頁 */
+.tabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.tabs button {
+  flex: 1; border: 0; background: none; padding: 10px 4px; cursor: pointer;
+  color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--signal); font-weight: 600; }
+
+/* 表單 */
+label.field { display: block; margin-bottom: 12px; }
+label.field > span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+input[type=text], input[type=time], input[type=number], select, textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--paper); min-height: 44px;
+}
+textarea { min-height: 72px; resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--signal); outline-offset: 2px;
+}
+
+/* 封測任務 */
+.beta { border-style: dashed; }
+.beta h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; }
+.beta ol { margin: 0; padding-left: 0; list-style: none; }
+.beta li { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; font-size: 14px; }
+.beta .tick {
+  flex: none; width: 18px; height: 18px; margin-top: 3px; border: 1.5px solid var(--line); border-radius: 50%;
+  display: grid; place-items: center; font-size: 11px; color: var(--accent-ink);
+}
+.beta li.done .tick { background: var(--pass); border-color: var(--pass); }
+.beta li.done span.txt { color: var(--muted); text-decoration: line-through; }
+
+.tag {
+  display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px;
+  border: 1px solid currentColor; line-height: 1.6; white-space: nowrap;
+}
+.tag.pass { color: var(--pass); } .tag.warn { color: var(--warn); } .tag.fail { color: var(--fail); } .tag.muted { color: var(--muted); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: var(--r);
+  font-size: 14px; max-width: calc(100% - 32px); z-index: 50; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+footer.foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+footer.foot p { margin: 0 0 6px; }
+
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

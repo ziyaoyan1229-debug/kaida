@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n-title="app.title">吃藥了沒</title>
+<meta name="description" content="幫家裡長輩記吃藥時間，按一下「吃了」就記好；超過時間還沒吃，一鍵傳訊息給家人。資料只存在這支手機。">
+<meta name="theme-color" content="#f2ece1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="吃藥了沒">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="../shared/kaida-app.css">
+<style>
+  .hero { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .hero img { flex: none; border-radius: 14px; }
+  .people { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; }
+  .people button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-height: 40px; }
+  .people button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .alert { border: 1.5px solid var(--fail); background: var(--surface); border-radius: var(--r); padding: 14px 16px; margin-bottom: 12px; }
+  .alert p { margin: 0 0 10px; }
+  .alert b { color: var(--fail); }
+
+  .dose { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; }
+  .dose .time { font-family: var(--f-mono); font-size: 20px; font-weight: 600; }
+  .dose .what { min-width: 0; }
+  .dose .name { font-weight: 600; font-size: 17px; }
+  .dose .sub { font-size: 13px; color: var(--muted); }
+  .dose .btn { min-width: 84px; font-size: 17px; }
+  .dose.taken { opacity: .72; }
+  .dose.overdue { border-color: var(--fail); }
+  .dose .thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 4px; vertical-align: middle; margin-right: 6px; border: 1px solid var(--line); cursor: zoom-in; }
+  .linkbtn { background: none; border: 0; padding: 4px 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+  .summary { display: flex; gap: 8px; margin-bottom: 14px; }
+  .summary .stat { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .summary .n { font-family: var(--f-mono); font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .summary .l { font-size: 12px; color: var(--muted); }
+
+  .med-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); }
+  .med-row:first-of-type { border-top: 0; }
+  .med-row .info { flex: 1; min-width: 0; }
+  .med-row img { width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); cursor: zoom-in; }
+  .person-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .person-head h3 { margin: 0; font-size: 18px; font-weight: 600; }
+
+  .times { display: flex; flex-direction: column; gap: 8px; }
+  .time-row { display: flex; gap: 8px; }
+  .time-row input { flex: 1; }
+  .time-row button { flex: none; width: 44px; }
+  .photo-prev { max-width: 100%; max-height: 220px; border-radius: var(--r); border: 1px solid var(--line); display: block; margin-top: 8px; }
+
+  table.hist { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.hist th, table.hist td { padding: 6px 2px; text-align: center; border-bottom: 1px solid var(--line); }
+  table.hist th:first-child, table.hist td:first-child { text-align: left; padding-right: 6px; width: 34%; }
+  table.hist th { font-weight: 500; font-size: 12px; }
+  table.hist .ok { color: var(--pass); font-weight: 700; }
+  table.hist .miss { color: var(--fail); font-weight: 700; }
+  table.hist .na { color: var(--line); }
+
+  .viewer { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: grid; place-items: center; z-index: 40; padding: 16px; }
+  .viewer img { max-width: 100%; max-height: 100%; }
+  .empty { text-align: center; padding: 28px 16px; }
+  .empty img { margin-bottom: 8px; }
+  details.privacy summary { cursor: pointer; font-weight: 600; }
+  details.privacy p, details.privacy li { font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="hero"><img src="logo.svg" alt="" width="64" height="64"><h1 data-i18n="app.title">吃藥了沒</h1></div>
+  <p class="lede" data-i18n="app.lede">幫家裡長輩記吃藥時間。吃完按一下「吃了」；超過時間還沒吃，一鍵傳訊息請家人關心。</p>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="today" aria-selected="true" data-i18n="tab.today">今天</button>
+    <button role="tab" data-tab="meds" aria-selected="false" data-i18n="tab.meds">用藥</button>
+    <button role="tab" data-tab="hist" aria-selected="false" data-i18n="tab.hist">紀錄</button>
+    <button role="tab" data-tab="set" aria-selected="false" data-i18n="tab.set">設定</button>
+  </nav>
+
+  <section id="view-today"></section>
+  <section id="view-meds" hidden></section>
+  <section id="view-hist" hidden></section>
+
+  <section id="view-edit" hidden></section>
+
+  <section id="view-set" hidden>
+    <div class="card">
+      <label class="field"><span data-i18n="set.grace">超過幾分鐘還沒吃，算「逾時」</span>
+        <select id="set-grace"><option>15</option><option>30</option><option>45</option><option>60</option></select></label>
+      <div class="btn-row" id="notify-row">
+        <button class="btn ghost" id="set-notify" type="button" data-i18n="set.notify">開啟這支手機的提醒通知</button>
+      </div>
+      <p class="small muted" style="margin:8px 0 0" data-i18n="set.notifynote">網頁開著時，到時間會響一聲並跳通知。想要關掉網頁也會提醒，請到「用藥」頁按「加到手機行事曆」。</p>
+    </div>
+    <h2 data-i18n="set.backup">備份</h2>
+    <div class="card">
+      <div class="btn-row">
+        <button class="btn ghost" id="set-export" type="button" data-i18n="set.export">匯出備份檔</button>
+        <label class="btn ghost" style="cursor:pointer"><span data-i18n="set.import">從備份檔還原</span><input type="file" id="set-import" accept="application/json,.json" hidden></label>
+      </div>
+      <p class="small muted" style="margin:8px 0 0" data-i18n="set.backupnote">換手機前先匯出，在新手機打開這個網頁再還原。</p>
+    </div>
+    <h2 data-i18n="set.privacyh">隱私說明</h2>
+    <div class="card">
+      <details class="privacy" open>
+        <summary data-i18n="pv.sum">你的健康資料只存在這支手機</summary>
+        <ul>
+          <li data-i18n="pv.1">長輩名字、藥名、吃藥時間、藥袋照片和吃藥紀錄，全部存在這個瀏覽器的本機儲存空間，不會上傳到任何伺服器，開發者也看不到。</li>
+          <li data-i18n="pv.2">這個網頁沒有帳號、沒有追蹤碼、沒有廣告，也沒有用任何 AI 或雲端服務讀取你的照片。</li>
+          <li data-i18n="pv.3">「通知家人」是打開你手機的分享選單（例如 LINE），由你自己選擇傳給誰，網頁本身不會自動傳出任何東西。</li>
+          <li data-i18n="pv.4">清除瀏覽器資料、換手機或使用無痕模式，資料就會消失，請記得匯出備份。</li>
+          <li data-i18n="pv.5">這是用藥提醒工具，不能取代醫師或藥師的指示。用藥有疑問請詢問專業人員。</li>
+        </ul>
+      </details>
+    </div>
+    <button class="btn danger" id="set-clear" type="button" data-i18n="set.clear">清除所有資料</button>
+  </section>
+
+  <h2 data-i18n="beta.h">封測任務</h2>
+  <div class="card beta">
+    <h3 data-i18n="beta.sub">做完這幾件事，再回開達留下回饋</h3>
+    <ol id="beta-tasks"></ol>
+    <p class="small muted" style="margin:8px 0 0" data-i18n="beta.tip">小技巧：新增藥物時，把時間設成比現在早 31 分鐘，就能馬上看到逾時提醒。</p>
+    <p class="small" style="margin:10px 0 0"><a href="../../" data-i18n="beta.back">回開達 Kaida 留回饋 →</a></p>
+  </div>
+
+  <footer class="foot">
+    <p data-i18n="foot.1">吃藥了沒是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。</p>
+    <p data-i18n="foot.2">用藥提醒僅供參考，不能取代醫師或藥師的指示。</p>
+  </footer>
+</div>
+
+<div class="viewer" id="viewer" hidden><img id="viewer-img" alt=""></div>
+
+<script src="../shared/kaida-app.js"></script>
+<script>
+(function () {
+  var K = window.Kaida, t = K.t, esc = K.esc;
+
+  K.addStrings({
+    zh: {
+      "app.title": "吃藥了沒",
+      "app.lede": "幫家裡長輩記吃藥時間。吃完按一下「吃了」；超過時間還沒吃，一鍵傳訊息請家人關心。",
+      "tab.today": "今天", "tab.meds": "用藥", "tab.hist": "紀錄", "tab.set": "設定",
+      "all": "全部",
+      "sum.left": "今天還要吃", "sum.done": "已經吃了", "sum.late": "逾時未吃",
+      "st.taken": "{time} 吃了", "st.due": "該吃了", "st.soon": "快到了", "st.later": "還沒到", "st.late": "超過 {m}",
+      "btn.took": "吃了", "btn.undo": "改成還沒吃",
+      "alert.one": "<b>{who}</b> {time} 的 {med} 已經超過 {m} 分鐘還沒吃。",
+      "alert.many": "有 <b>{n} 份藥</b> 超過時間還沒吃：{list}。",
+      "alert.share": "通知家人", "alert.copied": "訊息已複製，可以貼到家人群組",
+      "share.msg": "【吃藥了沒】{who} {time} 的{med}{dose} 已經超過 {m}還沒按「吃了」，方便的話打個電話關心一下。",
+      "share.title": "吃藥了沒提醒",
+      "empty.h": "還沒有用藥資料", "empty.p": "先新增一位長輩和他要吃的藥，之後每天打開這頁就知道吃了沒。",
+      "empty.add": "新增長輩", "empty.demo": "先看範例",
+      "today.allDone": "今天的藥都吃完了，辛苦了。", "today.none": "今天沒有要吃的藥。",
+      "next": "下一次：{time} {who} {med}",
+      "meds.addPerson": "新增長輩", "meds.addMed": "新增藥物", "meds.ics": "加到手機行事曆", "meds.editPerson": "改名",
+      "meds.delPerson": "刪除", "meds.noMeds": "還沒有藥，按「新增藥物」。", "meds.edit": "編輯",
+      "meds.icsnote": "行事曆會在每天吃藥時間響鈴，逾時後再響一次，關掉網頁也會提醒。",
+      "meds.demo": "範例",
+      "p.name": "怎麼稱呼這位長輩", "p.nameph": "例如：媽媽、阿公", "p.save": "儲存", "p.cancel": "取消",
+      "p.delconfirm": "要刪除「{who}」和他所有的藥和紀錄嗎？",
+      "m.title.new": "新增藥物", "m.title.edit": "編輯藥物",
+      "m.who": "誰要吃", "m.name": "藥名", "m.nameph": "例如：降血壓藥（脈優）", "m.dose": "劑量", "m.doseph": "例如：1 顆、飯後",
+      "m.times": "每天幾點吃", "m.addTime": "再加一個時間", "m.note": "備註（選填）", "m.noteph": "例如：跟早餐一起吃、不要配葡萄柚汁",
+      "m.photo": "藥袋照片（選填）", "m.photoBtn": "拍照或選照片", "m.photoDel": "移除照片",
+      "m.photonote": "照片只存在這支手機，方便長輩或家人對照藥袋。目前不會自動辨識藥名，請自己輸入。",
+      "m.save": "儲存", "m.delete": "刪除這個藥", "m.delconfirm": "要刪除「{med}」嗎？",
+      "m.needName": "請輸入藥名", "m.needTime": "至少要有一個時間", "m.needPerson": "請先新增長輩",
+      "m.saved": "已儲存", "m.photoErr": "照片讀不到，換一張試試",
+      "h.title": "最近 7 天", "h.rate": "按時吃藥 {p}%（{a}/{b}）", "h.none": "還沒有紀錄。",
+      "h.legend": "✓ 有吃　✗ 沒按吃了　· 還沒到或還沒建立",
+      "set.grace": "超過幾分鐘還沒吃，算「逾時」",
+      "set.notify": "開啟這支手機的提醒通知", "set.notifyOn": "通知已開啟", "set.notifyDenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
+      "set.notifynote": "網頁開著時，到時間會響一聲並跳通知。想要關掉網頁也會提醒，請到「用藥」頁按「加到手機行事曆」。",
+      "set.backup": "備份", "set.export": "匯出備份檔", "set.import": "從備份檔還原",
+      "set.backupnote": "換手機前先匯出，在新手機打開這個網頁再還原。",
+      "set.imported": "已還原備份", "set.importErr": "這個檔案不是吃藥了沒的備份",
+      "set.privacyh": "隱私說明",
+      "set.clear": "清除所有資料", "set.clearconfirm": "要清除所有長輩、藥物、照片和紀錄嗎？這個動作沒辦法復原。", "set.cleared": "已清除",
+      "pv.sum": "你的健康資料只存在這支手機",
+      "pv.1": "長輩名字、藥名、吃藥時間、藥袋照片和吃藥紀錄，全部存在這個瀏覽器的本機儲存空間，不會上傳到任何伺服器，開發者也看不到。",
+      "pv.2": "這個網頁沒有帳號、沒有追蹤碼、沒有廣告，也沒有用任何 AI 或雲端服務讀取你的照片。",
+      "pv.3": "「通知家人」是打開你手機的分享選單（例如 LINE），由你自己選擇傳給誰，網頁本身不會自動傳出任何東西。",
+      "pv.4": "清除瀏覽器資料、換手機或使用無痕模式，資料就會消失，請記得匯出備份。",
+      "pv.5": "這是用藥提醒工具，不能取代醫師或藥師的指示。用藥有疑問請詢問專業人員。",
+      "n.dueTitle": "該吃藥了", "n.dueBody": "{who} {time}：{med}{dose}",
+      "n.lateTitle": "還沒吃藥", "n.lateBody": "{who} {time} 的 {med} 已經超過 {m} 分鐘",
+      "beta.h": "封測任務", "beta.sub": "做完這幾件事，再回開達留下回饋",
+      "beta.t1": "建立一位長輩的用藥資料", "beta.t2": "拍一張藥袋照片存進藥物裡", "beta.t3": "按一次「吃了」",
+      "beta.t4": "讓一份藥逾時，按「通知家人」看看訊息",
+      "beta.tip": "小技巧：新增藥物時，把時間設成比現在早 31 分鐘，就能馬上看到逾時提醒。",
+      "beta.back": "回開達 Kaida 留回饋 →",
+      "foot.1": "吃藥了沒是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。",
+      "foot.2": "用藥提醒僅供參考，不能取代醫師或藥師的指示。",
+      "demo.p1": "媽媽", "demo.p2": "阿公",
+      "demo.m1": "降血壓藥", "demo.d1": "1 顆，早餐後", "demo.m2": "鈣片", "demo.d2": "1 錠，晚餐後",
+      "demo.m3": "降血糖藥", "demo.d3": "半顆，飯前 30 分鐘", "demo.loaded": "已載入範例，名字和藥都可以改或刪",
+      "wd": "日,一,二,三,四,五,六"
+    },
+    en: {
+      "app.title": "Pill Time",
+      "app.lede": "Keep track of an older family member's medication. Tap \"Taken\" after each dose; if one is late, send the family a heads-up in one tap.",
+      "tab.today": "Today", "tab.meds": "Meds", "tab.hist": "History", "tab.set": "Settings",
+      "all": "All",
+      "sum.left": "Still to take", "sum.done": "Taken", "sum.late": "Late",
+      "st.taken": "Taken {time}", "st.due": "Due now", "st.soon": "Coming up", "st.later": "Later", "st.late": "{m} late",
+      "btn.took": "Taken", "btn.undo": "Mark not taken",
+      "alert.one": "<b>{who}</b> hasn't taken {med} ({time}), {m}+ minutes late.",
+      "alert.many": "<b>{n} doses</b> are late: {list}.",
+      "alert.share": "Tell family", "alert.copied": "Message copied. Paste it into the family chat.",
+      "share.msg": "[Pill Time] {who} hasn't tapped \"Taken\" for {med}{dose} scheduled at {time}. It's {m} late, maybe give them a call.",
+      "share.title": "Pill Time reminder",
+      "empty.h": "No medications yet", "empty.p": "Add a family member and their meds, then open this page each day to see what's been taken.",
+      "empty.add": "Add a person", "empty.demo": "Try an example",
+      "today.allDone": "All of today's doses are taken. Nice work.", "today.none": "No doses scheduled today.",
+      "next": "Next: {time} {who} {med}",
+      "meds.addPerson": "Add a person", "meds.addMed": "Add medication", "meds.ics": "Add to phone calendar", "meds.editPerson": "Rename",
+      "meds.delPerson": "Delete", "meds.noMeds": "No meds yet. Tap \"Add medication\".", "meds.edit": "Edit",
+      "meds.icsnote": "Your calendar will ring at each dose time and again if it's late, even with this page closed.",
+      "meds.demo": "Example",
+      "p.name": "What do you call them?", "p.nameph": "e.g. Mom, Grandpa", "p.save": "Save", "p.cancel": "Cancel",
+      "p.delconfirm": "Delete \"{who}\" and all their meds and history?",
+      "m.title.new": "Add medication", "m.title.edit": "Edit medication",
+      "m.who": "Who takes it", "m.name": "Medication", "m.nameph": "e.g. Blood pressure pill", "m.dose": "Dose", "m.doseph": "e.g. 1 tablet, after meals",
+      "m.times": "Times each day", "m.addTime": "Add another time", "m.note": "Note (optional)", "m.noteph": "e.g. with breakfast, no grapefruit juice",
+      "m.photo": "Pill bag photo (optional)", "m.photoBtn": "Take or choose photo", "m.photoDel": "Remove photo",
+      "m.photonote": "The photo stays on this phone so family can check the bag. It doesn't read the label automatically, so type the name yourself.",
+      "m.save": "Save", "m.delete": "Delete this medication", "m.delconfirm": "Delete \"{med}\"?",
+      "m.needName": "Enter the medication name", "m.needTime": "Add at least one time", "m.needPerson": "Add a person first",
+      "m.saved": "Saved", "m.photoErr": "Couldn't read that photo, try another",
+      "h.title": "Last 7 days", "h.rate": "On time {p}% ({a}/{b})", "h.none": "No history yet.",
+      "h.legend": "✓ taken  ✗ not marked  · not yet / not set up",
+      "set.grace": "Count a dose as late after",
+      "set.notify": "Turn on reminders on this phone", "set.notifyOn": "Reminders are on", "set.notifyDenied": "Notifications are blocked. You can allow them in browser settings.",
+      "set.notifynote": "While this page is open, it chimes and notifies at dose time. For reminders with the page closed, use \"Add to phone calendar\" on the Meds tab.",
+      "set.backup": "Backup", "set.export": "Export backup", "set.import": "Restore from backup",
+      "set.backupnote": "Export before switching phones, then open this page on the new phone and restore.",
+      "set.imported": "Backup restored", "set.importErr": "That file isn't a Pill Time backup",
+      "set.privacyh": "Privacy",
+      "set.clear": "Delete all data", "set.clearconfirm": "Delete every person, medication, photo and record? This can't be undone.", "set.cleared": "Deleted",
+      "pv.sum": "Your health data stays on this phone",
+      "pv.1": "Names, medications, times, pill bag photos and history are stored only in this browser. Nothing is uploaded to a server and the developer can't see it.",
+      "pv.2": "No accounts, no trackers, no ads, and no AI or cloud service reads your photos.",
+      "pv.3": "\"Tell family\" opens your phone's share menu (e.g. LINE). You choose who gets it; the page never sends anything by itself.",
+      "pv.4": "Clearing browser data, switching phones or using private mode erases everything, so export a backup.",
+      "pv.5": "This is a reminder tool and does not replace advice from a doctor or pharmacist.",
+      "n.dueTitle": "Time for meds", "n.dueBody": "{who} {time}: {med}{dose}",
+      "n.lateTitle": "Dose not taken", "n.lateBody": "{who}'s {med} ({time}) is {m}+ min late",
+      "beta.h": "Beta tasks", "beta.sub": "Do these, then leave feedback on Kaida",
+      "beta.t1": "Set up one person's medication", "beta.t2": "Save a photo of a pill bag", "beta.t3": "Tap \"Taken\" once",
+      "beta.t4": "Let a dose go late and try \"Tell family\"",
+      "beta.tip": "Tip: when adding a medication, set the time 31 minutes ago to see the late alert right away.",
+      "beta.back": "Back to Kaida to leave feedback →",
+      "foot.1": "Pill Time is one of Kaida's first beta apps. It's a plain web page with no account; your data stays in your browser.",
+      "foot.2": "Reminders are for convenience only and don't replace a doctor's or pharmacist's instructions.",
+      "demo.p1": "Mom", "demo.p2": "Grandpa",
+      "demo.m1": "Blood pressure pill", "demo.d1": "1 tablet after breakfast", "demo.m2": "Calcium", "demo.d2": "1 tablet after dinner",
+      "demo.m3": "Diabetes pill", "demo.d3": "half tablet, 30 min before meals", "demo.loaded": "Example loaded. Rename or delete anything.",
+      "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat"
+    }
+  });
+
+  var STORE = "kaida-meds-v1";
+  var MIN = 60000;
+  var data = K.load(STORE, null) || {};
+  function norm() {
+    data.v = 1;
+    data.people = data.people || [];
+    data.meds = data.meds || [];
+    data.log = data.log || {};
+    data.tasks = data.tasks || {};
+    data.settings = data.settings || { grace: 30 };
+    data.notified = data.notified || {};
+  }
+  norm();
+  function persist() {
+    if (!K.save(STORE, data)) K.toast("⚠ 儲存空間不夠，照片可能太大");
+  }
+  function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+  function person(id) { return data.people.find(function (p) { return p.id === id; }); }
+  function grace() { return Number(data.settings.grace) || 30; }
+  function hm(d) { return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+  function atTime(day, time) { var p = time.split(":"); var d = new Date(day); d.setHours(+p[0], +p[1], 0, 0); return d; }
+  function dur(mins) {
+    mins = Math.floor(mins);
+    var h = Math.floor(mins / 60), mm = mins % 60, en = K.lang() === "en";
+    if (!h) return en ? mins + " min" : mins + " 分鐘";
+    return en ? h + " h" + (mm ? " " + mm + " min" : "") : h + " 小時" + (mm ? " " + mm + " 分" : "");
+  }
+  function doseLabel(m) { return m.dose ? "（" + m.dose + "）" : ""; }
+  function doseLabelEn(m) { return m.dose ? " (" + m.dose + ")" : ""; }
+  function dl(m) { return K.lang() === "en" ? doseLabelEn(m) : doseLabel(m); }
+
+  var filter = "all";
+  var tab = "today";
+
+  // 今天所有的服藥時段
+  function dosesFor(day) {
+    var out = [];
+    data.meds.forEach(function (m) {
+      if (!person(m.pid)) return;
+      if (m.created && K.dayKey(new Date(m.created)) > K.dayKey(day)) return;
+      m.times.forEach(function (tm) { out.push({ med: m, time: tm, key: m.id + "|" + tm, at: atTime(day, tm) }); });
+    });
+    out.sort(function (a, b) { return a.at - b.at || a.med.name.localeCompare(b.med.name); });
+    return out;
+  }
+  function takenAt(day, key) { return (data.log[K.dayKey(day)] || {})[key]; }
+  function status(d, now) {
+    var tk = takenAt(now, d.key);
+    if (tk) return { s: "taken", label: t("st.taken", { time: hm(new Date(tk)) }), cls: "pass" };
+    var diff = (now - d.at) / MIN;
+    if (diff >= grace()) return { s: "late", label: t("st.late", { m: dur(diff) }), cls: "fail", mins: Math.floor(diff) };
+    if (diff >= 0) return { s: "due", label: t("st.due"), cls: "warn" };
+    if (diff > -60) return { s: "soon", label: t("st.soon"), cls: "muted" };
+    return { s: "later", label: t("st.later"), cls: "muted" };
+  }
+
+  function renderPeopleChips() {
+    if (data.people.length < 2) return "";
+    var b = '<button type="button" data-filter="all" aria-pressed="' + (filter === "all") + '">' + esc(t("all")) + '</button>';
+    return '<div class="people">' + b + data.people.map(function (p) {
+      return '<button type="button" data-filter="' + p.id + '" aria-pressed="' + (filter === p.id) + '">' + esc(p.name) + '</button>';
+    }).join("") + '</div>';
+  }
+
+  function renderToday() {
+    var el = document.getElementById("view-today");
+    if (!data.meds.length) {
+      el.innerHTML = '<div class="card empty"><img src="logo.svg" alt="" width="56" height="56"><h2 style="margin:4px 0">' + esc(t("empty.h")) + '</h2>' +
+        '<p class="muted small">' + esc(t("empty.p")) + '</p><div class="btn-row" style="justify-content:center">' +
+        '<button class="btn" type="button" data-act="add-start">' + esc(t("empty.add")) + '</button>' +
+        '<button class="btn ghost" type="button" data-act="demo">' + esc(t("empty.demo")) + '</button></div></div>';
+      return;
+    }
+    var now = new Date();
+    if (filter !== "all" && !person(filter)) filter = "all";
+    var doses = dosesFor(now).filter(function (d) { return filter === "all" || d.med.pid === filter; });
+    var left = 0, done = 0, late = [];
+    doses.forEach(function (d) {
+      d.st = status(d, now);
+      if (d.st.s === "taken") done++; else left++;
+      if (d.st.s === "late") late.push(d);
+    });
+    var html = renderPeopleChips();
+    html += '<div class="summary"><div class="stat"><div class="n">' + left + '</div><div class="l">' + esc(t("sum.left")) + '</div></div>' +
+      '<div class="stat"><div class="n">' + done + '</div><div class="l">' + esc(t("sum.done")) + '</div></div>' +
+      '<div class="stat"><div class="n" style="color:' + (late.length ? "var(--fail)" : "inherit") + '">' + late.length + '</div><div class="l">' + esc(t("sum.late")) + '</div></div></div>';
+
+    if (late.length) {
+      var msg = late.length === 1
+        ? t("alert.one", { who: esc(person(late[0].med.pid).name), time: late[0].time, med: esc(late[0].med.name), m: grace() })
+        : t("alert.many", { n: late.length, list: late.map(function (d) { return esc(person(d.med.pid).name) + " " + d.time + " " + esc(d.med.name); }).join("、") });
+      html += '<div class="alert" role="alert"><p>' + msg + '</p><button class="btn" type="button" data-act="share">' + esc(t("alert.share")) + '</button></div>';
+    }
+
+    if (!doses.length) html += '<p class="muted">' + esc(t("today.none")) + '</p>';
+    else if (!left) html += '<p>' + esc(t("today.allDone")) + '</p>';
+    else {
+      var nx = doses.find(function (d) { return d.st.s === "soon" || d.st.s === "later"; });
+      if (nx) html += '<p class="small muted">' + esc(t("next", { time: nx.time, who: person(nx.med.pid).name, med: nx.med.name })) + '</p>';
+    }
+
+    html += doses.map(function (d) {
+      var p = person(d.med.pid), taken = d.st.s === "taken";
+      return '<div class="card dose ' + (taken ? "taken" : "") + (d.st.s === "late" ? " overdue" : "") + '">' +
+        '<div class="time">' + d.time + '</div>' +
+        '<div class="what"><div class="name">' + (d.med.photo ? '<img class="thumb" src="' + d.med.photo + '" alt="" data-view="' + d.med.id + '">' : "") + esc(d.med.name) + '</div>' +
+        '<div class="sub">' + esc(p.name) + (d.med.dose ? " · " + esc(d.med.dose) : "") + '</div>' +
+        '<span class="tag ' + d.st.cls + '">' + esc(d.st.label) + '</span>' +
+        (taken ? ' <button class="linkbtn" type="button" data-undo="' + esc(d.key) + '">' + esc(t("btn.undo")) + '</button>' : "") + '</div>' +
+        (taken ? '<span aria-hidden="true" style="font-size:22px;color:var(--pass)">✓</span>'
+               : '<button class="btn" type="button" data-took="' + esc(d.key) + '">' + esc(t("btn.took")) + '</button>') +
+        '</div>';
+    }).join("");
+    el.innerHTML = html;
+  }
+
+  function renderMeds() {
+    var el = document.getElementById("view-meds");
+    var html = '<div class="btn-row" style="margin-bottom:14px"><button class="btn" type="button" data-act="add-med">' + esc(t("meds.addMed")) + '</button>' +
+      '<button class="btn ghost" type="button" data-act="add-person">' + esc(t("meds.addPerson")) + '</button></div>';
+    if (!data.people.length) html += '<div class="card empty"><p class="muted">' + esc(t("empty.p")) + '</p><button class="btn ghost" type="button" data-act="demo">' + esc(t("empty.demo")) + '</button></div>';
+    html += data.people.map(function (p) {
+      var meds = data.meds.filter(function (m) { return m.pid === p.id; });
+      return '<div class="card"><div class="person-head"><h3>' + esc(p.name) + (p.demo ? ' <span class="tag muted">' + esc(t("meds.demo")) + '</span>' : "") + '</h3>' +
+        '<div><button class="linkbtn" type="button" data-rename="' + p.id + '">' + esc(t("meds.editPerson")) + '</button>　' +
+        '<button class="linkbtn" type="button" data-delperson="' + p.id + '">' + esc(t("meds.delPerson")) + '</button></div></div>' +
+        (meds.length ? meds.map(function (m) {
+          return '<div class="med-row">' + (m.photo ? '<img src="' + m.photo + '" alt="" data-view="' + m.id + '">' : "") +
+            '<div class="info"><b>' + esc(m.name) + '</b>' + (m.dose ? ' <span class="muted small">' + esc(m.dose) + '</span>' : "") +
+            '<div class="mono small">' + m.times.join("、") + '</div>' + (m.note ? '<div class="small muted">' + esc(m.note) + '</div>' : "") + '</div>' +
+            '<button class="btn ghost" type="button" data-editmed="' + m.id + '">' + esc(t("meds.edit")) + '</button></div>';
+        }).join("") : '<p class="small muted">' + esc(t("meds.noMeds")) + '</p>') +
+        (meds.length ? '<div style="margin-top:10px"><button class="btn ghost" type="button" data-ics="' + p.id + '">📅 ' + esc(t("meds.ics")) + '</button>' +
+          '<p class="small muted" style="margin:6px 0 0">' + esc(t("meds.icsnote")) + '</p></div>' : "") +
+        '</div>';
+    }).join("");
+    el.innerHTML = html;
+  }
+
+  function renderHist() {
+    var el = document.getElementById("view-hist");
+    if (!data.meds.length) { el.innerHTML = '<p class="muted">' + esc(t("h.none")) + '</p>'; return; }
+    var wd = t("wd").split(","), days = [];
+    for (var i = 6; i >= 0; i--) { var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - i); days.push(d); }
+    var now = new Date();
+    var html = renderPeopleChips();
+    data.people.filter(function (p) { return filter === "all" || filter === p.id; }).forEach(function (p) {
+      var meds = data.meds.filter(function (m) { return m.pid === p.id; });
+      if (!meds.length) return;
+      var ok = 0, total = 0, rows = "";
+      meds.forEach(function (m) {
+        m.times.forEach(function (tm) {
+          var key = m.id + "|" + tm;
+          rows += '<tr><td>' + esc(m.name) + ' <span class="mono muted">' + tm + '</span></td>' + days.map(function (day) {
+            var at = atTime(day, tm);
+            var created = m.created ? new Date(m.created) : null;
+            if (created && K.dayKey(created) > K.dayKey(day)) return '<td class="na">·</td>';
+            if ((data.log[K.dayKey(day)] || {})[key]) { ok++; total++; return '<td class="ok">✓</td>'; }
+            if ((now - at) / MIN >= grace()) { total++; return '<td class="miss">✗</td>'; }
+            return '<td class="na">·</td>';
+          }).join("") + '</tr>';
+        });
+      });
+      html += '<div class="card"><div class="person-head"><h3>' + esc(p.name) + '</h3>' +
+        (total ? '<span class="tag ' + (ok / total >= .9 ? "pass" : ok / total >= .7 ? "warn" : "fail") + '">' + esc(t("h.rate", { p: Math.round(ok / total * 100), a: ok, b: total })) + '</span>' : "") + '</div>' +
+        '<div style="overflow-x:auto"><table class="hist"><thead><tr><th></th>' + days.map(function (d) { return '<th>' + wd[d.getDay()] + '<br><span class="muted mono">' + d.getDate() + '</span></th>'; }).join("") +
+        '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+    });
+    html += '<p class="small muted">' + esc(t("h.legend")) + '</p>';
+    el.innerHTML = html;
+  }
+
+  /* 編輯畫面：長輩或藥物 */
+  var editing = null;
+  function openPersonEditor(pid, thenMed) {
+    var p = pid ? person(pid) : null;
+    editing = { kind: "person", id: pid, thenMed: thenMed };
+    var el = document.getElementById("view-edit");
+    el.innerHTML = '<h2>' + esc(p ? t("meds.editPerson") : t("meds.addPerson")) + '</h2><div class="card">' +
+      '<label class="field"><span>' + esc(t("p.name")) + '</span><input type="text" id="e-pname" maxlength="20" placeholder="' + esc(t("p.nameph")) + '" value="' + esc(p ? p.name : "") + '"></label>' +
+      '<div class="btn-row"><button class="btn" type="button" data-act="save-person">' + esc(t("p.save")) + '</button>' +
+      '<button class="btn ghost" type="button" data-act="cancel">' + esc(t("p.cancel")) + '</button></div></div>';
+    showView("edit");
+    setTimeout(function () { var i = document.getElementById("e-pname"); if (i) i.focus(); }, 50);
+  }
+  var draftPhoto = null;
+  function openMedEditor(mid, pid) {
+    if (!data.people.length) { openPersonEditor(null, true); return; }
+    var m = mid ? data.meds.find(function (x) { return x.id === mid; }) : null;
+    editing = { kind: "med", id: mid };
+    draftPhoto = m ? m.photo || null : null;
+    var who = m ? m.pid : (pid || (filter !== "all" ? filter : data.people[data.people.length - 1].id));
+    var times = m ? m.times.slice() : [defaultTime()];
+    var el = document.getElementById("view-edit");
+    el.innerHTML = '<h2>' + esc(t(m ? "m.title.edit" : "m.title.new")) + '</h2><div class="card">' +
+      '<label class="field"><span>' + esc(t("m.who")) + '</span><select id="e-who">' + data.people.map(function (p) {
+        return '<option value="' + p.id + '"' + (p.id === who ? " selected" : "") + '>' + esc(p.name) + '</option>';
+      }).join("") + '</select></label>' +
+      '<label class="field"><span>' + esc(t("m.name")) + '</span><input type="text" id="e-name" maxlength="40" placeholder="' + esc(t("m.nameph")) + '" value="' + esc(m ? m.name : "") + '"></label>' +
+      '<label class="field"><span>' + esc(t("m.dose")) + '</span><input type="text" id="e-dose" maxlength="40" placeholder="' + esc(t("m.doseph")) + '" value="' + esc(m ? m.dose : "") + '"></label>' +
+      '<div class="field"><span class="small muted" style="display:block;margin-bottom:4px">' + esc(t("m.times")) + '</span><div class="times" id="e-times"></div>' +
+      '<button class="linkbtn" type="button" data-act="add-time">＋ ' + esc(t("m.addTime")) + '</button></div>' +
+      '<label class="field"><span>' + esc(t("m.note")) + '</span><input type="text" id="e-note" maxlength="80" placeholder="' + esc(t("m.noteph")) + '" value="' + esc(m ? m.note : "") + '"></label>' +
+      '<div class="field"><span class="small muted" style="display:block;margin-bottom:4px">' + esc(t("m.photo")) + '</span>' +
+      '<div class="btn-row"><label class="btn ghost" style="cursor:pointer">📷 ' + esc(t("m.photoBtn")) + '<input type="file" id="e-photo" accept="image/*" capture="environment" hidden></label>' +
+      '<button class="btn ghost" type="button" data-act="photo-del" id="e-photo-del">' + esc(t("m.photoDel")) + '</button></div>' +
+      '<img class="photo-prev" id="e-photo-prev" alt="">' +
+      '<p class="small muted" style="margin:6px 0 0">' + esc(t("m.photonote")) + '</p></div>' +
+      '<div class="btn-row"><button class="btn" type="button" data-act="save-med">' + esc(t("m.save")) + '</button>' +
+      '<button class="btn ghost" type="button" data-act="cancel">' + esc(t("p.cancel")) + '</button></div>' +
+      (m ? '<p style="margin:16px 0 0"><button class="btn danger" type="button" data-act="del-med">' + esc(t("m.delete")) + '</button></p>' : "") +
+      '</div>';
+    renderTimes(times);
+    renderPhoto();
+    document.getElementById("e-photo").addEventListener("change", onPhoto);
+    showView("edit");
+  }
+  function defaultTime() { var d = new Date(); d.setMinutes(0); d.setHours(d.getHours() + 1); return hm(d); }
+  function renderTimes(times) {
+    var box = document.getElementById("e-times");
+    box.innerHTML = times.map(function (tm, i) {
+      return '<div class="time-row"><input type="time" value="' + tm + '" aria-label="' + esc(t("m.times")) + ' ' + (i + 1) + '">' +
+        (times.length > 1 ? '<button class="btn ghost" type="button" data-deltime="' + i + '" aria-label="×">×</button>' : "") + '</div>';
+    }).join("");
+  }
+  function currentTimes() { return Array.prototype.map.call(document.querySelectorAll("#e-times input"), function (i) { return i.value; }); }
+  function renderPhoto() {
+    var img = document.getElementById("e-photo-prev");
+    img.hidden = !draftPhoto; if (draftPhoto) img.src = draftPhoto;
+    document.getElementById("e-photo-del").hidden = !draftPhoto;
+  }
+  function onPhoto(e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onload = function () {
+      var max = 720, s = Math.min(1, max / Math.max(img.width, img.height));
+      var c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      draftPhoto = c.toDataURL("image/jpeg", 0.72);
+      URL.revokeObjectURL(url); renderPhoto();
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); K.toast(t("m.photoErr")); };
+    img.src = url;
+  }
+
+  function saveMed() {
+    var name = document.getElementById("e-name").value.trim();
+    var times = currentTimes().filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
+    if (!name) { K.toast(t("m.needName")); document.getElementById("e-name").focus(); return; }
+    if (!times.length) { K.toast(t("m.needTime")); return; }
+    var m = editing.id ? data.meds.find(function (x) { return x.id === editing.id; }) : null;
+    if (!m) { m = { id: uid(), created: Date.now() }; data.meds.push(m); }
+    m.pid = document.getElementById("e-who").value;
+    m.name = name;
+    m.dose = document.getElementById("e-dose").value.trim();
+    m.note = document.getElementById("e-note").value.trim();
+    m.times = times;
+    m.photo = draftPhoto || null;
+    // 今天新增的藥，把今天的時段也算進來
+    if (m.created && K.dayKey(new Date(m.created)) === K.dayKey()) m.created = new Date().setHours(0, 0, 0, 0);
+    data.tasks.t1 = true;
+    if (m.photo) data.tasks.t2 = true;
+    persist(); K.toast(t("m.saved"));
+    editing = null; showView("meds");
+  }
+
+  function loadDemo() {
+    var p1 = { id: uid(), name: t("demo.p1"), demo: true }, p2 = { id: uid(), name: t("demo.p2"), demo: true };
+    var today0 = new Date().setHours(0, 0, 0, 0);
+    data.people.push(p1, p2);
+    var meds = [
+      { id: uid(), pid: p1.id, name: t("demo.m1"), dose: t("demo.d1"), times: ["08:00"], note: "", created: today0 - 6 * 864e5 },
+      { id: uid(), pid: p1.id, name: t("demo.m2"), dose: t("demo.d2"), times: ["19:00"], note: "", created: today0 - 6 * 864e5 },
+      { id: uid(), pid: p2.id, name: t("demo.m3"), dose: t("demo.d3"), times: ["07:30", "17:30"], note: "", created: today0 - 6 * 864e5 }
+    ];
+    meds.forEach(function (m) { data.meds.push(m); });
+    // 範例的過去幾天紀錄，偶爾漏吃一次
+    for (var i = 6; i >= 1; i--) {
+      var d = new Date(today0 - i * 864e5), k = K.dayKey(d);
+      data.log[k] = data.log[k] || {};
+      meds.forEach(function (m, mi) {
+        m.times.forEach(function (tm, ti) {
+          if ((i + mi + ti) % 5 === 0) return;
+          var at = atTime(d, tm); at.setMinutes(at.getMinutes() + 3 + ((i * 7 + mi) % 20));
+          data.log[k][m.id + "|" + tm] = at.getTime();
+        });
+      });
+    }
+    // 今天已經過的時段先打勾，只留最近一份沒吃，好示範逾時提醒
+    var now = new Date(), tk = K.dayKey(now), past = [];
+    data.log[tk] = data.log[tk] || {};
+    meds.forEach(function (m) { m.times.forEach(function (tm) { var at = atTime(now, tm); if (at < now) past.push({ key: m.id + "|" + tm, at: at }); }); });
+    past.sort(function (a, b) { return a.at - b.at; });
+    past.slice(0, -1).forEach(function (x) { data.log[tk][x.key] = x.at.getTime() + 5 * MIN; });
+    persist(); K.toast(t("demo.loaded"));
+    render();
+  }
+
+  function setTaken(key, on) {
+    var k = K.dayKey();
+    data.log[k] = data.log[k] || {};
+    if (on) { data.log[k][key] = Date.now(); data.tasks.t3 = true; } else delete data.log[k][key];
+    persist(); render();
+  }
+
+  function shareLate() {
+    var now = new Date();
+    var late = dosesFor(now).filter(function (d) { return (filter === "all" || d.med.pid === filter) && status(d, now).s === "late"; });
+    if (!late.length) return;
+    var text = late.map(function (d) {
+      return t("share.msg", { who: person(d.med.pid).name, time: d.time, med: d.med.name, dose: dl(d.med), m: dur((now - d.at) / MIN) });
+    }).join("\n");
+    data.tasks.t4 = true; persist(); renderTasks();
+    if (navigator.share) {
+      navigator.share({ title: t("share.title"), text: text }).catch(function () {});
+      return;
+    }
+    copyText(text);
+    window.open("https://line.me/R/share?text=" + encodeURIComponent(text), "_blank", "noopener");
+  }
+  function copyText(text) {
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { K.toast(t("alert.copied")); }, function () {});
+  }
+
+  function downloadIcs(pid) {
+    var p = person(pid), meds = data.meds.filter(function (m) { return m.pid === pid; });
+    var stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    var day = K.dayKey().replace(/-/g, "");
+    function escI(s) { return String(s).replace(/\\/g, "\\\\").replace(/[,;]/g, "\\$&").replace(/\n/g, "\\n"); }
+    var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kaida//Pill Time//ZH", "CALSCALE:GREGORIAN", "X-WR-CALNAME:" + escI(t("app.title") + " · " + p.name)];
+    meds.forEach(function (m) {
+      m.times.forEach(function (tm) {
+        var summary = "💊 " + p.name + " " + m.name + (m.dose ? " " + m.dose : "");
+        lines.push("BEGIN:VEVENT", "UID:" + m.id + "-" + tm.replace(":", "") + "@kaida-meds", "DTSTAMP:" + stamp,
+          "DTSTART:" + day + "T" + tm.replace(":", "") + "00", "DURATION:PT15M", "RRULE:FREQ=DAILY",
+          "SUMMARY:" + escI(summary), "DESCRIPTION:" + escI((m.note ? m.note + "\n" : "") + location.href),
+          "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:PT0M", "DESCRIPTION:" + escI(summary), "END:VALARM",
+          "BEGIN:VALARM", "ACTION:DISPLAY", "TRIGGER:PT" + grace() + "M", "DESCRIPTION:" + escI(t("n.lateTitle") + " · " + summary), "END:VALARM",
+          "END:VEVENT");
+      });
+    });
+    lines.push("END:VCALENDAR");
+    var blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "pill-time-" + p.name + ".ics";
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  function renderTasks() {
+    document.getElementById("beta-tasks").innerHTML = ["t1", "t2", "t3", "t4"].map(function (id) {
+      var done = !!data.tasks[id];
+      return '<li class="' + (done ? "done" : "") + '"><span class="tick">' + (done ? "✓" : "") + '</span><span class="txt">' + esc(t("beta." + id)) + '</span></li>';
+    }).join("");
+  }
+
+  function showView(v) {
+    ["today", "meds", "hist", "set", "edit"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
+    if (v !== "edit") {
+      tab = v; editing = null;
+      document.querySelectorAll(".tabs [data-tab]").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === v); });
+    }
+    render();
+    window.scrollTo(0, 0);
+  }
+  function render() {
+    if (!editing) {
+      if (tab === "today") renderToday();
+      if (tab === "meds") renderMeds();
+      if (tab === "hist") renderHist();
+      if (tab === "set") renderSet();
+    }
+    renderTasks();
+  }
+  function renderSet() {
+    document.getElementById("set-grace").value = String(grace());
+    var nb = document.getElementById("set-notify");
+    if (!("Notification" in window)) document.getElementById("notify-row").hidden = true;
+    else nb.textContent = t(Notification.permission === "granted" ? "set.notifyOn" : "set.notify");
+  }
+
+  /* 到時間提醒（網頁開著時） */
+  function checkReminders() {
+    var now = new Date(), k = K.dayKey(now);
+    if (!data.notified[k]) data.notified = {}, data.notified[k] = {};
+    var changed = false;
+    dosesFor(now).forEach(function (d) {
+      var st = status(d, now), p = person(d.med.pid);
+      var vars = { who: p.name, time: d.time, med: d.med.name, dose: dl(d.med), m: grace() };
+      if (st.s === "due" && !data.notified[k][d.key + "due"]) {
+        data.notified[k][d.key + "due"] = 1; changed = true;
+        K.chime("start"); K.notify(t("n.dueTitle"), t("n.dueBody", vars));
+      }
+      if (st.s === "late" && !data.notified[k][d.key + "late"]) {
+        data.notified[k][d.key + "late"] = 1; data.notified[k][d.key + "due"] = 1; changed = true;
+        if (now - d.at < (grace() + 10) * MIN) { K.chime("end"); K.notify(t("n.lateTitle"), t("n.lateBody", vars)); }
+      }
+    });
+    if (changed) persist();
+    if (tab === "today" && !editing) renderToday();
+  }
+
+  /* 事件 */
+  document.querySelector(".tabs").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tab]"); if (b) showView(b.dataset.tab);
+  });
+  document.body.addEventListener("click", function (e) {
+    K.unlockAudio();
+    var b = e.target.closest("button, img[data-view], [data-filter]");
+    if (!b) return;
+    var ds = b.dataset;
+    if (ds.took) return setTaken(ds.took, true);
+    if (ds.undo) return setTaken(ds.undo, false);
+    if (ds.filter) { filter = ds.filter; return render(); }
+    if (ds.view) {
+      var m = data.meds.find(function (x) { return x.id === ds.view; });
+      if (m && m.photo) { document.getElementById("viewer-img").src = m.photo; document.getElementById("viewer").hidden = false; }
+      return;
+    }
+    if (ds.editmed) return openMedEditor(ds.editmed);
+    if (ds.rename) return openPersonEditor(ds.rename);
+    if (ds.ics) return downloadIcs(ds.ics);
+    if (ds.deltime != null) { var ts = currentTimes(); ts.splice(+ds.deltime, 1); return renderTimes(ts); }
+    if (ds.delperson) {
+      var p = person(ds.delperson);
+      if (!confirm(t("p.delconfirm", { who: p.name }))) return;
+      var ids = data.meds.filter(function (m) { return m.pid === p.id; }).map(function (m) { return m.id; });
+      data.meds = data.meds.filter(function (m) { return m.pid !== p.id; });
+      Object.keys(data.log).forEach(function (k) { Object.keys(data.log[k]).forEach(function (key) { if (ids.indexOf(key.split("|")[0]) >= 0) delete data.log[k][key]; }); });
+      data.people = data.people.filter(function (x) { return x.id !== p.id; });
+      persist(); return render();
+    }
+    switch (ds.act) {
+      case "demo": return loadDemo();
+      case "add-start": return openPersonEditor(null, true);
+      case "add-person": return openPersonEditor(null, false);
+      case "add-med": return openMedEditor(null);
+      case "share": return shareLate();
+      case "cancel": editing = null; return showView(tab);
+      case "add-time": var ts2 = currentTimes(); ts2.push(""); renderTimes(ts2); var ins = document.querySelectorAll("#e-times input"); ins[ins.length - 1].focus(); return;
+      case "photo-del": draftPhoto = null; return renderPhoto();
+      case "save-med": return saveMed();
+      case "del-med":
+        var md = data.meds.find(function (x) { return x.id === editing.id; });
+        if (!confirm(t("m.delconfirm", { med: md.name }))) return;
+        data.meds = data.meds.filter(function (x) { return x.id !== md.id; });
+        persist(); editing = null; return showView("meds");
+      case "save-person":
+        var name = document.getElementById("e-pname").value.trim();
+        if (!name) { document.getElementById("e-pname").focus(); return; }
+        var thenMed = editing.thenMed, pid = editing.id;
+        if (pid) { var pp = person(pid); pp.name = name; delete pp.demo; }
+        else { pid = uid(); data.people.push({ id: pid, name: name }); }
+        persist(); editing = null;
+        if (thenMed) return openMedEditor(null, pid);
+        return showView("meds");
+    }
+  });
+  document.getElementById("viewer").addEventListener("click", function () { this.hidden = true; });
+
+  document.getElementById("set-grace").addEventListener("change", function (e) { data.settings.grace = +e.target.value; persist(); });
+  document.getElementById("set-notify").addEventListener("click", function () {
+    if (!("Notification" in window)) return;
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== "granted") K.toast(t("set.notifyDenied"));
+      renderSet();
+    });
+  });
+  document.getElementById("set-export").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "pill-time-backup-" + K.dayKey() + ".json";
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+  document.getElementById("set-import").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var d = JSON.parse(r.result);
+        if (!d || !Array.isArray(d.people) || !Array.isArray(d.meds)) throw 0;
+        data = d; norm(); persist(); K.toast(t("set.imported")); showView("today");
+      } catch (err) { K.toast(t("set.importErr")); }
+      e.target.value = "";
+    };
+    r.readAsText(f);
+  });
+  document.getElementById("set-clear").addEventListener("click", function () {
+    if (!confirm(t("set.clearconfirm"))) return;
+    data = {}; norm(); persist(); K.toast(t("set.cleared")); showView("today");
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") document.getElementById("viewer").hidden = true;
+    if (e.key === "Enter" && e.target.id === "e-pname") document.querySelector('[data-act="save-person"]').click();
+  });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkReminders(); });
+
+  K.mountTopbar(document.getElementById("topbar"));
+  K.applyStatic();
+  K.onLang(function () { if (editing) { editing = null; } showView(tab); });
+  showView("today");
+  checkReminders();
+  setInterval(checkReminders, 20000);
+})();
+</script>
+</body>
+</html>
