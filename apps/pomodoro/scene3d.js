@@ -245,6 +245,23 @@ function findPath(from, to) {
 }
 
 /* ===== 角色 ===== */
+// 角色外面描一圈深色邊，避免跟顏色相近的地板、牆壁糊在一起
+const OUTLINE_M = new THREE.MeshBasicMaterial({ color: 0x2a1d16, side: THREE.BackSide });
+const tmpBox = new THREE.Box3(), tmpSize = new THREE.Vector3();
+function outline(root, t) {
+  const list = [];
+  root.traverse((o) => { if (o.isMesh && !o.material.isMeshBasicMaterial) list.push(o); });
+  list.forEach((o) => {
+    const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+    if (g.boundingSphere.radius < 0.05) return; // 眼睛、嘴巴這些小東西不描
+    if (!g.boundingBox) g.computeBoundingBox();
+    g.boundingBox.getSize(tmpSize);
+    const e = new THREE.Mesh(g, OUTLINE_M);
+    e.scale.set(1 + t / Math.max(tmpSize.x / 2, 0.04), 1 + t / Math.max(tmpSize.y / 2, 0.04), 1 + t / Math.max(tmpSize.z / 2, 0.04));
+    e.castShadow = false; e.receiveShadow = false; e.userData.outline = true;
+    o.add(e);
+  });
+}
 function makeChar(look) {
   look = look || {};
   const skin = SKINS[look.skin] || SKINS[0], hair = HAIRS[look.hair] || HAIRS[0];
@@ -344,6 +361,8 @@ function makeChar(look) {
   const ck = cyl(0.06, 0.06, 0.02, "#c98f52", 0, 0, 0, cookie, 14); ck.rotation.x = Math.PI / 2;
   [[-0.02, 0.01], [0.02, -0.015], [0.015, 0.025]].forEach(([x, y]) => sph(0.009, "#5a3a22", x, y, 0.012, cookie, 6, 4));
   cookie.visible = false;
+  outline(root, 0.022);
+  if (cat) outline(cat, 0.012);
   return { root, hips, torso, head, legs, arms, eyes, cat, book, cup, cookie };
 }
 

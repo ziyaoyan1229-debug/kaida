@@ -1187,10 +1187,9 @@
     } else if (ds.flag) { data.me.flag = ds.flag;
     } else if (ds.act === "save-char") {
       if (!data.me.name) { K.toast(t("f.needName")); document.getElementById("c-name").focus(); return; }
-      var first = !data.me.named; data.me.named = true;
+      data.me.named = true;
       persist(); syncMe(); K.toast(t("c.saved"));
-      if (pendingCode || first) { show("rooms"); window.scrollTo(0, 0); return; }
-      return;
+      show("rooms"); window.scrollTo(0, 0); return;
     } else return;
     persist(); syncMe();
     var y = window.scrollY; renderChar(); window.scrollTo(0, y);
