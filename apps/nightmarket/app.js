@@ -37,7 +37,7 @@
       stallsError: "暫時載入不了店家，稍後再試。", seeMap: function (n) { return "在地圖上看 " + n + " 家店"; },
       back: "‹ 回夜市", ratings: function (n) { return n + " 則評分"; }, noRating: "還沒有評分", reviewsTitle: "饕客評論",
       reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
-      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。"
+      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。"
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
@@ -389,13 +389,14 @@
     $("sMeta").textContent = (byId(stallFor) ? name(byId(stallFor)) : "") + (s.type ? " · " + s.type : "");
     $("sRating").innerHTML = s.rating ? stars(s.rating) + " <b>" + s.rating.toFixed(1) + "</b> <small>" + esc(t("ratings")(s.count)) + "</small>" : '<small>' + esc(t("noRating")) + "</small>";
     $("sAddr").textContent = s.address;
-    $("sPhotos").hidden = !s.photos || !s.photos.length;
+    $("sGallery").hidden = !s.photos || !s.photos.length;
     $("sPhotos").innerHTML = (s.photos || []).map(function (p) {
       var credit = p.author ? (p.authorUrl ? '<a href="' + esc(p.authorUrl) + '" target="_blank" rel="noopener">' + esc(p.author) + "</a>" : esc(p.author)) : "";
-      return '<figure><img src="' + esc(p.url) + '" alt="' + esc(s.name) + '" loading="lazy" onerror="this.parentNode.remove()">' +
+      return '<figure><img src="' + esc(p.url) + '" alt="' + esc(s.name) + '" loading="lazy" onerror="this.parentNode.remove();window.__nmGallery&&window.__nmGallery()">' +
         (credit ? "<figcaption>" + esc(t("photoBy")) + " " + credit + "</figcaption>" : "") + "</figure>";
     }).join("");
     $("sPhotos").scrollLeft = 0;
+    updateGallery();
     $("sGmaps").href = s.url || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s.name) + "&query_place_id=" + encodeURIComponent(s.id));
     $("sReviews").innerHTML = '<li class="muted">' + esc(t("reviewsLoading")) + "</li>";
     openSheet("stall");
@@ -412,6 +413,24 @@
       console.warn("[reviews]", e);
       $("sReviews").innerHTML = '<li class="muted">' + esc(t("reviewsError")) + "</li>";
     });
+  }
+  // 店家照片：手機用手指滑，電腦用箭頭或拖曳
+  function galleryIndex() {
+    var el = $("sPhotos"), w = el.clientWidth || 1;
+    return Math.round(el.scrollLeft / w);
+  }
+  function updateGallery() {
+    var el = $("sPhotos"), n = el.children.length, i = Math.min(galleryIndex(), Math.max(n - 1, 0));
+    if (!n) { $("sGallery").hidden = true; return; }
+    $("gCount").textContent = (i + 1) + " / " + n;
+    $("gCount").hidden = n < 2;
+    $("gPrev").hidden = i <= 0;
+    $("gNext").hidden = i >= n - 1;
+  }
+  window.__nmGallery = updateGallery;
+  function goPhoto(step) {
+    var el = $("sPhotos");
+    el.scrollTo({ left: (galleryIndex() + step) * el.clientWidth, behavior: "smooth" });
   }
   function revealMap() {
     var el = $("map");
@@ -532,6 +551,24 @@
   });
   $("dSeeMap").onclick = function () { closeSheet($("detail")); revealMap(); };
   $("sBack").onclick = function () { closeSheet($("stall")); if (stallFor) { openDetail(stallFor); } };
+  $("gPrev").onclick = function () { goPhoto(-1); };
+  $("gNext").onclick = function () { goPhoto(1); };
+  var gTimer;
+  $("sPhotos").addEventListener("scroll", function () { clearTimeout(gTimer); gTimer = setTimeout(updateGallery, 60); }, { passive: true });
+  // 滑鼠拖曳也能換張
+  (function () {
+    var el = $("sPhotos"), x0 = null, s0 = 0, moved = false;
+    el.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") return; x0 = e.clientX; s0 = el.scrollLeft; moved = false; el.classList.add("dragging"); });
+    window.addEventListener("pointermove", function (e) { if (x0 === null) return; var d = e.clientX - x0; if (Math.abs(d) > 4) moved = true; el.scrollLeft = s0 - d; });
+    window.addEventListener("pointerup", function (e) {
+      if (x0 === null) return;
+      var d = e.clientX - x0; x0 = null; el.classList.remove("dragging");
+      var w = el.clientWidth, i = Math.round(s0 / w) + (d < -40 ? 1 : d > 40 ? -1 : 0);
+      el.scrollTo({ left: i * w, behavior: "smooth" });
+    });
+    el.addEventListener("click", function (e) { if (moved && e.target.tagName !== "A") { e.preventDefault(); moved = false; } }, true);
+    el.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  })();
   $("tasksBtn").onclick = function () { renderTasks(); openSheet("tasks"); };
   $("fbText").value = load("nm-feedback-draft", "");
   $("fbText").addEventListener("input", function (e) { save("nm-feedback-draft", e.target.value); });
@@ -551,6 +588,7 @@
   $("langBtn").onclick = function () {
     lang = lang === "zh" ? "en" : "zh";
     stallFor = null; stalls = []; view.clearArea();
+    if (view.setLang) setTimeout(view.setLang, 0);
     try { localStorage.setItem("kaida-lang", lang); } catch (e) { /* 忽略 */ }
     applyLang();
   };
