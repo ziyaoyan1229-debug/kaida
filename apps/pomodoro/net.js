@@ -96,6 +96,7 @@
               meta.created = now;
               c.publish(base + "/meta", JSON.stringify(meta), { retain: true, qos: 1 });
             }
+            self.meta = meta;
             self.lobby = meta.pub && meta.mode ? PREFIX + "lobby/" + meta.mode + "/" + opts.code : null;
             self.publishMe();
             self.hb = setInterval(function () { self.publishMe(); }, 30000);
@@ -118,7 +119,7 @@
     this.members[this.meId] = cleanMember(this.meId, this.me);
     this.client.publish(mine, JSON.stringify(this.me), { retain: true, qos: 1 });
     // 公開房間：順便更新大廳裡的人數，讓「直接開始」的人配得到
-    if (this.lobby) this.client.publish(this.lobby, JSON.stringify({ n: this.fresh().length, ts: Date.now() }), { retain: true, qos: 1 });
+    if (this.lobby) this.client.publish(this.lobby, JSON.stringify({ n: this.fresh().length, ts: Date.now(), th: this.meta && this.meta.theme }), { retain: true, qos: 1 });
   };
 
   Room.prototype.leave = function () {
@@ -127,7 +128,7 @@
     if (c) {
       try {
         var self = this, alone = !this.fresh().some(function (m) { return m.id !== self.meId; });
-        if (c.connected && this.lobby) c.publish(this.lobby, alone ? "" : JSON.stringify({ n: this.fresh().length - 1, ts: Date.now() }), { retain: true, qos: 1 });
+        if (c.connected && this.lobby) c.publish(this.lobby, alone ? "" : JSON.stringify({ n: this.fresh().length - 1, ts: Date.now(), th: this.meta && this.meta.theme }), { retain: true, qos: 1 });
         if (c.connected && this.code && this.meId) c.publish(PREFIX + this.code + "/m/" + this.meId, "", { retain: true, qos: 1 }, function () { c.end(true); });
         else c.end(true);
       } catch (e) {}
@@ -139,7 +140,7 @@
   function findPublic(mode) {
     if (!window.mqtt) return Promise.resolve(null);
     return new Promise(function (resolve) {
-      var found = {}, c, done = false;
+      var found = {}, themes = {}, c, done = false;
       function finish(r) { if (done) return; done = true; try { c && c.end(true); } catch (e) {} resolve(r); }
       try { c = window.mqtt.connect(BROKER, { clientId: "kl_" + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 9000, reconnectPeriod: 0 }); }
       catch (e) { finish(null); return; }
@@ -147,7 +148,7 @@
       var base = PREFIX + "lobby/" + mode + "/";
       c.on("message", function (topic, payload) {
         var m = parse(payload), code = topic.slice(base.length);
-        if (/^\d{4}$/.test(code) && m && m.n > 0 && m.n < MAX && Date.now() - (+m.ts || 0) < 90 * 1000) found[code] = m.n; else delete found[code];
+        if (/^\d{4}$/.test(code) && m && m.n > 0 && m.n < MAX && Date.now() - (+m.ts || 0) < 90 * 1000) { found[code] = m.n; themes[code] = m.th || ""; } else delete found[code];
       });
       c.on("connect", function () {
         c.subscribe(base + "+", { qos: 1 }, function (err) {
@@ -155,7 +156,7 @@
           setTimeout(function () {
             clearTimeout(timer);
             var list = Object.keys(found).sort(function (a, b) { return found[b] - found[a] || Math.random() - 0.5; });
-            list.counts = found;
+            list.counts = found; list.themes = themes;
             finish(list);
           }, 1500);
         });
