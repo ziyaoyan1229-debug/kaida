@@ -37,7 +37,7 @@
       stallsError: "暫時載入不了店家，稍後再試。", seeMap: function (n) { return "在地圖上看 " + n + " 家店"; },
       back: "‹ 回夜市", ratings: function (n) { return n + " 則評分"; }, noRating: "還沒有評分", reviewsTitle: "饕客評論",
       reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
-      allReviews: "在 Google 地圖看全部評論", reviewsFrom: "評論與店家資料來自 Google 地圖，開達不會修改或保存。"
+      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。"
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
@@ -70,7 +70,7 @@
       stallsError: "Couldn't load places right now. Try again later.", seeMap: function (n) { return "See " + n + " places on the map"; },
       back: "‹ Back to market", ratings: function (n) { return n + " ratings"; }, noRating: "No ratings yet", reviewsTitle: "Reviews",
       reviewsLoading: "Loading reviews…", noReviews: "No reviews yet.", reviewsError: "Couldn't load reviews right now.",
-      allReviews: "See all reviews on Google Maps", reviewsFrom: "Reviews and place info come from Google Maps. Kaida doesn't edit or store them."
+      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them."
     }
   };
 
@@ -375,7 +375,7 @@
     $("dSeeMap").hidden = false;
     $("dSeeMap").textContent = t("seeMap")(stalls.length);
     box.innerHTML = stalls.map(function (s, i) {
-      return '<li><button type="button" class="stall-row" data-stall="' + esc(s.id) + '"><span class="no">' + (i + 1) + '</span><span class="nm">' + esc(s.name) +
+      return '<li><button type="button" class="stall-row" data-stall="' + esc(s.id) + '"><span class="thumb">' + (s.thumb ? '<img src="' + esc(s.thumb) + '" alt="" loading="lazy" onerror="this.remove()">' : "") + '<span class="no">' + (i + 1) + '</span></span><span class="nm">' + esc(s.name) +
         "<small>" + esc(s.type) + "</small></span>" +
         (s.rating ? '<span class="rt">' + s.rating.toFixed(1) + " ★<small>(" + s.count + ")</small></span>" : "") + "</button></li>";
     }).join("");
@@ -389,6 +389,13 @@
     $("sMeta").textContent = (byId(stallFor) ? name(byId(stallFor)) : "") + (s.type ? " · " + s.type : "");
     $("sRating").innerHTML = s.rating ? stars(s.rating) + " <b>" + s.rating.toFixed(1) + "</b> <small>" + esc(t("ratings")(s.count)) + "</small>" : '<small>' + esc(t("noRating")) + "</small>";
     $("sAddr").textContent = s.address;
+    $("sPhotos").hidden = !s.photos || !s.photos.length;
+    $("sPhotos").innerHTML = (s.photos || []).map(function (p) {
+      var credit = p.author ? (p.authorUrl ? '<a href="' + esc(p.authorUrl) + '" target="_blank" rel="noopener">' + esc(p.author) + "</a>" : esc(p.author)) : "";
+      return '<figure><img src="' + esc(p.url) + '" alt="' + esc(s.name) + '" loading="lazy" onerror="this.parentNode.remove()">' +
+        (credit ? "<figcaption>" + esc(t("photoBy")) + " " + credit + "</figcaption>" : "") + "</figure>";
+    }).join("");
+    $("sPhotos").scrollLeft = 0;
     $("sGmaps").href = s.url || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s.name) + "&query_place_id=" + encodeURIComponent(s.id));
     $("sReviews").innerHTML = '<li class="muted">' + esc(t("reviewsLoading")) + "</li>";
     openSheet("stall");
