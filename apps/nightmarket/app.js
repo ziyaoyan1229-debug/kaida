@@ -190,7 +190,7 @@
     '<path class="i" d="M8 10h14v4a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0z"/>' +
     '<rect class="i" x="8.5" y="15" width="1.4" height="5"/><rect class="i" x="20.1" y="15" width="1.4" height="5"/><rect class="i" x="7.5" y="19.5" width="15" height="2" rx=".6"/></svg>';
   var mapOpts = {
-    pinHtml: function (sel, off) { return '<div class="nm-pin' + (off ? " off" : "") + (sel ? " sel" : "") + '">' + PIN + "</div>"; },
+    pinHtml: function (sel, off, label) { return '<div class="nm-pin' + (off ? " off" : "") + (sel ? " sel" : "") + '">' + PIN + (label ? '<span class="pin-name">' + esc(label) + "</span>" : "") + "</div>"; },
     label: function (m) { return name(m); },
     lang: function () { return lang; },
     night: function () { return night; },

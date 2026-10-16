@@ -167,6 +167,13 @@ mark { background: color-mix(in srgb, var(--signal) 28%, transparent); color: in
 .nm-pin.sel svg { transform: scale(1.35); }
 .nm-pin.sel .b { fill: var(--lantern); }
 :root[data-skin="cyber"] .nm-pin svg { filter: drop-shadow(0 0 5px rgba(34, 232, 255, .6)); }
+.nm-pin { position: relative; }
+.nm-pin .pin-name {
+  display: none; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 2px; white-space: nowrap; pointer-events: none;
+  font: 600 12px/1.2 var(--f-display); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 2px 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+}
+.show-names .nm-pin .pin-name, .nm-pin.sel .pin-name { display: block; }
+.map-wrap.night .nm-pin .pin-name { color: var(--nm-bulb); border-color: rgba(255, 77, 46, .5); box-shadow: 0 0 8px rgba(255, 77, 46, .45); }
 .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(59, 130, 246, .25); }
 .locate {
   position: absolute; right: 10px; bottom: 26px; z-index: 450; width: 40px; height: 40px; border-radius: var(--r);
@@ -319,3 +326,4 @@ body.has-stalls .osm-credit { display: none; }
 .leaflet-marker-icon .county-label { transform: translate(-50%, -50%); }
 :root[data-skin="cyber"] .county-label { text-shadow: 0 0 6px rgba(34, 232, 255, .6), 0 0 2px #000; }
 #map.is-leaflet { background: var(--sunk); }
+.map-wrap:not(.night) .leaflet-tile-pane { filter: none; }
