@@ -113,7 +113,7 @@
     HtmlMarker.prototype.moveTo = function (p) { this._pos = p; if (this.getMap()) this.draw(); };
     HtmlMarker.prototype.setZ = function (z) { this._z = z; this.content.style.zIndex = z; };
 
-    var map, skin = opts.skin;
+    var map, skin = opts.skin, night = !!(opts.night && opts.night());
     var marketMarkers = {}, stallMarkers = [], polygon = null, meMarker = null, countyLabels = [];
     var cache = {}, qcache = {}, curArea = null;
     var token = 0;
@@ -124,6 +124,7 @@
     function palette() {
       var cs = getComputedStyle(document.documentElement);
       var v = function (k) { return cs.getPropertyValue(k).trim(); };
+      if (night) return { sea: "#0b0818", land: "#0b0818", county: "#35245c", line: "#ff4d2e", label: "#ffd25e", road: "#3a2850", roadHi: "#6b2f3a", night: ["#35245c", "#3e2763", "#4a2552"] };
       return skin === "cyber"
         ? { sea: "#05060a", land: "#0b0f17", county: "#0f1724", line: "#22e8ff", label: "#7fe9ff", road: "#1c2638", roadHi: "#26324a" }
         : { sea: v("--sunk") || "#ebe3d5", land: "#e9e0d0", county: "#f6efe2", line: "#9a7440", label: "#6b5434", road: "#e2d6c2", roadHi: "#d8c8ae" };
@@ -138,12 +139,17 @@
         { featureType: "water", stylers: [{ color: c.sea }] },
         { featureType: "landscape", stylers: [{ color: c.land }] },
         { featureType: "road", elementType: "geometry", stylers: [{ color: c.road }] },
-        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: c.roadHi }] }
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: c.roadHi }] },
+        // 縮小看全台時不畫道路，只留縣市
+        { featureType: "road", elementType: "geometry", stylers: [{ visibility: map && map.getZoom() >= DETAIL_ZOOM ? "on" : "off" }] }
       ];
     }
-    function countyStyle() {
+    function countyStyle(f) {
       var c = palette(), detail = map.getZoom() >= DETAIL_ZOOM;
-      return { fillColor: c.county, fillOpacity: detail ? 0 : 1, strokeColor: c.line, strokeOpacity: detail ? .35 : .8, strokeWeight: detail ? 1 : 1.2, clickable: false };
+      var fill = c.county;
+      // 夜晚模式：相鄰縣市用三種深紫交錯，像一排排招牌
+      if (c.night && f) { var h = 0, zh = f.getProperty("zh") || ""; for (var i = 0; i < zh.length; i++) h += zh.charCodeAt(i); fill = c.night[h % 3]; }
+      return { fillColor: fill, fillOpacity: detail ? 0 : 1, strokeColor: c.line, strokeOpacity: detail ? .35 : c.night ? .95 : .8, strokeWeight: detail ? 1 : c.night ? 1.4 : 1.2, clickable: false };
     }
     function drawCounties() {
       if (!window.NM_COUNTIES) return;
@@ -168,6 +174,12 @@
       });
     }
 
+    function lantern() { return getComputedStyle(el).getPropertyValue("--lantern").trim() || "#b5492f"; }
+    function restyle() {
+      map.setOptions({ styles: mapStyles(), backgroundColor: palette().sea });
+      map.data.setStyle(countyStyle);
+      if (polygon) polygon.setOptions({ strokeColor: lantern(), fillColor: lantern() });
+    }
     function makeMap() {
       map = new mapsLib.Map(el, {
         center: { lat: 23.7, lng: 120.95 }, zoom: 7, minZoom: 6,
@@ -176,7 +188,12 @@
         disableDefaultUI: true, zoomControl: true, clickableIcons: false, gestureHandling: "greedy", keyboardShortcuts: false
       });
       drawCounties();
-      map.addListener("zoom_changed", function () { map.data.setStyle(countyStyle); updateCountyLabels(); });
+      var wasDetail = false;
+      map.addListener("zoom_changed", function () {
+        var d = map.getZoom() >= DETAIL_ZOOM;
+        if (d !== wasDetail) { wasDetail = d; map.setOptions({ styles: mapStyles() }); }
+        map.data.setStyle(countyStyle); updateCountyLabels();
+      });
     }
     makeMap();
     el.classList.add("is-google");
@@ -256,7 +273,7 @@
         var b = area.bounds;
         path = [{ lat: b.north, lng: b.west }, { lat: b.north, lng: b.east }, { lat: b.south, lng: b.east }, { lat: b.south, lng: b.west }];
       }
-      var col = getComputedStyle(document.documentElement).getPropertyValue("--lantern").trim() || "#b5492f";
+      var col = lantern();
       polygon = new mapsLib.Polygon({ paths: path, strokeColor: col, strokeOpacity: .9, strokeWeight: 2, fillColor: col, fillOpacity: .12, clickable: false, map: map });
       area.stalls.forEach(addStallMarker);
       var bb = new g.LatLngBounds();
@@ -299,9 +316,12 @@
       setSkin: function (s) {
         if (s === skin) return;
         skin = s;
-        map.setOptions({ styles: mapStyles(), backgroundColor: palette().sea });
-        map.data.setStyle(countyStyle);
-        if (polygon) { var col = getComputedStyle(document.documentElement).getPropertyValue("--lantern").trim(); polygon.setOptions({ strokeColor: col, fillColor: col }); }
+        restyle();
+      },
+      setNight: function (on) {
+        if (!!on === night) return;
+        night = !!on;
+        restyle();
       },
       setLang: updateCountyLabels,
       // 放大到夜市、畫外框和攤位；回傳攤位清單
