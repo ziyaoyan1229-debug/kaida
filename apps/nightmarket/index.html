@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>台灣夜市地圖 · 開達 Kaida</title>
+<meta name="description" content="找台灣夜市：地圖、今天有開、附近、特色小吃，一頁搞定。開達 Kaida 封測作品。">
+<meta name="theme-color" content="#2a2620">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="夜市地圖">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500&family=Chakra+Petch:wght@600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css">
+<script>
+  // 沒有結尾斜線時補上，相對路徑的資源才找得到
+  if (!/\/$|\.html$/.test(location.pathname)) location.replace(location.pathname + "/" + location.search + location.hash);
+  try { if (localStorage.getItem("kaida-skin") === "cyber") document.documentElement.setAttribute("data-skin", "cyber"); } catch (e) {}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <img class="mark mark-beige" src="icons/icon.svg" alt="" width="34" height="34">
+    <img class="mark mark-cyber" src="icons/icon-cyber.svg" alt="" width="34" height="34">
+    <span class="brand-text">
+      <strong data-i18n="title">台灣夜市地圖</strong>
+      <small><a href="../../" data-i18n="byKaida">開達 Kaida 封測作品</a></small>
+    </span>
+  </div>
+  <div class="top-actions">
+    <button class="pill" id="tasksBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span class="pill-label" data-i18n="tasksBtn">封測任務</span> <b id="taskCount">0/4</b></button>
+    <button class="icon-btn" id="langBtn" type="button" aria-label="切換語言">EN</button>
+    <button class="icon-btn" id="skinBtn" type="button" aria-label="切換風格"><span class="skin-dot"></span></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel" aria-label="夜市清單">
+    <div class="controls">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" autocomplete="off" data-i18n-ph="searchPh" placeholder="搜尋夜市、城市或小吃（例如：蚵仔煎）">
+      </label>
+      <div class="chips" id="cityChips" role="group" aria-label="縣市"></div>
+      <div class="toggles">
+        <button class="toggle" id="todayBtn" type="button" aria-pressed="false" data-i18n="today">今天有開</button>
+        <button class="toggle" id="nearBtn" type="button" aria-pressed="false" data-i18n="near">離我最近</button>
+        <button class="toggle" id="favBtn" type="button" aria-pressed="false"><span data-i18n="favs">想去清單</span> <b id="favCount">0</b></button>
+      </div>
+    </div>
+    <p class="result-line" id="resultLine" aria-live="polite"></p>
+    <ol class="list" id="list"></ol>
+    <footer class="foot">
+      <p id="sourceNote"></p>
+      <p class="credit">地圖 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者 · <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a></p>
+    </footer>
+  </section>
+  <section class="map-wrap" aria-label="地圖">
+    <div id="map"></div>
+    <button class="locate" id="locateBtn" type="button" aria-label="定位到我的位置">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>
+    </button>
+  </section>
+</main>
+
+<!-- 夜市詳細 -->
+<div class="sheet" id="detail" role="dialog" aria-modal="true" aria-labelledby="dName" hidden>
+  <div class="sheet-card">
+    <button class="close" type="button" data-close aria-label="關閉">×</button>
+    <p class="d-meta" id="dMeta"></p>
+    <h2 id="dName"></h2>
+    <p class="d-status" id="dStatus"></p>
+    <p class="d-note" id="dNote"></p>
+    <h3 data-i18n="mustEat">必吃小吃</h3>
+    <ul class="foods" id="dFoods"></ul>
+    <dl class="facts">
+      <div><dt data-i18n="openDays">營業日</dt><dd id="dDays"></dd></div>
+      <div><dt data-i18n="hours">時間（約）</dt><dd id="dHours"></dd></div>
+      <div><dt data-i18n="transit">交通</dt><dd id="dTransit"></dd></div>
+      <div id="dDistRow" hidden><dt data-i18n="distance">距離</dt><dd id="dDist"></dd></div>
+    </dl>
+    <p class="d-warn" data-i18n="warn">營業時間與攤位常有變動，請以現場為準。</p>
+    <div class="d-actions">
+      <a class="btn primary" id="dNav" target="_blank" rel="noopener" data-i18n="navigate">Google 地圖導航</a>
+      <button class="btn" id="dFav" type="button"></button>
+      <button class="btn ghost" id="dShare" type="button" data-i18n="share">分享</button>
+      <button class="btn ghost" id="dReport" type="button" data-i18n="report">回報資料錯誤</button>
+    </div>
+  </div>
+</div>
+
+<!-- 封測任務 -->
+<div class="sheet" id="tasks" role="dialog" aria-modal="true" aria-labelledby="tTitle" hidden>
+  <div class="sheet-card">
+    <button class="close" type="button" data-close aria-label="關閉">×</button>
+    <p class="d-meta" data-i18n="betaTag">開達封測 · 第一輪</p>
+    <h2 id="tTitle" data-i18n="tasksTitle">幫我們試試看這 4 件事</h2>
+    <p class="d-note" data-i18n="tasksIntro">完成後會自動打勾。最後留一句回饋，就是最大的幫忙。</p>
+    <ol class="task-list" id="taskList"></ol>
+    <h3 data-i18n="fbTitle">你的回饋</h3>
+    <textarea id="fbText" rows="4" data-i18n-ph="fbPh" placeholder="哪裡好用？哪裡卡住？少了哪個夜市？"></textarea>
+    <div class="d-actions">
+      <button class="btn primary" id="fbSave" type="button" data-i18n="fbSave">送出回饋</button>
+      <button class="btn ghost" id="fbReset" type="button" data-i18n="fbReset">重新開始任務</button>
+    </div>
+    <p class="fine" data-i18n="fbFine">這是封測版本，回饋先存在你的手機，送出時會一併複製，方便貼到開達作品頁或 Threads。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
