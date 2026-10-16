@@ -85,7 +85,7 @@
             var alive = meta && (others.length || now - (meta.created || 0) < EXPIRE);
             if (opts.create) {
               if (alive) { self.leave(); finish({ ok: false, reason: "taken" }); return; }
-              meta = { focus: opts.cfg.focus, brk: opts.cfg.brk, origin: now, created: now, test: !!opts.cfg.test };
+              meta = { focus: opts.cfg.focus, brk: opts.cfg.brk, origin: now, created: now, test: !!opts.cfg.test, theme: String(opts.cfg.theme || "home").slice(0, 12), host: String(opts.cfg.host || "").slice(0, 16) };
               if (opts.cfg.pub) { meta.pub = 1; meta.mode = String(opts.cfg.pub).slice(0, 8); }
               c.publish(base + "/meta", JSON.stringify(meta), { retain: true, qos: 1 });
               self.meta = meta;
