@@ -25,8 +25,8 @@
     ["g", "top", "hat", "face", "neck", "ears", "pet"].forEach(function (k) { if (typeof look[k] === "string") L[k] = look[k].slice(0, 16); });
     L.skin = Math.max(0, Math.min(2, +look.skin || 0)); L.hair = Math.max(0, Math.min(3, +look.hair || 0));
     return {
-      id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 10),
-      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
+      id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
+      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", sayAt: +m.sayAt || 0
     };
   }
 
@@ -129,5 +129,65 @@
     this.me = null;
   };
 
-  window.KaidaNet = { Room: Room, MAX: MAX, BROKER: function () { return BROKER; } };
+  /* 好友上線狀態與聊天：每個人有自己的狀態頻道和收件匣
+     u/<id>/st  保留訊息 {focus, ts}；斷線時伺服器自動改成 {off:1}
+     u/<id>/in  收件匣：{type:"chat"|"friend", from, n, av, text, t} */
+  function Social() {
+    this.client = null; this.meId = null; this.status = {}; this.friends = [];
+    this.onMessage = function () {}; this.onStatus = function () {}; this.state = { focus: false };
+  }
+  Social.prototype.start = function (meId, friendIds) {
+    if (!window.mqtt || this.client) { if (this.client) this.setFriends(friendIds); return; }
+    var self = this; this.meId = meId; this.friends = [];
+    var st = PREFIX + "u/" + meId + "/st";
+    try {
+      this.client = window.mqtt.connect(BROKER, {
+        clientId: "ks_" + meId + "_" + Math.random().toString(36).slice(2, 7),
+        clean: true, keepalive: 30, reconnectPeriod: 5000, connectTimeout: 9000,
+        will: { topic: st, payload: JSON.stringify({ off: 1 }), retain: true, qos: 1 }
+      });
+    } catch (e) { this.client = null; return; }
+    this.client.on("connect", function () {
+      self.client.subscribe(PREFIX + "u/" + meId + "/in", { qos: 1 });
+      var ids = self.friends; self.friends = []; self.setFriends(ids.length ? ids : friendIds);
+      self.publishState();
+    });
+    this.client.on("message", function (topic, payload) {
+      var m = parse(payload);
+      var parts = topic.slice(PREFIX.length).split("/"); // u, id, kind
+      if (parts[2] === "st") {
+        var id = parts[1];
+        self.status[id] = m && !m.off && Date.now() - (+m.ts || 0) < 15 * 60 * 1000 ? { online: true, focus: !!m.focus, ts: +m.ts || 0 } : { online: false };
+        self.onStatus(id);
+      } else if (parts[2] === "in" && m && typeof m.from === "string" && m.from !== meId) {
+        self.onMessage({ type: m.type === "friend" ? "friend" : "chat", from: m.from.slice(0, 16), n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), text: String(m.text || "").slice(0, 200), t: +m.t || Date.now() });
+      }
+    });
+    this.hb = setInterval(function () { self.publishState(); }, 60000);
+  };
+  Social.prototype.setFriends = function (ids) {
+    ids = (ids || []).filter(function (x) { return /^[a-z0-9]{4,16}$/i.test(x); });
+    if (!this.client || !this.client.connected) { this.friends = ids; return; }
+    var self = this;
+    ids.forEach(function (id) { if (self.friends.indexOf(id) < 0) self.client.subscribe(PREFIX + "u/" + id + "/st", { qos: 1 }); });
+    this.friends.forEach(function (id) { if (ids.indexOf(id) < 0) { self.client.unsubscribe(PREFIX + "u/" + id + "/st"); delete self.status[id]; } });
+    this.friends = ids.slice();
+  };
+  Social.prototype.setState = function (patch) {
+    var changed = false;
+    Object.keys(patch).forEach(function (k) { if (this.state[k] !== patch[k]) { this.state[k] = patch[k]; changed = true; } }, this);
+    if (changed) this.publishState();
+  };
+  Social.prototype.publishState = function () {
+    if (!this.client || !this.client.connected) return;
+    this.client.publish(PREFIX + "u/" + this.meId + "/st", JSON.stringify({ focus: !!this.state.focus, ts: Date.now() }), { retain: true, qos: 1 });
+  };
+  Social.prototype.send = function (to, msg) {
+    if (!this.client || !this.client.connected) return false;
+    this.client.publish(PREFIX + "u/" + to + "/in", JSON.stringify(msg), { qos: 1 });
+    return true;
+  };
+  Social.prototype.online = function () { return !!(this.client && this.client.connected); };
+
+  window.KaidaNet = { Room: Room, Social: Social, MAX: MAX, BROKER: function () { return BROKER; } };
 })();

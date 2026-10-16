@@ -83,6 +83,21 @@
   .board .min small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
   .board li.me { background: var(--sunk); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: var(--r); }
   .board .acts { display: flex; gap: 4px; }
+  .board .stat { display: inline-block; font-size: 12px; margin-left: 4px; }
+  .stat.free { color: var(--pass); } .stat.busy { color: var(--signal); } .stat.off { color: var(--muted); }
+  .mlist .addf { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 0 8px; font-size: 12px; cursor: pointer; margin-left: 6px; min-height: 26px; }
+  .chat { padding: 12px; }
+  .chat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .chat-head b { flex: 1; }
+  .chat-log { height: 240px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .chat-log .b { max-width: 78%; padding: 6px 10px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+  .chat-log .b.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); }
+  .chat-log .b.me { align-self: flex-end; background: var(--ink); color: var(--paper); }
+  .chat-log .tm { font-size: 11px; color: var(--muted); align-self: center; }
+  .chat-form { display: flex; gap: 6px; margin-top: 8px; }
+  .chat-form input { flex: 1; }
+  .chat-note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+  .tabs .dot { display: inline-block; min-width: 16px; height: 16px; line-height: 16px; border-radius: 8px; background: var(--fail); color: #fff; font-size: 11px; padding: 0 4px; margin-left: 4px; vertical-align: 2px; }
   .board .acts button { min-height: 36px; padding: 4px 10px; font-size: 13px; }
   .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .presets button { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
@@ -103,6 +118,7 @@
   .k3-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   .k3-tag, .k3-bubble { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
   .k3-tag { font-size: 11px; line-height: 1.3; padding: 1px 7px; border-radius: 999px; background: rgba(248, 244, 236, .88); color: #2a2620; border: 1px solid rgba(138, 90, 56, .35); }
+  .k3-tag { pointer-events: auto; cursor: pointer; }
   .k3-tag.me { background: #2a2620; color: #f8f4ec; border-color: #2a2620; }
   .k3-bubble { font-size: 13px; line-height: 1.35; padding: 4px 10px; border-radius: 12px; background: #fffdf8; color: #2a2620; box-shadow: 0 2px 6px rgba(60, 40, 20, .18); max-width: 160px; white-space: normal; text-align: center; }
   .k3-hint { position: absolute; right: 8px; bottom: 6px; font-size: 11px; color: rgba(255, 253, 248, .9); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; }
@@ -116,6 +132,9 @@
   .s-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
   .s-head .code { font-family: var(--f-mono); font-size: 22px; font-weight: 600; letter-spacing: .12em; }
   .s-head .small { display: block; }
+  .s-head .btn { min-height: 38px; padding: 6px 12px; }
+  .s-head .exit { color: var(--fail); border-color: var(--fail); }
+  .s-head .net { width: 100%; text-align: right; }
   .net { font-size: 12px; }
   .net.online { color: var(--pass); } .net.offline, .net.connecting { color: var(--warn); }
   .timer-row { display: flex; align-items: center; gap: 16px; }
@@ -125,6 +144,11 @@
   .timer-row .phase-line { margin: 0; }
   .says { display: flex; gap: 6px; margin: 12px -16px; padding: 0 16px 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .says::-webkit-scrollbar { display: none; }
+  .says.doing { margin-bottom: 0; align-items: center; }
+  .says.doing .lab { flex: none; font-size: 13px; color: var(--muted); }
+  .says.doing .doing-now { font-size: 14px; }
+  .seg.acts button { min-width: 84px; flex: 1 1 28%; }
+  .says.doing button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
   .says button { flex: none; white-space: nowrap; }
   .says button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 14px; min-height: 36px; }
   .mlist { list-style: none; margin: 0; padding: 0; font-size: 14px; }
@@ -174,9 +198,10 @@
   <!-- 進行中的讀書房 -->
   <section id="view-session" hidden>
     <div class="s-head"><div><span class="small muted" id="s-label"></span><span class="code" id="s-code"></span></div>
-      <div style="text-align:right"><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button><span class="net" id="s-net"></span></div></div>
+      <div style="text-align:right;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">退出</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button><span class="net" id="s-net"></span></div></div>
     <div class="scene-wrap"><div class="k3" id="scene3d" hidden><span class="k3-hint" data-i18n="s.drag">拖曳可以轉視角</span></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg></div>
     <div class="music" id="music"></div>
+    <div class="says doing" id="doing"></div>
     <div class="says" id="says"></div>
     <div class="timer timer-row">
       <svg class="ring" id="ring" viewBox="0 0 200 200" role="img" aria-live="off">
@@ -276,7 +301,7 @@
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
-      "s.leave": "離開讀書房",
+      "s.leave": "離開讀書房", "s.exit": "← 退出", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
@@ -313,7 +338,7 @@
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
       "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳可以轉視角", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "mu.noise": "白噪音", "mu.vol": "音量", "s.st.up": "起來走走", "s.reward": "+{n} 小木頭！",
-      "act.read": "讀書", "act.pc": "用電腦", "act.homework": "寫作業", "act.draw": "畫圖",
+      "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
       "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、快速測試 1 根。",
@@ -360,7 +385,7 @@
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
-      "s.leave": "Leave room",
+      "s.leave": "Leave room", "s.exit": "← Exit", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
       "opt.sound": "Chime and vibrate between phases", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
@@ -397,7 +422,7 @@
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
       "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look around", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "mu.noise": "White noise", "mu.vol": "Volume", "s.st.up": "Walking around", "s.reward": "+{n} logs!",
-      "act.read": "Reading", "act.pc": "On the computer", "act.homework": "Doing homework", "act.draw": "Drawing",
+      "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
       "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 1 for a quick test.",
@@ -520,7 +545,7 @@
     net.onChange = function () { if (current === "session") renderScene(true); };
     net.onStatus = function (st) { netStatus = st; if (current === "session") renderNet(); };
   }
-  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up) }; }
+  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅" }; }
   function needName() {
     if (data.me.name) return false;
     K.toast(t("r.needName")); show("char"); return true;
@@ -670,6 +695,7 @@
       if (res.finished || now % 10000 < 1000) persist();
       if (current === "session") { renderSession(now, p); renderScene(); }
     }
+    if (social) { if (!social.client && data.me.name) startSocial(); social.setState({ focus: myFocus() }); }
   }
 
   var current = "rooms";
@@ -696,6 +722,8 @@
       return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m)).replace("\n", "<br>") + '</button>';
     }).join("");
     document.getElementById("room-list").innerHTML =
+      '<div class="card room-card"><h3>' + K.esc(t("r.doH")) + '</h3><p class="small muted">' + K.esc(t("r.doP")) + '</p><div class="seg acts">' +
+        S.ACTS.map(function (a) { return '<button type="button" data-pickact="' + a + '" aria-pressed="' + (data.act === a) + '">' + K.esc(t("act." + a)) + '</button>'; }).join("") + '</div></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.joinH")) + '</h3>' +
         '<div style="display:flex;gap:8px"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '">' +
         '<button class="btn" type="button" data-act="join">' + K.esc(t("r.join")) + '</button></div></div>' +
@@ -713,7 +741,7 @@
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
+        else list.push({ id: m.id, name: m.name, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "" });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
@@ -739,7 +767,8 @@
     } else if (!p.focus) S.move(document.getElementById("scene"), ms, Date.now());
     document.getElementById("scene").setAttribute("aria-label", ms.map(function (m) { return m.name; }).join("、"));
     document.getElementById("s-members").innerHTML = ms.map(function (m) {
-      return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + '</span><span class="st">' +
+      var fb = m.me ? "" : data.friends[m.id] ? '<span class="st"> · ' + K.esc(t("s.isFriend")) + '</span>' : '<button type="button" class="addf" data-addf="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>';
+      return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + fb + '</span><span class="st">' +
         K.esc(m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break")) + '</span></li>';
     }).join("");
     document.getElementById("s-room").textContent = session.kind === "room" ? t("s.people", { n: ms.length }) : session.kind === "sim" ? t("s.sim") : t("s.alone");
@@ -752,8 +781,12 @@
     document.getElementById("s-label").textContent = t("s.label." + session.kind) + (session.code ? " " : "");
     document.getElementById("s-code").textContent = session.code || "";
     document.getElementById("s-invite").hidden = session.kind !== "room";
-    renderSays(); renderMusic();
+    renderSays(); renderMusic(); renderDoing();
   }
+  function renderDoing() {
+    document.getElementById("doing").innerHTML = '<span class="lab">' + K.esc(t("s.doing")) + '</span><b class="doing-now">' + K.esc(t("act." + (S.ACTS.indexOf(data.act) >= 0 ? data.act : "read"))) + '</b>';
+  }
+
   // 背景音樂：每個人自己選，不會同步給別人
   function music() { if (!data.music) data.music = { kind: "", vol: 0.6 }; return data.music; }
   function renderMusic() {
@@ -822,7 +855,6 @@
       ["girl", "boy"].map(function (g) { return '<button type="button" data-g="' + g + '" aria-pressed="' + (L.g === g) + '">' + K.esc(t("c." + g)) + '</button>'; }).join("") + '</div>' +
       '<span class="small muted">' + K.esc(t("c.skin")) + '</span><div class="swatches">' + S.SKINS.map(function (c, i) { return '<button type="button" data-skin="' + i + '" aria-pressed="' + (L.skin === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.skin")) + ' ' + (i + 1) + '"></button>'; }).join("") + '</div>' +
       '<span class="small muted">' + K.esc(t("c.hair")) + '</span><div class="swatches">' + S.HAIRS.map(function (c, i) { return '<button type="button" data-hair="' + i + '" aria-pressed="' + (L.hair === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.hair")) + ' ' + (i + 1) + '"></button>'; }).join("") + '</div>' +
-      '<span class="small muted">' + K.esc(t("c.act")) + '</span><div class="seg">' + S.ACTS.map(function (a) { return '<button type="button" data-actpick="' + a + '" aria-pressed="' + (data.act === a) + '">' + K.esc(t("act." + a)) + '</button>'; }).join("") + '</div>' +
       '<button class="btn block" type="button" data-act="save-char">' + K.esc(t("c.save")) + '</button></div>';
     var owned = S.ITEMS.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
     var shop = S.ITEMS.filter(function (it) { return data.owned.indexOf(it.id) < 0; });
@@ -1007,6 +1039,142 @@
     show("friends");
   }
 
+  /* ===== 好友上線狀態與聊天 ===== */
+  data.chats = data.chats || {}; data.unread = data.unread || {};
+  var social = window.KaidaNet && window.KaidaNet.Social ? new window.KaidaNet.Social() : null;
+  var chatWith = null;
+  var BOT_REPLY = "哈囉！|我剛讀完一章，好累😪|你今天讀什麼？|等等一起再一顆番茄嗎？|我去倒杯水💧|加油！我們一起撐住💪|休息完要回來喔|哈哈哈 對啊|晚點要去吃飯了|你好認真欸👍";
+  function isBot(id) { return /^bot\d$/.test(id); }
+  function myFocus() { return !!(session && phaseAt("cur", Date.now(), roomOrigin()).focus); }
+  function friendState(id) {
+    if (isBot(id)) return "free";
+    var st = social && social.status[id];
+    if (!st || !st.online) return "off";
+    return st.focus ? "busy" : "free";
+  }
+  function startSocial() {
+    if (!social || !data.me.name) return;
+    social.start(data.me.id, Object.keys(data.friends).filter(function (id) { return !isBot(id); }));
+  }
+  function updateBadge() {
+    var n = Object.keys(data.unread).reduce(function (a, k) { return a + (data.friends[k] ? data.unread[k] : 0); }, 0);
+    var tab = document.getElementById("tab-friends");
+    tab.innerHTML = K.esc(t("tab.friends")) + (n ? '<span class="dot">' + n + '</span>' : "");
+  }
+  function pushChat(fid, msg) {
+    var arr = data.chats[fid] = data.chats[fid] || [];
+    arr.push(msg); if (arr.length > 100) arr.splice(0, arr.length - 100);
+    K.save(STORE, data);
+  }
+  function addFriendFromRoom(id) {
+    var m = sceneMembers().filter(function (x) { return x.id === id; })[0];
+    if (!m || data.friends[id] || id === data.me.id) return;
+    data.friends[id] = { n: String(m.name).slice(0, 20), a: m.av || "🍅", k: "", m: 0, p: 0, s: 0, t: Date.now() };
+    data.tasks.t3 = true; persist();
+    if (social && !isBot(id)) { startSocial(); social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); })); social.send(id, { type: "friend", from: data.me.id, n: data.me.name, av: data.me.avatar, t: Date.now() }); }
+    K.toast(t("s.added", { n: m.name }));
+    renderScene(true);
+  }
+  // 點房間裡的人物：看狀態、加好友
+  function memberStatus(m) {
+    var p = phaseAt("cur", Date.now(), roomOrigin());
+    return m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break");
+  }
+  window.addEventListener("kaida3d-pick", function (e) {
+    if (!session) return;
+    var m = sceneMembers().filter(function (x) { return x.id === e.detail.id; })[0]; if (!m) return;
+    var card = document.getElementById("modal-card");
+    card.innerHTML = '<div style="display:flex;justify-content:center"><svg viewBox="-60 -100 120 116" width="120" height="116" aria-hidden="true">' + S.preview(m.look) + '</svg></div>' +
+      '<p class="msg" style="margin:4px 0">' + K.esc(m.name) + (m.me ? ' <span class="small muted">(' + K.esc(t("p.self")) + ')</span>' : "") + '</p>' +
+      '<p class="small muted" style="margin:0">' + K.esc(t("p.now")) + '：' + K.esc(memberStatus(m)) + '</p>' +
+      '<div class="btn-row" style="justify-content:center;margin-top:16px">' +
+      (m.me ? "" : data.friends[m.id] ? '<button class="btn" type="button" data-pchat="' + K.esc(m.id) + '">' + K.esc(t("p.chat")) + '</button>' : '<button class="btn" type="button" data-padd="' + K.esc(m.id) + '">' + K.esc(t("p.add")) + '</button>') +
+      '<button class="btn ghost" type="button" data-act="close-modal">' + K.esc(t("p.close")) + '</button></div>';
+    document.getElementById("modal").hidden = false;
+  });
+  document.getElementById("modal").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.padd) { addFriendFromRoom(b.dataset.padd); this.hidden = true; }
+    if (b.dataset.pchat) { this.hidden = true; show("friends"); openChat(b.dataset.pchat); }
+  });
+  document.getElementById("s-members").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-addf]"); if (b) addFriendFromRoom(b.dataset.addf);
+  });
+  function openChat(id) {
+    chatWith = id; data.unread[id] = 0; K.save(STORE, data); updateBadge(); renderFriends();
+    var box = document.getElementById("chat-box"); if (box) box.scrollIntoView({ block: "start" });
+  }
+  function chatBlock(id) {
+    var f = data.friends[id];
+    if (myFocus()) return t("c.meBusy");
+    if (isBot(id)) return "";
+    if (!social || !social.online()) return t("c.noNet");
+    var s2 = friendState(id);
+    if (s2 === "off") return t("c.themOff", { n: f.n });
+    if (s2 === "busy") return t("c.themBusy", { n: f.n });
+    return "";
+  }
+  function fmtTime(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "/" + d.getDate() + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+  function renderChat() {
+    var box = document.getElementById("chat-box"); if (!box || !chatWith || !data.friends[chatWith]) return;
+    var f = data.friends[chatWith], msgs = data.chats[chatWith] || [], block = chatBlock(chatWith);
+    var old = document.getElementById("chat-in"), draft = old ? old.value : "", hadFocus = old && document.activeElement === old;
+    var last = 0;
+    box.innerHTML = '<div class="chat-head"><span class="av">' + K.esc(f.a) + '</span><b>' + K.esc(f.n) + ' <span class="stat ' + friendState(chatWith) + '">· ' + K.esc(t("c." + friendState(chatWith))) + '</span></b>' +
+      '<button class="linkbtn" type="button" data-act="close-chat">' + K.esc(t("c.close")) + '</button></div>' +
+      '<div class="chat-log" id="chat-log">' + (msgs.length ? msgs.map(function (m) {
+        var tm = m.t - last > 10 * 60 * 1000 ? '<span class="tm">' + K.esc(fmtTime(m.t)) + '</span>' : ""; last = m.t;
+        return tm + '<div class="b ' + (m.me ? "me" : "them") + '">' + K.esc(m.text) + '</div>';
+      }).join("") : '<span class="tm">' + K.esc(t("c.empty")) + '</span>') + '</div>' +
+      '<form class="chat-form" id="chat-form"><input type="text" id="chat-in" maxlength="200" autocomplete="off" placeholder="' + K.esc(t("c.ph")) + '"' + (block ? " disabled" : "") + '>' +
+      '<button class="btn" type="submit"' + (block ? " disabled" : "") + '>' + K.esc(t("c.send")) + '</button></form>' +
+      '<p class="chat-note">' + K.esc(block || t("c.how")) + '</p>';
+    var inp = document.getElementById("chat-in"); inp.value = draft; if (hadFocus && !block) inp.focus();
+    var log = document.getElementById("chat-log"); log.scrollTop = log.scrollHeight;
+    document.getElementById("chat-form").addEventListener("submit", function (e) { e.preventDefault(); sendChat(); });
+  }
+  function sendChat() {
+    var inp = document.getElementById("chat-in"); if (!inp || !chatWith) return;
+    var text = inp.value.trim().slice(0, 200); if (!text || chatBlock(chatWith)) return;
+    var to = chatWith, now = Date.now();
+    if (!isBot(to) && !social.send(to, { type: "chat", from: data.me.id, n: data.me.name, av: data.me.avatar, text: text, t: now })) { K.toast(t("c.noNet")); return; }
+    inp.value = "";
+    pushChat(to, { me: true, text: text, t: now });
+    renderChat();
+    if (isBot(to)) setTimeout(function () {
+      var lines = BOT_REPLY.split("|");
+      receive({ type: "chat", from: to, n: data.friends[to] ? data.friends[to].n : "?", av: "🍅", text: lines[Math.floor(Math.random() * lines.length)], t: Date.now() });
+    }, 1200 + Math.random() * 1800);
+  }
+  function receive(m) {
+    if (m.type === "friend") {
+      if (!data.friends[m.from]) {
+        data.friends[m.from] = { n: m.n, a: m.av, k: "", m: 0, p: 0, s: 0, t: m.t };
+        persist(); startSocial(); social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); }));
+        K.toast(t("c.addedYou", { n: m.n }));
+        if (current === "friends") renderFriends(); else if (current === "session") renderScene(true);
+      }
+      return;
+    }
+    if (!data.friends[m.from]) return; // 只收好友的訊息
+    pushChat(m.from, { me: false, text: m.text, t: m.t });
+    if (current === "friends" && chatWith === m.from) renderChat();
+    else {
+      data.unread[m.from] = (data.unread[m.from] || 0) + 1; K.save(STORE, data); updateBadge();
+      K.toast(t("c.new", { n: data.friends[m.from].n, t: m.text.slice(0, 30) }));
+      if (current === "friends") renderFriends();
+    }
+  }
+  if (social) {
+    social.onMessage = receive;
+    social.onStatus = function () { if (current === "friends") { if (chatWith) renderChat(); renderFriendsSoon(); } };
+  }
+  var rfTimer = null;
+  function renderFriendsSoon() {
+    clearTimeout(rfTimer);
+    rfTimer = setTimeout(function () { if (current === "friends" && !(document.activeElement && document.activeElement.id === "chat-in")) renderFriends(); }, 400);
+  }
+
   function showCheerModal(f, msg, fid) {
     var card = document.getElementById("modal-card");
     card.innerHTML = '<div class="big-av">' + K.esc(f.a) + '</div><p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.gotCheer", { n: f.n })) + '</p>' +
@@ -1038,12 +1206,14 @@
       '<button class="linkbtn" type="button" data-act="edit-me">' + K.esc(t("f.edit")) + '</button></div>';
     html += '<button class="btn block" type="button" data-act="invite">' + K.esc(t("f.invite")) + '</button>' +
       '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("f.inviteP")) + '</p>';
+    if (chatWith && data.friends[chatWith]) html += '<div class="card chat" id="chat-box"></div>';
     html += '<h2>' + K.esc(t("f.boardH")) + '</h2><div class="card"><ol class="board">' + rows.map(function (r, i) {
       var sub = r.me ? t("f.you") : (r.stale ? t("f.oldweek") : t("f.updated", { d: ago(r.t) }));
+      if (!r.me) { var fs = friendState(r.id); sub += " · " + t("c." + fs); }
       return '<li class="' + (r.me ? "me" : "") + '"><span class="rk' + (i < 3 && r.m > 0 ? " top" : "") + '">' + (i < 3 && r.m > 0 ? medals[i] : i + 1) + '</span>' +
         '<span class="av">' + K.esc(r.a) + '</span><span class="who"><b>' + K.esc(r.n) + '</b><span>' + K.esc(sub) + (r.s ? " · 🔥" + r.s : "") + '</span></span>' +
         '<span class="min">' + r.m + '<small>' + (K.lang() === "en" ? "min · " : "分 · ") + K.esc(t("f.pomos", { n: r.p })) + '</small></span>' +
-        (r.me ? "" : '<span class="acts"><button class="btn ghost" type="button" data-cheer="' + K.esc(r.id) + '">' + K.esc(t("f.cheer")) + '</button></span>') + '</li>';
+        (r.me ? "" : '<span class="acts"><button class="btn ghost" type="button" data-chat="' + K.esc(r.id) + '">' + K.esc(t("c.chat")) + (data.unread[r.id] ? " (" + data.unread[r.id] + ")" : "") + '</button><button class="btn ghost" type="button" data-cheer="' + K.esc(r.id) + '">' + K.esc(t("f.cheer")) + '</button></span>') + '</li>';
     }).join("") + '</ol>' + (rows.length === 1 ? '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.boardEmpty")) + '</p>' : "") + '</div>';
 
     if (cheerTo && data.friends[cheerTo]) {
@@ -1067,6 +1237,7 @@
     }).join("　") + '</p>';
     html += '<p class="small muted">' + K.esc(t("f.how")) + '</p>';
     el.innerHTML = html;
+    renderChat();
     if (cheerTo) { var cp = document.getElementById("composer"); if (cp) cp.scrollIntoView({ block: "center" }); }
   }
 
@@ -1076,6 +1247,9 @@
     if (ds.av) { draftAvatar = ds.av; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     if (ds.preset != null) { cheerPick = +ds.preset; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     if (ds.cheer) { cheerTo = ds.cheer; cheerPick = 0; return renderFriends(); }
+    if (ds.chat) { openChat(ds.chat); return; }
+    if (ds.act === "close-chat") { chatWith = null; return renderFriends(); }
+    if (ds.act === "send-chat") { sendChat(); return; }
     if (ds.unfriend) {
       if (!confirm(t("f.removeConfirm", { n: data.friends[ds.unfriend].n }))) return;
       delete data.friends[ds.unfriend]; persist(); return renderFriends();
@@ -1084,7 +1258,7 @@
       case "save-me":
         var nm = document.getElementById("f-name").value.trim().slice(0, 16);
         if (!nm) { K.toast(t("f.needName")); return; }
-        data.me.name = nm; data.me.avatar = draftAvatar; persist(); return renderFriends();
+        data.me.name = nm; data.me.avatar = draftAvatar; persist(); startSocial(); return renderFriends();
       case "edit-me": draftAvatar = data.me.avatar; var keep = data.me.name; data.me.name = ""; renderFriends(); document.getElementById("f-name").value = keep; data.me.name = keep; return;
       case "invite": var w = myWeek(); return shareLink(t("f.shareText", { n: data.me.name, m: w.m }), cardLink(myCard()));
       case "cancel-cheer": cheerTo = null; return renderFriends();
@@ -1116,6 +1290,7 @@
   // 事件
   document.getElementById("room-list").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     var a = b.dataset.act;
     if (a === "join") {
@@ -1133,6 +1308,7 @@
     if (e.target.closest("[data-up]")) { setUp(!session.up); return; }
     var b = e.target.closest("[data-say]"); if (b) say(b.dataset.say);
   });
+  document.getElementById("s-exit").addEventListener("click", function () { document.getElementById("leave").click(); });
   document.getElementById("s-invite").addEventListener("click", function () {
     if (!session || !session.code) return;
     shareLink(t("s.inviteText", { code: session.code }), location.origin + location.pathname + "#room=" + session.code);
@@ -1183,7 +1359,7 @@
 
   K.mountTopbar(document.getElementById("topbar"));
   K.applyStatic();
-  K.onLang(function () { lastSig = ""; show(current); });
+  K.onLang(function () { lastSig = ""; show(current); updateBadge(); });
 
   if (session) {
     // 重新整理後回到房間；離開太久會在 tick 裡自動結束
@@ -1201,6 +1377,7 @@
   } else show("rooms");
   readHash();
   try3d();
+  startSocial(); updateBadge();
   tick();
   setInterval(tick, 1000);
 })();
