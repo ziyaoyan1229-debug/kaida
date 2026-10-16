@@ -170,6 +170,19 @@
   .flags::-webkit-scrollbar { display: none; }
   .flags button { flex: 0 0 auto; font-size: 24px; line-height: 1; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
   .flags button[aria-pressed="true"] { border: 2px solid var(--signal); background: var(--sunk); }
+  .hero h1 { flex: 1; min-width: 0; }
+  .me-chip { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1px solid var(--line); background: var(--paper); border-radius: 14px; padding: 4px 8px 6px; cursor: pointer; max-width: 96px; color: var(--ink); }
+  .me-chip svg { width: 44px; height: 44px; }
+  .me-chip .nm { font-size: 12px; font-weight: 600; max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .me-chip .lb { font-size: 10px; color: var(--muted); }
+  .me-chip[aria-selected="true"] { border: 2px solid var(--signal); background: var(--sunk); }
+  .lb-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .lb-row:first-of-type { border-top: 0; }
+  .lb-row .rk { font-family: var(--f-mono); font-weight: 700; text-align: center; }
+  .lb-row .tn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-row .sc { font-family: var(--f-mono); font-weight: 700; font-size: 18px; text-align: right; }
+  .lb-row.mine { background: var(--sunk); border-radius: 10px; padding-left: 6px; padding-right: 6px; }
+  .demo-tag { font-size: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 0 4px; color: var(--muted); font-weight: 400; margin-left: 4px; }
   .welcome { border: 2px solid var(--signal); }
   .welcome h3 { margin: 0 0 4px; font-size: 18px; }
   .mini-win { padding: 0; overflow: hidden; }
@@ -199,13 +212,14 @@
 <div class="wrap">
   <header class="topbar" id="topbar"></header>
 
-  <div class="hero"><img src="logo.svg" alt="" width="64" height="64"><h1 data-i18n="app.title">番茄讀書會</h1></div>
+  <div class="hero"><img src="logo.svg" alt="" width="64" height="64"><h1 data-i18n="app.title">番茄讀書會</h1>
+    <button type="button" class="me-chip" id="tab-char" aria-selected="false"></button></div>
   <p class="lede" data-i18n="app.lede">開一間溫馨的小讀書房，用四碼房號約朋友進來。大家一起專注、一起休息，完成番茄就拿小木頭幫角色買裝備。</p>
 
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-rooms" aria-selected="true" data-i18n="tab.rooms">讀書房</button>
-    <button role="tab" id="tab-char" aria-selected="false" data-i18n="tab.char">角色</button>
     <button role="tab" id="tab-friends" aria-selected="false" data-i18n="tab.friends">好友</button>
+    <button role="tab" id="tab-team" aria-selected="false" data-i18n="tab.team">團隊</button>
     <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">我的紀錄</button>
   </nav>
 
@@ -263,6 +277,9 @@
   <!-- 好友 -->
   <section id="view-friends" hidden></section>
 
+  <!-- 團隊排行 -->
+  <section id="view-team" hidden></section>
+
   <!-- 我的紀錄 -->
   <section id="view-me" hidden>
     <div class="stats">
@@ -307,7 +324,7 @@
     zh: {
       "app.title": "番茄讀書會",
       "app.lede": "打開就能加入一間安靜的讀書房。同一間房的每個人都照同一個時鐘開始、一起休息，不用註冊。",
-      "tab.rooms": "讀書房", "tab.me": "我的紀錄",
+      "tab.team": "團隊", "chip.set": "個人設定", "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "本週分數", "tm.total": "本週總時數", "tm.bonus": "人數加成", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行（本週）", "tm.boardP": "分數 = 有讀書的成員平均分鐘 × 人數加成。每多 1 位有讀書的隊友加 0.1 倍，最多 2 倍（11 人）。每週一重新計算。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · {h} · ×{b}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "我的紀錄",
       "rooms.how": "讀書房照「整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。",
       "room.hour.name": "整點房", "room.hour.desc": "25 分專注 · 5 分休息 · 每個 :00 和 :30 開始",
       "room.deep.name": "深度房", "room.deep.desc": "50 分專注 · 10 分休息 · 每個整點開始",
@@ -391,7 +408,7 @@
     en: {
       "app.title": "Pomodoro Study Club",
       "app.lede": "Join a quiet study room in one tap. Everyone in a room follows the same clock, so you focus and take breaks together. No sign-up.",
-      "tab.rooms": "Rooms", "tab.me": "My stats",
+      "tab.team": "Teams", "chip.set": "Profile", "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Score this week", "tm.total": "Hours this week", "tm.bonus": "Size bonus", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking (this week)", "tm.boardP": "Score = average minutes of members who studied × size bonus. Each extra studying member adds 0.1×, up to 2× (11 people). Resets every Monday.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} · ×{b}", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "My stats",
       "rooms.how": "Rooms run on the clock: the Half-hour room starts every :00 and :30 (25 min focus, 5 min break), the Deep room starts every hour (50 min focus, 10 min break). Anyone opening a room at the same moment sees the same countdown.",
       "room.hour.name": "Half-hour room", "room.hour.desc": "25 focus · 5 break · starts at :00 and :30",
       "room.deep.name": "Deep room", "room.deep.desc": "50 focus · 10 break · starts every hour",
@@ -527,6 +544,7 @@
     var d = data.days[k] || (data.days[k] = { min: 0, pomo: 0 });
     // 快速測試不算進讀書時數，只給 1 根小木頭
     if (!(session && session.cfg.test)) d.min = Math.round((d.min + ms / MIN) * 10) / 10;
+    if (typeof teamSync === "function" && (!teamSync.at || Date.now() - teamSync.at > 60000 || full)) { teamSync.at = Date.now(); setTimeout(teamSync, 0); }
     if (full) {
       if (!(session && session.cfg.test)) d.pomo += 1;
       data.tasks.t2 = true;
@@ -746,10 +764,13 @@
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session) v = "session";
     current = v;
-    ["rooms", "session", "me", "friends", "char"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
+    ["rooms", "session", "me", "friends", "char", "team"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
     document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
     document.getElementById("tab-char").setAttribute("aria-selected", v === "char");
     document.getElementById("tab-friends").setAttribute("aria-selected", v === "friends");
+    document.getElementById("tab-team").setAttribute("aria-selected", v === "team");
+    renderChip();
+    if (v === "team") { teamSync(); renderTeam(); }
     document.getElementById("tab-me").setAttribute("aria-selected", v === "me");
     if (v === "me") renderMe();
     if (v === "friends") { if (session) creditUntil(Date.now()); renderFriends(); }
@@ -1073,8 +1094,127 @@
     return days <= 0 ? t("f.today") : t("f.daysago", { n: days });
   }
 
+  /* ===== 個人設定（最上面的小角色） ===== */
+  function renderChip() {
+    var el = document.getElementById("tab-char");
+    el.innerHTML = '<svg viewBox="-36 -96 72 102" aria-hidden="true">' + S.preview(Object.assign({}, data.look, { pet: "" })).replace(/<rect[^>]*\/><rect[^>]*\/>/, "") + '</svg>' +
+      '<span class="nm">' + (S.flag(data.me.flag) ? S.flag(data.me.flag) + " " : "") + K.esc(data.me.name || t("chip.new")) + '</span><span class="lb">' + K.esc(t("chip.set")) + '</span>';
+    el.setAttribute("aria-label", t("chip.set"));
+  }
+
+  /* ===== 團隊排行 =====
+     分數 = 這週每位有讀書的成員平均分鐘 × 人數加成
+     人數加成 = 1 + 0.1 ×（有讀書的人數 − 1），最多 2 倍（11 人以上）
+     人越多分數越高，但一個人讀很多的小團隊也有機會贏，不會只看總和 */
+  var teams = window.KaidaNet && window.mqtt ? new window.KaidaNet.Teams() : null, teamJoinTry = null;
+  var TEAM_MAX = 30;
+  var DEMO_TEAMS = [
+    { name: "夜貓讀書團", en: "Night Owls", n: 9, avg: 410 }, { name: "國考衝刺班", en: "Exam Sprint", n: 14, avg: 300 },
+    { name: "Tokyo Study Club", en: "Tokyo Study Club", n: 5, avg: 520 }, { name: "早起寫論文", en: "Early Thesis", n: 3, avg: 610 },
+    { name: "程式自學社", en: "Self-taught Coders", n: 7, avg: 260 }
+  ];
+  function teamBonus(n) { return Math.min(2, 1 + 0.1 * Math.max(0, n - 1)); }
+  function teamStats(tm) {
+    var wk = weekKey(), now = Date.now(), act = 0, sum = 0, all = 0;
+    Object.keys(tm.members).forEach(function (id) {
+      var m = tm.members[id]; all++;
+      if (m.w === wk && m.m > 0 && now - m.ts < 8 * 864e5) { act++; sum += m.m; }
+    });
+    var avg = act ? sum / act : 0;
+    return { all: all, act: act, sum: sum, score: Math.round(avg * teamBonus(act)) };
+  }
+  function boardRows() {
+    var rows = [];
+    if (teams) Object.keys(teams.teams).forEach(function (id) {
+      var tm = teams.teams[id]; if (!tm.name) return;
+      var st = teamStats(tm); if (!st.all) return;
+      rows.push({ id: id, name: tm.name, n: st.all, act: st.act, sum: st.sum, score: st.score });
+    });
+    if (rows.length < 5) DEMO_TEAMS.forEach(function (d, i) {
+      rows.push({ id: "demo" + i, demo: true, name: K.lang() === "en" ? d.en : d.name, n: d.n, act: d.n, sum: d.avg * d.n, score: Math.round(d.avg * teamBonus(d.n)) });
+    });
+    rows.sort(function (a, b) { return b.score - a.score || b.sum - a.sum; });
+    return rows;
+  }
+  function teamSync() {
+    if (!teams || !data.team || !data.me.name) return;
+    teams.publish(data.team.id, data.me.id, { n: data.me.name, fl: data.me.flag, w: weekKey(), m: myWeek().m });
+  }
+  function hrs(min) { return (Math.round(min / 6) / 10) + (K.lang() === "en" ? " h" : " 小時"); }
+  function renderTeam() {
+    var el = document.getElementById("view-team"); if (!el) return;
+    var html = "";
+    if (!teams) html += '<div class="card"><p class="small muted" style="margin:0">' + K.esc(t("tm.offline")) + '</p></div>';
+    if (!data.team) {
+      html += '<div class="card room-card"><h3>' + K.esc(t("tm.joinH")) + '</h3><p class="small muted">' + K.esc(t("tm.joinP")) + '</p>' +
+        '<div style="display:flex;gap:8px"><input type="text" id="tm-code" class="code-input" maxlength="5" autocomplete="off" autocapitalize="off" placeholder="abc12" style="flex:1;min-width:0;letter-spacing:.2em;font-size:22px" value="' + K.esc(teamJoinTry || "") + '"><button class="btn" type="button" data-tm="join">' + K.esc(t("tm.join")) + '</button></div></div>' +
+        '<div class="card room-card"><h3>' + K.esc(t("tm.newH")) + '</h3><p class="small muted">' + K.esc(t("tm.newP")) + '</p>' +
+        '<div style="display:flex;gap:8px"><input type="text" id="tm-name" maxlength="20" placeholder="' + K.esc(t("tm.nameph")) + '" style="flex:1;min-width:0"><button class="btn" type="button" data-tm="create">' + K.esc(t("tm.create")) + '</button></div></div>';
+    } else {
+      var tm = teams && teams.teams[data.team.id], st = tm ? teamStats(tm) : { all: 1, act: 0, sum: 0, score: 0 };
+      var rows = boardRows(), rank = rows.findIndex(function (r) { return r.id === data.team.id; }) + 1;
+      var mem = tm ? Object.keys(tm.members).map(function (id) { return Object.assign({ id: id }, tm.members[id]); }) : [];
+      mem.sort(function (a, b) { return (b.w === weekKey() ? b.m : 0) - (a.w === weekKey() ? a.m : 0); });
+      html += '<div class="card room-card welcome"><h3>' + K.esc(data.team.name) + '</h3>' +
+        '<p class="small muted">' + K.esc(t("tm.code")) + ' <b style="font-family:var(--f-mono);letter-spacing:.15em">' + K.esc(data.team.id) + '</b> · ' + K.esc(t("tm.members", { n: st.all })) + (rank ? ' · ' + K.esc(t("tm.rank", { n: rank })) : "") + '</p>' +
+        '<div class="stats" style="margin:8px 0 12px"><div class="stat"><div class="n">' + st.score + '</div><div class="l">' + K.esc(t("tm.score")) + '</div></div>' +
+        '<div class="stat"><div class="n">' + hrs(st.sum) + '</div><div class="l">' + K.esc(t("tm.total")) + '</div></div>' +
+        '<div class="stat"><div class="n">×' + teamBonus(st.act).toFixed(1) + '</div><div class="l">' + K.esc(t("tm.bonus")) + '</div></div></div>' +
+        mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(m.n) + '</span><span class="small">' + hrs(m.w === weekKey() ? m.m : 0) + '</span></div>'; }).join("") +
+        '<div class="btn-row" style="margin-top:12px"><button class="btn" type="button" data-tm="invite">' + K.esc(t("tm.invite")) + '</button><button class="btn ghost" type="button" data-tm="quit">' + K.esc(t("tm.quit")) + '</button></div></div>';
+    }
+    var rows2 = boardRows().slice(0, 30);
+    html += '<div class="card room-card"><h3>' + K.esc(t("tm.boardH")) + '</h3><p class="small muted">' + K.esc(t("tm.boardP")) + '</p>' +
+      rows2.map(function (r, i) {
+        return '<div class="lb-row' + (data.team && r.id === data.team.id ? " mine" : "") + '"><span class="rk">' + (i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1) + '</span>' +
+          '<div style="min-width:0"><div class="tn">' + K.esc(r.name) + (r.demo ? '<span class="demo-tag">' + K.esc(t("tm.demo")) + '</span>' : "") + '</div>' +
+          '<div class="small muted">' + K.esc(t("tm.rowInfo", { n: r.n, h: hrs(r.sum), b: teamBonus(r.act).toFixed(1) })) + '</div></div>' +
+          '<span class="sc">' + r.score + '</span></div>';
+      }).join("") + '</div>';
+    el.innerHTML = html;
+  }
+  if (teams) teams.onUpdate = function () {
+    if (teamJoinTry && teams.teams[teamJoinTry] && teams.teams[teamJoinTry].name) finishJoinTeam(teamJoinTry);
+    if (current === "team") { clearTimeout(teams.rt); teams.rt = setTimeout(renderTeam, 150); }
+  };
+  function finishJoinTeam(id) {
+    var tm = teams.teams[id]; teamJoinTry = null;
+    if (Object.keys(tm.members).length >= TEAM_MAX && !tm.members[data.me.id]) { K.toast(t("tm.full")); return; }
+    data.team = { id: id, name: tm.name }; persist(); teamSync(); K.toast(t("tm.joined", { n: tm.name })); renderTeam();
+  }
+  document.getElementById("view-team").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tm]"); if (!b) return;
+    var a = b.dataset.tm;
+    if (a !== "invite" && a !== "quit" && needName()) return;
+    if (!teams) { K.toast(t("tm.offline")); return; }
+    if (a === "create") {
+      var nm = (document.getElementById("tm-name").value || "").trim().slice(0, 20);
+      if (!nm) { K.toast(t("tm.needName")); return; }
+      var id = Math.random().toString(36).slice(2, 7).replace(/[^a-z0-9]/g, "x"); while (id.length < 5) id += "x";
+      teams.create(id, nm); data.team = { id: id, name: nm }; persist(); teamSync(); K.toast(t("tm.created")); renderTeam();
+    } else if (a === "join") {
+      var code = (document.getElementById("tm-code").value || "").trim().toLowerCase();
+      if (!/^[a-z0-9]{5}$/.test(code)) { K.toast(t("tm.badCode")); return; }
+      teamJoinTry = code; teams.start(); K.toast(t("tm.finding"));
+      if (teams.teams[code] && teams.teams[code].name) { finishJoinTeam(code); return; }
+      setTimeout(function () { if (teamJoinTry === code) { teamJoinTry = null; K.toast(t("tm.notfound")); renderTeam(); } }, 6000);
+    } else if (a === "invite") {
+      shareLink(t("tm.inviteText", { n: data.team.name, c: data.team.id }), location.origin + location.pathname + "#team=" + data.team.id);
+    } else if (a === "quit") {
+      if (!confirm(t("tm.quitConfirm", { n: data.team.name }))) return;
+      teams.quit(data.team.id, data.me.id); data.team = null; persist(); renderTeam();
+    }
+  });
+  if (teams && data.team) { teams.start(); teamSync(); }
+
   // 打開別人的好友卡連結
   function readHash() {
+    var tmh = location.hash.match(/[#&]team=([a-z0-9]{5})/);
+    if (tmh) {
+      history.replaceState(null, "", location.pathname + location.search);
+      if (!data.team) { teamJoinTry = tmh[1]; if (teams) teams.start(); show("team"); }
+      return;
+    }
     var rm = location.hash.match(/[#&]room=(\d{4})/);
     if (rm) {
       history.replaceState(null, "", location.pathname + location.search);
@@ -1406,6 +1546,7 @@
   });
   document.getElementById("tab-rooms").addEventListener("click", function () { show("rooms"); });
   document.getElementById("tab-friends").addEventListener("click", function () { show("friends"); });
+  document.getElementById("tab-team").addEventListener("click", function () { show("team"); });
   document.getElementById("tab-me").addEventListener("click", function () { if (session) creditUntil(Date.now()); show("me"); });
   document.getElementById("note-save").addEventListener("click", function () {
     var el = document.getElementById("note-text"), v = el.value.trim();
