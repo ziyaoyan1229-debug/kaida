@@ -207,8 +207,16 @@
   .prow h4 { margin: 0 16px 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
   .prow .pad, .prow.pad { padding: 0 16px; margin-top: 0; }
   .prow.pad .code-input { width: 100%; box-sizing: border-box; }
-  .rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 16px; padding: 2px 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
   .rail::-webkit-scrollbar { display: none; }
+  .rail-wrap { position: relative; }
+  .rail-arr { display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 2px 6px rgba(42, 38, 32, .18); }
+  .rail-arr.l { left: 4px; } .rail-arr.r { right: 4px; }
+  @media (hover: hover) and (pointer: fine) {
+    .rail-arr { display: block; }
+    .rail-wrap.at-start .rail-arr.l, .rail-wrap.at-end .rail-arr.r { display: none; }
+    .rail { cursor: grab; } .rail.dragging { cursor: grabbing; scroll-snap-type: none; } .rail.dragging button { pointer-events: none; }
+  }
   .rail button { flex: none; scroll-snap-align: start; min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 15px; white-space: nowrap; cursor: pointer; }
   .rail button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 600; }
   .rail .mcard { width: 150px; min-height: 70px; padding: 10px 12px; border-radius: 14px; text-align: left; white-space: normal; }
@@ -389,7 +397,7 @@
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.sub.quick": "隨機配到有空位的房間", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "隨機配到有空位的房間", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -473,7 +481,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.sub.quick": "Random room with a free seat", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Random room with a free seat", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -825,10 +833,37 @@
     bits.push(t(music().kind ? "mu." + music().kind : "mu.off"));
     return bits.join(" · ");
   }
+  // 電腦上：左右箭頭、滑鼠拖曳、滾輪橫向捲動（手機照樣用手指滑）
+  function railArrows(r) {
+    var w = r.parentNode; if (!w || !w.classList.contains("rail-wrap")) return;
+    w.classList.toggle("at-start", r.scrollLeft < 20);
+    w.classList.toggle("at-end", r.scrollLeft + r.clientWidth > r.scrollWidth - 20);
+  }
+  (function () {
+    var host = document.getElementById("room-list"), drag = null, moved = false;
+    host.addEventListener("scroll", function (e) { if (e.target.classList && e.target.classList.contains("rail")) railArrows(e.target); }, true);
+    host.addEventListener("pointerdown", function (e) {
+      var r = e.target.closest(".rail"); if (!r || e.pointerType !== "mouse" || e.button !== 0) return;
+      drag = { r: r, x: e.clientX, left: r.scrollLeft }; moved = false;
+    });
+    window.addEventListener("pointermove", function (e) {
+      if (!drag) return; var dx = e.clientX - drag.x;
+      if (Math.abs(dx) > 5) { moved = true; drag.r.classList.add("dragging"); }
+      if (moved) drag.r.scrollLeft = drag.left - dx;
+    });
+    window.addEventListener("pointerup", function () { if (drag) drag.r.classList.remove("dragging"); drag = null; });
+    host.addEventListener("click", function (e) { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    host.addEventListener("wheel", function (e) {
+      var r = e.target.closest(".rail"); if (!r || Math.abs(e.deltaX) > Math.abs(e.deltaY) || r.scrollWidth <= r.clientWidth) return;
+      var max = r.scrollWidth - r.clientWidth, next = r.scrollLeft + e.deltaY;
+      if ((e.deltaY < 0 && r.scrollLeft <= 0) || (e.deltaY > 0 && r.scrollLeft >= max)) return; // 到底了就讓頁面捲
+      e.preventDefault(); r.scrollLeft = Math.max(0, Math.min(max, next));
+    }, { passive: false });
+  })();
   function renderRooms() {
     var el = document.getElementById("room-list"), keep = {};
     el.querySelectorAll("[data-rail]").forEach(function (r) { keep[r.dataset.rail] = r.scrollLeft; });
-    var row = function (key, title, inner) { return '<div class="prow"><h4>' + K.esc(title) + '</h4><div class="rail" data-rail="' + key + '">' + inner + '</div></div>'; };
+    var row = function (key, title, inner) { return '<div class="prow"><h4>' + K.esc(title) + '</h4><div class="rail-wrap"><button type="button" class="rail-arr l" data-rail-go="-1" aria-label="' + K.esc(t("r.prev")) + '">‹</button><div class="rail" data-rail="' + key + '">' + inner + '</div><button type="button" class="rail-arr r" data-rail-go="1" aria-label="' + K.esc(t("r.next")) + '">›</button></div></div>'; };
     var starts = START_KEYS.map(function (k) {
       return '<button type="button" class="mcard" data-rtab="' + k + '" aria-pressed="' + (roomTab === k) + '"><b>' + K.esc(t("r.tab." + k)) + '</b><span>' + K.esc(t("r.sub." + k)) + '</span></button>';
     }).join("");
@@ -856,7 +891,7 @@
         '<div class="pick-foot"><p class="small muted" id="start-sum">' + K.esc(startSummary()) + '</p>' +
         '<button class="btn block start-btn" type="button" data-act="' + act + '">' + K.esc(t("r.start")) + '</button></div>' +
       '</div>';
-    el.querySelectorAll("[data-rail]").forEach(function (r) { var on = r.querySelector('[aria-pressed="true"]'); if (keep[r.dataset.rail] != null) r.scrollLeft = keep[r.dataset.rail]; else if (on) r.scrollLeft = Math.max(0, on.offsetLeft - r.offsetLeft - 16); });
+    el.querySelectorAll("[data-rail]").forEach(function (r) { var on = r.querySelector('[aria-pressed="true"]'); if (keep[r.dataset.rail] != null) r.scrollLeft = keep[r.dataset.rail]; else if (on) r.scrollLeft = Math.max(0, on.offsetLeft - r.firstElementChild.offsetLeft - 40); railArrows(r); });
   }
 
   // 快速對話對應的動作（順序跟 s.says 一樣）：舉手打氣、握拳、舉書、揮手、打哈欠、點頭、喝水、端咖啡、抱頭、比讚、鞠躬
@@ -1589,6 +1624,7 @@
   // 事件
   document.getElementById("room-list").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.railGo) { var rl = b.parentNode.querySelector(".rail"); rl.scrollBy({ left: +b.dataset.railGo * rl.clientWidth * 0.8, behavior: "smooth" }); return; }
     var mark = function () { b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); var sm = document.getElementById("start-sum"); if (sm) sm.textContent = startSummary(); };
     if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); mark(); return; }
     if (b.dataset.premu != null) { music().kind = b.dataset.premu; K.save(STORE, data); mark(); return; }
