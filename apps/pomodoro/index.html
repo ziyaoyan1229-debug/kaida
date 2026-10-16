@@ -207,7 +207,7 @@
   .prow h4 { margin: 0 16px 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
   .prow .pad, .prow.pad { padding: 0 16px; margin-top: 0; }
   .prow.pad .code-input { width: 100%; box-sizing: border-box; }
-  .rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 16px; padding: 2px 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
   .rail::-webkit-scrollbar { display: none; }
   .rail-wrap { position: relative; }
   .rail-arr { display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 2px 6px rgba(42, 38, 32, .18); }
@@ -836,8 +836,8 @@
   // 電腦上：左右箭頭、滑鼠拖曳、滾輪橫向捲動（手機照樣用手指滑）
   function railArrows(r) {
     var w = r.parentNode; if (!w || !w.classList.contains("rail-wrap")) return;
-    w.classList.toggle("at-start", r.scrollLeft < 4);
-    w.classList.toggle("at-end", r.scrollLeft + r.clientWidth > r.scrollWidth - 4);
+    w.classList.toggle("at-start", r.scrollLeft < 20);
+    w.classList.toggle("at-end", r.scrollLeft + r.clientWidth > r.scrollWidth - 20);
   }
   (function () {
     var host = document.getElementById("room-list"), drag = null, moved = false;
