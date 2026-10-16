@@ -1,0 +1,473 @@
+/* 台灣夜市地圖：純前端，資料在 data.js，收藏與封測進度存在瀏覽器 */
+(function () {
+  "use strict";
+
+  var MARKETS = window.NM_MARKETS;
+  var CITIES = window.NM_CITIES;
+
+  var T = {
+    zh: {
+      title: "台灣夜市地圖", byKaida: "開達 Kaida 封測作品", tasksBtn: "封測任務",
+      searchPh: "搜尋夜市、城市或小吃（例如：蚵仔煎）", all: "全部", today: "今天有開", near: "離我最近", favs: "想去清單",
+      mustEat: "必吃小吃", openDays: "營業日", hours: "時間（約）", transit: "交通", distance: "距離",
+      warn: "營業時間與攤位常有變動，請以現場為準。", navigate: "Google 地圖導航", share: "分享", report: "回報資料錯誤",
+      favAdd: "☆ 加入想去", favDel: "★ 已在想去清單",
+      betaTag: "開達封測 · 第一輪", tasksTitle: "幫我們試試看這 4 件事", tasksIntro: "完成後會自動打勾。最後留一句回饋，就是最大的幫忙。",
+      fbTitle: "你的回饋", fbPh: "哪裡好用？哪裡卡住？少了哪個夜市？", fbSave: "送出回饋", fbReset: "重新開始任務",
+      fbFine: "這是封測版本，回饋先存在你的手機，送出時會一併複製，方便貼到開達作品頁或 Threads。",
+      tasks: [
+        ["找到離你最近的夜市", "按「離我最近」，允許定位"],
+        ["用小吃找夜市", "搜尋一種想吃的，例如「臭豆腐」或「胡椒餅」"],
+        ["收藏 3 個想去的夜市", "點夜市旁邊的星星"],
+        ["打開一個今天有開的夜市", "看看必吃小吃和怎麼去"]
+      ],
+      results: function (n) { return "共 " + n + " 個夜市"; },
+      sortedNear: "依距離排序", dailyOpen: "每天", checkDays: "不固定，出發前請確認",
+      openNow: "營業中", opensAt: function (t) { return "今天 " + t + " 開始"; }, closedToday: "今天公休",
+      endedToday: "今天已收攤", nextOpen: function (d) { return "下次：" + d; }, unknown: "營業日請先確認",
+      week: ["週日", "週一", "週二", "週三", "週四", "週五", "週六"], weekJoin: "、",
+      empty: "找不到符合的夜市。", clear: "清除篩選", noFavs: "還沒有收藏。點星星把想去的夜市加進來。",
+      locating: "定位中…", locFail: "無法取得位置，請確認瀏覽器允許定位。", copied: "已複製連結",
+      fbSaved: "謝謝！回饋已存下並複製。", fbEmpty: "先寫一句話再送出喔", reportPre: function (n) { return "【資料錯誤】" + n + "："; },
+      resetDone: "任務已重新開始", taskDone: function (t) { return "封測任務完成：" + t; }, allDone: "4 個任務都完成了，謝謝你！",
+      source: function (d) { return "夜市資料由開達整理自公開資訊（" + d + "），未逐一實地查證，座標為大致位置。看到錯誤請按「回報資料錯誤」。"; },
+      km: function (k) { return k < 1 ? Math.round(k * 1000) + " 公尺" : k.toFixed(1) + " 公里"; },
+      langBtn: "EN", shareText: function (n) { return n + "：今天有開嗎？必吃什麼？"; }
+    },
+    en: {
+      title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
+      searchPh: "Search markets, cities or food (e.g. oyster omelette)", all: "All", today: "Open today", near: "Nearest", favs: "Want to go",
+      mustEat: "Must-eat", openDays: "Open days", hours: "Hours (approx.)", transit: "Getting there", distance: "Distance",
+      warn: "Hours and stalls change often. Please check on site.", navigate: "Directions in Google Maps", share: "Share", report: "Report an error",
+      favAdd: "☆ Add to list", favDel: "★ On your list",
+      betaTag: "Kaida beta · round 1", tasksTitle: "Help us test these 4 things", tasksIntro: "They tick themselves off as you go. A one-line note at the end helps the most.",
+      fbTitle: "Your feedback", fbPh: "What worked? Where did you get stuck? Which market is missing?", fbSave: "Send feedback", fbReset: "Restart tasks",
+      fbFine: "This is a beta. Feedback is kept on your phone and copied when you send it, so you can paste it on Kaida or Threads.",
+      tasks: [
+        ["Find the night market nearest you", "Tap “Nearest” and allow location"],
+        ["Find a market by food", "Search for something, e.g. “stinky tofu”"],
+        ["Save 3 markets you want to visit", "Tap the star next to a market"],
+        ["Open a market that is open today", "Check its must-eats and how to get there"]
+      ],
+      results: function (n) { return n + (n === 1 ? " night market" : " night markets"); },
+      sortedNear: "sorted by distance", dailyOpen: "Every day", checkDays: "Varies, check before going",
+      openNow: "Open now", opensAt: function (t) { return "Opens today at " + t; }, closedToday: "Closed today",
+      endedToday: "Closed for tonight", nextOpen: function (d) { return "Next: " + d; }, unknown: "Check opening days",
+      week: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], weekJoin: ", ",
+      empty: "No night markets match.", clear: "Clear filters", noFavs: "Nothing saved yet. Tap a star to add a market.",
+      locating: "Finding you…", locFail: "Couldn't get your location. Please allow location access.", copied: "Link copied",
+      fbSaved: "Thanks! Feedback saved and copied.", fbEmpty: "Write a line first", reportPre: function (n) { return "[Data error] " + n + ": "; },
+      resetDone: "Tasks restarted", taskDone: function (t) { return "Beta task done: " + t; }, allDone: "All 4 tasks done. Thank you!",
+      source: function (d) { return "Market data compiled by Kaida from public sources (" + d + "), not verified on site; pins are approximate. Spot a mistake? Tap “Report an error”."; },
+      km: function (k) { return k < 1 ? Math.round(k * 1000) + " m" : k.toFixed(1) + " km"; },
+      langBtn: "中", shareText: function (n) { return n + ": open today? What to eat?"; }
+    }
+  };
+
+  /* ---------- 狀態 ---------- */
+  function load(key, fallback) {
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+  }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* 無痕模式時忽略 */ } }
+
+  var lang = "zh";
+  try { lang = localStorage.getItem("kaida-lang") === "en" ? "en" : "zh"; } catch (e) { /* 預設中文 */ }
+  var state = {
+    q: "", city: "all", today: false, near: false, favOnly: false,
+    favs: load("nm-favs", []), tasks: load("nm-tasks", {}), me: null, selected: null
+  };
+  var t = function (k) { return T[lang][k]; };
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- 台北時間與營業狀態 ---------- */
+  function taipeiNow() {
+    var parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Taipei", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+    var o = {};
+    parts.forEach(function (p) { o[p.type] = p.value; });
+    var day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(o.weekday);
+    return { day: day, min: (parseInt(o.hour, 10) % 24) * 60 + parseInt(o.minute, 10) };
+  }
+  function toMin(s) { var p = s.split(":"); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
+  function opensOn(m, day) { return m.days === null || (Array.isArray(m.days) && m.days.indexOf(day) >= 0); }
+  function status(m) {
+    if (!Array.isArray(m.days) && m.days !== null) return { cls: "unknown", text: t("unknown"), today: null };
+    var now = taipeiNow();
+    var h = m.hours.split("–"), start = toMin(h[0]), end = toMin(h[1]);
+    var overnight = end <= start;
+    var yesterday = (now.day + 6) % 7;
+    if (overnight && now.min < end && opensOn(m, yesterday)) return { cls: "open", text: t("openNow"), today: true };
+    if (opensOn(m, now.day)) {
+      if (now.min >= start && (overnight || now.min < end)) return { cls: "open", text: t("openNow"), today: true };
+      if (now.min < start) return { cls: "open", text: t("opensAt")(h[0]), today: true };
+      return { cls: "closed", text: t("endedToday") + " · " + t("nextOpen")(nextDay(m, now.day)), today: true };
+    }
+    return { cls: "closed", text: t("closedToday") + " · " + t("nextOpen")(nextDay(m, now.day)), today: false };
+  }
+  function nextDay(m, day) {
+    for (var i = 1; i <= 7; i++) { var d = (day + i) % 7; if (opensOn(m, d)) return t("week")[d]; }
+    return "";
+  }
+  function daysText(m) {
+    if (m.days === null) return t("dailyOpen");
+    if (!Array.isArray(m.days)) return t("checkDays");
+    return m.days.slice().sort(function (a, b) { return ((a + 6) % 7) - ((b + 6) % 7); }).map(function (d) { return t("week")[d]; }).join(t("weekJoin"));
+  }
+
+  /* ---------- 小工具 ---------- */
+  function name(m) { return lang === "zh" ? m.zh : m.en; }
+  function cityName(key) { var c = CITIES.filter(function (x) { return x.key === key; })[0]; return c ? c[lang] : key; }
+  function foods(m) { return lang === "zh" ? m.foodsZh : m.foodsEn; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function hi(s, q) {
+    if (!q) return esc(s);
+    var i = s.toLowerCase().indexOf(q.toLowerCase());
+    if (i < 0) return esc(s);
+    return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + q.length)) + "</mark>" + esc(s.slice(i + q.length));
+  }
+  function distKm(a, b) {
+    var R = 6371, rad = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  var toastTimer;
+  function toast(msg) {
+    var el = $("toast");
+    el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2400);
+  }
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).catch(function () {});
+    var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) { /* 忽略 */ }
+    ta.remove();
+    return Promise.resolve();
+  }
+
+  /* ---------- 篩選 ---------- */
+  function matches(m, q) {
+    if (!q) return true;
+    var hay = [m.zh, m.en, cityName(m.city), CITIES.filter(function (c) { return c.key === m.city; }).map(function (c) { return c.zh + " " + c.en; }).join(" ")]
+      .concat(m.foodsZh, m.foodsEn).join(" ").toLowerCase();
+    return q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
+  }
+  function foodHit(m, q) {
+    if (!q) return false;
+    return m.foodsZh.concat(m.foodsEn).some(function (f) { return f.toLowerCase().indexOf(q.toLowerCase()) >= 0; });
+  }
+  function visible() {
+    var q = state.q.trim();
+    var list = MARKETS.filter(function (m) {
+      if (state.city !== "all" && m.city !== state.city) return false;
+      if (state.favOnly && state.favs.indexOf(m.id) < 0) return false;
+      if (state.today && status(m).today !== true) return false;
+      return matches(m, q);
+    });
+    if (state.near && state.me) {
+      list.sort(function (a, b) { return distKm(state.me, a) - distKm(state.me, b); });
+    }
+    return list;
+  }
+
+  /* ---------- 地圖 ---------- */
+  var map = L.map("map", { zoomControl: true, attributionControl: true, tap: true }).setView([23.75, 120.95], 7);
+  map.attributionControl.setPrefix(false);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>"
+  }).addTo(map);
+
+  var PIN = '<svg viewBox="0 0 30 38" aria-hidden="true"><path class="b" d="M15 37C10 29 2 22.5 2 14a13 13 0 0 1 26 0c0 8.5-8 15-13 23z"/>' +
+    '<path class="i" d="M8 10h14v4a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0a1.75 1.75 0 0 1-3.5 0z"/>' +
+    '<rect class="i" x="8.5" y="15" width="1.4" height="5"/><rect class="i" x="20.1" y="15" width="1.4" height="5"/><rect class="i" x="7.5" y="19.5" width="15" height="2" rx=".6"/></svg>';
+  var markers = {};
+  function pinIcon(m) {
+    var st = status(m);
+    var cls = "nm-pin" + (st.today === false ? " off" : "") + (state.selected === m.id ? " sel" : "");
+    return L.divIcon({ className: "", html: '<div class="' + cls + '">' + PIN + "</div>", iconSize: [30, 38], iconAnchor: [15, 37] });
+  }
+  MARKETS.forEach(function (m) {
+    var mk = L.marker([m.lat, m.lng], { icon: pinIcon(m), title: m.zh, keyboard: true, riseOnHover: true });
+    mk.on("click", function () { openDetail(m.id); });
+    markers[m.id] = mk;
+  });
+  var meMarker = null;
+
+  function syncMarkers(list) {
+    var ids = list.map(function (m) { return m.id; });
+    MARKETS.forEach(function (m) {
+      var mk = markers[m.id];
+      if (ids.indexOf(m.id) >= 0) {
+        mk.setIcon(pinIcon(m));
+        mk.options.title = name(m);
+        if (!map.hasLayer(mk)) mk.addTo(map);
+        mk.setZIndexOffset(state.selected === m.id ? 1000 : 0);
+      } else if (map.hasLayer(mk)) {
+        map.removeLayer(mk);
+      }
+    });
+  }
+  function fitTo(list) {
+    var pts = list.map(function (m) { return [m.lat, m.lng]; });
+    if (state.me && state.near && state.city === "all") pts.push([state.me.lat, state.me.lng]);
+    if (!pts.length) return;
+    if (pts.length === 1) { map.setView(pts[0], 15); return; }
+    map.fitBounds(pts, { padding: [36, 36], maxZoom: 15 });
+  }
+
+  /* ---------- 清單 ---------- */
+  function renderChips() {
+    var counts = {};
+    MARKETS.forEach(function (m) { counts[m.city] = (counts[m.city] || 0) + 1; });
+    var html = '<button class="chip" type="button" data-city="all" aria-pressed="' + (state.city === "all") + '">' + t("all") + "<small>" + MARKETS.length + "</small></button>";
+    CITIES.forEach(function (c) {
+      if (!counts[c.key]) return;
+      html += '<button class="chip" type="button" data-city="' + c.key + '" aria-pressed="' + (state.city === c.key) + '">' + c[lang] + "<small>" + counts[c.key] + "</small></button>";
+    });
+    $("cityChips").innerHTML = html;
+  }
+
+  function render(opts) {
+    opts = opts || {};
+    var list = visible();
+    var q = state.q.trim();
+    var line = t("results")(list.length);
+    if (state.near && state.me) line += " · " + t("sortedNear");
+    $("resultLine").textContent = line;
+    $("favCount").textContent = state.favs.length;
+
+    if (!list.length) {
+      $("list").innerHTML = '<li class="empty">' + (state.favOnly && !state.favs.length ? t("noFavs") : t("empty")) +
+        '<br><button class="btn" type="button" id="clearBtn">' + t("clear") + "</button></li>";
+      $("clearBtn").onclick = clearFilters;
+    } else {
+      $("list").innerHTML = list.map(function (m) {
+        var st = status(m);
+        var fav = state.favs.indexOf(m.id) >= 0;
+        var fs = foods(m);
+        var shown = q ? fs.filter(function (f) { return f.toLowerCase().indexOf(q.toLowerCase()) >= 0; }).concat(fs.filter(function (f) { return f.toLowerCase().indexOf(q.toLowerCase()) < 0; })) : fs;
+        return '<li><div class="item' + (state.selected === m.id ? " active" : "") + '" role="button" tabindex="0" data-id="' + m.id + '">' +
+          "<h3>" + hi(name(m), q) + "</h3>" +
+          '<div class="side"><button class="star" type="button" data-fav="' + m.id + '" aria-pressed="' + fav + '" aria-label="' + esc(fav ? t("favDel") : t("favAdd")) + '">' + (fav ? "★" : "☆") + "</button>" +
+          (state.me ? '<span class="dist">' + t("km")(distKm(state.me, m)) + "</span>" : "") + "</div>" +
+          '<div class="meta"><span>' + esc(cityName(m.city)) + '</span><span class="badge ' + st.cls + '">' + esc(st.text) + "</span></div>" +
+          '<div class="foods-line">' + shown.slice(0, 4).map(function (f) { return hi(f, q); }).join(" · ") + "</div>" +
+          "</div></li>";
+      }).join("");
+    }
+    syncMarkers(list);
+    if (opts.fit) fitTo(list);
+
+    if (q && list.some(function (m) { return foodHit(m, q); })) doneTask("search");
+  }
+
+  function clearFilters() {
+    state.q = ""; state.city = "all"; state.today = false; state.favOnly = false;
+    $("q").value = "";
+    setPressed("todayBtn", false); setPressed("favBtn", false);
+    renderChips(); render({ fit: true });
+  }
+  function setPressed(id, v) { $(id).setAttribute("aria-pressed", String(v)); }
+
+  /* ---------- 收藏 ---------- */
+  function toggleFav(id) {
+    var i = state.favs.indexOf(id);
+    if (i >= 0) state.favs.splice(i, 1); else state.favs.push(id);
+    save("nm-favs", state.favs);
+    if (state.favs.length >= 3) doneTask("fav");
+    render();
+    if (state.selected === id) fillFavBtn(id);
+  }
+  function fillFavBtn(id) {
+    var fav = state.favs.indexOf(id) >= 0;
+    $("dFav").textContent = fav ? t("favDel") : t("favAdd");
+    $("dFav").setAttribute("aria-pressed", String(fav));
+  }
+
+  /* ---------- 詳細面板 ---------- */
+  var lastFocus = null;
+  function openSheet(id) {
+    lastFocus = document.activeElement;
+    $(id).hidden = false;
+    var c = $(id).querySelector(".close"); if (c) c.focus();
+  }
+  function closeSheet(el) {
+    el.hidden = true;
+    if (el.id === "detail") {
+      var prev = state.selected; state.selected = null;
+      if (prev) { render(); }
+      if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+    }
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function openDetail(id) {
+    var m = MARKETS.filter(function (x) { return x.id === id; })[0];
+    if (!m) return;
+    state.selected = id;
+    var st = status(m);
+    $("dMeta").textContent = cityName(m.city).toUpperCase() + " · " + (lang === "zh" ? m.en : m.zh);
+    $("dName").textContent = name(m);
+    $("dStatus").innerHTML = '<span class="badge ' + st.cls + '">' + esc(st.text) + "</span>";
+    $("dNote").textContent = lang === "zh" ? m.noteZh : m.noteEn;
+    $("dFoods").innerHTML = foods(m).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("");
+    $("dDays").textContent = daysText(m);
+    $("dHours").textContent = m.hours;
+    $("dTransit").textContent = lang === "zh" ? m.transitZh : m.transitEn;
+    if (state.me) { $("dDistRow").hidden = false; $("dDist").textContent = t("km")(distKm(state.me, m)); } else { $("dDistRow").hidden = true; }
+    $("dNav").href = "https://www.google.com/maps/dir/?api=1&destination=" + m.lat + "," + m.lng;
+    fillFavBtn(id);
+    if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+    render();
+    map.setView([m.lat, m.lng], Math.max(map.getZoom(), 14), { animate: true });
+    openSheet("detail");
+    if (st.today === true) doneTask("today");
+  }
+
+  /* ---------- 封測任務 ---------- */
+  var TASK_KEYS = ["near", "search", "fav", "today"];
+  function doneTask(key) {
+    if (state.tasks[key]) return;
+    state.tasks[key] = true;
+    save("nm-tasks", state.tasks);
+    renderTasks();
+    var n = TASK_KEYS.filter(function (k) { return state.tasks[k]; }).length;
+    toast(n === 4 ? t("allDone") : t("taskDone")(t("tasks")[TASK_KEYS.indexOf(key)][0]));
+  }
+  function renderTasks() {
+    var n = 0;
+    $("taskList").innerHTML = TASK_KEYS.map(function (k, i) {
+      var d = !!state.tasks[k]; if (d) n++;
+      return '<li class="' + (d ? "done" : "") + '"><span class="ck">' + (d ? "✓" : i + 1) + "</span><div><strong>" + esc(t("tasks")[i][0]) + "</strong><small>" + esc(t("tasks")[i][1]) + "</small></div></li>";
+    }).join("");
+    $("taskCount").textContent = n + "/4";
+  }
+
+  /* ---------- 定位 ---------- */
+  function locate(cb) {
+    if (!navigator.geolocation) { toast(t("locFail")); return; }
+    toast(t("locating"));
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      state.me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (meMarker) meMarker.setLatLng([state.me.lat, state.me.lng]);
+      else meMarker = L.marker([state.me.lat, state.me.lng], { icon: L.divIcon({ className: "", html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, zIndexOffset: 2000 }).addTo(map);
+      $("toast").classList.remove("show");
+      cb && cb();
+    }, function () {
+      toast(t("locFail"));
+      state.near = false; setPressed("nearBtn", false);
+    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
+  }
+
+  /* ---------- 語言與風格 ---------- */
+  function applyLang() {
+    document.documentElement.lang = lang === "zh" ? "zh-Hant-TW" : "en";
+    document.title = t("title") + " · " + (lang === "zh" ? "開達 Kaida" : "Kaida");
+    document.querySelectorAll("[data-i18n]").forEach(function (el) { el.textContent = t(el.getAttribute("data-i18n")); });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function (el) { el.placeholder = t(el.getAttribute("data-i18n-ph")); });
+    $("langBtn").textContent = t("langBtn");
+    $("sourceNote").textContent = t("source")(window.NM_DATA_UPDATED);
+    renderChips(); renderTasks(); render();
+    if (state.selected && !$("detail").hidden) openDetail(state.selected);
+  }
+  function applySkin(skin) {
+    if (skin === "cyber") document.documentElement.setAttribute("data-skin", "cyber");
+    else document.documentElement.removeAttribute("data-skin");
+    document.querySelector('meta[name="theme-color"]').content = skin === "cyber" ? "#07080d" : "#2a2620";
+  }
+
+  /* ---------- 事件 ---------- */
+  var qTimer;
+  $("q").addEventListener("input", function (e) {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(function () { state.q = e.target.value; render({ fit: true }); }, 120);
+  });
+  $("cityChips").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-city]"); if (!b) return;
+    state.city = b.getAttribute("data-city");
+    renderChips(); render({ fit: true });
+  });
+  $("todayBtn").onclick = function () { state.today = !state.today; setPressed("todayBtn", state.today); render({ fit: true }); };
+  $("favBtn").onclick = function () { state.favOnly = !state.favOnly; setPressed("favBtn", state.favOnly); render({ fit: true }); };
+  $("nearBtn").onclick = function () {
+    if (state.near) { state.near = false; setPressed("nearBtn", false); render(); return; }
+    state.near = true; setPressed("nearBtn", true);
+    locate(function () {
+      render();
+      var first = visible()[0];
+      if (first) { map.fitBounds([[state.me.lat, state.me.lng], [first.lat, first.lng]], { padding: [50, 50], maxZoom: 15 }); doneTask("near"); }
+    });
+  };
+  $("locateBtn").onclick = function () { locate(function () { map.setView([state.me.lat, state.me.lng], 14); render(); }); };
+
+  $("list").addEventListener("click", function (e) {
+    var s = e.target.closest("[data-fav]");
+    if (s) { e.stopPropagation(); toggleFav(s.getAttribute("data-fav")); return; }
+    var it = e.target.closest("[data-id]"); if (it) openDetail(it.getAttribute("data-id"));
+  });
+  $("list").addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches(".item")) { e.preventDefault(); openDetail(e.target.getAttribute("data-id")); }
+  });
+
+  document.querySelectorAll(".sheet").forEach(function (sh) {
+    sh.addEventListener("click", function (e) { if (e.target === sh || e.target.closest("[data-close]")) closeSheet(sh); });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") document.querySelectorAll(".sheet:not([hidden])").forEach(closeSheet);
+  });
+
+  $("dFav").onclick = function () { if (state.selected) toggleFav(state.selected); };
+  $("dShare").onclick = function () {
+    var m = MARKETS.filter(function (x) { return x.id === state.selected; })[0]; if (!m) return;
+    var url = location.origin + location.pathname + "#" + m.id;
+    if (navigator.share) navigator.share({ title: name(m), text: t("shareText")(name(m)), url: url }).catch(function () {});
+    else copy(url).then(function () { toast(t("copied")); });
+  };
+  $("dReport").onclick = function () {
+    var m = MARKETS.filter(function (x) { return x.id === state.selected; })[0]; if (!m) return;
+    closeSheet($("detail"));
+    var ta = $("fbText");
+    ta.value = t("reportPre")(m.zh) + (ta.value ? "\n" + ta.value : "");
+    openSheet("tasks");
+    ta.focus(); ta.setSelectionRange(t("reportPre")(m.zh).length, t("reportPre")(m.zh).length);
+  };
+
+  $("tasksBtn").onclick = function () { renderTasks(); openSheet("tasks"); };
+  $("fbText").value = load("nm-feedback-draft", "");
+  $("fbText").addEventListener("input", function (e) { save("nm-feedback-draft", e.target.value); });
+  $("fbSave").onclick = function () {
+    var v = $("fbText").value.trim();
+    if (!v) { toast(t("fbEmpty")); return; }
+    var all = load("nm-feedback", []);
+    all.push({ at: new Date().toISOString(), text: v, tasks: state.tasks, lang: lang });
+    save("nm-feedback", all);
+    var done = TASK_KEYS.filter(function (k) { return state.tasks[k]; }).length;
+    copy("#開達封測 " + t("title") + "（" + done + "/4）\n" + v + "\n" + location.origin + location.pathname);
+    $("fbText").value = ""; save("nm-feedback-draft", "");
+    toast(t("fbSaved"));
+  };
+  $("fbReset").onclick = function () { state.tasks = {}; save("nm-tasks", state.tasks); renderTasks(); toast(t("resetDone")); };
+
+  $("langBtn").onclick = function () {
+    lang = lang === "zh" ? "en" : "zh";
+    try { localStorage.setItem("kaida-lang", lang); } catch (e) { /* 忽略 */ }
+    applyLang();
+  };
+  $("skinBtn").onclick = function () {
+    var next = document.documentElement.getAttribute("data-skin") === "cyber" ? "beige" : "cyber";
+    applySkin(next);
+    try { localStorage.setItem("kaida-skin", next); } catch (e) { /* 忽略 */ }
+  };
+
+  window.addEventListener("hashchange", function () {
+    var id = location.hash.slice(1);
+    if (id && id !== state.selected) openDetail(id);
+  });
+
+  /* ---------- 開始 ---------- */
+  applySkin(document.documentElement.getAttribute("data-skin") === "cyber" ? "cyber" : "beige");
+  applyLang();
+  // 每分鐘更新營業狀態
+  setInterval(function () { render(); }, 60000);
+  var startId = location.hash.slice(1);
+  if (startId && MARKETS.some(function (m) { return m.id === startId; })) openDetail(startId);
+})();
