@@ -24,7 +24,41 @@
     { id: "glasses", slot: "face", price: 4, zh: "圓框眼鏡", en: "Round glasses", color: "#4a3a2c" },
     { id: "scarf", slot: "neck", price: 4, zh: "紅圍巾", en: "Red scarf", color: "#c2453b" },
     { id: "phones", slot: "ears", price: 6, zh: "耳機", en: "Headphones", color: "#5a6b7a" },
-    { id: "cat", slot: "pet", price: 12, zh: "小貓夥伴", en: "Kitten buddy", color: "#e3a35b" }
+    { id: "cat", slot: "pet", price: 12, zh: "小貓夥伴", en: "Kitten buddy", color: "#e3a35b" },
+    // 上衣
+    { id: "cardigan", slot: "top", price: 5, zh: "米色開襟衫", en: "Oat cardigan", color: "#e6d3b3", open: "#f8f4ec" },
+    { id: "plaid", slot: "top", price: 6, zh: "格紋襯衫", en: "Plaid shirt", color: "#c8574a", plaid: "#8a3a32" },
+    { id: "sport", slot: "top", price: 6, zh: "運動外套", en: "Track jacket", color: "#3f6f6a", zip: "#f3efe6" },
+    { id: "overalls", slot: "top", price: 7, zh: "吊帶褲", en: "Overalls", color: "#f3efe6", bib: "#5d7fa8" },
+    // 髮型
+    { id: "bob", slot: "style", price: 3, zh: "妹妹頭", en: "Bob cut" },
+    { id: "spiky", slot: "style", price: 4, zh: "刺刺頭", en: "Spiky hair" },
+    { id: "pony", slot: "style", price: 4, zh: "馬尾", en: "Ponytail" },
+    { id: "long", slot: "style", price: 4, zh: "長直髮", en: "Long hair" },
+    { id: "buns", slot: "style", price: 5, zh: "雙丸子頭", en: "Space buns" },
+    { id: "curly", slot: "style", price: 5, zh: "捲捲頭", en: "Curly hair" },
+    // 帽子與頭飾
+    { id: "flower", slot: "hat", price: 3, zh: "小花髮夾", en: "Flower clip", color: "#e7a6a8" },
+    { id: "cap", slot: "hat", price: 4, zh: "棒球帽", en: "Baseball cap", color: "#5d7fa8" },
+    { id: "bunnyband", slot: "hat", price: 7, zh: "兔耳髮箍", en: "Bunny ears", color: "#f8f4ec" },
+    // 配飾
+    { id: "star", slot: "face", price: 3, zh: "星星貼紙", en: "Star sticker", color: "#e8b93a" },
+    { id: "shades", slot: "face", price: 5, zh: "墨鏡", en: "Sunglasses", color: "#2a2620" },
+    { id: "bowtie", slot: "neck", price: 4, zh: "蝴蝶結", en: "Bow tie", color: "#c2453b" },
+    { id: "pearls", slot: "neck", price: 6, zh: "珍珠項鍊", en: "Pearl necklace", color: "#f8f4ec" },
+    { id: "muffs", slot: "ears", price: 5, zh: "毛毛耳罩", en: "Earmuffs", color: "#e7a6a8" },
+    { id: "backpack", slot: "back", price: 6, zh: "小背包", en: "Little backpack", color: "#e0b04f" },
+    { id: "wings", slot: "back", price: 15, zh: "天使翅膀", en: "Angel wings", color: "#ffffff" },
+    // 寵物
+    { id: "chick", slot: "pet", price: 8, zh: "小雞", en: "Chick", color: "#f2cc4a" },
+    { id: "shiba", slot: "pet", price: 12, zh: "柴犬", en: "Shiba", color: "#d9914a" },
+    { id: "bunny", slot: "pet", price: 12, zh: "小白兔", en: "Bunny", color: "#f8f4ec" },
+    { id: "panda", slot: "pet", price: 18, zh: "熊貓寶寶", en: "Baby panda", color: "#f8f4ec" }
+  ];
+  // 商店分類
+  var CATS = [
+    { id: "top", slots: ["top"] }, { id: "style", slots: ["style"] }, { id: "hat", slots: ["hat"] },
+    { id: "acc", slots: ["face", "neck", "ears", "back"] }, { id: "pet", slots: ["pet"] }
   ];
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
 
@@ -33,7 +67,7 @@
   var BASE = { read: "read", novel: "read", research: "read", homework: "homework", report: "homework", vocab: "homework", journal: "homework", code: "pc", pc: "pc", lesson: "pc", draw: "draw", calligraphy: "draw" };
 
   /* 預設角色 */
-  function defaultLook() { return { g: "girl", skin: 0, hair: 0, top: "tee-blue", hat: "", face: "", neck: "", ears: "", pet: "" }; }
+  function defaultLook() { return { g: "girl", skin: 0, hair: 0, top: "tee-blue", style: "", hat: "", face: "", neck: "", ears: "", back: "", pet: "" }; }
 
   /* ===== 角色 ===== */
   // 以腳底中心為原點，大約 60 高。pose: desk / stand / sofa / mug / snack
@@ -50,12 +84,24 @@
       s += '<rect x="-8" y="-12" width="6.5" height="12" rx="3" fill="#5b5f7a"/><rect x="1.5" y="-12" width="6.5" height="12" rx="3" fill="#5b5f7a"/>';
       s += '<ellipse cx="-4.8" cy="-0.5" rx="4.5" ry="2.4" fill="#4a3a30"/><ellipse cx="4.8" cy="-0.5" rx="4.5" ry="2.4" fill="#4a3a30"/>';
     }
-    // 女生長髮（在頭後面）
-    if (girl) s += '<path d="M-17 -44 C-19 -30 -16 -22 -11 -20 L11 -20 C16 -22 19 -30 17 -44 Z" fill="' + hair + '"/>';
+    var style = look.style || "";
+    // 背上的東西（在身體後面）
+    if (look.back === "wings") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".7"><path d="M-9 -26 C-24 -38 -32 -26 -27 -16 C-22 -12 -14 -16 -9 -20 Z"/><path d="M9 -26 C24 -38 32 -26 27 -16 C22 -12 14 -16 9 -20 Z"/></g>';
+    if (look.back === "backpack") s += '<rect x="-15" y="-27" width="30" height="16" rx="5" fill="#e0b04f"/>';
+    // 長髮（在頭後面）
+    if (style === "long") s += '<path d="M-17 -44 C-19 -26 -17 -16 -12 -14 L12 -14 C17 -16 19 -26 17 -44 Z" fill="' + hair + '"/>';
+    else if (style === "bob") s += '<path d="M-17.5 -46 C-19 -36 -18 -31 -15 -30 L15 -30 C18 -31 19 -36 17.5 -46 Z" fill="' + hair + '"/>';
+    else if (style === "pony") s += '<path d="M14 -52 C24 -50 25 -36 19 -28 C17 -34 17 -42 12 -48 Z" fill="' + hair + '"/>';
+    else if (girl && !style) s += '<path d="M-17 -44 C-19 -30 -16 -22 -11 -20 L11 -20 C16 -22 19 -30 17 -44 Z" fill="' + hair + '"/>';
     // 身體
     s += '<path d="M-12 -12 C-13 -22 -11 -29 0 -29 C11 -29 13 -22 12 -12 Z" fill="' + top.color + '"/>';
     if (top.stripe) s += '<g fill="' + top.stripe + '"><rect x="-12.5" y="-25" width="25" height="2.2"/><rect x="-12.8" y="-20" width="25.6" height="2.2"/><rect x="-12.8" y="-15" width="25.6" height="2.2"/></g>';
     if (top.hood) s += '<path d="M-9 -29 C-6 -24 6 -24 9 -29" fill="none" stroke="#6f8f5c" stroke-width="2.4" stroke-linecap="round"/><path d="M-2 -25 L-2.5 -19 M2 -25 L2.5 -19" stroke="#f3efe6" stroke-width="1.2"/>';
+    if (top.open) s += '<path d="M-3.5 -29 L-2 -12 L2 -12 L3.5 -29 Z" fill="' + top.open + '"/><circle cx="-4.5" cy="-22" r=".9" fill="#a08a6a"/><circle cx="-4.5" cy="-17" r=".9" fill="#a08a6a"/>';
+    if (top.plaid) s += '<g stroke="' + top.plaid + '" stroke-width="1.2" opacity=".75"><path d="M-12 -24 H12 M-12.6 -18 H12.6 M-6 -29 V-12 M0 -29 V-12 M6 -29 V-12"/></g>';
+    if (top.zip) s += '<path d="M0 -28 V-12" stroke="' + top.zip + '" stroke-width="1.2"/><path d="M-12 -21 h4 M8 -21 h4" stroke="' + top.zip + '" stroke-width="1.6"/>';
+    if (top.bib) s += '<path d="M-8 -22 H8 V-12 H-8 Z" fill="' + top.bib + '"/><path d="M-7 -29 L-6 -22 M7 -29 L6 -22" stroke="' + top.bib + '" stroke-width="2.2"/><circle cx="-6" cy="-21" r="1" fill="#e8b93a"/><circle cx="6" cy="-21" r="1" fill="#e8b93a"/>';
+    if (look.back === "backpack") s += '<path d="M-9 -29 L-10 -15 M9 -29 L10 -15" stroke="#b98a30" stroke-width="2.2" stroke-linecap="round"/>';
     if (top.knit) s += '<path d="M-11 -14 H11" stroke="#c99a3e" stroke-width="2"/><path d="M-4 -27 L0 -23 L4 -27" fill="none" stroke="#c99a3e" stroke-width="1.6"/>';
     // 手臂
     var arm = top.color;
@@ -78,12 +124,23 @@
     }
     // 圍巾
     if (look.neck === "scarf") s += '<path d="M-9 -29.5 C-4 -26 4 -26 9 -29.5 L9 -27 C4 -23.5 -4 -23.5 -9 -27 Z" fill="#c2453b"/><rect x="3" y="-27" width="4" height="9" rx="1.5" fill="#c2453b"/>';
+    if (look.neck === "bowtie") s += '<path d="M0 -28 L-6 -31 L-6 -25 Z M0 -28 L6 -31 L6 -25 Z" fill="#c2453b"/><circle cx="0" cy="-28" r="1.6" fill="#a9363a"/>';
+    if (look.neck === "pearls") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".4">' + [-7, -4.5, -1.5, 1.5, 4.5, 7].map(function (x) { return '<circle cx="' + x + '" cy="' + (-27.5 + Math.abs(x) * -0.25 + 2.2) + '" r="1.3"/>'; }).join("") + '</g>';
     // 頭
     var hy = -43;
     s += '<g class="head">';
     s += '<circle cx="0" cy="' + hy + '" r="15" fill="' + skin + '"/>';
     // 頭髮
-    if (girl) {
+    if (style === "spiky") {
+      s += '<path d="M-15.5 ' + (hy + 2) + ' L-17 ' + (hy - 10) + ' L-11 ' + (hy - 13) + ' L-10 ' + (hy - 22) + ' L-4 ' + (hy - 16) + ' L0 ' + (hy - 25) + ' L4 ' + (hy - 16) + ' L10 ' + (hy - 22) + ' L11 ' + (hy - 13) + ' L17 ' + (hy - 10) + ' L15.5 ' + (hy + 2) + ' C12 ' + (hy - 5) + ' 4 ' + (hy - 7) + ' 0 ' + (hy - 5) + ' C-4 ' + (hy - 7) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
+    } else if (style === "curly") {
+      s += '<path d="M-15.5 ' + (hy + 2) + ' C-17 ' + (hy - 21) + ' 17 ' + (hy - 21) + ' 15.5 ' + (hy + 2) + ' C12 ' + (hy - 5) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
+      [[-14, -6], [-9, -13], [-2, -16], [5, -15], [11, -11], [15, -5], [-16, 1], [16, 1], [-6, -6], [3, -7]].forEach(function (c) { s += '<circle cx="' + c[0] + '" cy="' + (hy + c[1]) + '" r="4.6" fill="' + hair + '"/>'; });
+    } else if (style === "bob" || style === "long" || style === "buns" || style === "pony") {
+      s += '<path d="M-16 ' + (hy + 3) + ' C-17.5 ' + (hy - 21.5) + ' 17.5 ' + (hy - 21.5) + ' 16 ' + (hy + 3) + ' L13 ' + (hy - 4) + ' L-13 ' + (hy - 4) + ' Z" fill="' + hair + '"/>';
+      if (style === "buns") s += '<circle cx="-11" cy="' + (hy - 15) + '" r="5.5" fill="' + hair + '"/><circle cx="11" cy="' + (hy - 15) + '" r="5.5" fill="' + hair + '"/>';
+      if (style === "pony") s += '<circle cx="13" cy="' + (hy - 9) + '" r="2.2" fill="#e7a6a8"/>';
+    } else if (girl) {
       s += '<path d="M-15.5 ' + (hy + 1) + ' C-17 ' + (hy - 21) + ' 17 ' + (hy - 21) + ' 15.5 ' + (hy + 1) + ' C12 ' + (hy - 6) + ' 4 ' + (hy - 8) + ' 0 ' + (hy - 5) + ' C-4 ' + (hy - 8) + ' -12 ' + (hy - 6) + ' -15.5 ' + (hy + 1) + ' Z" fill="' + hair + '"/>';
       s += '<circle cx="13" cy="' + (hy - 9) + '" r="3" fill="#e7a6a8"/>';
     } else {
@@ -97,6 +154,12 @@
                    : '<path d="M-1.5 ' + (hy + 6.5) + ' h3" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>';
     if (opt.glow) s += '<ellipse cx="0" cy="' + (hy + 3) + '" rx="13" ry="9" fill="#bfe3ff" opacity=".22"/>';
     // 配件
+    if (look.face === "shades") s += '<g fill="#2a2620"><rect x="-10" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><rect x="1.5" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><path d="M-1.5 ' + hy + ' h3" stroke="#2a2620" stroke-width="1"/></g>';
+    if (look.face === "star") s += '<path d="M9 ' + (hy + 2) + ' l1.2 2.5 2.7 .3 -2 1.8 .6 2.7 -2.5 -1.4 -2.5 1.4 .6 -2.7 -2 -1.8 2.7 -.3 Z" fill="#e8b93a"/>';
+    if (look.ears === "muffs") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#c98e9a" stroke-width="2.4"/><circle cx="-15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/><circle cx="15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/>';
+    if (look.hat === "cap") s += '<path d="M-15 ' + (hy - 6) + ' C-15 ' + (hy - 21) + ' 15 ' + (hy - 21) + ' 15 ' + (hy - 6) + ' Z" fill="#5d7fa8"/><path d="M-2 ' + (hy - 6) + ' Q12 ' + (hy - 9) + ' 22 ' + (hy - 5) + ' L14 ' + (hy - 3) + ' Z" fill="#4a6a90"/><circle cx="0" cy="' + (hy - 19) + '" r="1.5" fill="#4a6a90"/>';
+    if (look.hat === "bunnyband") s += '<path d="M-14 ' + (hy - 10) + ' C-14 ' + (hy - 18) + ' 14 ' + (hy - 18) + ' 14 ' + (hy - 10) + '" fill="none" stroke="#e7a6a8" stroke-width="2"/><ellipse cx="-6" cy="' + (hy - 26) + '" rx="3.6" ry="10" fill="#f8f4ec" stroke="#e0d0c0" stroke-width=".6" transform="rotate(-12 -6 ' + (hy - 26) + ')"/><ellipse cx="6" cy="' + (hy - 26) + '" rx="3.6" ry="10" fill="#f8f4ec" stroke="#e0d0c0" stroke-width=".6" transform="rotate(12 6 ' + (hy - 26) + ')"/><ellipse cx="-6" cy="' + (hy - 25) + '" rx="1.6" ry="7" fill="#f2c4c8" transform="rotate(-12 -6 ' + (hy - 25) + ')"/><ellipse cx="6" cy="' + (hy - 25) + '" rx="1.6" ry="7" fill="#f2c4c8" transform="rotate(12 6 ' + (hy - 25) + ')"/>';
+    if (look.hat === "flower") s += '<g transform="translate(-11 ' + (hy - 11) + ')">' + [0, 72, 144, 216, 288].map(function (a) { return '<circle cx="' + (Math.cos(a * Math.PI / 180) * 3).toFixed(2) + '" cy="' + (Math.sin(a * Math.PI / 180) * 3).toFixed(2) + '" r="2.4" fill="#e7a6a8"/>'; }).join("") + '<circle r="1.8" fill="#f2cc4a"/></g>';
     if (look.face === "glasses") s += '<g fill="none" stroke="#4a3a2c" stroke-width="1.1"><circle cx="-5.5" cy="' + (hy + 1) + '" r="3.6"/><circle cx="5.5" cy="' + (hy + 1) + '" r="3.6"/><path d="M-1.9 ' + (hy + 1) + ' h3.8"/></g>';
     if (look.ears === "phones") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#5a6b7a" stroke-width="2.4"/><rect x="-18" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/><rect x="12.5" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/>';
     if (look.hat === "beanie") s += '<path d="M-15 ' + (hy - 5) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 5) + ' Z" fill="#c8574a"/><rect x="-16" y="' + (hy - 7) + '" width="32" height="5" rx="2.5" fill="#a9463c"/><circle cx="0" cy="' + (hy - 19) + '" r="3.2" fill="#f3efe6"/>';
@@ -106,10 +169,28 @@
     s += '</g>';
     s += '</g>';
     // 小貓
-    if (look.pet === "cat" && !opt.noPet) s += cat(opt.petX != null ? opt.petX : 20, 0);
+    if (look.pet && !opt.noPet) s += pet(look.pet, opt.petX != null ? opt.petX : 20, 0);
     return s;
   }
 
+  function pet(kind, x, y) {
+    if (kind === "cat") return cat(x, y);
+    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="0" cy="0" rx="8" ry="2" fill="rgba(60,40,20,.15)"/>';
+    if (kind === "chick") {
+      g += '<ellipse cx="0" cy="-6" rx="7" ry="6.5" fill="#f2cc4a"/><path d="M-7 -5 l-3 1 3 1" fill="#e0a830"/><circle cx="-3" cy="-8" r=".9" fill="#2f2622"/><path d="M-1 -12 q1 -3 2 0" fill="none" stroke="#e0a830" stroke-width="1"/>';
+    } else if (kind === "shiba") {
+      g += '<path class="tail" d="M6 -7 q7 -6 2 -10 q-3 0 -2 4" fill="#d9914a"/><ellipse cx="0" cy="-5" rx="8" ry="5.5" fill="#d9914a"/><circle cx="-4" cy="-12" r="5.8" fill="#d9914a"/><ellipse cx="-5" cy="-10" rx="3.6" ry="2.6" fill="#fff4e4"/>' +
+        '<path d="M-9 -15 l1 -6 l4 4 Z M1 -15 l-1 -6 l-4 4 Z" fill="#d9914a"/><circle cx="-6" cy="-12.5" r=".9" fill="#2f2622"/><circle cx="-2" cy="-12.5" r=".9" fill="#2f2622"/><circle cx="-4.6" cy="-10.5" r=".8" fill="#2f2622"/>';
+    } else if (kind === "bunny") {
+      g += '<circle cx="7" cy="-5" r="2.4" fill="#fffdf8"/><ellipse cx="0" cy="-5" rx="7.5" ry="5.5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><circle cx="-4" cy="-11" r="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/>' +
+        '<ellipse cx="-6" cy="-19" rx="1.8" ry="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-2" cy="-19" rx="1.8" ry="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-6" cy="-19" rx=".8" ry="3.5" fill="#f2c4c8"/><ellipse cx="-2" cy="-19" rx=".8" ry="3.5" fill="#f2c4c8"/>' +
+        '<circle cx="-5.5" cy="-11.5" r=".9" fill="#2f2622"/><circle cx="-2.5" cy="-11.5" r=".9" fill="#2f2622"/>';
+    } else if (kind === "panda") {
+      g += '<ellipse cx="0" cy="-5" rx="8.5" ry="6" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-5" cy="-3" rx="3" ry="3.5" fill="#2a2620"/><ellipse cx="5" cy="-3" rx="3" ry="3.5" fill="#2a2620"/><circle cx="-3" cy="-12" r="6" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/>' +
+        '<circle cx="-8" cy="-17" r="2.4" fill="#2a2620"/><circle cx="2" cy="-17" r="2.4" fill="#2a2620"/><ellipse cx="-5.5" cy="-12" rx="1.8" ry="2.2" fill="#2a2620"/><ellipse cx="-0.5" cy="-12" rx="1.8" ry="2.2" fill="#2a2620"/><circle cx="-5.3" cy="-12.3" r=".6" fill="#fff"/><circle cx="-0.7" cy="-12.3" r=".6" fill="#fff"/>';
+    }
+    return g + '</g>';
+  }
   function cat(x, y) {
     return '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="0" cy="0" rx="8" ry="2" fill="rgba(60,40,20,.15)"/>' +
       '<path class="tail" d="M6 -4 q8 -2 6 -11" fill="none" stroke="#e3a35b" stroke-width="2.4" stroke-linecap="round"/>' +
@@ -297,7 +378,7 @@
         g += '<g transform="translate(' + seat[0] + ' ' + seat[1] + ')">' + chair(0, -2) +
           '<g transform="translate(0 -8)">' + character(m.look, "desk", { focus: true, lookDown: act !== "pc", glow: act === "pc", noPet: true }) + '</g>' +
           desk(act, true) +
-          (m.look && m.look.pet === "cat" ? cat(36, 8) : "") +
+          (m.look && m.look.pet ? pet(m.look.pet, 36, 8) : "") +
           nameTag(m.name, -72, m.me) + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
       }
       if (m && !focus) {
@@ -339,5 +420,5 @@
       '<g transform="scale(1.35)">' + character(look, "stand", { smile: true, petX: 24 }) + '</g>';
   }
 
-  window.KaidaScene = { render: render, move: move, preview: preview, ITEMS: ITEMS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
+  window.KaidaScene = { render: render, move: move, preview: preview, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
 })();

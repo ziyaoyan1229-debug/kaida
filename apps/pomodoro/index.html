@@ -158,6 +158,10 @@
   .seg { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
   .seg button { flex: 1; min-width: 92px; border: 1px solid var(--line); background: var(--paper); border-radius: var(--r); padding: 8px; cursor: pointer; font-size: 14px; min-height: 44px; }
   .seg button[aria-pressed="true"] { border: 2px solid var(--signal); background: var(--sunk); font-weight: 600; }
+  .cats { display: flex; gap: 6px; overflow-x: auto; margin: 24px -16px 0; padding: 4px 16px; position: sticky; top: 0; background: var(--paper); z-index: 5; scrollbar-width: none; }
+  .cats::-webkit-scrollbar { display: none; }
+  .cats button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; min-height: 38px; cursor: pointer; font-size: 14px; }
+  .cats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
   .room-card h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
   .room-card p { margin: 0 0 12px; }
   .char-top { display: flex; gap: 16px; align-items: center; }
@@ -344,7 +348,7 @@
       "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、快速測試 1 根。",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴",
+      "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
       "q.next": "換一句",
       "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
       "f.nameph": "例如：小番茄", "f.save": "儲存", "f.edit": "改暱稱",
@@ -428,7 +432,7 @@
       "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 1 for a quick test.",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy",
+      "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
       "q.next": "Another",
       "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
       "f.nameph": "e.g. Tomato", "f.save": "Save", "f.edit": "Edit nickname",
@@ -587,9 +591,9 @@
 
   /* 模擬室友 */
   var BOTS = [
-    { id: "bot1", name: "小熊", act: "pc", look: { g: "girl", skin: 0, hair: 1, top: "hoodie", face: "glasses" } },
-    { id: "bot2", name: "Mia", act: "draw", look: { g: "girl", skin: 1, hair: 2, top: "sweater", hat: "beret" } },
-    { id: "bot3", name: "阿凱", act: "homework", look: { g: "boy", skin: 2, hair: 3, top: "stripe", ears: "phones" } },
+    { id: "bot1", name: "小熊", act: "pc", look: { g: "girl", skin: 0, hair: 1, top: "hoodie", face: "glasses", style: "bob" } },
+    { id: "bot2", name: "Mia", act: "draw", look: { g: "girl", skin: 1, hair: 2, top: "sweater", hat: "beret", style: "long", pet: "bunny" } },
+    { id: "bot3", name: "阿凱", act: "homework", look: { g: "boy", skin: 2, hair: 3, top: "stripe", ears: "phones", style: "spiky", back: "backpack" } },
     { id: "bot4", name: "柚子", act: "read", look: { g: "girl", skin: 0, hair: 0, top: "tee-pink", hat: "straw", neck: "scarf" } },
     { id: "bot5", name: "小林", act: "pc", look: { g: "boy", skin: 1, hair: 0, top: "tee-blue", hat: "beanie", pet: "cat" } }
   ];
@@ -845,6 +849,7 @@
     look[it.slot] = it.id;
     return '<svg viewBox="-36 -96 72 102" aria-hidden="true"><g>' + S.preview(look).replace(/<rect[^>]*\/><rect[^>]*\/>/, "") + '</g></svg>';
   }
+  var shopCat = "top";
   function renderChar() {
     var el = document.getElementById("view-char"), L = data.look, html = "";
     html += '<div class="card"><div class="char-top"><svg viewBox="-62 -102 124 120" aria-hidden="true">' + S.preview(L) + '</svg>' +
@@ -856,8 +861,10 @@
       '<span class="small muted">' + K.esc(t("c.skin")) + '</span><div class="swatches">' + S.SKINS.map(function (c, i) { return '<button type="button" data-skin="' + i + '" aria-pressed="' + (L.skin === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.skin")) + ' ' + (i + 1) + '"></button>'; }).join("") + '</div>' +
       '<span class="small muted">' + K.esc(t("c.hair")) + '</span><div class="swatches">' + S.HAIRS.map(function (c, i) { return '<button type="button" data-hair="' + i + '" aria-pressed="' + (L.hair === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.hair")) + ' ' + (i + 1) + '"></button>'; }).join("") + '</div>' +
       '<button class="btn block" type="button" data-act="save-char">' + K.esc(t("c.save")) + '</button></div>';
-    var owned = S.ITEMS.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
-    var shop = S.ITEMS.filter(function (it) { return data.owned.indexOf(it.id) < 0; });
+    var cat = S.CATS.filter(function (c) { return c.id === shopCat; })[0] || S.CATS[0];
+    var inCat = S.ITEMS.filter(function (it) { return cat.slots.indexOf(it.slot) >= 0; });
+    var owned = inCat.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
+    var shop = inCat.filter(function (it) { return data.owned.indexOf(it.id) < 0; });
     function card(it, own) {
       var on = L[it.slot] === it.id, name = K.lang() === "en" ? it.en : it.zh;
       var btn = own ? (it.slot === "top" ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.wearing")) + '</button>' : '<button class="btn ghost" type="button" data-wear="' + it.id + '">' + K.esc(t("c.wear")) + '</button>')
@@ -866,8 +873,11 @@
                                  : '<button class="btn ghost" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
       return '<div class="it' + (on ? " on" : "") + '">' + itemThumb(it) + '<b>' + K.esc(name) + '</b><span class="small muted">' + K.esc(t("slot." + it.slot)) + '</span>' + btn + '</div>';
     }
-    html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2><div class="shop">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>';
-    if (shop.length) html += '<h2>' + K.esc(t("c.shop")) + '</h2><div class="shop">' + shop.map(function (it) { return card(it, false); }).join("") + '</div>';
+    html += '<div class="cats" role="tablist">' + S.CATS.map(function (c) {
+      return '<button type="button" role="tab" data-cat="' + c.id + '" aria-selected="' + (c.id === cat.id) + '">' + K.esc(t("cat." + c.id)) + '</button>';
+    }).join("") + '</div>';
+    html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
+    html += '<h2>' + K.esc(t("c.shop")) + '</h2>' + (shop.length ? '<div class="shop">' + shop.map(function (it) { return card(it, false); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneHere")) + '</p>');
     el.innerHTML = html;
   }
   function syncMe() {
@@ -878,6 +888,7 @@
     var ds = b.dataset, L = data.look;
     function keepName() { var i = document.getElementById("c-name"); if (i && i.value.trim()) data.me.name = i.value.trim().slice(0, 16); }
     keepName();
+    if (ds.cat) { shopCat = ds.cat; renderChar(); var cs = document.querySelector(".cats"); if (cs) cs.scrollIntoView({ block: "start" }); return; }
     if (ds.g) L.g = ds.g;
     else if (ds.skin != null) L.skin = +ds.skin;
     else if (ds.hair != null) L.hair = +ds.hair;
