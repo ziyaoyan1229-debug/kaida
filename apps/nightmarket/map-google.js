@@ -1,6 +1,6 @@
 /*
  * 地圖：Google 地圖 + Places API（New）
- * 夜市範圍：用 Google 上夜市本身的 viewport 找出裡面的小吃店，再用這些店的位置畫出外框。
+ * 夜市範圍：用「夜市名稱＋小吃／攤位／美食」在夜市周邊搜尋 Google 上的店家，再用這些店的位置畫出外框。
  * 依 Google Maps Platform 條款，Places 資料只顯示在 Google 地圖上，也不長期存放（只在這次開啟期間暫存在記憶體）。
  */
 (function () {
@@ -66,6 +66,19 @@
     });
   }
 
+  var FOOD = /restaurant|food|cafe|bakery|meal_|dessert|ice_cream|juice|tea|coffee|bar$|confection|snack|deli|candy|donut|sandwich|brunch|diner|buffet/;
+
+  // 去掉離其他店太遠的幾家，外框才會貼著夜市的街道
+  function trimOutliers(list) {
+    if (list.length < 6) return list;
+    var c = { lat: 0, lng: 0 };
+    list.forEach(function (s) { c.lat += s.lat; c.lng += s.lng; });
+    c.lat /= list.length; c.lng /= list.length;
+    var d = list.map(function (s) { return distM(s, c); }).sort(function (a, b) { return a - b; });
+    var limit = Math.max(d[Math.floor(d.length / 2)] * 2.2, 120);
+    return list.filter(function (s) { return distM(s, c) <= limit; });
+  }
+
   window.NMGoogleMap = async function (el, opts) {
     var g = window.google.maps;
     var mapsLib = await g.importLibrary("maps");
@@ -97,6 +110,7 @@
     makeMap();
     el.classList.add("is-google");
 
+    function onClick(mk, fn) { mk.addEventListener("gmp-click", fn); }
     function div(cls, html) { var d = document.createElement("div"); d.className = cls; d.innerHTML = html; return d; }
 
     function clearArea() {
@@ -114,22 +128,23 @@
 
     async function loadArea(m) {
       var center = { lat: m.lat, lng: m.lng };
-      var bounds = box(center, 320);
-      var market = (await search(m.zh, ["id", "location", "viewport"], { locationBias: { center: center, radius: 2000 }, maxResultCount: 1 }))[0];
+      var market = (await search(m.zh, ["id", "location"], { locationBias: { center: center, radius: 2000 }, maxResultCount: 1 }))[0];
       var marketId = null;
       if (market && market.location && distM(ll(market.location), center) < 2000) {
         marketId = market.id;
         center = ll(market.location);
-        var vb = market.viewport ? bjson(market.viewport) : null;
-        bounds = vb && spanM(vb) >= 80 && spanM(vb) <= 1600 ? grow(vb, 60) : box(center, 320);
       }
-      var fields = ["id", "displayName", "location", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI"];
-      var q = opts.lang() === "en" ? ["street food", "snacks"] : ["小吃", "美食"];
+      // 夜市常是一整條街，範圍抓大一點；搜尋字加上夜市名稱，結果就會是夜市裡的攤位
+      var bounds = box(center, 650);
+      var fields = ["id", "displayName", "location", "types", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI"];
+      var q = [m.zh + " 小吃", m.zh + " 攤位", m.zh + " 美食"];
       var lists = await Promise.all(q.map(function (text) { return search(text, fields, { locationRestriction: bounds, maxResultCount: 20 }); }));
       var seen = {}, stalls = [];
       lists.forEach(function (list) {
         list.forEach(function (p) {
           if (!p.location || seen[p.id] || p.id === marketId) return;
+          // 只留吃的喝的（排除車站、飯店、商店等）
+          if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
           seen[p.id] = true;
           var loc = ll(p.location);
           stalls.push({
@@ -141,7 +156,8 @@
       });
       // 先留下離夜市中心近的，避免外框被遠處一兩家店拉得很大
       stalls.sort(function (a, b) { return distM(a, center) - distM(b, center); });
-      var keep = stalls.filter(function (s, i) { return i < 5 || distM(s, center) < 450; });
+      var keep = stalls.filter(function (s) { return distM(s, center) < 700; });
+      keep = trimOutliers(keep);
       keep.sort(function (a, b) { return (b.count || 0) - (a.count || 0); });
       return { center: center, bounds: bounds, stalls: keep };
     }
@@ -157,7 +173,7 @@
       area.stalls.forEach(function (s, i) {
         var content = div("stall-pin", "<span>" + (i + 1) + "</span>");
         var mk = new markerLib.AdvancedMarkerElement({ map: map, position: { lat: s.lat, lng: s.lng }, content: content, title: s.name, zIndex: 500 - i, gmpClickable: true });
-        mk.addListener("click", function () { opts.onStallClick(s.id); });
+        onClick(mk, function () { opts.onStallClick(s.id); });
         stallMarkers.push({ id: s.id, marker: mk, el: content });
       });
       var bb = new g.LatLngBounds();
@@ -173,7 +189,7 @@
           var html = opts.pinHtml(selectedId === m.id, isOff(m));
           if (!mk) {
             mk = marketMarkers[m.id] = new markerLib.AdvancedMarkerElement({ position: { lat: m.lat, lng: m.lng }, content: div("gm-pin", html), title: opts.label(m), gmpClickable: true });
-            mk.addListener("click", function () { opts.onMarketClick(m.id); });
+            onClick(mk, function () { opts.onMarketClick(m.id); });
           } else {
             mk.content.innerHTML = html;
             mk.title = opts.label(m);

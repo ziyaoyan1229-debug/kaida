@@ -6,6 +6,6 @@
  * googleMapId：Google Cloud 建立的地圖 ID（選填，留空用 Google 的示範 ID）。
  */
 window.NM_CONFIG = {
-  googleMapsKey: "",
+  googleMapsKey: "AIzaSyA-lLrX12vIa9WcyMidGAdu5S1XQbzW72I",
   googleMapId: ""
 };
