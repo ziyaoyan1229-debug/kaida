@@ -195,7 +195,7 @@
         self.status[id] = m && !m.off && Date.now() - (+m.ts || 0) < 15 * 60 * 1000 ? { online: true, focus: !!m.focus, ts: +m.ts || 0 } : { online: false };
         self.onStatus(id);
       } else if (parts[2] === "in" && m && typeof m.from === "string" && m.from !== meId) {
-        self.onMessage({ type: m.type === "friend" ? "friend" : "chat", from: m.from.slice(0, 16), n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), text: String(m.text || "").slice(0, 200), t: +m.t || Date.now() });
+        self.onMessage({ type: m.type === "friend" || m.type === "cheer" ? m.type : "chat", from: m.from.slice(0, 16), n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), text: String(m.text || "").slice(0, 200), t: +m.t || Date.now() });
       }
     });
     this.hb = setInterval(function () { self.publishState(); }, 60000);

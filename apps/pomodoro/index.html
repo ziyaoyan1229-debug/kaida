@@ -115,7 +115,7 @@
   .board .acts { display: flex; gap: 4px; }
   .board .stat { display: inline-block; font-size: 12px; margin-left: 4px; }
   .stat.free { color: var(--pass); } .stat.busy { color: var(--signal); } .stat.off { color: var(--muted); }
-  .mlist .addf { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 0 8px; font-size: 12px; cursor: pointer; margin-left: 6px; min-height: 26px; }
+  .mlist .addf, .lb-row .addf { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 0 8px; font-size: 12px; cursor: pointer; margin-left: 6px; min-height: 26px; }
   .chat { padding: 12px; }
   .chat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .chat-head b { flex: 1; }
@@ -493,7 +493,7 @@
       "f.invite": "邀請好友／更新我的成績", "f.inviteP": "傳出你的好友卡連結。好友打開就會加你，排行榜也會更新成你最新的成績。之後讀完書再傳一次，好友那邊才會看到新分數。",
       "f.cheersH": "收到的打氣", "f.noCheers": "還沒有人為你打氣。先為好友打氣看看？",
       "f.cheerBack": "回他打氣",
-      "f.composeH": "幫 {n} 打氣", "f.composeCustom": "或自己寫一句（40 字內）", "f.composeSend": "傳出去",
+      "f.composeH": "幫 {n} 打氣", "f.composeCustom": "或自己寫一句（40 字內）", "f.composeSend": "傳出去", "f.cheerSent": "已送出打氣給 {n}", "f.cheerLink": "{n} 不在線上，改用連結傳過去", "f.botThanks": "謝謝你！一起加油💪|收到了，好開心😊|你也要加油喔！|有你打氣，我再讀一輪📖",
       "f.presets": "加油！一起讀完這週|今天也一起專注 25 分鐘|你的排行好猛，我要追上了|休息一下再繼續，你可以的|考試順利！|我先開一顆番茄，等你",
       "f.shareText": "{n} 邀你一起在番茄讀書會讀書。本週已專注 {m} 分鐘，打開連結加好友、看排行：",
       "f.shareCheer": "{n} 給你打氣：「{c}」打開連結看排行，一起讀書：",
@@ -577,7 +577,7 @@
       "f.invite": "Invite friends / send my score", "f.inviteP": "Share your friend card link. Friends who open it add you, and their leaderboard updates to your latest score. Send it again after studying so they see your new numbers.",
       "f.cheersH": "Cheers you got", "f.noCheers": "No cheers yet. Why not cheer on a friend first?",
       "f.cheerBack": "Cheer back",
-      "f.composeH": "Cheer on {n}", "f.composeCustom": "Or write your own (40 chars max)", "f.composeSend": "Send",
+      "f.composeH": "Cheer on {n}", "f.composeCustom": "Or write your own (40 chars max)", "f.composeSend": "Send", "f.cheerSent": "Cheer sent to {n}", "f.cheerLink": "{n} is offline, sending it as a link instead", "f.botThanks": "Thanks! Let's keep going 💪|Got it, that made my day 😊|You've got this too!|Thanks to you, one more round 📖",
       "f.presets": "You got this, let's finish the week!|Let's do 25 focused minutes today|Your rank is wild, I'm catching up|Take a break, then keep going|Good luck on the exam!|Starting a pomodoro now, join me",
       "f.shareText": "{n} invited you to Pomodoro Study Club. {m} focus minutes this week. Open the link to add them and see the ranking:",
       "f.shareCheer": "{n} is cheering you on: \"{c}\" Open the link to see the ranking and study together:",
@@ -1436,7 +1436,8 @@
         '<div class="stats" style="margin:8px 0 12px"><div class="stat"><div class="n">' + hnum(st.tot) + '</div><div class="l">' + K.esc(t("tm.score")) + '</div></div>' +
         '<div class="stat"><div class="n">' + hnum(st.week) + '</div><div class="l">' + K.esc(t("tm.total")) + '</div></div>' +
         '<div class="stat"><div class="n">' + st.all + '</div><div class="l">' + K.esc(t("tm.bonus")) + '</div></div></div>' +
-        mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + K.esc(m.n) + '</span><span class="small">' + hrs(m.tot || 0) + '</span></div>'; }).join("") +
+        mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + K.esc(m.n) +
+          (m.id === data.me.id ? "" : data.friends[m.id] ? '<span class="small muted"> · ' + K.esc(t("s.isFriend")) + '</span>' : '<button type="button" class="addf" data-tfriend="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>') + '</span><span class="small">' + hrs(m.tot || 0) + '</span></div>'; }).join("") +
         '<div class="btn-row" style="margin-top:12px">' + (data.team.sim ? "" : '<button class="btn" type="button" data-tm="invite">' + K.esc(t("tm.invite")) + '</button>') + '<button class="btn ghost" type="button" data-tm="quit">' + K.esc(t("tm.quit")) + '</button></div></div>';
     }
     var rows2 = boardRows().slice(0, 30);
@@ -1459,6 +1460,16 @@
     data.team = { id: id, name: tm.name, base: myTotal() }; persist(); teamSync(); K.toast(t("tm.joined", { n: tm.name })); renderTeam();
   }
   document.getElementById("view-team").addEventListener("click", function (e) {
+    var fb = e.target.closest("[data-tfriend]");
+    if (fb) {
+      var fid = fb.dataset.tfriend, tm0 = data.team && teamOf(data.team.id), mm = tm0 && tm0.members[fid];
+      if (!mm || data.friends[fid] || fid === data.me.id) return;
+      var bi = BOTS.map(function (x) { return x.id; }).indexOf(fid);
+      data.friends[fid] = { n: String(mm.n).slice(0, 20), a: bi >= 0 ? SIM_AV[bi] : "🍅", k: "", m: 0, p: 0, s: 0, t: Date.now() };
+      data.tasks.t3 = true; persist();
+      if (social && !isBot(fid)) { startSocial(); social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); })); social.send(fid, { type: "friend", from: data.me.id, n: data.me.name, av: data.me.avatar, t: Date.now() }); }
+      K.toast(t("s.added", { n: mm.n })); return renderTeam();
+    }
     var b = e.target.closest("[data-tm]"); if (!b) return;
     var a = b.dataset.tm;
     if (a !== "invite" && a !== "quit" && needName()) return;
@@ -1658,6 +1669,16 @@
       return;
     }
     if (!data.friends[m.from]) return; // 只收好友的訊息
+    if (m.type === "cheer") {
+      var cm = m.text.slice(0, 40), ck = m.from + ":" + m.t;
+      if (data.cheers.some(function (x) { return x.key === ck; })) return;
+      data.cheers.push({ key: ck, from: m.from, n: data.friends[m.from].n, a: data.friends[m.from].a, c: cm, t: m.t });
+      if (data.cheers.length > 100) data.cheers.shift();
+      persist();
+      if (current === "session") K.toast(t("f.gotCheer", { n: data.friends[m.from].n }) + "「" + cm + "」");
+      else { showCheerModal(data.friends[m.from], cm, m.from); if (current === "friends") renderFriends(); }
+      return;
+    }
     pushChat(m.from, { me: false, text: m.text, t: m.t });
     if (current === "friends" && chatWith === m.from) renderChat();
     else {
@@ -1676,6 +1697,27 @@
     rfTimer = setTimeout(function () { if (current === "friends" && !(document.activeElement && document.activeElement.id === "chat-in")) renderFriends(); }, 400);
   }
 
+  // 打氣：對方在線上就直接送到；不在線才改用分享連結
+  function sendCheer(msg) {
+    msg = String(msg).slice(0, 40);
+    var to = cheerTo, f = to && data.friends[to]; if (!f) return;
+    cheerTo = null;
+    var now = Date.now();
+    if (isBot(to)) {
+      K.toast(t("f.cheerSent", { n: f.n })); renderFriends();
+      setTimeout(function () {
+        var lines = t("f.botThanks").split("|");
+        receive({ type: "cheer", from: to, n: f.n, av: f.a, text: lines[Math.floor(Math.random() * lines.length)], t: Date.now() });
+      }, 1500 + Math.random() * 2000);
+      return;
+    }
+    if (friendState(to) !== "off" && social.send(to, { type: "cheer", from: data.me.id, n: data.me.name, av: data.me.avatar, text: msg, t: now })) {
+      K.toast(t("f.cheerSent", { n: f.n })); return renderFriends();
+    }
+    renderFriends();
+    K.toast(t("f.cheerLink", { n: f.n }));
+    return shareLink(t("f.shareCheer", { n: data.me.name, c: msg }), cardLink(myCard({ c: msg, to: to })));
+  }
   function showCheerModal(f, msg, fid) {
     var card = document.getElementById("modal-card");
     card.className = "card";
@@ -1756,7 +1798,7 @@
   document.getElementById("view-friends").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     var ds = b.dataset;
-    if (ds.preset != null) { cheerPick = +ds.preset; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
+    if (ds.preset != null) { cheerPick = +ds.preset; return sendCheer(t("f.presets").split("|")[cheerPick]); }
     if (ds.cheer) { cheerTo = ds.cheer; cheerPick = 0; return renderFriends(); }
     if (ds.chat) { openChat(ds.chat); return; }
     if (ds.act === "close-chat") { chatWith = null; return renderFriends(); }
@@ -1782,9 +1824,7 @@
         persist(); updateBadge(); return renderFriends();
       case "send-cheer":
         var custom = document.getElementById("f-custom").value.trim();
-        var msg = (custom || t("f.presets").split("|")[cheerPick]).slice(0, 40);
-        var to = cheerTo; cheerTo = null; renderFriends();
-        return shareLink(t("f.shareCheer", { n: data.me.name, c: msg }), cardLink(myCard({ c: msg, to: to })));
+        return sendCheer(custom || t("f.presets").split("|")[cheerPick]);
     }
   });
   document.getElementById("modal").addEventListener("click", function (e) {
