@@ -7,8 +7,8 @@
   };
 
   /* 外觀選項（免費） */
-  var SKINS = ["#f6d7bd", "#e9b994", "#c98e64"];
-  var HAIRS = ["#3b2a20", "#7a4a2a", "#c58b4c", "#2c2c34"];
+  var SKINS = ["#f6d7bd", "#e9b994", "#c98e64", "#fbe6d4", "#d9a27a", "#a8704a", "#8a5532", "#5e3a24"];
+  var HAIRS = ["#3b2a20", "#7a4a2a", "#c58b4c", "#2c2c34", "#151515", "#e6c27a", "#b0302a", "#9a9aa0", "#f2efe8", "#e88aa8", "#5a7ad0", "#7a5ad0", "#4a8a6a"];
 
   /* 商店：用小木頭買。slot 相同的一次只能穿一件 */
   var ITEMS = [
@@ -25,23 +25,19 @@
     { id: "scarf", slot: "neck", price: 4, zh: "紅圍巾", en: "Red scarf", color: "#c2453b" },
     { id: "phones", slot: "ears", price: 6, zh: "耳機", en: "Headphones", color: "#5a6b7a" },
     { id: "cat", slot: "pet", price: 12, zh: "小貓夥伴", en: "Kitten buddy", color: "#e3a35b" },
-    // 上衣
     { id: "cardigan", slot: "top", price: 5, zh: "米色開襟衫", en: "Oat cardigan", color: "#e6d3b3", open: "#f8f4ec" },
     { id: "plaid", slot: "top", price: 6, zh: "格紋襯衫", en: "Plaid shirt", color: "#c8574a", plaid: "#8a3a32" },
     { id: "sport", slot: "top", price: 6, zh: "運動外套", en: "Track jacket", color: "#3f6f6a", zip: "#f3efe6" },
     { id: "overalls", slot: "top", price: 7, zh: "吊帶褲", en: "Overalls", color: "#f3efe6", bib: "#5d7fa8" },
-    // 髮型
     { id: "bob", slot: "style", price: 3, zh: "妹妹頭", en: "Bob cut" },
     { id: "spiky", slot: "style", price: 4, zh: "刺刺頭", en: "Spiky hair" },
     { id: "pony", slot: "style", price: 4, zh: "馬尾", en: "Ponytail" },
     { id: "long", slot: "style", price: 4, zh: "長直髮", en: "Long hair" },
     { id: "buns", slot: "style", price: 5, zh: "雙丸子頭", en: "Space buns" },
     { id: "curly", slot: "style", price: 5, zh: "捲捲頭", en: "Curly hair" },
-    // 帽子與頭飾
     { id: "flower", slot: "hat", price: 3, zh: "小花髮夾", en: "Flower clip", color: "#e7a6a8" },
     { id: "cap", slot: "hat", price: 4, zh: "棒球帽", en: "Baseball cap", color: "#5d7fa8" },
     { id: "bunnyband", slot: "hat", price: 7, zh: "兔耳髮箍", en: "Bunny ears", color: "#f8f4ec" },
-    // 配飾
     { id: "star", slot: "face", price: 3, zh: "星星貼紙", en: "Star sticker", color: "#e8b93a" },
     { id: "shades", slot: "face", price: 5, zh: "墨鏡", en: "Sunglasses", color: "#2a2620" },
     { id: "bowtie", slot: "neck", price: 4, zh: "蝴蝶結", en: "Bow tie", color: "#c2453b" },
@@ -49,7 +45,6 @@
     { id: "muffs", slot: "ears", price: 5, zh: "毛毛耳罩", en: "Earmuffs", color: "#e7a6a8" },
     { id: "backpack", slot: "back", price: 6, zh: "小背包", en: "Little backpack", color: "#e0b04f" },
     { id: "wings", slot: "back", price: 15, zh: "天使翅膀", en: "Angel wings", color: "#ffffff" },
-    // 寵物
     { id: "chick", slot: "pet", price: 8, zh: "小雞", en: "Chick", color: "#f2cc4a" },
     { id: "shiba", slot: "pet", price: 12, zh: "柴犬", en: "Shiba", color: "#d9914a" },
     { id: "bunny", slot: "pet", price: 12, zh: "小白兔", en: "Bunny", color: "#f8f4ec" },
@@ -79,7 +74,6 @@
     var girl = look.g === "girl";
     var s = '<g class="ch' + (opt.focus ? " focus" : "") + '">';
     s += '<ellipse cx="0" cy="0" rx="15" ry="3.5" fill="rgba(60,40,20,.18)"/>';
-    // 腿
     if (pose !== "desk" && pose !== "sofa") {
       s += '<rect x="-8" y="-12" width="6.5" height="12" rx="3" fill="#5b5f7a"/><rect x="1.5" y="-12" width="6.5" height="12" rx="3" fill="#5b5f7a"/>';
       s += '<ellipse cx="-4.8" cy="-0.5" rx="4.5" ry="2.4" fill="#4a3a30"/><ellipse cx="4.8" cy="-0.5" rx="4.5" ry="2.4" fill="#4a3a30"/>';
@@ -93,7 +87,6 @@
     else if (style === "bob") s += '<path d="M-17.5 -46 C-19 -36 -18 -31 -15 -30 L15 -30 C18 -31 19 -36 17.5 -46 Z" fill="' + hair + '"/>';
     else if (style === "pony") s += '<path d="M14 -52 C24 -50 25 -36 19 -28 C17 -34 17 -42 12 -48 Z" fill="' + hair + '"/>';
     else if (girl && !style) s += '<path d="M-17 -44 C-19 -30 -16 -22 -11 -20 L11 -20 C16 -22 19 -30 17 -44 Z" fill="' + hair + '"/>';
-    // 身體
     s += '<path d="M-12 -12 C-13 -22 -11 -29 0 -29 C11 -29 13 -22 12 -12 Z" fill="' + top.color + '"/>';
     if (top.stripe) s += '<g fill="' + top.stripe + '"><rect x="-12.5" y="-25" width="25" height="2.2"/><rect x="-12.8" y="-20" width="25.6" height="2.2"/><rect x="-12.8" y="-15" width="25.6" height="2.2"/></g>';
     if (top.hood) s += '<path d="M-9 -29 C-6 -24 6 -24 9 -29" fill="none" stroke="#6f8f5c" stroke-width="2.4" stroke-linecap="round"/><path d="M-2 -25 L-2.5 -19 M2 -25 L2.5 -19" stroke="#f3efe6" stroke-width="1.2"/>';
@@ -103,7 +96,6 @@
     if (top.bib) s += '<path d="M-8 -22 H8 V-12 H-8 Z" fill="' + top.bib + '"/><path d="M-7 -29 L-6 -22 M7 -29 L6 -22" stroke="' + top.bib + '" stroke-width="2.2"/><circle cx="-6" cy="-21" r="1" fill="#e8b93a"/><circle cx="6" cy="-21" r="1" fill="#e8b93a"/>';
     if (look.back === "backpack") s += '<path d="M-9 -29 L-10 -15 M9 -29 L10 -15" stroke="#b98a30" stroke-width="2.2" stroke-linecap="round"/>';
     if (top.knit) s += '<path d="M-11 -14 H11" stroke="#c99a3e" stroke-width="2"/><path d="M-4 -27 L0 -23 L4 -27" fill="none" stroke="#c99a3e" stroke-width="1.6"/>';
-    // 手臂
     var arm = top.color;
     if (pose === "desk") {
       s += '<path d="M-11 -24 C-15 -18 -12 -13 -6 -12" fill="none" stroke="' + arm + '" stroke-width="5.5" stroke-linecap="round"/>';
@@ -122,15 +114,12 @@
       s += '<path d="M11 -24 C14 -18 13 -14 12 -12" fill="none" stroke="' + arm + '" stroke-width="5.5" stroke-linecap="round"/>';
       s += '<circle cx="-12" cy="-11" r="2.6" fill="' + skin + '"/><circle cx="12" cy="-11" r="2.6" fill="' + skin + '"/>';
     }
-    // 圍巾
     if (look.neck === "scarf") s += '<path d="M-9 -29.5 C-4 -26 4 -26 9 -29.5 L9 -27 C4 -23.5 -4 -23.5 -9 -27 Z" fill="#c2453b"/><rect x="3" y="-27" width="4" height="9" rx="1.5" fill="#c2453b"/>';
     if (look.neck === "bowtie") s += '<path d="M0 -28 L-6 -31 L-6 -25 Z M0 -28 L6 -31 L6 -25 Z" fill="#c2453b"/><circle cx="0" cy="-28" r="1.6" fill="#a9363a"/>';
     if (look.neck === "pearls") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".4">' + [-7, -4.5, -1.5, 1.5, 4.5, 7].map(function (x) { return '<circle cx="' + x + '" cy="' + (-27.5 + Math.abs(x) * -0.25 + 2.2) + '" r="1.3"/>'; }).join("") + '</g>';
-    // 頭
     var hy = -43;
     s += '<g class="head">';
     s += '<circle cx="0" cy="' + hy + '" r="15" fill="' + skin + '"/>';
-    // 頭髮
     if (style === "spiky") {
       s += '<path d="M-15.5 ' + (hy + 2) + ' L-17 ' + (hy - 10) + ' L-11 ' + (hy - 13) + ' L-10 ' + (hy - 22) + ' L-4 ' + (hy - 16) + ' L0 ' + (hy - 25) + ' L4 ' + (hy - 16) + ' L10 ' + (hy - 22) + ' L11 ' + (hy - 13) + ' L17 ' + (hy - 10) + ' L15.5 ' + (hy + 2) + ' C12 ' + (hy - 5) + ' 4 ' + (hy - 7) + ' 0 ' + (hy - 5) + ' C-4 ' + (hy - 7) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
     } else if (style === "curly") {
@@ -146,14 +135,12 @@
     } else {
       s += '<path d="M-15.5 ' + (hy + 2) + ' C-17.5 ' + (hy - 21.5) + ' 17.5 ' + (hy - 21.5) + ' 15.5 ' + (hy + 2) + ' C13 ' + (hy - 4) + ' 9 ' + (hy - 7) + ' 2 ' + (hy - 6) + ' C-4 ' + (hy - 9) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
     }
-    // 臉
     var ey = opt.lookDown ? hy + 3 : hy + 1;
     s += '<g class="eyes"><ellipse cx="-5.5" cy="' + ey + '" rx="1.8" ry="2.3" fill="#2f2622"/><ellipse cx="5.5" cy="' + ey + '" rx="1.8" ry="2.3" fill="#2f2622"/></g>';
     s += '<ellipse cx="-9" cy="' + (hy + 5.5) + '" rx="2.6" ry="1.6" fill="#f0a0a0" opacity=".6"/><ellipse cx="9" cy="' + (hy + 5.5) + '" rx="2.6" ry="1.6" fill="#f0a0a0" opacity=".6"/>';
     s += opt.smile ? '<path d="M-2.2 ' + (hy + 6) + ' q2.2 2.4 4.4 0" fill="none" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>'
                    : '<path d="M-1.5 ' + (hy + 6.5) + ' h3" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>';
     if (opt.glow) s += '<ellipse cx="0" cy="' + (hy + 3) + '" rx="13" ry="9" fill="#bfe3ff" opacity=".22"/>';
-    // 配件
     if (look.face === "shades") s += '<g fill="#2a2620"><rect x="-10" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><rect x="1.5" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><path d="M-1.5 ' + hy + ' h3" stroke="#2a2620" stroke-width="1"/></g>';
     if (look.face === "star") s += '<path d="M9 ' + (hy + 2) + ' l1.2 2.5 2.7 .3 -2 1.8 .6 2.7 -2.5 -1.4 -2.5 1.4 .6 -2.7 -2 -1.8 2.7 -.3 Z" fill="#e8b93a"/>';
     if (look.ears === "muffs") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#c98e9a" stroke-width="2.4"/><circle cx="-15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/><circle cx="15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/>';
@@ -168,7 +155,6 @@
     if (look.hat === "crown") s += '<path d="M-9 ' + (hy - 12) + ' L-9 ' + (hy - 21) + ' L-4.5 ' + (hy - 16) + ' L0 ' + (hy - 23) + ' L4.5 ' + (hy - 16) + ' L9 ' + (hy - 21) + ' L9 ' + (hy - 12) + ' Z" fill="#e8b93a" stroke="#c99a2a" stroke-width=".8"/><circle cx="0" cy="' + (hy - 15) + '" r="1.6" fill="#c2453b"/>';
     s += '</g>';
     s += '</g>';
-    // 小貓
     if (look.pet && !opt.noPet) s += pet(look.pet, opt.petX != null ? opt.petX : 20, 0);
     return s;
   }
@@ -202,7 +188,6 @@
   /* ===== 書桌與活動道具 ===== */
   function desk(act, active) {
     var s = '';
-    // 椅背（在人後面已經畫過的話不需要），桌子
     s += '<rect x="-32" y="-16" width="64" height="7" rx="2" fill="#b07a4f"/>';
     s += '<rect x="-30" y="-9" width="60" height="11" fill="#9a6640"/>';
     s += '<rect x="-28" y="2" width="4" height="10" fill="#8a5a38"/><rect x="24" y="2" width="4" height="10" fill="#8a5a38"/>';
@@ -253,12 +238,10 @@
     s += '<rect y="160" width="' + W + '" height="' + (H - 160) + '" fill="#c8976a"/>';
     s += '<g stroke="#b9875c" stroke-width="1">' + [185, 215, 250, 290].map(function (y) { return '<path d="M0 ' + y + ' H' + W + '"/>'; }).join("") +
       [[60, 160, 185], [190, 160, 185], [320, 160, 185], [120, 185, 215], [260, 185, 215], [40, 215, 250], [180, 215, 250], [340, 215, 250], [100, 250, 290], [250, 250, 290], [380, 250, 290], [60, 290, 330], [210, 290, 330], [350, 290, 330]].map(function (a) { return '<path d="M' + a[0] + ' ' + a[1] + ' V' + a[2] + '"/>'; }).join("") + '</g>';
-    // 窗戶
     s += '<rect x="160" y="22" width="100" height="74" rx="4" fill="#fff8ec"/><rect x="166" y="28" width="88" height="62" fill="url(#sky)"/>';
     s += '<circle cx="232" cy="52" r="8" fill="#fff1c9" opacity=".9"/><path d="M166 80 q20 -12 40 -2 q22 -14 48 0 V90 H166 Z" fill="#c9a37a" opacity=".55"/>';
     s += '<path d="M210 28 V90 M166 59 H254" stroke="#fff8ec" stroke-width="4"/>';
     s += '<path d="M152 18 C162 40 158 80 150 102 L162 102 C170 70 170 40 168 18 Z" fill="#c9746a"/><path d="M268 18 C258 40 262 80 270 102 L258 102 C250 70 250 40 252 18 Z" fill="#c9746a"/><rect x="146" y="14" width="128" height="5" rx="2.5" fill="#9a6640"/>';
-    // 串燈
     s += '<path d="M0 8 Q105 30 210 10 Q315 30 420 8" fill="none" stroke="#8a6a4a" stroke-width="1"/>';
     [20, 55, 90, 125, 160, 195, 230, 265, 300, 335, 370, 405].forEach(function (x, i) {
       var y = x < 210 ? 8 + 22 * Math.sin(Math.PI * x / 210) * .9 : 8 + 22 * Math.sin(Math.PI * (x - 210) / 210) * .9;
@@ -267,7 +250,6 @@
     // 牆上畫框與時鐘
     s += '<rect x="108" y="40" width="34" height="26" fill="#f8f4ec" stroke="#9a6640" stroke-width="3"/><path d="M112 62 l8 -10 l6 6 l5 -4 l8 8 Z" fill="#8fae7a"/><circle cx="133" cy="48" r="3" fill="#e8b93a"/>';
     s += '<circle cx="62" cy="38" r="11" fill="#f8f4ec" stroke="#9a6640" stroke-width="3"/><path d="M62 38 V31 M62 38 L67 41" stroke="#2a2620" stroke-width="1.5" stroke-linecap="round"/>';
-    // 書櫃
     s += '<rect x="277" y="30" width="42" height="132" fill="#8a5a38"/><rect x="281" y="34" width="34" height="124" fill="#e9d6b4"/>';
     s += '<path d="M281 64 H315 M281 94 H315 M281 124 H315" stroke="#8a5a38" stroke-width="3"/>';
     var books = ["#c2453b", "#5d7fa8", "#e0b04f", "#8fae7a", "#e7a6a8", "#7a5c8a", "#d98c4a"];
@@ -301,11 +283,9 @@
     s += '<path d="M383 60 H415 M383 88 H415" stroke="#9a6640" stroke-width="3"/>';
     s += '<rect x="386" y="44" width="8" height="15" rx="2" fill="#e7a6a8"/><rect x="396" y="40" width="8" height="19" rx="2" fill="#e0b04f"/><rect x="406" y="46" width="7" height="13" rx="2" fill="#7fa6c9"/>';
     s += '<circle cx="391" cy="80" r="6" fill="#c98f52"/><circle cx="405" cy="80" r="6" fill="#c98f52"/><rect x="387" y="94" width="24" height="16" rx="3" fill="#f8f4ec" stroke="#c8b89c"/><circle cx="394" cy="102" r="3" fill="#e7a6a8"/><circle cx="403" cy="103" r="3" fill="#e0b04f"/>';
-    // 地毯
     s += '<ellipse cx="215" cy="255" rx="128" ry="52" fill="#d9a77e"/><ellipse cx="215" cy="255" rx="116" ry="44" fill="none" stroke="#f3e3c6" stroke-width="3" stroke-dasharray="6 5"/>';
     // 沙發（背）
     s += '<rect x="6" y="236" width="104" height="30" rx="10" fill="#c26f5e"/>';
-    // 盆栽
     s += '<g transform="translate(395 318)"><path d="M-14 -22 C-24 -40 -12 -52 -4 -36 C-6 -56 10 -58 6 -36 C14 -50 26 -40 14 -22 Z" fill="#7b9c68"/><path d="M-12 -24 H12 L9 0 H-9 Z" fill="#c98f6a"/></g>';
     return s;
   }

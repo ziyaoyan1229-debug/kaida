@@ -10,7 +10,6 @@
     if (!AC) return null;
     ctx = new AC();
     master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-    // 簡單殘響
     verb = ctx.createConvolver();
     var len = ctx.sampleRate * 2.4, buf = ctx.createBuffer(2, len, ctx.sampleRate);
     for (var c = 0; c < 2; c++) { var d = buf.getChannelData(c); for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
@@ -106,8 +105,7 @@
     nodes = [lfo];
   }
 
-  /* 柴火：底下一層低沉的燃燒聲，上面隨機的劈啪、偶爾木頭裂開的大聲一點 */
-  function startFire() {}   // 只留劈啪聲，不再墊一層底噪
+  /* 柴火：隨機的劈啪聲，偶爾木頭裂開的大聲一點 */
   function crackle(t, big) {
     var s = ctx.createBufferSource(); s.buffer = noise();
     var f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = big ? 900 + Math.random() * 900 : 1800 + Math.random() * 3500; f.Q.value = big ? 0.8 : 1.5;
@@ -186,7 +184,6 @@
   }
 
   /* 森林 */
-  function startForest() {}   // 只留鳥叫，不再墊風聲
   function bird(t, pan) {
     var kind = Math.floor(Math.random() * 3), base = 2600 + Math.random() * 1600, v = 0.35;
     if (kind === 0) for (var i = 0; i < 2 + Math.floor(Math.random() * 3); i++) sweep(base, base * 1.35, t + i * 0.11, 0.07, 0.05 * v, pan);            // 啾啾啾
@@ -222,7 +219,7 @@
     var t = ctx.currentTime;
     master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(vol, t + 1.2);
     if (kind === "noise") startNoise();
-    else { if (kind === "fire") startFire(); else if (kind === "rain") startRain(); else if (kind === "forest") startForest(); nextT = t + 0.1; step = 0; loop(); timer = setInterval(loop, 100); }
+    else { if (kind === "rain") startRain(); nextT = t + 0.1; step = 0; loop(); timer = setInterval(loop, 100); }
     unlock();
     return true;
   }
