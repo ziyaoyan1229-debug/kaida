@@ -6,7 +6,7 @@ const ACTS3 = ["read", "novel", "homework", "research", "report", "code", "pc", 
 const WRITE_ACTS = ["homework", "draw", "report", "vocab", "journal", "calligraphy"];
 const SKINS = ["#f6d7bd", "#e9b994", "#c98e64", "#fbe6d4", "#d9a27a", "#a8704a", "#8a5532", "#5e3a24"];
 const HAIRS = ["#3b2a20", "#7a4a2a", "#c58b4c", "#2c2c34", "#151515", "#e6c27a", "#b0302a", "#9a9aa0", "#f2efe8", "#e88aa8", "#5a7ad0", "#7a5ad0", "#4a8a6a"];
-const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f", cardigan: "#e6d3b3", plaid: "#c8574a", sport: "#3f6f6a", overalls: "#f3efe6" };
+const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f", cardigan: "#e6d3b3", plaid: "#c8574a", sport: "#3f6f6a", overalls: "#f3efe6", denim: "#5d7fa8", turtle: "#3a3640" };
 
 /* ===== 小工具 ===== */
 const mats = {};
@@ -286,6 +286,10 @@ function makeChar(look) {
   if (look.top === "plaid") { [0.1, 0.2, 0.3].forEach((y) => { const b2 = cyl(0.173, 0.173, 0.018, "#8a3a32", 0, y, 0, torso); b2.scale.z = 0.85; }); [-0.07, 0, 0.07].forEach((x) => box(0.016, 0.34, 0.02, "#8a3a32", x, 0.2, 0.142, torso)); }
   if (look.top === "sport") { box(0.012, 0.32, 0.02, "#f3efe6", 0, 0.2, 0.145, torso); }
   if (look.top === "overalls") { box(0.2, 0.16, 0.03, "#5d7fa8", 0, 0.14, 0.14, torso); const lw = cyl(0.172, 0.172, 0.12, "#5d7fa8", 0, 0.03, 0, torso); lw.scale.z = 0.85; [-0.07, 0.07].forEach((x) => { box(0.035, 0.22, 0.02, "#5d7fa8", x, 0.3, 0.13, torso); sph(0.015, "#e8b93a", x, 0.22, 0.15, torso, 6, 4); }); }
+  if (look.top === "denim") { box(0.012, 0.32, 0.02, "#e8d6a8", 0, 0.2, 0.145, torso); [-0.08, 0.08].forEach((x) => box(0.06, 0.05, 0.02, "#4a6a90", x, 0.27, 0.145, torso)); }
+  if (look.top === "turtle") cyl(0.12, 0.13, 0.09, "#2a2630", 0, 0.41, 0, torso, 16);
+  if (look.back === "cape") { const cp2 = box(0.36, 0.44, 0.025, "#b0302a", 0, 0.18, -0.16, torso); cp2.rotation.x = 0.12; }
+  if (look.neck === "tie") { box(0.05, 0.2, 0.02, "#3a5a8a", 0, 0.26, 0.15, torso); sph(0.03, "#3a5a8a", 0, 0.37, 0.15, torso, 8, 6); }
   if (look.back === "backpack") { const bp = box(0.3, 0.32, 0.16, "#e0b04f", 0, 0.22, -0.2, torso); box(0.22, 0.12, 0.04, "#c99a3e", 0, 0.14, -0.29, torso); [-0.09, 0.09].forEach((x) => box(0.035, 0.3, 0.02, "#b98a30", x, 0.24, 0.135, torso)); bp.castShadow = true; }
   if (look.back === "wings") { [-1, 1].forEach((sd) => { const w = sph(0.22, "#fffdf8", sd * 0.18, 0.3, -0.2, torso, 14, 10); w.scale.set(0.9, 0.55, 0.15); w.rotation.z = sd * -0.5; w.rotation.y = sd * 0.4; }); }
   if (look.neck === "bowtie") [-1, 1].forEach((sd) => { const b3 = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.09, 8), mat("#c2453b")); b3.rotation.z = sd * Math.PI / 2; b3.position.set(sd * 0.045, 0.37, 0.15); torso.add(b3); });
@@ -304,10 +308,12 @@ function makeChar(look) {
   const capG = new THREE.SphereGeometry(0.325, 28, 16, 0, Math.PI * 2, 0, Math.PI * (girl ? 0.5 : 0.46));
   const hairCap = new THREE.Mesh(capG, mat(hair)); hairCap.castShadow = true; hairCap.rotation.x = -0.32; hairCap.position.set(0, 0.02, -0.01); hairCap.scale.set(1.05, 1, 1.02); head.add(hairCap);
   const style = look.style || "";
-  const hatOn = look.hat === "cap" || look.hat === "beanie" || look.hat === "straw" || look.hat === "beret";
+  const hatOn = look.hat === "cap" || look.hat === "beanie" || look.hat === "straw" || look.hat === "beret" || look.hat === "bucket";
   if (style === "bob") { const b4 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), mat(hair)); b4.rotation.x = -0.55; b4.position.set(0, 0.02, -0.03); b4.scale.set(1.08, 1, 1.02); head.add(b4); const fr2 = box(0.46, 0.08, 0.06, hair, 0, 0.17, 0.26, head); fr2.rotation.x = -0.25; }
   else if (style === "long") { const bk = cap(0.27, 0.42, hair, head); bk.position.set(0, -0.25, -0.12); bk.scale.set(1.1, 1, 0.6); const fr2 = sph(0.12, hair, -0.1, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
   else if (style === "pony") { sph(0.12, hair, 0, 0.12, -0.3, head); const tl = cap(0.08, 0.28, hair, head); tl.position.set(0, -0.12, -0.36); tl.rotation.x = 0.25; sph(0.045, "#e7a6a8", 0, 0.12, -0.2, head); const fr2 = sph(0.11, hair, 0.08, 0.17, 0.22, head); fr2.scale.set(1.4, 0.55, 0.8); }
+  else if (style === "twins") { [-1, 1].forEach((sd) => { const tl = cap(0.075, 0.24, hair, head); tl.position.set(sd * 0.36, -0.1, -0.06); tl.rotation.z = sd * 0.3; sph(0.045, "#e7a6a8", sd * 0.31, 0.06, -0.06, head, 8, 6); }); const fr2 = sph(0.12, hair, 0, 0.17, 0.22, head); fr2.scale.set(1.6, 0.5, 0.8); }
+  else if (style === "buzz") { hairCap.scale.set(0.98, 0.94, 0.97); }
   else if (style === "buns") { [-1, 1].forEach((sd) => sph(0.12, hair, sd * 0.2, 0.3, -0.03, head, 14, 10)); const fr2 = sph(0.12, hair, 0, 0.17, 0.22, head); fr2.scale.set(1.6, 0.5, 0.8); }
   else if (hatOn && (style === "curly" || style === "spiky" || style === "buns")) { /* 戴帽子時，頂上的捲髮、刺刺頭、包包頭收進帽子裡 */ }
   else if (style === "curly") { for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r0 = 0.28; sph(0.1, hair, Math.cos(a) * r0, 0.14 + Math.sin(i * 1.7) * 0.06, Math.sin(a) * r0 * 0.95 - 0.02, head, 10, 8); } for (let i = 0; i < 5; i++) sph(0.11, hair, -0.16 + i * 0.08, 0.3, -0.02 + (i % 2) * 0.05, head, 10, 8); }
@@ -343,6 +349,8 @@ function makeChar(look) {
   if (look.hat === "beanie") { const b = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.47), mat("#c8574a")); b.position.y = 0.04; b.rotation.x = -0.15; b.scale.set(1.06, 1.05, 1.05); head.add(b); cyl(0.38, 0.38, 0.09, "#a9463c", 0, 0.07, -0.02, head).rotation.x = -0.15; sph(0.08, "#f3efe6", 0, 0.43, -0.04, head); }
   if (look.hat === "straw") { cyl(0.55, 0.55, 0.025, "#e6c27a", 0, 0.2, -0.02, head, 28); cyl(0.27, 0.33, 0.2, "#e6c27a", 0, 0.3, -0.02, head); cyl(0.322, 0.322, 0.04, "#c2453b", 0, 0.23, -0.02, head); }
   if (look.hat === "beret") { const b = sph(0.36, "#3d3a4a", 0.04, 0.27, -0.03, head); b.scale.set(1.08, 0.38, 1.05); sph(0.03, "#3d3a4a", 0.04, 0.4, -0.03, head); }
+  if (look.hat === "catband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.02, 6, 20, Math.PI), mat("#3d3a4a")); band.position.y = 0.05; band.rotation.y = Math.PI / 2; head.add(band); [-1, 1].forEach((sd) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.16, 4), mat("#3d3a4a")); e.position.set(sd * 0.19, 0.38, 0); e.rotation.z = -sd * 0.35; head.add(e); const inn = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.1, 4), mat("#f2c4c8")); inn.position.set(sd * 0.19, 0.37, 0.05); inn.rotation.z = -sd * 0.35; head.add(inn); }); }
+  if (look.hat === "bucket") { const br = cyl(0.42, 0.48, 0.08, "#c9b48a", 0, 0.17, -0.02, head, 24); br.rotation.x = -0.1; cyl(0.3, 0.34, 0.22, "#c9b48a", 0, 0.3, -0.02, head, 22).rotation.x = -0.1; cyl(0.345, 0.345, 0.04, "#a8916a", 0, 0.22, -0.02, head, 22).rotation.x = -0.1; }
   if (look.hat === "crown") { const cr = cyl(0.16, 0.16, 0.12, mat("#e8b93a", { metalness: 0.5, roughness: 0.35 }), 0, 0.33, 0, head, 10); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; const k = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.09, 6), mat("#e8b93a", { metalness: 0.5, roughness: 0.35 })); k.position.set(Math.cos(a) * 0.15, 0.43, Math.sin(a) * 0.15); head.add(k); } sph(0.03, "#c2453b", 0, 0.34, 0.16, head); cr.castShadow = true; }
   // 寵物夥伴
   const cat = look.pet ? makePet(look.pet) : null;
@@ -369,7 +377,7 @@ function makeChar(look) {
 /* ===== 寵物 ===== */
 function makePet(kind) {
   const g = new THREE.Group();
-  const col = { cat: "#e3a35b", shiba: "#d9914a", bunny: "#fffdf8", chick: "#f2cc4a", panda: "#fffdf8" }[kind] || "#e3a35b";
+  const col = { cat: "#e3a35b", shiba: "#d9914a", bunny: "#fffdf8", chick: "#f2cc4a", panda: "#fffdf8", fox: "#e07a3a", hamster: "#e8c08a" }[kind] || "#e3a35b";
   let tail;
   if (kind === "chick") {
     const b = sph(0.14, col, 0, 0.14, 0, g); b.scale.set(1, 0.95, 1.05);
@@ -382,12 +390,16 @@ function makePet(kind) {
     const hd = sph(0.1, col, 0, 0.25, 0.14, g);
     if (kind === "panda") { [-0.06, 0.06].forEach((x) => { sph(0.035, "#2a2620", x, 0.34, 0.12, g, 8, 6); const p2 = sph(0.028, "#2a2620", x * 0.7, 0.26, 0.225, g, 8, 6); p2.scale.set(0.8, 1, 0.5); }); [-0.08, 0.08].forEach((x) => sph(0.05, "#2a2620", x, 0.06, 0.1, g, 8, 6)); c1.scale.set(1, 0.85, 1.25); }
     else if (kind === "bunny") { [-0.035, 0.035].forEach((x) => { const e = cap(0.025, 0.14, "#fffdf8", g); e.position.set(x, 0.42, 0.12); e.rotation.z = x * 3; const inn = cap(0.012, 0.1, "#f2c4c8", g); inn.position.set(x, 0.42, 0.14); inn.rotation.z = x * 3; }); }
-    else { [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.07, 4), mat(col)); e.position.set(x, 0.35, 0.14); g.add(e); }); }
+    else if (kind === "hamster") { [-0.06, 0.06].forEach((x) => sph(0.035, "#f2c4c8", x, 0.33, 0.12, g, 8, 6)); c1.scale.set(1, 0.95, 1.1); hd.scale.set(1.1, 1, 1); const bl = sph(0.08, "#fff4e4", 0, 0.1, 0.08, g, 8, 6); bl.scale.set(1, 0.9, 0.8); }
+    else { [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, kind === "fox" ? 0.1 : 0.07, 4), mat(col)); e.position.set(x, 0.35, 0.14); g.add(e); }); }
+    if (kind === "fox") { const m2 = sph(0.055, "#fffdf8", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.9); }
     if (kind === "shiba") { const m2 = sph(0.06, "#fff4e4", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.8); }
     if (kind !== "panda") [-0.04, 0.04].forEach((x) => sph(0.015, "#2f2622", x, 0.26, 0.23, g, 6, 6));
     if (kind === "bunny") { tail = sph(0.05, "#fffdf8", 0, 0.14, -0.17, g, 8, 6); }
     else if (kind === "shiba") { tail = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.022, 6, 12, Math.PI * 1.5), mat(col)); tail.position.set(0, 0.24, -0.15); tail.rotation.y = Math.PI / 2; g.add(tail); }
     else if (kind === "panda") { tail = sph(0.03, "#fffdf8", 0, 0.14, -0.16, g, 6, 6); }
+    else if (kind === "hamster") { tail = sph(0.02, col, 0, 0.12, -0.15, g, 6, 6); }
+    else if (kind === "fox") { tail = sph(0.08, col, 0, 0.2, -0.2, g, 10, 8); tail.scale.set(0.8, 0.8, 1.8); tail.rotation.x = -0.5; sph(0.045, "#fffdf8", 0, 0, 0.12, tail, 8, 6); }
     else { tail = cap(0.025, 0.18, col, g); tail.position.set(0, 0.22, -0.16); tail.rotation.x = -0.6; }
   }
   g.userData.tail = tail;
@@ -1570,6 +1582,8 @@ function update(members) {
       st.emoAt = m.emoAt; st.emo = m.emo; st.emoT0 = performance.now();
       // 「有人要咖啡嗎」：走到咖啡機泡一杯，再端回座位
       if (m.emo === "coffee" && st.mode !== "walk" && st.mode !== "coffee") { st.emo = null; releaseSpot(m.id); st.spot = -1; walkTo(st, COFFEE_SPOT, "coffee"); }
+      // 「我先喝口水」：不在座位上就先走回座位再喝
+      else if (m.emo === "drink" && st.mode !== "sit" && st.mode !== "coffee") { st.emo = null; st.sip = true; releaseSpot(m.id); st.spot = -1; walkTo(st, seatPos(st.seat), "sit"); }
     }
   });
   Object.keys(chars).forEach((id) => { if (!ids[id]) removeChar(id); });
@@ -1589,7 +1603,7 @@ function animChar(st, dt, now) {
   if (st.mode === "walk") {
     const nxt = st.path[0];
     if (!nxt) {
-      if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; if (st.carry) { st.carry = false; st.emo = "drink"; st.emoT0 = now; } }
+      if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; if (st.carry || st.sip) { st.carry = st.sip = false; st.emo = "drink"; st.emoT0 = now; if (st.m.up) st.resumeAt = now + 4000; } }
       else if (st.after === "coffee") { st.mode = "coffee"; st.ry = Math.PI; st.brewT0 = now; }
       else { const sp = SPOTS[st.spot] || { ry: st.ry }; st.mode = "idle"; st.ry = sp.ry; st.waitUntil = now + 6000 + Math.random() * 8000; }
     } else {
@@ -1603,6 +1617,10 @@ function animChar(st, dt, now) {
   } else if (st.mode === "coffee" && now - st.brewT0 > BREW_MS) {
     st.carry = true;
     if (st.m.up) { const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle"); } else walkTo(st, seatPos(st.seat), "sit");
+  } else if (st.mode === "sit" && st.resumeAt && now > st.resumeAt) {
+    // 休息中回座位喝完水，再起來走走
+    st.resumeAt = 0;
+    if (st.m.up) { const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle"); }
   } else if (st.mode === "idle" && st.m.up && now > st.waitUntil) {
     const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle");
   }
