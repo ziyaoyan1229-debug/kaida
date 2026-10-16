@@ -66,6 +66,11 @@
     });
   }
 
+  // 照片網址：真的載入圖片時 Google 才計費，所以清單縮圖用 lazy loading
+  function photoUrl(ph, size) {
+    if (!ph || typeof ph.getURI !== "function") return "";
+    try { return ph.getURI({ maxWidth: size, maxHeight: size }); } catch (e) { return ""; }
+  }
   var FOOD = /restaurant|food|cafe|bakery|meal_|dessert|ice_cream|juice|tea|coffee|bar$|confection|snack|deli|candy|donut|sandwich|brunch|diner|buffet/;
 
   // 去掉離其他店太遠的幾家，外框才會貼著夜市的街道
@@ -136,7 +141,7 @@
       }
       // 夜市常是一整條街，範圍抓大一點；搜尋字加上夜市名稱，結果就會是夜市裡的攤位
       var bounds = box(center, 650);
-      var fields = ["id", "displayName", "location", "types", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI"];
+      var fields = ["id", "displayName", "location", "types", "rating", "userRatingCount", "primaryTypeDisplayName", "formattedAddress", "googleMapsURI", "photos"];
       var q = [m.zh + " 小吃", m.zh + " 攤位", m.zh + " 美食"];
       var lists = await Promise.all(q.map(function (text) { return search(text, fields, { locationRestriction: bounds, maxResultCount: 20 }); }));
       var seen = {}, stalls = [];
@@ -150,7 +155,11 @@
           stalls.push({
             id: p.id, name: p.displayName || "", lat: loc.lat, lng: loc.lng,
             rating: p.rating || null, count: p.userRatingCount || 0, type: p.primaryTypeDisplayName || "",
-            address: p.formattedAddress || "", url: p.googleMapsURI || "", place: p
+            address: p.formattedAddress || "", url: p.googleMapsURI || "", place: p,
+            thumb: photoUrl((p.photos || [])[0], 160), photos: (p.photos || []).slice(0, 6).map(function (ph) {
+              var a = (ph.authorAttributions || [])[0] || {};
+              return { url: photoUrl(ph, 900), author: a.displayName || "", authorUrl: a.uri || "" };
+            }).filter(function (x) { return x.url; })
           });
         });
       });
