@@ -76,6 +76,8 @@
 
   /* ===== 角色 ===== */
   // 以腳底中心為原點，大約 60 高。pose: desk / stand / sofa / mug / snack
+  // 頭的群組以脖子 (0,-30) 為轉軸：外層移到脖子、中間這層做動畫、內層再移回來
+  var HEAD_OPEN = '<g transform="translate(0 -30)"><g class="head"><g transform="translate(0 30)">', HEAD_CLOSE = '</g></g></g>';
   function character(look, pose, opt) {
     opt = opt || {};
     look = look || defaultLook();
@@ -93,11 +95,13 @@
     if (look.back === "wings") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".7"><path d="M-9 -26 C-24 -38 -32 -26 -27 -16 C-22 -12 -14 -16 -9 -20 Z"/><path d="M9 -26 C24 -38 32 -26 27 -16 C22 -12 14 -16 9 -20 Z"/></g>';
     if (look.back === "cape") s += '<path d="M-11 -29 L-17 -8 Q0 -4 17 -8 L11 -29 Z" fill="#b0302a"/>';
     if (look.back === "backpack") s += '<rect x="-15" y="-27" width="30" height="16" rx="5" fill="#e0b04f"/>';
-    // 長髮（在頭後面）
-    if (style === "long") s += '<path d="M-8 -56 C-17 -54.5 -19.5 -28 -17 -17 C-16 -14.5 -14 -14 -12 -14 L12 -14 C14 -14 16 -14.5 17 -17 C19.5 -28 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
-    else if (style === "bob") s += '<path d="M-8 -56 C-17.5 -55 -19.5 -35 -15 -30 L15 -30 C19.5 -35 17.5 -55 8 -56 Z" fill="' + hair + '"/>';
-    else if (style === "pony") s += '<path d="M14 -52 C24 -50 25 -36 19 -28 C17 -34 17 -42 12 -48 Z" fill="' + hair + '"/>';
-    else if (girl && !style) s += '<path d="M-8 -56 C-17 -54.5 -19.5 -29 -16 -22.5 C-15 -20.5 -13 -20 -11 -20 L11 -20 C13 -20 15 -20.5 16 -22.5 C19.5 -29 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
+    // 長髮（在頭後面）：包在跟頭一樣會動的群組裡，轉頭、點頭時頭髮跟著動，不會像黏在背後
+    var bh = "";
+    if (style === "long") bh += '<path d="M-8 -56 C-17 -54.5 -19.5 -28 -17 -17 C-16 -14.5 -14 -14 -12 -14 L12 -14 C14 -14 16 -14.5 17 -17 C19.5 -28 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
+    else if (style === "bob") bh += '<path d="M-8 -56 C-17.5 -55 -19.5 -35 -15 -30 L15 -30 C19.5 -35 17.5 -55 8 -56 Z" fill="' + hair + '"/>';
+    else if (style === "pony") bh += '<path d="M14 -52 C24 -50 25 -36 19 -28 C17 -34 17 -42 12 -48 Z" fill="' + hair + '"/>';
+    else if (girl && !style) bh += '<path d="M-8 -56 C-17 -54.5 -19.5 -29 -16 -22.5 C-15 -20.5 -13 -20 -11 -20 L11 -20 C13 -20 15 -20.5 16 -22.5 C19.5 -29 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
+    if (bh) s += HEAD_OPEN + bh + HEAD_CLOSE;
     s += '<path d="M-12 -12 C-13 -22 -11 -29 0 -29 C11 -29 13 -22 12 -12 Z" fill="' + top.color + '"/>';
     if (top.stripe) s += '<g fill="' + top.stripe + '"><rect x="-12.5" y="-25" width="25" height="2.2"/><rect x="-12.8" y="-20" width="25.6" height="2.2"/><rect x="-12.8" y="-15" width="25.6" height="2.2"/></g>';
     if (top.hood) s += '<path d="M-9 -29 C-6 -24 6 -24 9 -29" fill="none" stroke="#6f8f5c" stroke-width="2.4" stroke-linecap="round"/><path d="M-2 -25 L-2.5 -19 M2 -25 L2.5 -19" stroke="#f3efe6" stroke-width="1.2"/>';
@@ -131,7 +135,7 @@
     if (look.neck === "tie") s += '<path d="M-1.8 -28.5 h3.6 l-.8 2 l1.4 8 l-2.4 2.6 l-2.4 -2.6 l1.4 -8 Z" fill="#3a5a8a"/><path d="M-1 -24 l2 -1.2 M-1.2 -21 l2.2 -1.3" stroke="#e8b93a" stroke-width=".7"/>';
     if (look.neck === "pearls") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".4">' + [-7, -4.5, -1.5, 1.5, 4.5, 7].map(function (x) { return '<circle cx="' + x + '" cy="' + (-27.5 + Math.abs(x) * -0.25 + 2.2) + '" r="1.3"/>'; }).join("") + '</g>';
     var hy = -43;
-    s += '<g class="head">';
+    s += HEAD_OPEN;
     s += '<circle cx="0" cy="' + hy + '" r="15" fill="' + skin + '"/>';
     if (style === "spiky") {
       s += '<path d="M-15.5 ' + (hy + 2) + ' L-17 ' + (hy - 10) + ' L-11 ' + (hy - 13) + ' L-10 ' + (hy - 22) + ' L-4 ' + (hy - 16) + ' L0 ' + (hy - 25) + ' L4 ' + (hy - 16) + ' L10 ' + (hy - 22) + ' L11 ' + (hy - 13) + ' L17 ' + (hy - 10) + ' L15.5 ' + (hy + 2) + ' C12 ' + (hy - 5) + ' 4 ' + (hy - 7) + ' 0 ' + (hy - 5) + ' C-4 ' + (hy - 7) + ' -12 ' + (hy - 5) + ' -15.5 ' + (hy + 2) + ' Z" fill="' + hair + '"/>';
@@ -173,7 +177,7 @@
     if (look.hat === "catband") s += '<path d="M-14 ' + (hy - 10) + ' C-14 ' + (hy - 18) + ' 14 ' + (hy - 18) + ' 14 ' + (hy - 10) + '" fill="none" stroke="#3d3a4a" stroke-width="2"/><path d="M-13 ' + (hy - 12) + ' L-10 ' + (hy - 25) + ' L-3 ' + (hy - 16) + ' Z M13 ' + (hy - 12) + ' L10 ' + (hy - 25) + ' L3 ' + (hy - 16) + ' Z" fill="#3d3a4a"/><path d="M-10.5 ' + (hy - 14) + ' L-9.6 ' + (hy - 21) + ' L-5.5 ' + (hy - 16) + ' Z M10.5 ' + (hy - 14) + ' L9.6 ' + (hy - 21) + ' L5.5 ' + (hy - 16) + ' Z" fill="#f2c4c8"/>';
     if (look.hat === "bucket") s += '<path d="M-22 ' + (hy - 5) + ' L22 ' + (hy - 5) + ' L15 ' + (hy - 11) + ' L13 ' + (hy - 22) + ' C5 ' + (hy - 25) + ' -5 ' + (hy - 25) + ' -13 ' + (hy - 22) + ' L-15 ' + (hy - 11) + ' Z" fill="#c9b48a"/><path d="M-14.6 ' + (hy - 11) + ' H14.6" stroke="#a8916a" stroke-width="2.4"/>';
     if (look.hat === "crown") s += '<path d="M-9 ' + (hy - 12) + ' L-9 ' + (hy - 21) + ' L-4.5 ' + (hy - 16) + ' L0 ' + (hy - 23) + ' L4.5 ' + (hy - 16) + ' L9 ' + (hy - 21) + ' L9 ' + (hy - 12) + ' Z" fill="#e8b93a" stroke="#c99a2a" stroke-width=".8"/><circle cx="0" cy="' + (hy - 15) + '" r="1.6" fill="#c2453b"/>';
-    s += '</g>';
+    s += HEAD_CLOSE;
     s += '</g>';
     if (look.pet && !opt.noPet) s += pet(look.pet, opt.petX != null ? opt.petX : 20, 0);
     return s;
