@@ -162,6 +162,13 @@
   .cats::-webkit-scrollbar { display: none; }
   .cats button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; min-height: 38px; cursor: pointer; font-size: 14px; }
   .cats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+  .mini-win { padding: 0; overflow: hidden; }
+  .win-tabs { display: flex; background: var(--sunk); border-bottom: 1px solid var(--line); }
+  .win-tabs button { flex: 1; border: 0; background: none; padding: 10px 8px; min-height: 44px; font-size: 15px; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; }
+  .win-tabs button[aria-selected="true"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--signal); background: var(--paper); }
+  .win-pane { padding: 12px 14px 14px; }
+  .win-pane .code-input { width: 100%; box-sizing: border-box; }
+  .start-btn { font-size: 18px; min-height: 52px; }
   .room-card h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
   .room-card p { margin: 0 0 12px; }
   .char-top { display: flex; gap: 16px; align-items: center; }
@@ -327,9 +334,9 @@
       "tab.friends": "好友", "tab.char": "角色",
       "app.lede": "開一間溫馨的小讀書房，用四碼房號約朋友進來。大家一起專注、一起休息，完成番茄就拿小木頭幫角色買裝備。",
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
-      "r.createH": "開新房間", "r.createP": "開好會拿到四碼房號，傳給朋友就能進來。",
+      "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.private": "私人房間", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -413,7 +420,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.private": "Private room", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -720,19 +727,24 @@
     renderTasks();
   }
 
-  var pendingCode = "";
+  var pendingCode = "", roomTab = "join";
   function renderRooms() {
     var modes = ["std", "deep", "test"].map(function (m) {
       return '<button type="button" data-mode="' + m + '" aria-pressed="' + (data.mode === m) + '">' + K.esc(t("r.mode." + m)).replace("\n", "<br>") + '</button>';
     }).join("");
+    var tabs = ["join", "private"].map(function (k) {
+      return '<button type="button" role="tab" data-rtab="' + k + '" aria-selected="' + (roomTab === k) + '">' + K.esc(t("r.tab." + k)) + '</button>';
+    }).join("");
+    var pane = roomTab === "join"
+      ? '<p class="small muted">' + K.esc(t("r.joinP")) + '</p><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '">'
+      : '<p class="small muted" style="margin:0">' + K.esc(t("r.createP")) + '</p>';
     document.getElementById("room-list").innerHTML =
+      '<div class="card room-card mini-win"><div class="win-tabs" role="tablist">' + tabs + '</div><div class="win-pane">' + pane + '</div></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.doH")) + '</h3><p class="small muted">' + K.esc(t("r.doP")) + '</p><div class="seg acts">' +
         S.ACTS.map(function (a) { return '<button type="button" data-pickact="' + a + '" aria-pressed="' + (data.act === a) + '">' + K.esc(t("act." + a)) + '</button>'; }).join("") + '</div></div>' +
-      '<div class="card room-card"><h3>' + K.esc(t("r.joinH")) + '</h3>' +
-        '<div style="display:flex;gap:8px"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '">' +
-        '<button class="btn" type="button" data-act="join">' + K.esc(t("r.join")) + '</button></div></div>' +
-      '<div class="card room-card"><h3>' + K.esc(t("r.createH")) + '</h3><p class="small muted">' + K.esc(t("r.createP")) + '</p>' +
-        '<div class="seg">' + modes + '</div><button class="btn block" type="button" data-act="create">' + K.esc(t("r.create")) + '</button></div>' +
+      '<div class="card room-card"><h3>' + K.esc(t("r.timeH")) + '</h3>' +
+        (roomTab === "join" ? '<p class="small muted">' + K.esc(t("r.timeJoin")) + '</p>' : '<div class="seg">' + modes + '</div>') +
+        '<button class="btn block start-btn" type="button" data-act="' + (roomTab === "join" ? "join" : "create") + '">' + K.esc(t("r.start")) + '</button></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.simH")) + '</h3><p class="small muted">' + K.esc(t("r.simP")) + '</p>' +
         '<button class="btn ghost block" type="button" data-act="sim">' + K.esc(t("r.sim")) + '</button></div>' +
       '<div class="card room-card"><h3>' + K.esc(t("r.soloH")) + '</h3><p class="small muted">' + K.esc(t("r.soloP")) + '</p>' +
@@ -1018,7 +1030,7 @@
     var rm = location.hash.match(/[#&]room=(\d{4})/);
     if (rm) {
       history.replaceState(null, "", location.pathname + location.search);
-      pendingCode = rm[1];
+      pendingCode = rm[1]; roomTab = "join";
       if (session && session.code === rm[1]) return;
       K.toast(t("r.invited", { code: rm[1] }));
       if (!data.me.name) { show("char"); return; }
@@ -1302,6 +1314,7 @@
   document.getElementById("room-list").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.pickact) { data.act = b.dataset.pickact; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
+    if (b.dataset.rtab) { var jc = document.getElementById("join-code"); if (jc) pendingCode = jc.value; roomTab = b.dataset.rtab; renderRooms(); return; }
     if (b.dataset.mode) { data.mode = b.dataset.mode; persist(); b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     var a = b.dataset.act;
     if (a === "join") {
