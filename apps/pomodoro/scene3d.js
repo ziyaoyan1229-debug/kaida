@@ -503,7 +503,9 @@ let renderer, scene, camera, container, overlay, clock, raf = 0, mounted = false
 let skyNext = 0, fillLight, envNext = 0, fireLight, fireMeshes = [], embers, dust, steam, bulbs = [], pendulum, curtains = [], beam, sunLight, hemi, lampLight, skyMat, plants = [];
 let seatProps = [], chars = {}, reserved = {};
 let barLight, tvTex, tvLight, record, speakers = [], notes = [], floorLight, houseCat;
-let yaw = 0.64, pitch = 0.72, dragYaw = 0, dragPitch = 0, zoom = 1, zoomT = 1;
+// 一進房間就稍微放大，看不到房間外圍的邊
+const ZOOM0 = 0.8;
+let yaw = 0.64, pitch = 0.72, dragYaw = 0, dragPitch = 0, zoom = ZOOM0, zoomT = ZOOM0;
 const panOff = new THREE.Vector3(), panT = new THREE.Vector3();
 const target = new THREE.Vector3(1.1, 0.7, 1.2), tmpT = new THREE.Vector3();
 let camR = 16.6;
@@ -1795,7 +1797,7 @@ function panBy(px, py) {
   panT.x -= Math.cos(yy) * dx + Math.sin(yy) * dy; panT.z -= -Math.sin(yy) * dx + Math.cos(yy) * dy;
   clampPan();
 }
-function setZoom(z) { zoomT = Math.max(0.4, Math.min(1.45, z)); if (zoomT >= 0.95) panT.multiplyScalar(0); clampPan(); if (container) container.style.touchAction = zoomT < 0.95 ? "none" : ""; }
+function setZoom(z) { zoomT = Math.max(0.4, Math.min(1.45, z)); if (zoomT >= 0.95) panT.multiplyScalar(0); clampPan(); }
 function clampPan() { const k = Math.max(0, 1 - zoomT) * 9; panT.x = Math.max(-k, Math.min(k, panT.x)); panT.z = Math.max(-k, Math.min(k, panT.z)); panT.y = 0; }
 function resize() {
   const w = container.clientWidth, h = container.clientHeight;
@@ -1871,7 +1873,7 @@ function mount(el) {
     const m = tmid(e.touches); panBy(m.x - pinch.m.x, m.y - pinch.m.y); pinch.m = m;
   }, { passive: false });
   el.addEventListener("touchend", (e) => { if (e.touches.length < 2) pinch = null; });
-  el.addEventListener("dblclick", () => setZoom(1));
+  el.addEventListener("dblclick", () => { setZoom(ZOOM0); panT.set(0, 0, 0); });
   window.addEventListener("pointerup", () => { drag = null; });
   mounted = true;
   frame();
