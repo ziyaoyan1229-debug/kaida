@@ -1,0 +1,2620 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>開達 Kaida 原型</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjZjJlY2UxIi8+PGRlZnM+PGNsaXBQYXRoIGlkPSJjcyI+PHJlY3QgeD0iMCIgeT0iMTQiIHdpZHRoPSIxMDAiIGhlaWdodD0iNzIiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjY3MpIj48cGF0aCBkPSJNMTMuNSA5NiBWNjggSDM2IFY0OCBINTggVjMwIEg2OCIgZmlsbD0ibm9uZSIgc3R5bGU9InN0cm9rZTojMmEyNjIwIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PGNpcmNsZSBjeD0iNzciIGN5PSIyMyIgcj0iOSIgc3R5bGU9ImZpbGw6IzlhNzQ0MCIvPjwvZz48L3N2Zz4=">
+<!-- 加到 iOS 主畫面：圖示、名稱、全螢幕 -->
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAANKklEQVR4nOzdCVxU1R4H8DOCiriACgpoCrkg2Oe5lomWC5LAEJhbfXq2vPSllVb2XJ67qWWZoqmfelZiVq/es8UFBvclNFtcEB+ICyigsigomyyCzDswdr1zL/9hZoR7Gfx9P33o3sOZkeXHuef8770z9vnZqQygOvYMgIBwAAnhABLCASSEA0gIB5AQDiAhHEBCOICEcAAJ4QASwgEkhANICAeQEA4gIRxAQjiAhHAACeEAEsIBJIQDSAgHkBAOICEcQEI4gIRwAAnhABLCASSEA0gIB5AQDiAhHPertLgwJz258GZWcWGuo1PbVm3cXDy62TVuwmwfwnFfUhKOntzz9e3SInFjC2fX/oGvuHn6MhunwSv7WKf0Vv5vus8zLp6mOnTrH9B76Hg7exseQhoxsMqNrFQTyeAunY4pKshltgzhsNL5Y7tNdyi/XXrhxF5myzDnsMad8rKstLM1drtmRp/6DCOHNXLSkyrulNXYLff6Zb6WYTYLI4c1ystrTkYlvV5/p5zZLIRDKuvatbBR40z3GR02shOrmUNzJ4cWzsxm4bBijTusMf/F19itdTtzIlR/IRxWemTwKNMdNI3sfP1CmS1DOKzUtc/wrr2HmejQL2CC60PdmS3DnMMaGr2Gf+wf+LJLp+4nd0vL582dXAdoJ7br5MNsHMJhDb1Gb9jw9PVz6+Sbnhx3Myu1MD/bqY1HazdPjy69Gzd1YLYP4bhffD3ycK8hrCFCOICEcFggLCzE1cWFb3h72/ZM00wIhwVGhYb6+HizBwbCASSEA0gIB5AafjjOX0gqKCgwv3/uTfLyLT3TswdJww/H2rXrj5+IZbVBwzTsQYLDCpAQDiAhHEBCOICEcAAJ4QASwgGkBzcc48aN+cf0NxnQMHIACeEAEsIBJIQDSAgHkGwsHOfPXygotOy+9XxLzteDmI2FY/XH62NjTzFQBA4rQEI4gIRwAAnhABLCASSEA0gIB5AaSDiGDX1y7NjRFj2knasrA5MaSDjatW/fr28fBrUKhxUgIRxAQjiAhHAACeEAEsIBJIQDSDYWDm1wYL++veXtvr42/2579RDeABBIOKwACeEAEsIBJIQDSAgHkBAOICEcQEI4gIRwAAnhABLCASSEA0gIB5AQDiAhHEBCOICEcAAJ4QASwgEkhANICAeQEA4gIRxAQjiAhHAACeEAEsIBJIQDSAgHkOo8HGmpaddzcoTd7t27tWzRotqeKampOTk3xC3ubm4eHu6sLiUkJpYUlwi78tervJ6dnZZ2mW8UFRXzj/zrcXV1MXzKzq6RvZ09Z2dnxxqiOg/Ht99t2bYjUtjd8Om6Xr3+Iu/209btKz4KF7cMHuS34sP3mIXWrF3/9ptTze+/bNkHly6lCLu//nJIo9GIOxw5cvTDFatMP0kHD/cRI/wDRgzv2rULqw0bPvvihQl/dXRsxlTViNUDiYnnwlevFbe4ubktXDi3USPLvrxDP8ds3x5ZWlrKlHU1PWPzV99MePGVSa++FnP4CLtvW7dF7tu3n6lN/XDkFxTMmbewvLxcaOED9fL3lrRq2ZJZSKfbVVxccuDAIaaS+Pgzs2bP4ynJzMpi1jp69Nfc3Fzdzl1MbSqHo6KiYsmS9zMzM8WN70x/08fHm1no5s2bh4/8wjd00TuZqpKSkidOmsKnUMwquujKWMTF/e9qejpTlcqrlYhNm4/8clTcEhwUOPqZMGa5Xbv2GjaOn4jls0hXFxdWq/R6PZ+OPD7gsUceufv6Y/kFhVmZWZevXLl48ZKkM59ZT5r0+qeffNytW1dmCT6O7v9z5IuKip786iSmHjXDwf/QN0ZsFrf08O4+c8Z0ZpVtO6KE7R07dBNfeYnVKsNElYfjuefGST6Vl5e/e8/ejZs25+XmCY2Ftwpnzpq7KWJD69atmdn27NknbEeqHQ7VDisZGZn8gML/HIUWvsRd/v7SZs0cmOXOnTufKhrGo5U9sjg5tRo/bszWH/4bMMJf3M5nHjNnz2WWiI7eLWxnZ+f8cew4U4864SgrK5szd4Hk7YP58sTd3Y1ZJSraaPrGlw+nTsUxZfGV59IlC5991mhc4VPUTV9+ZeYzXEpJOZOYKG7R6dScP6kTjvDwtWfPnRe3vDDh+ScGD2LW2rVzt6RFEhfFTH9r6tAhT4hbvvr63/y4Y85jo6KkUTh4KMZQfFOFCuGI0u3cun2HuKVvnz6vTfk7sxYvb8jfw3z//gPKFzwMFi2c3/GhjsIuX11HmDd46GSBvn37Nv9GmEqUDkdqatrKVavFLW3atOGjsaX1LjFe3pA3qljw4NOmd96aJm6JFE2WKYbyhrxdrSGQKRwOPvv812cbS0ru/UHzehdPRtu2bZi1hPKGnIoFDz+/x/nKS9gtKi5OSDhj+iE6IgRxcafVKngoF46qhYn+xg2jU2tTX59yn+/NJpQ35AwFD6aSwcZTqOMnTproLC5vyKk1LVUuHJoqhm19FS8vT3nNwFJRxsOD5JRvZGQ0U4mvTw/x7kXR6T25ffuMJhatWhp9FzvpP4A6pVA4+KghlDQMGzwoKSmpv/3+B7sPvLyRnHxR2OUH+3/OniHuEKXTMZW4ubUX7+YXmFqw8GKoePftt6e5uLQVdjMyMo4dP8EUp0Q4eDA0f1YYK2PC7g4hPCVLly3nIyqzlmSyFjhypL//MGdnZ6ElPT1T+YKHQds2RhOpolvkipSfhTmTeFbY5RH3Hz5MGxwo7qNTY1qqRDg0TFM1cFQOGHq+x+5VRfk5CMllHBaRlDdCtJU/0KCgp8SNas32841X105OTlRPybHP339406ZNQ0NDxI185aV8wUOhw0rVUKHh8eD/9zE+GPPDbZRVEy5JecPDw61nz8pTYmHGP1a1Ch43jK9qkwwkYpJRIaRqzOjg4SGc4WNVBY8DBw4yZSk5IeUf9Hy0/HzD+p49e4o/tSp8zZWrFq/WJOWNUWF3z+V6du7s7d1NaFer4JFwxmjtSi3XJeUNHvHevXsZtrXBQeKeyg+BitY5+PgR+rS2ceMm7y6eLz7Bxn9/ixYvq6ioMP+p5OUN8dFE8mNVpeCxb/8h8a5k8SKQDBva4GBhe+RTAU2aNBF2+eRJ4YKHOudWOnbwmDb1dXFLQkJCxKbN5j+DpLwxcOAA8QUcgYFG0w7lCx6nT8efEY0cjo6OvCwm7yYvb4SGakWPajb0SaPTNNHKDh6qnbIf/UyY//Ch4paNEZvj4xPMe7TR1RucNshobt+qZUvJ2a8dO5Rb0/IS8LL3PxS3DDH+YgTiqze4R/v3lVyjFKw1+r62m1GGr0VqXiY4a9YM8ZGYL2cWLV5qzpxccvUGL3yNGDFc0kerlRxZlKuGLVy8NC0tTdzy4oTnq+0ZLT2mBEk6PD7gMXHBIzs7x3SltXapGQ6nVi0XzJ8jbrmanrFy1ZoaHyiZmgUE+Mv7PDF4kCoFj/A162JiDotbRoU+7eXlKe8pL28MGzZE3k3FgofKFxjzv4zx48eKW6J37tqzt4ar8iXlDa3x2CtQuOBxq+jW/IXvbtnyg7ixg4f71GlTqu0vKW/wwY+XN+TdQqUr84OKFTzUvzVh2huTu3R5WNyycmV49vUcqr+kvNG5c+eexDsOK1bwyMvN2/LDT2PGPi85ReLg0HTlRx+0aF79HX6y8kZQtd2qKXgcPMQUof69spUr20Xz/zZxcllZmaElv6Bw6XvLV4evqPYiD0l54+mQIOqZDQWPc+cuGHYNBY+goJHMKoarz/nJoMJbd6OZl19wLetatVefGyyYP9fLy7PaT8nLG9XeCGjA5yLx8ffWPjxVIVryu65F9eKOt65du7zx2mRxy+9/HPv6m+/kPeXlDckhWaIWCx6G80E8HF9s/NLw3/ff//hzzOFqk+HYrFn4yg8kyzHjr0QScS2jSQoesbGnlCl41ItwcPzc/YDHHhW3fLFxU1JSsqSbtLzhN8D0hf+qFDzc3d0jIjb4+Q2kOsjLGyEhwSaeUF7w2Cm7ZrYu1JdwcAvmzRFfx8CPMoveXSaZfEnKGyFBNYyuChc8+KJ6yuRJ337zJT+imegmK2/0q/EWLEnBY9v2SFb36lE4XFzbzpjxjrglOfniunWfCLvy8gY/QV/j0ypQ8ODVmpEB/nNmz/zxx/+8/NILNd56Iy1vmDGBkBc8TpyMZXWsziekgwYP5L91Ybd9+3YmOj8V4N+0aZMLF5LEjZevXH2oYwdmuMdw4stCu0+PHswMvOAx9Y0pJSX3XoQjIyNTuEFmzOhR1V7WK+jh7W34R/mj+FllX98eXl6ehk85NHNwdnJydnZq7ticmY3/c7yULlTT7e3tR5gRcVZ5Ufu8uLjTwm6h7IL7WqfJz7byfl9o8PCyT0BCOICEcAAJ4QASwgEkhANICAeQEA4gIRxAQjiAhHAACeEAEsIBJIQDSAgHkBAOICEcQEI4gIRwAAnhABLCASSEA0gIB5AQDiAhHEBCOICEcAAJ4QASwgGk/wMAAP//A+eK7QAAAAZJREFUAwAxrqLlYUJMXAAAAABJRU5ErkJggg==">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="開達">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f2ece1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* 開達 Kaida（開工到達成）原型樣式。
+   Layout: 單欄內容流（最寬 1120px）＋頂部導覽；作品詳情寬螢幕為主欄＋側欄。
+   兩套風格，各自是刻意的單一外觀，不跟系統深淺色切換：
+   - 米色極簡（預設）：米紙底、墨色字、黃銅色進度，細線、直角、大量留白。
+   - Cyber（data-skin="cyber"）：深夜底、網格、青色霓虹＋洋紅，切角面板與發光。 */
+:root {
+  --paper: #f2ece1;
+  --surface: #f8f4ec;
+  --sunk: #ebe3d5;
+  --ink: #2a2620;
+  --muted: #7d7365;
+  --line: #ddd2c0;
+  --accent: #2a2620;        /* 主要按鈕底色 */
+  --accent-ink: #f8f4ec;    /* 主要按鈕文字 */
+  --signal: #9a7440;        /* 進度、達成點：黃銅 */
+  --signal-2: #2a2620;      /* 募資 */
+  --accent-text: #86632f;
+  --idea: #8f8577;
+  --beta: #9a7440;
+  --launched: #5b7150;
+  --funding: #2a2620;
+  --pass: #5b7150;
+  --warn: #a5772a;
+  --fail: #a6463a;
+  --focus: #9a7440;
+  --logo-accent: #9a7440;
+  --card-bg: #2a2620; --card-fg: #f2ece1; --card-accent: #c9a36a; --card-track: rgba(242, 236, 225, .18);
+  --glow: none;
+  --grid: none;
+  --shadow: none;
+  --r: 2px;
+  --clip: none;
+
+  --f-display: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --f-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --h-weight: 500;
+  --h-track: .01em;
+  color-scheme: light;
+}
+:root[data-skin="cyber"] {
+  --paper: #07080d;
+  --surface: #0c1018;
+  --sunk: #131a27;
+  --ink: #e8f1ff;
+  --muted: #7f8ca8;
+  --line: #1e2840;
+  --accent: #22e8ff;
+  --accent-ink: #03141a;
+  --signal: #22e8ff;
+  --signal-2: #ff3ea5;
+  --accent-text: #22e8ff;
+  --idea: #8693ad;
+  --beta: #22e8ff;
+  --launched: #7cffb2;
+  --funding: #ff3ea5;
+  --pass: #7cffb2;
+  --warn: #ffd23e;
+  --fail: #ff5470;
+  --focus: #ff3ea5;
+  --logo-accent: #22e8ff;
+  --card-bg: #0c1018; --card-fg: #e8f1ff; --card-accent: #22e8ff; --card-track: rgba(34, 232, 255, .15);
+  --glow: 0 0 16px rgba(34, 232, 255, .55);
+  --grid: linear-gradient(rgba(34, 232, 255, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 232, 255, .05) 1px, transparent 1px);
+  --shadow: 0 0 0 1px rgba(34, 232, 255, .08), 0 20px 50px -30px rgba(255, 62, 165, .45);
+  --r: 0px;
+  --clip: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+
+  --f-display: "Chakra Petch", "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --h-weight: 700;
+  --h-track: .04em;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background-color: var(--paper); background-image: var(--grid); background-size: 28px 28px;
+  color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.7;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--paper); }
+a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+img, svg { max-width: 100%; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: var(--h-weight); letter-spacing: var(--h-track); line-height: 1.3; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 6vw, 48px); }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; }
+p { margin: 0; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---- top bar ---- */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; gap: 10px 18px; min-height: 60px; flex-wrap: wrap; padding-block: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand svg { height: 24px; width: auto; display: block; }
+.brand .zh { font-size: 13px; color: var(--muted); letter-spacing: .2em; padding-left: 10px; border-left: 1px solid var(--line); }
+.nav { display: flex; gap: 2px; margin-left: auto; flex-wrap: wrap; }
+.nav a { text-decoration: none; padding: 6px 10px; color: var(--muted); font-size: 14px; border-bottom: 1px solid transparent; }
+.nav a:hover { color: var(--ink); }
+.nav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+.tools-bar { display: flex; align-items: center; gap: 8px; }
+.whoami { display: flex; align-items: center; gap: 8px; }
+.nav-cta { font-weight: 700; font-size: 14px; text-decoration: none; padding: 6px 14px; background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); border-radius: var(--r); box-shadow: var(--glow); white-space: nowrap; }
+.nav-cta:hover { transform: translateY(-1px); }
+.nav-cta[aria-current="page"] { outline: 2px solid var(--signal); outline-offset: 2px; }
+.me { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.avatar { width: 24px; height: 24px; display: grid; place-items: center; background: var(--ink); color: var(--paper); font-size: 12px; border-radius: 50%; }
+:root[data-skin="cyber"] .avatar { border-radius: 0; background: var(--signal); color: var(--accent-ink); }
+.me-tag { font-size: 11px; font-weight: 500; font-family: var(--f-mono); color: var(--signal); border: 1px solid currentColor; padding: 0 5px; border-radius: var(--r); }
+.whoami select { font: inherit; font-size: 13px; padding: 5px 8px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.skin { display: inline-flex; border: 1px solid var(--line); padding: 2px; gap: 2px; background: var(--surface); border-radius: var(--r); }
+.skin button { border: 0; background: transparent; color: var(--muted); font: 500 12px var(--f-mono); letter-spacing: .06em; padding: 4px 10px; cursor: pointer; border-radius: var(--r); }
+.skin button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (max-width: 420px) { .skin button { padding: 4px 7px; } .tools-bar { gap: 4px; flex-wrap: wrap; justify-content: flex-end; row-gap: 6px; min-width: 0; } .nav-cta { padding: 6px 10px; } }
+@media (max-width: 720px) {
+  .nav { order: 3; width: 100%; margin-left: 0; overflow-x: auto; flex-wrap: nowrap; }
+  .nav a { white-space: nowrap; }
+  .tools-bar { margin-left: auto; }
+  .brand .zh { display: none; }
+}
+
+.demo-strip { color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); }
+.demo-strip .wrap { padding-block: 5px; font-family: var(--f-mono); letter-spacing: .02em; }
+
+main { padding-block: 32px 72px; }
+.page { display: grid; gap: 32px; }
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font: inherit; font-weight: 500; font-size: 15px; padding: 10px 20px; border-radius: var(--r);
+  border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; text-decoration: none;
+  transition: transform .15s, box-shadow .15s, background-color .15s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: var(--glow); }
+.btn.dark { background: var(--ink); color: var(--paper); }
+.btn.small { padding: 6px 12px; font-size: 13px; }
+.btn.ghost { border-color: var(--line); }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---- 階段軌道（點子 → 封測 → 發布 → 募資 → 交付） ---- */
+.track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; }
+.track i { height: 4px; background: var(--line); }
+.track i.on { background: var(--ink); }
+.track i.now { background: var(--signal); box-shadow: var(--glow); }
+.track-names { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; font-size: 11px; color: var(--muted); margin-top: 4px; }
+.track-names .cur { color: var(--ink); font-weight: 600; }
+
+/* ---- hero ---- */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; padding-block: 16px 8px; }
+.hero h1 { font-size: clamp(40px, 7vw, 76px); line-height: 1.12; font-weight: var(--h-weight); }
+.hero h1 .to { color: var(--signal); }
+.hero p.lead { font-size: 17px; max-width: 30em; color: var(--muted); }
+.hero .copy { display: grid; gap: 22px; }
+.etym { display: flex; gap: 22px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.etym b { color: var(--ink); font-weight: 600; margin-right: 6px; }
+.board { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; gap: 16px; box-shadow: var(--shadow); clip-path: var(--clip); text-decoration: none; color: inherit; }
+.board .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.board h3 { font-size: 22px; }
+.board .stats3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--line); padding-block: 12px; gap: 8px; }
+.board .stats3 b { display: block; font-family: var(--f-mono); font-size: 20px; font-weight: 600; }
+.board .stats3 span { font-size: 12px; color: var(--muted); }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr; gap: 28px; } }
+
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.flow-step { padding: 18px 20px 4px 0; display: grid; gap: 8px; align-content: start; }
+.flow-step + .flow-step { padding-left: 20px; border-left: 1px solid var(--line); }
+.flow-step .k { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+.flow-step h3 { font-size: 24px; }
+.flow-step p { font-size: 14px; color: var(--muted); }
+.flow-step .gate { font-size: 12px; margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--signal); }
+@media (max-width: 860px) {
+  .flow { grid-template-columns: 1fr 1fr; row-gap: 20px; }
+  .flow-step:nth-child(3) { padding-left: 0; border-left: 0; }
+}
+@media (max-width: 480px) {
+  .flow { grid-template-columns: 1fr; }
+  .flow-step, .flow-step + .flow-step { padding: 16px 0 0; border-left: 0; }
+  .flow-step + .flow-step { border-top: 1px solid var(--line); }
+}
+
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.section-head h2 { font-size: 26px; }
+
+/* ---- stage pill ---- */
+.stage { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--ink); }
+.stage::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.stage.idea { color: var(--idea); }
+.stage.beta { color: var(--beta); }
+.stage.launched { color: var(--launched); }
+.stage.funding { color: var(--funding); }
+:root[data-skin="cyber"] .stage { font-family: var(--f-mono); letter-spacing: .04em; }
+:root[data-skin="cyber"] .stage::before { border-radius: 0; box-shadow: 0 0 8px currentColor; }
+
+/* ---- work cards ---- */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 12px; align-content: start; text-decoration: none; color: inherit; transition: border-color .15s, transform .15s, box-shadow .15s; clip-path: var(--clip); min-width: 0; }
+.card:hover { border-color: var(--ink); transform: translateY(-2px); }
+:root[data-skin="cyber"] .card:hover { border-color: var(--signal); box-shadow: var(--shadow); }
+.card .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.card .mono-tools { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.card h3 { font-size: 21px; }
+.card .tag { font-size: 14px; color: var(--muted); min-height: 3.4em; }
+.card .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 10px; }
+.card .meta b { color: var(--ink); font-weight: 600; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: 12px; padding: 1px 8px; border: 1px solid var(--line); color: var(--ink); font-family: var(--f-mono); border-radius: var(--r); }
+.mini-bar { height: 3px; background: var(--line); overflow: hidden; }
+.mini-bar > i { display: block; height: 100%; background: var(--signal); box-shadow: var(--glow); }
+
+.price-tag { font-size: 12px; font-weight: 700; font-family: var(--f-mono); padding: 1px 8px; border: 1px solid var(--ink); border-radius: var(--r); }
+.price-tag.free { border-color: var(--launched); color: var(--launched); }
+.trust { display: flex; gap: 4px 12px; flex-wrap: wrap; color: var(--pass); }
+
+/* ---- filters ---- */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.filter { font: inherit; font-size: 14px; padding: 5px 12px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; border-radius: var(--r); }
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.filters select { font: inherit; font-size: 14px; padding: 5px 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: var(--r); }
+
+/* ---- detail ---- */
+.crumb { font-size: 13px; color: var(--muted); font-family: var(--f-mono); }
+.crumb a { text-decoration: none; }
+.detail-head { display: grid; gap: 10px; }
+.detail-head .by { color: var(--muted); font-size: 14px; }
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+.detail-layout > * { min-width: 0; }
+.side { display: grid; gap: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 80px); }
+@media (max-width: 900px) {
+  .detail-layout { grid-template-columns: 1fr; }
+  .side { position: static; }
+}
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; gap: 16px; clip-path: var(--clip); }
+.panel > h2 { font-size: 19px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.panel .sub { font-size: 12px; color: var(--muted); font-family: var(--f-mono); font-weight: 400; letter-spacing: .04em; }
+.shots { display: grid; grid-auto-flow: column; grid-auto-columns: 46%; gap: 12px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x mandatory; }
+.shots svg { scroll-snap-align: start; border: 1px solid var(--line); width: 100%; height: auto; display: block; border-radius: var(--r); }
+@media (min-width: 640px) { .shots { grid-auto-columns: 30%; } }
+
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+.progress { display: grid; gap: 8px; }
+.progress .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.progress .big { font-family: var(--f-mono); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.bar { height: 8px; background: var(--sunk); overflow: hidden; position: relative; }
+.bar > i { display: block; height: 100%; background: var(--signal); transition: width .4s; box-shadow: var(--glow); }
+.bar.striped > i { background: repeating-linear-gradient(90deg, var(--signal) 0 10px, color-mix(in srgb, var(--signal) 70%, var(--paper)) 10px 12px); }
+.bar .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); }
+#funding .bar > i { background: var(--signal-2); }
+:root[data-skin="cyber"] #funding .bar > i { box-shadow: 0 0 14px var(--signal-2); }
+
+.tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.tasks li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.tasks .req { font-size: 11px; font-family: var(--f-mono); padding: 0 6px; border: 1px solid var(--muted); color: var(--muted); white-space: nowrap; margin-top: 2px; border-radius: var(--r); }
+.tasks .req.must { border-color: var(--ink); color: var(--ink); }
+
+.feedback-list { display: grid; gap: 10px; }
+.fb { border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 6px; font-size: 14px; border-radius: var(--r); background: var(--paper); }
+.fb .h { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.fb .h b { color: var(--ink); }
+.sev { font-size: 11px; font-weight: 600; padding: 1px 6px; color: var(--paper); border-radius: var(--r); }
+.sev.critical { background: var(--fail); }
+.sev.major { background: var(--warn); }
+.sev.minor { background: var(--muted); }
+.sev.none { background: var(--launched); }
+.stars { color: var(--signal); letter-spacing: 1px; }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; }
+.checks li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.checks li:last-child { border-bottom: 0; }
+.checks .ic { width: 18px; height: 18px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: var(--paper); margin-top: 2px; border-radius: 50%; }
+:root[data-skin="cyber"] .checks .ic { border-radius: 0; }
+.checks .pass .ic { background: var(--pass); }
+.checks .warn .ic { background: var(--warn); }
+.checks .fail .ic { background: var(--fail); }
+.checks .st { font-size: 12px; font-weight: 600; font-family: var(--f-mono); }
+.checks .pass .st { color: var(--pass); }
+.checks .warn .st { color: var(--warn); }
+.checks .fail .st { color: var(--fail); }
+.checks .note { display: block; font-size: 12px; color: var(--muted); }
+
+.notice { border-left: 3px solid var(--signal-2); background: var(--sunk); padding: 8px 12px; font-size: 13px; }
+.notice.info { border-left-color: var(--launched); }
+.notice.bad { border-left-color: var(--fail); }
+
+.gate-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+.gate-list li { display: flex; gap: 8px; align-items: flex-start; }
+.gate-list .ok { color: var(--pass); font-weight: 800; }
+.gate-list .no { color: var(--fail); font-weight: 800; }
+
+.milestones { list-style: none; margin: 0; padding: 0; display: grid; }
+.milestones li { display: grid; grid-template-columns: 58px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.milestones li:last-child { border-bottom: 0; }
+.milestones .pct { font-family: var(--f-mono); font-weight: 600; font-size: 22px; }
+.milestones .t { font-weight: 600; font-size: 14px; }
+.milestones .d { font-size: 13px; color: var(--muted); }
+
+.rewards { display: grid; gap: 10px; }
+.reward { border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 4px; border-radius: var(--r); background: var(--paper); }
+.reward .p { font-family: var(--f-mono); font-weight: 600; font-size: 18px; }
+.reward .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+.stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--line); }
+.stat { padding: 10px 12px 10px 0; }
+.stat + .stat { padding-left: 12px; border-left: 1px solid var(--line); }
+.stat b { display: block; font-family: var(--f-mono); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+
+/* ---- share card ---- */
+.share-card {
+  aspect-ratio: 1 / 1; max-width: 100%; width: 100%; padding: 22px; display: grid; grid-template-rows: auto 1fr auto; gap: 10px;
+  background: var(--card-bg); color: var(--card-fg); position: relative; overflow: hidden; border-radius: var(--r); clip-path: var(--clip);
+}
+:root[data-skin="cyber"] .share-card { border: 1px solid var(--signal); background-image: var(--grid); background-size: 22px 22px; }
+.share-card .sc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
+.share-card .sc-top svg { height: 16px; width: auto; color: var(--card-fg); --logo-accent: var(--card-accent); }
+.share-card .sc-stage { border: 1px solid var(--card-accent); color: var(--card-accent); font-family: var(--f-mono); padding: 0 8px; }
+.share-card .sc-name { font-family: var(--f-display); font-size: clamp(26px, 7vw, 34px); font-weight: var(--h-weight); line-height: 1.2; align-self: end; }
+.share-card .sc-tag { font-size: 14px; opacity: .78; margin-top: 6px; }
+.share-card .sc-stat { font-family: var(--f-mono); font-size: 13px; display: grid; gap: 6px; }
+.share-card .sc-bar { height: 4px; background: var(--card-track); overflow: hidden; }
+.share-card .sc-bar i { display: block; height: 100%; background: var(--card-accent); box-shadow: var(--glow); }
+textarea.share-text { width: 100%; min-height: 150px; font: inherit; font-size: 14px; padding: 10px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); resize: vertical; border-radius: var(--r); }
+
+/* ---- forms ---- */
+.form { display: grid; gap: 20px; max-width: 720px; }
+.field { display: grid; gap: 6px; }
+.field > label, .field > .label { font-weight: 500; font-size: 14px; }
+.field .hint { font-size: 12px; color: var(--muted); }
+.field .err { font-size: 12px; color: var(--fail); }
+input[type="text"], input[type="url"], input[type="number"], textarea, select.input {
+  font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); width: 100%; border-radius: var(--r);
+}
+input:focus, textarea:focus, select:focus { border-color: var(--ink); outline: none; }
+:root[data-skin="cyber"] input:focus, :root[data-skin="cyber"] textarea:focus { border-color: var(--signal); box-shadow: var(--glow); }
+textarea { min-height: 96px; resize: vertical; }
+input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--fail); }
+.checks-in { display: flex; flex-wrap: wrap; gap: 6px; }
+.checks-in label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; padding: 6px 12px; border: 1px solid var(--line); cursor: pointer; border-radius: var(--r); }
+.checks-in label:has(input:checked) { border-color: var(--ink); background: var(--sunk); }
+.task-check { display: grid; gap: 6px; }
+.task-check label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); font-size: 14px; cursor: pointer; border-radius: var(--r); }
+.task-check label:has(input:checked) { border-color: var(--launched); }
+.task-editor { display: grid; gap: 6px; }
+.task-editor .row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; }
+.task-editor .row label { font-size: 13px; display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--signal); }
+.rating { display: flex; gap: 4px; }
+.rating button { font: inherit; font-size: 26px; line-height: 1; background: none; border: 0; cursor: pointer; color: var(--line); padding: 2px; }
+.rating button.on { color: var(--signal); }
+.locked-tag { font-size: 11px; font-family: var(--f-mono); padding: 0 6px; border: 1px solid var(--ink); color: var(--ink); border-radius: var(--r); }
+.blur { filter: blur(5px); user-select: none; }
+.form-shell { background: var(--surface); border: 1px solid var(--line); padding: 26px; border-radius: var(--r); clip-path: var(--clip); }
+@media (max-width: 480px) { .form-shell { padding: 18px; } .panel { padding: 18px; } }
+
+/* ---- ideas ---- */
+.idea { background: var(--surface); border: 1px solid var(--line); padding: 18px; display: grid; gap: 10px; border-radius: var(--r); clip-path: var(--clip); }
+.idea .detail { font-size: 14px; padding: 10px 12px; background: var(--sunk); display: grid; gap: 4px; }
+.idea .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: start; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ---- toast & dialog ---- */
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--paper); padding: 10px 18px; font-size: 14px; z-index: 50; max-width: calc(100% - 32px); text-align: center; border-radius: var(--r); }
+.dialog-back { position: fixed; inset: 0; background: rgba(10, 10, 12, .55); z-index: 40; display: grid; place-items: center; padding: 16px; }
+.dialog { background: var(--surface); color: var(--ink); padding: 24px; max-width: 440px; width: 100%; display: grid; gap: 14px; border: 1px solid var(--line); border-radius: var(--r); clip-path: var(--clip); }
+
+.empty { padding: 28px; border: 1px dashed var(--line); text-align: center; color: var(--muted); font-size: 14px; }
+.creator-tools { border: 1px dashed var(--ink); padding: 16px; display: grid; gap: 10px; background: var(--surface); }
+:root[data-skin="cyber"] .creator-tools { border-color: var(--signal-2); }
+.creator-tools h3 { font-size: 15px; }
+
+footer { border-top: 1px solid var(--line); padding-block: 22px; font-size: 13px; color: var(--muted); }
+
+/* Cyber 的額外質感：標題微光、方括號標籤 */
+:root[data-skin="cyber"] h1 { text-shadow: 0 0 24px rgba(34, 232, 255, .35); }
+:root[data-skin="cyber"] .eyebrow::before { content: "[ "; color: var(--signal); }
+:root[data-skin="cyber"] .eyebrow::after { content: " ]"; color: var(--signal); }
+:root[data-skin="cyber"] .flow { border-top-color: var(--signal); }
+:root[data-skin="cyber"] .nav a[aria-current="page"] { border-bottom-color: var(--signal); color: var(--signal); }
+:root[data-skin="cyber"] .skin button[aria-pressed="true"] { background: var(--signal); color: var(--accent-ink); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- 產品地圖 ---------- */
+.origin { display: grid; gap: 12px; padding: 26px 28px; border-left: 3px solid var(--signal); background: var(--surface); clip-path: var(--clip); }
+.origin .k { font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; color: var(--muted); }
+.origin h2 { font-size: 22px; }
+.origin p { max-width: 40em; line-height: 1.85; }
+.origin .sign { font-size: 13px; color: var(--muted); }
+.map { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.map-col { padding: 16px 16px 6px 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.map-col + .map-col { padding-left: 16px; border-left: 1px solid var(--line); }
+.map-col .k { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+.map-col h3 { font-size: 20px; }
+.map-col .who { font-size: 13px; color: var(--muted); }
+.map-col ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.map-col li { display: flex; gap: 6px; align-items: baseline; }
+.map-col li::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 7px; background: var(--line); }
+.map-col li.on::before { background: var(--signal); }
+.map-col .gate { font-size: 12px; padding-left: 10px; border-left: 2px solid var(--signal); color: var(--muted); }
+.map-col a.small { justify-self: start; }
+.map-legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.map-legend span { display: inline-flex; gap: 6px; align-items: center; }
+.map-legend i { width: 8px; height: 8px; background: var(--line); display: inline-block; }
+.map-legend i.on { background: var(--signal); }
+.loop { font-size: 14px; color: var(--muted); padding: 12px 16px; border: 1px dashed var(--line); }
+.road { display: grid; gap: 0; border-top: 1px solid var(--ink); }
+.road-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.road-row .ph { display: grid; gap: 2px; }
+.road-row .ph b { font-size: 16px; }
+.road-row .ph span { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.road-row .pass { color: var(--muted); }
+.road-row .pass::before { content: attr(data-l); display: block; font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; }
+.road-row.now .ph b::after { content: attr(data-now); margin-left: 8px; font-size: 11px; font-weight: 600; font-family: var(--f-mono); color: var(--accent-ink); background: var(--accent); padding: 1px 6px; border-radius: var(--r); vertical-align: middle; }
+@media (max-width: 900px) {
+  .map { grid-template-columns: 1fr; border-top: 0; gap: 0; }
+  .map-col, .map-col + .map-col { padding: 16px 0; border-left: 0; border-top: 1px solid var(--line); }
+  .map-col:first-child { border-top: 1px solid var(--ink); }
+}
+@media (max-width: 640px) { .road-row { grid-template-columns: 1fr; gap: 6px; } .origin { padding: 20px; } }
+
+/* ---------- 進場動畫：階梯的線往上畫，資源載完後球輕輕落到頂端才進入 ---------- */
+html.splashing { overflow: hidden; }
+.splash { position: fixed; inset: 0; z-index: 1000; display: grid; justify-content: center; background: var(--paper); color: var(--ink); transition: opacity .32s ease, visibility .32s; animation: sp-fallback 0s 10s forwards; }
+:root[data-skin="cyber"] .splash { background-color: var(--paper); background-image: linear-gradient(rgba(34,232,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34,232,255,.05) 1px, transparent 1px); background-size: 24px 24px; }
+.splash.done { opacity: 0; visibility: hidden; pointer-events: none; }
+@keyframes sp-fallback { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+.splash { grid-template-columns: min(360px, 82vw); align-content: center; row-gap: 0; }
+.splash-logo { width: 100%; height: auto; overflow: visible; }
+.sp-bar { margin-top: 34px; height: 3px; background: var(--line); overflow: hidden; border-radius: 2px; }
+.sp-bar i { display: block; height: 100%; width: 100%; background: var(--signal); transform-origin: left; transform: scaleX(0); }
+:root[data-skin="cyber"] .sp-bar { border-radius: 0; }
+:root[data-skin="cyber"] .sp-bar i { box-shadow: 0 0 8px var(--signal); }
+.sp-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font: 500 12px var(--f-mono); letter-spacing: .04em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sp-pct { color: var(--ink); }
+.splash.arrived .sp-label { color: var(--signal); }
+.sp-stairs { stroke: currentColor; stroke-dasharray: 100 100; stroke-dashoffset: 100; animation: sp-loop .9s cubic-bezier(.6, 0, .3, 1) infinite; }
+.sp-dot { fill: var(--signal); opacity: 0; transform: translate(77px, -30px); }
+:root[data-skin="cyber"] .sp-dot { filter: drop-shadow(0 0 6px var(--signal)); }
+.sp-word { opacity: 0; transition: opacity .3s ease .38s; }
+/* 載好了：線停在畫滿的狀態（或從底部重畫一次），球輕輕落到頂端，接著字樣出現 */
+.splash.arrived .sp-stairs { animation: none; stroke-dashoffset: 0; }
+.splash.arrived.redraw .sp-stairs { animation: sp-draw .38s cubic-bezier(.6, 0, .3, 1) forwards; stroke-dashoffset: 100; }
+.splash.arrived .sp-dot { animation: sp-drop .55s forwards; }
+.splash.arrived.redraw .sp-dot { animation-delay: .35s; }
+.splash.arrived .sp-word { opacity: 1; }
+.splash.arrived.redraw .sp-word { transition-delay: .73s; }
+/* 載入中：線由下往上畫、停一下、再往上收掉，重複 */
+@keyframes sp-loop { 0% { stroke-dashoffset: 100; } 50%, 75% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -100; } }
+@keyframes sp-draw { to { stroke-dashoffset: 0; } }
+@keyframes sp-drop {
+  0% { opacity: 0; transform: translate(77px, -30px); animation-timing-function: cubic-bezier(.45, 0, .8, .4); }
+  15% { opacity: 1; }
+  62% { transform: translate(77px, 23px); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
+  80% { transform: translate(77px, 18px); animation-timing-function: cubic-bezier(.6, 0, .8, .5); }
+  100% { opacity: 1; transform: translate(77px, 23px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash .sp-stairs, .splash.arrived .sp-stairs { animation: none; stroke-dashoffset: 0; }
+  .splash .sp-dot, .splash.arrived .sp-dot { animation: none; opacity: 1; transform: translate(77px, 23px); }
+  .splash .sp-word { opacity: 1; transition: none; }
+}
+
+.cflow { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--ink); }
+.cf-step { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--line); position: relative; }
+.cf-n { font: 600 22px var(--f-mono); color: var(--signal); line-height: 1.2; }
+.cf-body { display: grid; gap: 10px; min-width: 0; }
+.cf-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cf-head h3 { font-size: 19px; }
+.cf-tag { font: 500 11px var(--f-mono); color: var(--muted); border: 1px solid var(--line); padding: 1px 6px; border-radius: var(--r); }
+.cf-tag.on { color: var(--signal); border-color: currentColor; }
+.cf-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; font-size: 14px; }
+.cf-cols p { margin: 0; }
+.cf-cols b { display: block; font: 500 11px var(--f-mono); letter-spacing: .08em; color: var(--muted); margin-bottom: 2px; }
+.cf-go { justify-self: start; font-size: 13px; color: var(--ink); }
+@media (max-width: 640px) { .cf-step { grid-template-columns: 36px minmax(0, 1fr); } .cf-n { font-size: 17px; } .cf-cols { grid-template-columns: 1fr; gap: 8px; } }
+
+/* 流程圖 */
+.fd-wrap { margin: 0; display: grid; gap: 8px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); clip-path: var(--clip); }
+.fd { display: block; width: 100%; height: auto; overflow: visible; }
+.fd-tall { display: none; max-width: 420px; margin: 0 auto; }
+@media (max-width: 760px) { .fd-wide { display: none; } .fd-tall { display: block; } .fd-wrap { padding: 12px; } }
+.fd text { fill: var(--ink); font: 500 13px var(--f-body); }
+.fd .fd-num { fill: var(--signal); font: 600 12px var(--f-mono); }
+.fd-node rect { fill: var(--paper); stroke: var(--line); stroke-width: 1.5; }
+.fd-node.hot rect { stroke: var(--ink); }
+.fd-node.goal rect { stroke: var(--signal); stroke-width: 2; }
+.fd-node.small text { font-size: 12px; }
+.fd-gate path { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.fd-gate text { font-size: 11px; }
+.fd-line { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.fd-line.loop { stroke: var(--signal); stroke-dasharray: 5 5; }
+.fd-head { fill: var(--muted); }
+.fd .fd-lab { fill: var(--muted); font: 500 11px var(--f-body); }
+:root[data-skin="cyber"] .fd-node rect { rx: 0; }
+
+/* ---------- 分類與興趣 ---------- */
+.cat-line { display: inline-flex; flex-wrap: wrap; gap: 0; font: 500 12px var(--f-mono); letter-spacing: .04em; color: var(--muted); }
+.cat-line span + span::before { content: "/"; margin: 0 6px; opacity: .6; }
+.cat-line span:last-child { color: var(--signal); }
+.cat-filter { display: grid; gap: 8px; }
+.filters.cats { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+.filters.cats .filter { white-space: nowrap; flex: none; }
+.filters.subs { padding-left: 12px; border-left: 2px solid var(--signal); }
+.filter.sm { font-size: 13px; padding: 3px 10px; }
+.filter.zero { opacity: .5; }
+.filter .num { opacity: .65; font-size: 12px; }
+.cat-selects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pick { display: grid; gap: 14px; }
+.pick-group { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+.pick-group legend { font-weight: 600; font-size: 14px; padding: 0; margin-bottom: 6px; }
+.pick .checks-in label { padding: 4px 10px; font-size: 13px; }
+.dialog.tall { max-width: 620px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.sticky-actions { position: sticky; bottom: -24px; background: var(--surface); padding: 12px 0; margin-bottom: -12px; border-top: 1px solid var(--line); }
+a.me { text-decoration: none; color: inherit; }
+a.me[aria-current="page"] .avatar { outline: 2px solid var(--signal); outline-offset: 1px; }
+.rec-ask { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- 產品地圖：方形粗框（米色＝深奶茶、Cyber＝深色） ---------- */
+:root { --mf: #8a6a4f; --mf-fill: #efe4d4; --mf-ink: #fbf6ee; --mf-hot: #d9c3a5; }
+:root[data-skin="cyber"] { --mf: #2a3754; --mf-fill: #0e1422; --mf-ink: #e8f1ff; --mf-hot: #16203a; }
+.map-page .origin, .map-page .fd-wrap, .map-page .cf-step, .map-page .road-row { border-radius: 0; clip-path: none; }
+.map-page .origin { border: 3px solid var(--mf); background: var(--mf-fill); box-shadow: 6px 6px 0 var(--mf); }
+.map-page .origin .k { display: inline-block; justify-self: start; background: var(--mf); color: var(--mf-ink); padding: 2px 8px; }
+.map-page .fd-wrap { border: 3px solid var(--mf); background: var(--surface); box-shadow: 6px 6px 0 var(--mf); }
+.map-page .fd-node rect { rx: 0; fill: var(--mf-fill); stroke: var(--mf); stroke-width: 3; }
+.map-page .fd-node rect.fd-shadow { fill: var(--mf); stroke: none; }
+.map-page .fd-node.hot rect:not(.fd-shadow) { fill: var(--mf-hot); }
+.map-page .fd-node.goal rect:not(.fd-shadow) { stroke: var(--signal); }
+.map-page .fd-node.goal rect.fd-shadow { fill: var(--signal); }
+.map-page .fd-gate path { stroke: var(--mf); stroke-width: 3; fill: var(--mf-hot); }
+.map-page .fd-line { stroke: var(--mf); stroke-width: 2.5; }
+.map-page .fd-head { fill: var(--mf); }
+.map-page .fd-line.loop { stroke: var(--signal); }
+.map-page .fd text { font-weight: 600; }
+:root[data-skin="cyber"] .map-page .fd-line { stroke: #5b6f99; }
+:root[data-skin="cyber"] .map-page .fd-head { fill: #5b6f99; }
+.map-page .cflow { border-top: 0; gap: 16px; }
+.map-page .cf-step { border: 3px solid var(--mf); background: var(--surface); box-shadow: 5px 5px 0 var(--mf); padding: 18px 18px 18px 0; grid-template-columns: 72px minmax(0, 1fr); transition: transform .15s ease, box-shadow .15s ease; }
+.map-page .cf-step:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--mf); }
+.map-page .cf-n { justify-self: center; align-self: start; display: grid; place-items: center; width: 44px; height: 44px; background: var(--mf); color: var(--mf-ink); font-size: 18px; }
+.map-page .cf-step:nth-child(odd) .cf-n { background: var(--signal); color: var(--accent-ink); }
+.map-page .cf-cols p { background: var(--mf-fill); border: 2px solid var(--mf); padding: 10px 12px; }
+.map-page .cf-tag { border-radius: 0; border-width: 2px; font-weight: 600; }
+.map-page .cf-go { font-weight: 600; }
+.map-page .road { border-top: 0; gap: 12px; }
+.map-page .road-row { border: 3px solid var(--mf); border-left-width: 10px; padding: 14px 16px; background: var(--surface); }
+.map-page .road-row.now { background: var(--mf-fill); box-shadow: 5px 5px 0 var(--mf); }
+@media (max-width: 640px) { .map-page .cf-step { grid-template-columns: 52px minmax(0, 1fr); padding-right: 12px; } .map-page .cf-n { width: 36px; height: 36px; font-size: 15px; } }
+@media (prefers-reduced-motion: reduce) { .map-page .cf-step { transition: none; } .map-page .cf-step:hover { transform: none; } }
+
+/* 成為測試者：登入是第一步 */
+.nav-cta { display: inline-flex; align-items: center; gap: 8px; font-family: inherit; cursor: pointer; }
+.tester-opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 14px; border: 2px solid var(--signal); background: var(--sunk); border-radius: var(--r); cursor: pointer; }
+.tester-opt input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--signal); }
+.tester-opt > span { display: grid; gap: 2px; }
+.t-steps { display: grid; gap: 0; padding: 0; }
+.t-step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 20px; }
+.t-step + .t-step { border-top: 1px solid var(--line); }
+.t-step > div { display: grid; gap: 6px; min-width: 0; }
+.t-n { width: 32px; height: 32px; display: grid; place-items: center; font: 600 15px var(--f-mono); background: var(--accent); color: var(--accent-ink); border-radius: var(--r); }
+.t-step.done .t-n { background: var(--signal); }
+.t-step.off { opacity: .55; }
+.t-login .btn { justify-self: start; margin-top: 6px; }
+.role-opts { display: grid; gap: 8px; }
+.me .me-tag + .me-tag { margin-left: -2px; }
+@media (max-width: 420px) { .me .me-tag { display: none; } }
+.reload { display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: var(--r); cursor: pointer; }
+.reload:hover svg { transform: rotate(90deg); }
+.reload svg { transition: transform .25s ease; }
+@media (prefers-reduced-motion: reduce) { .reload svg { transition: none; } }
+
+/* 從主畫面打開（全螢幕）時，避開瀏海與底部橫條 */
+@media (display-mode: standalone) {
+  .topbar { top: 0; padding-top: env(safe-area-inset-top, 0px); }
+  footer { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+
+</style>
+<script>
+  // 進場前先套用記住的風格，避免載入畫面閃一下米色
+  try { if (localStorage.getItem("kaida-skin") === "cyber") document.documentElement.setAttribute("data-skin", "cyber"); } catch (e) {}
+  document.documentElement.classList.add("splashing");
+</script>
+
+</head>
+<body>
+
+<div class="splash" id="splash" role="status" aria-label="載入中">
+<svg class="splash-logo" viewBox="0 0 376 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs><clipPath id="cs-splash"><rect x="0" y="14" width="100" height="72"/></clipPath></defs>
+<g clip-path="url(#cs-splash)"><path class="sp-stairs" pathLength="100" d="M13.5 96 V68 H36 V48 H58 V30 H68" fill="none" stroke-width="11" stroke-linejoin="miter"/></g>
+<circle class="sp-dot" r="9"/>
+<g class="sp-word" transform="translate(114 0)"><defs><clipPath id="cw-splash"><rect x="-20" y="14" width="302.0" height="72"/></clipPath></defs><g clip-path="url(#cw-splash)" stroke-width="11" fill="none"><g style="stroke:currentColor"><line x1="5.5" y1="4.0" x2="5.5" y2="96.0"/><line x1="7.5" y1="54.0" x2="46.0" y2="4.0"/><line x1="15.5" y1="47.0" x2="50.0" y2="96.0"/></g><polyline points="59.36,95.36 84.00,29.66 108.64,95.36" style="stroke:currentColor" stroke-linejoin="miter" stroke-miterlimit="20"/><g style="stroke:currentColor"><line x1="125.5" y1="4.0" x2="125.5" y2="96.0"/></g><g style="stroke:currentColor"><line x1="151.5" y1="4.0" x2="151.5" y2="96.0"/><path d="M151.5 19.5 H165 A30.5 30.5 0 0 1 165 80.5 H151.5" fill="none"/></g><polyline points="210.36,95.36 235.00,29.66 259.64,95.36" style="stroke:currentColor" stroke-linejoin="miter" stroke-miterlimit="20"/></g></g>
+</svg>
+<div class="sp-bar" aria-hidden="true"><i></i></div><div class="sp-meta" aria-hidden="true"><span class="sp-label">封測 0/20 位完成</span><span class="sp-pct">0%</span></div>
+</div>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="開達 Kaida 首頁"><span data-logo></span><span class="zh">開達</span></a>
+    <nav class="nav" id="nav" aria-label="主要導覽"></nav>
+    <div class="tools-bar">
+      <div class="skin" role="group" aria-label="切換風格"><button type="button" id="skin-beige" data-skin="beige" aria-pressed="true">米色</button><button type="button" id="skin-cyber" data-skin="cyber" aria-pressed="false">Cyber</button></div>
+      <button type="button" class="reload" id="reload" aria-label="重新整理" title="重新整理"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4 A8 8 0 1 1 4 12" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M11 0.8 L16.2 4 L11 7.2 Z" fill="currentColor"/></svg></button>
+      <div class="skin lang" role="group" aria-label="切換語言"><button type="button" data-lang="zh" aria-pressed="true">中</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
+      <div class="whoami" id="whoami"></div>
+    </div>
+  </div>
+</header>
+<div class="demo-strip"><div class="wrap">原型示範：所有作品、人物與金額皆為假資料，不會實際收款。網域尚未決定。</div></div>
+<main class="wrap" id="app"></main>
+<footer><div class="wrap btn-row" style="justify-content:space-between;align-items:center">
+  <span style="display:flex;align-items:center;gap:10px"><span data-icon></span>第一版原型 · 你新增的資料只存在這個瀏覽器</span>
+  <button class="btn small ghost" id="reset">清除示範資料</button>
+</div></footer>
+<script>
+// 假資料（mock data）。全部為示範用，人物、作品、金額皆為虛構。
+// 改版時直接改這個檔案即可，不需要後端。
+window.MOCK = {
+  // 平台規則（數字為待決定的假設，見 REVIEW.md）
+  rules: {
+    minTesters: 20,          // 開募資前，至少要有幾位測試者「完成全部必做任務」
+    blockOnHealthFail: true, // AI 健檢有「未通過」項目就不能開募資
+    milestones: [
+      { pct: 40, title: "上線前", desc: "封測版修完回報的嚴重 bug，支持者可登入搶先版" },
+      { pct: 40, title: "正式上線", desc: "正式版上線，核心功能全部可用" },
+      { pct: 20, title: "上線滿 30 天", desc: "連續 30 天正常運作、無重大事故" }
+    ],
+    updateEveryDays: 14
+  },
+
+  tools: ["ChatGPT", "Claude", "Cursor", "v0", "Lovable", "Bolt", "Replit", "Gemini"],
+
+  stages: {
+    idea: { label: "點子", order: 0 },
+    beta: { label: "封測中", order: 1 },
+    launched: { label: "已發布", order: 2 },
+    funding: { label: "募資中", order: 3 }
+  },
+
+  // 作品分類：大類 → 子類。zh 顯示用，en 給英文版
+  categories: [
+    { id: "finance", zh: "投資理財", en: "Finance & investing", subs: [["us", "美股", "US stocks"], ["tw", "台股", "Taiwan stocks"], ["macro", "總體經濟", "Macroeconomics"], ["crypto", "加密貨幣", "Crypto"], ["budget", "記帳預算", "Budgeting"], ["retire", "保險退休", "Insurance & retirement"]] },
+    { id: "games", zh: "遊戲", en: "Games", subs: [["moba", "MOBA", "MOBA"], ["card", "卡牌", "Card games"], ["shooter", "槍戰", "Shooters"], ["cozy", "療癒", "Cozy"], ["puzzle", "益智解謎", "Puzzle"], ["rpg", "角色扮演", "RPG"], ["casual", "休閒小遊戲", "Casual"]] },
+    { id: "life", zh: "生活", en: "Everyday life", subs: [["transit", "交通出行", "Transit"], ["health", "健康醫療", "Health"], ["food", "美食", "Food"], ["pets", "寵物", "Pets"], ["home", "居家租屋", "Home & renting"], ["family", "親子", "Family"]] },
+    { id: "edu", zh: "教育學習", en: "Education", subs: [["lang", "語言", "Languages"], ["exam", "考試升學", "Exams"], ["code", "程式", "Coding"], ["tutor", "家教補習", "Tutoring"]] },
+    { id: "work", zh: "工作效率", en: "Productivity", subs: [["time", "時間管理", "Time management"], ["jobs", "求職履歷", "Jobs & resumes"], ["notes", "筆記知識", "Notes"], ["team", "團隊協作", "Teamwork"]] },
+    { id: "biz", zh: "小商家", en: "Small business", subs: [["order", "點餐訂購", "Orders"], ["booking", "預約", "Booking"], ["stock", "庫存", "Inventory"], ["marketing", "行銷", "Marketing"]] },
+    { id: "creative", zh: "創作娛樂", en: "Creative & media", subs: [["reading", "閱讀", "Reading"], ["music", "音樂", "Music"], ["video", "影像", "Photo & video"], ["community", "社群", "Community"]] },
+    { id: "ai", zh: "AI 工具", en: "AI tools", subs: [["chat", "聊天助理", "Assistants"], ["writing", "寫作", "Writing"], ["image", "圖像生成", "Image generation"], ["auto", "自動化", "Automation"]] }
+  ],
+  works: [
+    {
+      id: "invoice-cat",
+      cat: "finance", sub: "budget",
+      name: "發票喵",
+      tagline: "拍一下電子發票載具，AI 自動分類記帳，月底告訴你錢花去哪",
+      author: "林小柚",
+      authorNote: "白天是會計，晚上用 Claude 寫 app",
+      tools: ["Claude", "Cursor"],
+      stage: "funding",
+      featured: true,
+      hue: 28,
+      url: "https://example.com/invoice-cat",
+      description: "串接財政部電子發票載具，把每一張發票自動分成餐飲、交通、訂閱等類別。每月產生一張「錢都去哪了」報告，還會提醒你哪些訂閱已經三個月沒用。目前是網頁版，手機瀏覽器可以加到主畫面。",
+      tasks: [
+        { id: "t1", title: "用測試帳號登入", required: true },
+        { id: "t2", title: "匯入 10 張以上發票並看分類結果", required: true },
+        { id: "t3", title: "打開月報告，找出一個你覺得分錯的類別", required: true },
+        { id: "t4", title: "試著手動修改分類", required: false }
+      ],
+      beta: { target: 30, completed: 34, joined: 41, avgRating: 4.4, bugsReported: 23, bugsFixed: 21 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass", note: "處理載具資料，已補上說明" },
+        { item: "首頁 3 秒內載入", status: "warn", note: "首次載入 3.8 秒" }
+      ],
+      funding: {
+        goal: 300000, raised: 186400, backers: 212, daysLeft: 18,
+        milestonesDone: 0,
+        rewards: [
+          { price: 390, title: "搶先版一年", desc: "正式上線前就能用，含一年進階功能", left: null, backers: 120 },
+          { price: 990, title: "終身方案", desc: "進階功能永久使用，名字放進感謝頁", left: 58, backers: 82 },
+          { price: 2400, title: "小店版", desc: "給工作室或小店，5 個帳號共用一份帳本", left: 20, backers: 10 }
+        ],
+        updates: [
+          { date: "2026-10-09", title: "第 2 次進度更新：分類準確率從 81% 拉到 90%" },
+          { date: "2026-09-25", title: "第 1 次進度更新：募資開跑，感謝 34 位封測夥伴" }
+        ]
+      },
+      feedback: [
+        { tester: "阿凱", level: "資深測試者", rating: 5, tasksDone: ["t1", "t2", "t3", "t4"], issue: "外送平台的發票被分成「其他」，應該是餐飲。", severity: "minor", device: "iPhone 15 / Safari", date: "2026-09-12", pay: "yes" },
+        { tester: "Mia", level: "一般測試者", rating: 4, tasksDone: ["t1", "t2", "t3"], issue: "月報告的圓餅圖在小螢幕上標籤重疊。", severity: "minor", device: "Pixel 7 / Chrome", date: "2026-09-10", pay: "maybe" }
+      ]
+    },
+    {
+      id: "bus-buddy",
+      cat: "life", sub: "transit",
+      name: "等公車不焦慮",
+      tagline: "LINE 傳站名就回你下一班車還有幾分鐘，長輩也會用",
+      author: "陳志明",
+      authorNote: "退休工程師，在社大學 vibe coding",
+      tools: ["ChatGPT", "Replit"],
+      stage: "beta",
+      featured: true,
+      hue: 150,
+      url: "https://example.com/bus-buddy",
+      description: "加 LINE 好友後直接打站名或分享位置，就回覆附近站牌的到站時間。字很大、不用學新 app，給爸媽用剛好。資料來自公開的公車動態資訊。",
+      tasks: [
+        { id: "t1", title: "加入 LINE 機器人好友", required: true },
+        { id: "t2", title: "查詢你家附近一個站牌", required: true },
+        { id: "t3", title: "分享位置查詢附近站牌", required: true },
+        { id: "t4", title: "請一位長輩試用並記錄卡住的地方", required: false }
+      ],
+      beta: { target: 20, completed: 12, joined: 17, avgRating: 4.1, bugsReported: 9, bugsFixed: 4 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "warn", note: "會收到使用者位置，建議補說明" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      feedback: [
+        { tester: "小芬", level: "一般測試者", rating: 4, tasksDone: ["t1", "t2", "t3", "t4"], issue: "我媽打「台大醫院」找不到，要打「臺大醫院」才行。", severity: "major", device: "Android / LINE", date: "2026-10-12", pay: "no" },
+        { tester: "Ken", level: "新手測試者", rating: 4, tasksDone: ["t1", "t2"], issue: "分享位置後等了快 10 秒才回。", severity: "minor", device: "iPhone 13 / LINE", date: "2026-10-11", pay: "maybe" }
+      ]
+    },
+    {
+      id: "pill-time",
+      cat: "life", sub: "health",
+      name: "吃藥了沒",
+      tagline: "幫家裡長輩設吃藥提醒，忘記吃會通知家人群組",
+      author: "黃怡君",
+      authorNote: "藥師，用 Lovable 做出第一個 app",
+      tools: ["Lovable", "Claude"],
+      stage: "beta",
+      featured: false,
+      hue: 200,
+      url: "https://example.com/pill-time",
+      description: "藥師設計的用藥提醒。拍藥袋就能帶入藥名與時間，長輩按一下「吃了」，超過 30 分鐘沒按就通知家人。",
+      tasks: [
+        { id: "t1", title: "建立一位長輩的用藥資料", required: true },
+        { id: "t2", title: "拍一張藥袋照片試試自動帶入", required: true },
+        { id: "t3", title: "故意不按「吃了」，看家人是否收到通知", required: true }
+      ],
+      beta: { target: 20, completed: 21, joined: 26, avgRating: 4.6, bugsReported: 14, bugsFixed: 9 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "fail", note: "在前端 JS 找到疑似 OpenAI 金鑰（sk-…7Qx）" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "fail", note: "涉及健康資料，必須說明保存方式" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      feedback: [
+        { tester: "阿凱", level: "資深測試者", rating: 5, tasksDone: ["t1", "t2", "t3"], issue: "藥袋照片如果反光就讀不到藥名。", severity: "minor", device: "iPhone 15 / Safari", date: "2026-10-08", pay: "yes" }
+      ]
+    },
+    {
+      id: "tutor-schedule",
+      cat: "edu", sub: "tutor",
+      name: "排課小幫手",
+      tagline: "補習班老師的排課與請假系統，家長在 LINE 就能請假補課",
+      author: "吳家豪",
+      authorNote: "補習班主任，Cursor 重度使用者",
+      tools: ["Cursor", "v0"],
+      stage: "funding",
+      featured: true,
+      hue: 260,
+      url: "https://example.com/tutor",
+      description: "把紙本點名簿和 Excel 排課表搬上網。家長請假後，系統自動列出可補課的時段，老師一鍵確認。已有 3 家補習班在封測期間試用。",
+      tasks: [
+        { id: "t1", title: "以老師身分建立一堂課", required: true },
+        { id: "t2", title: "以家長身分請假並選補課時段", required: true },
+        { id: "t3", title: "回報一個你覺得流程卡卡的地方", required: true }
+      ],
+      beta: { target: 25, completed: 27, joined: 31, avgRating: 4.2, bugsReported: 31, bugsFixed: 30 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      funding: {
+        goal: 150000, raised: 162300, backers: 64, daysLeft: 5,
+        milestonesDone: 0,
+        rewards: [
+          { price: 1200, title: "單班一年", desc: "一個班級、無上限學生", left: null, backers: 40 },
+          { price: 6800, title: "補習班終身版", desc: "全校使用、協助匯入舊資料", left: 10, backers: 24 }
+        ],
+        updates: [
+          { date: "2026-10-10", title: "第 2 次進度更新：家長端改成 LINE 登入" },
+          { date: "2026-09-28", title: "第 1 次進度更新：募資開跑" }
+        ]
+      },
+      feedback: [
+        { tester: "Joyce", level: "資深測試者", rating: 4, tasksDone: ["t1", "t2", "t3"], issue: "補課時段沒有考慮老師的通勤時間。", severity: "minor", device: "Mac / Chrome", date: "2026-09-15", pay: "yes" }
+      ]
+    },
+    {
+      id: "indie-books",
+      cat: "creative", sub: "reading",
+      name: "巷口書店",
+      tagline: "依你的心情推薦一本書，並告訴你哪間獨立書店有貨",
+      author: "蘇品妤",
+      authorNote: "書店店員，用 Bolt 做的",
+      tools: ["Bolt", "Gemini"],
+      stage: "launched",
+      featured: false,
+      hue: 340,
+      url: "https://example.com/indie-books",
+      store: { plans: [{ id: "free", type: "free", label: "免費使用", price: 0 }], users: 1840, updated: "2026-10-11" },
+      description: "回答三個問題，AI 推薦一本書，再列出台北、台中、台南有這本書的獨立書店。合作書店自己更新庫存。",
+      tasks: [
+        { id: "t1", title: "完成三題問答拿到推薦", required: true },
+        { id: "t2", title: "點進一間書店的頁面", required: true }
+      ],
+      beta: { target: 20, completed: 22, joined: 25, avgRating: 4.3, bugsReported: 11, bugsFixed: 11 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      feedback: []
+    },
+    {
+      id: "night-market",
+      cat: "life", sub: "food",
+      name: "夜市地圖",
+      tagline: "標出今晚有開的攤位，排隊多久大家一起回報",
+      author: "張育誠",
+      authorNote: "大學生，第一次參加封測",
+      tools: ["v0", "ChatGPT"],
+      stage: "beta",
+      featured: false,
+      hue: 48,
+      url: "https://example.com/night-market",
+      description: "以饒河、寧夏、逢甲夜市為起點，網友回報攤位有沒有開、排隊多久。",
+      tasks: [
+        { id: "t1", title: "打開地圖並找到一個攤位", required: true },
+        { id: "t2", title: "回報一次排隊時間", required: true }
+      ],
+      beta: { target: 25, completed: 3, joined: 6, avgRating: 3.5, bugsReported: 4, bugsFixed: 0 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "warn", note: "地圖金鑰在前端，請在後台限制網域" },
+        { item: "手機版版面可用", status: "fail", note: "iPhone SE 寬度下地圖蓋住按鈕" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "warn" },
+        { item: "首頁 3 秒內載入", status: "warn", note: "地圖載入 5.2 秒" }
+      ],
+      feedback: []
+    },
+    {
+      id: "pomodoro-club",
+      cat: "work", sub: "time",
+      name: "番茄讀書會",
+      tagline: "跟陌生人一起開 25 分鐘番茄鐘，安靜地互相督促",
+      author: "李承恩",
+      authorNote: "研究生，用 Claude 一個週末做完",
+      tools: ["Claude", "v0"],
+      stage: "launched",
+      featured: false,
+      hue: 10,
+      url: "https://example.com/pomodoro",
+      description: "打開就能加入一間安靜的讀書房，大家同時開始番茄鐘，休息時可以留一句話。不用註冊也能用，登入後會記錄每週專注時數。",
+      tasks: [{ id: "t1", title: "加入一間讀書房", required: true }, { id: "t2", title: "完成一顆番茄鐘", required: true }],
+      beta: { target: 20, completed: 26, joined: 30, avgRating: 4.5, bugsReported: 12, bugsFixed: 12 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      store: { plans: [{ id: "free", type: "free", label: "免費使用", price: 0 }], users: 3210, updated: "2026-10-14" },
+      feedback: []
+    },
+    {
+      id: "resume-check",
+      cat: "work", sub: "jobs",
+      name: "履歷健檢 AI",
+      tagline: "貼上履歷和職缺，AI 逐段指出哪裡要改，還幫你改成台灣企業習慣的寫法",
+      author: "周以安",
+      authorNote: "人資顧問，用 Cursor 做的",
+      tools: ["ChatGPT", "Cursor"],
+      stage: "launched",
+      featured: false,
+      hue: 220,
+      url: "https://example.com/resume",
+      description: "針對 104、LinkedIn 常見職缺格式，比對履歷與職缺需求，列出缺少的關鍵字和要補的成果數字。免費版每月 3 次，買斷後不限次數。",
+      tasks: [{ id: "t1", title: "上傳一份履歷", required: true }, { id: "t2", title: "貼一個職缺看比對結果", required: true }],
+      beta: { target: 25, completed: 31, joined: 38, avgRating: 4.3, bugsReported: 19, bugsFixed: 18 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      store: { plans: [{ id: "free", type: "free", label: "免費版（每月 3 次）", price: 0 }, { id: "once", type: "once", label: "一次買斷", price: 490 }], users: 960, updated: "2026-10-09" },
+      feedback: []
+    },
+    {
+      id: "farm-order",
+      cat: "biz", sub: "order",
+      name: "小農直送單",
+      tagline: "小農用 LINE 收訂單、自動算運費、出貨前一天提醒客人",
+      author: "葉家瑜",
+      authorNote: "幫家裡果園賣文旦，自己做了這個",
+      tools: ["Claude", "Lovable"],
+      stage: "launched",
+      featured: false,
+      hue: 95,
+      url: "https://example.com/farm-order",
+      description: "去年在開達募資成功、3 個里程碑都已交付。現在給所有小農用：商品頁、訂單表、黑貓與郵局運費自動計算。",
+      tasks: [{ id: "t1", title: "建立一個商品", required: true }, { id: "t2", title: "下一張測試訂單", required: true }],
+      beta: { target: 20, completed: 24, joined: 29, avgRating: 4.6, bugsReported: 15, bugsFixed: 15 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      funded: { raised: 128000, backers: 86, milestonesDone: 3 },
+      store: { plans: [{ id: "term", type: "term", label: "一年方案", price: 1200, months: 12 }], users: 214, updated: "2026-10-02" },
+      feedback: []
+    },
+    {
+      id: "pet-groom",
+      cat: "biz", sub: "booking",
+      name: "毛孩美容預約",
+      tagline: "寵物美容店的線上預約與到店提醒（找人一起做）",
+      author: "許雅婷",
+      authorNote: "寵物美容師，有點子但還不會寫程式",
+      tools: [],
+      stage: "idea",
+      featured: false,
+      hue: 110,
+      url: "",
+      description: "目前美容店都用 LINE 一對一約時間，常常重複預約。想要一個可以看空檔、自動提醒的預約頁。正在找創作者合作。",
+      tasks: [],
+      beta: { target: 0, completed: 0, joined: 0, avgRating: 0, bugsReported: 0, bugsFixed: 0 },
+      health: [],
+      feedback: []
+    },
+    {
+      id: "taiex-radar",
+      cat: "finance", sub: "tw",
+      name: "台股籌碼雷達",
+      tagline: "盤後一鍵看懂今天外資、投信在買什麼",
+      author: "黃冠廷",
+      authorNote: "工程師兼散戶，下班用 Claude 做的",
+      tools: ["Claude", "Cursor"],
+      stage: "beta",
+      featured: false,
+      hue: 0,
+      url: "https://example.com/taiex-radar",
+      description: "每天收盤後整理證交所公開的三大法人買賣超，挑出連續買超的個股，用一張圖看產業資金流向。只整理公開資料，不構成投資建議。",
+      tasks: [{ id: "t1", title: "查一檔你持有的股票", required: true }, { id: "t2", title: "看今天的產業資金流向圖", required: true }, { id: "t3", title: "設定一檔股票的買超提醒", required: false }],
+      beta: { target: 20, completed: 14, joined: 22, avgRating: 4.1, bugsReported: 9, bugsFixed: 6 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "warn", note: "收盤後尖峰載入 3.8 秒" }
+      ],
+      feedback: []
+    },
+    {
+      id: "us-earnings",
+      cat: "finance", sub: "us",
+      name: "美股財報速讀",
+      tagline: "財報一出，三分鐘用中文看懂營收、指引和電話會議重點",
+      author: "陳思妤",
+      authorNote: "前券商研究員，用 ChatGPT 和 Lovable 做的",
+      tools: ["ChatGPT", "Lovable"],
+      stage: "launched",
+      featured: false,
+      hue: 200,
+      url: "https://example.com/us-earnings",
+      description: "追蹤你關注的美股，財報公布後自動整理成中文重點：營收與 EPS 是否優於預期、財測調整、法說會問答摘要。不提供買賣建議。",
+      tasks: [{ id: "t1", title: "加入三檔關注的美股", required: true }, { id: "t2", title: "讀一份財報摘要並回報看不懂的地方", required: true }],
+      beta: { target: 20, completed: 23, joined: 27, avgRating: 4.4, bugsReported: 11, bugsFixed: 11 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      store: { plans: [{ id: "free", type: "free", label: "免費版（每月 5 份）", price: 0 }, { id: "term", type: "term", label: "月訂閱", price: 150, months: 1 }], users: 1520, updated: "2026-10-13" },
+      feedback: []
+    },
+    {
+      id: "macro-weekly",
+      cat: "finance", sub: "macro",
+      name: "總經一頁週報",
+      tagline: "利率、通膨、匯率、景氣燈號，每週一頁看完",
+      author: "林柏宇",
+      authorNote: "經濟系學生，用 Claude 做的期末專題",
+      tools: ["Claude", "v0"],
+      stage: "launched",
+      featured: false,
+      hue: 260,
+      url: "https://example.com/macro-weekly",
+      description: "每週一整理美國聯準會、台灣央行、CPI、美元台幣與國發會景氣燈號，畫成一頁圖表，附上一段白話解讀。",
+      tasks: [{ id: "t1", title: "讀完本週週報", required: true }, { id: "t2", title: "指出一張看不懂的圖", required: true }],
+      beta: { target: 20, completed: 21, joined: 25, avgRating: 4.2, bugsReported: 6, bugsFixed: 6 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      store: { plans: [{ id: "free", type: "free", label: "免費使用", price: 0 }], users: 2680, updated: "2026-10-12" },
+      feedback: []
+    },
+    {
+      id: "yokai-cards",
+      cat: "games", sub: "card",
+      name: "台灣妖怪卡牌",
+      tagline: "用魔神仔、虎姑婆組牌對戰，一場五分鐘",
+      author: "蔡宗翰",
+      authorNote: "桌遊店店員，用 Cursor 做的第一款遊戲",
+      tools: ["Cursor", "Claude"],
+      stage: "beta",
+      featured: false,
+      hue: 320,
+      url: "https://example.com/yokai-cards",
+      description: "以台灣民間傳說為主題的卡牌對戰網頁遊戲，30 張起手牌組、線上配對或跟電腦打。正在找測試者試平衡。",
+      tasks: [{ id: "t1", title: "完成新手教學", required: true }, { id: "t2", title: "跟電腦打三場", required: true }, { id: "t3", title: "回報一張你覺得太強的牌", required: true }],
+      beta: { target: 30, completed: 9, joined: 17, avgRating: 4.0, bugsReported: 13, bugsFixed: 5 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "warn", note: "手機直向時手牌會擠在一起" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      feedback: []
+    },
+    {
+      id: "cozy-garden",
+      cat: "games", sub: "cozy",
+      name: "小陽台花園",
+      tagline: "每天花三分鐘澆水，種出一整個陽台的花",
+      author: "鄭怡君",
+      authorNote: "插畫家，跟 Claude 一起做的療癒小遊戲",
+      tools: ["Claude", "Bolt"],
+      stage: "launched",
+      featured: false,
+      hue: 140,
+      url: "https://example.com/cozy-garden",
+      description: "沒有輸贏的療癒遊戲：照顧陽台上的植物，隨季節開花，偶爾有鳥來拜訪。免費玩，買斷可解鎖更多盆栽和背景音樂。",
+      tasks: [{ id: "t1", title: "種下第一盆植物", required: true }, { id: "t2", title: "隔天回來澆水", required: true }],
+      beta: { target: 20, completed: 28, joined: 33, avgRating: 4.7, bugsReported: 8, bugsFixed: 8 },
+      health: [
+        { item: "網址可以正常開啟", status: "pass" },
+        { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+        { item: "手機版版面可用", status: "pass" },
+        { item: "使用 HTTPS 加密連線", status: "pass" },
+        { item: "有隱私權政策頁面", status: "pass" },
+        { item: "首頁 3 秒內載入", status: "pass" }
+      ],
+      store: { plans: [{ id: "free", type: "free", label: "免費遊玩", price: 0 }, { id: "once", type: "once", label: "解鎖完整版", price: 90 }], users: 5340, updated: "2026-10-15" },
+      feedback: []
+    }
+  ],
+
+  ideas: [
+    { id: "i1", cat: "biz", sub: "order", title: "菜市場攤販的 LINE 預訂單", summary: "讓傳統市場攤販收預訂、算總數，隔天早上照單備貨。", detail: "攤販不想學新 app，所以要在 LINE 裡完成。需要每日截單時間、價格常變動。", author: "王阿姨的女兒", date: "2026-10-14", wants: 6, tags: ["LINE", "小商家"] },
+    { id: "i2", cat: "life", sub: "home", title: "社區管委會公告與投票", summary: "管委會公告、區權會線上表決、包裹通知放在同一個地方。", detail: "目前用 LINE 群組，重要公告會被洗掉。投票要能核對戶號。", author: "大樓主委", date: "2026-10-12", wants: 3, tags: ["社區"] },
+    { id: "i3", cat: "life", sub: "home", title: "租屋看房檢查清單", summary: "看房時一項項打勾拍照，自動產生比較表。", detail: "包含水壓、採光、壁癌、是否可報稅等 30 項。希望能分享給室友一起看。", author: "Rita", date: "2026-10-08", wants: 11, tags: ["生活", "租屋"] },
+    { id: "i4", cat: "life", sub: "family", title: "國小作業聯絡簿拍照整理", summary: "家長拍聯絡簿，自動整理成待辦與考試日曆。", detail: "手寫辨識是難點，需要家長確認。不能收集孩子的個資。", author: "兩寶爸", date: "2026-10-02", wants: 9, tags: ["親子"] },
+    { id: "i5", cat: "games", sub: "moba", title: "傳說對決對線小教練", summary: "選好英雄和對手，告訴你前五分鐘怎麼對線、什麼時候該回城。", detail: "想做成手機上開著不用切換的懸浮小卡。資料要從公開的對戰統計來，不能違反遊戲條款。", author: "大學電競社社長", date: "2026-10-15", wants: 14, tags: ["電競"] },
+    { id: "i6", cat: "games", sub: "shooter", title: "槍戰遊戲準心練習場", summary: "瀏覽器就能開的瞄準訓練，記錄每天的反應時間和命中率。", detail: "想要可以模擬不同遊戲的靈敏度換算。排行榜只跟朋友比。", author: "Max", date: "2026-10-13", wants: 7, tags: ["FPS"] },
+    { id: "i7", cat: "finance", sub: "retire", title: "勞保勞退試算", summary: "輸入年資和薪水，算出退休每月大概領多少、還差多少。", detail: "公式要跟勞動部一致，規則變動時要能更新。不能要求使用者輸入身分證字號。", author: "上班族小雯", date: "2026-10-10", wants: 12, tags: ["退休"] }
+  ]
+};
+
+</script>
+<script>
+/* 中英文切換。畫面一律用中文產生，切到 English 時由這裡把文字換成英文。
+   規則：先查整句；查不到就把數字換成 {n}、「」裡的字換成 {q} 再查；再查不到就套用下面的句型規則；
+   都沒有就保留原文（方便找出漏翻的字）。新增介面文字時，在 EN 補上一行即可。 */
+(function () {
+  "use strict";
+  const NAMES = {
+    "發票喵": "InvoiceCat", "等公車不焦慮": "BusBuddy", "吃藥了沒": "PillTime", "排課小幫手": "ClassPlanner", "巷口書店": "Corner Books",
+    "夜市地圖": "Night Market Map", "毛孩美容預約": "PawGroom Booking", "番茄讀書會": "Pomodoro Club", "履歷健檢 AI": "Resume Check AI", "小農直送單": "FarmDirect",
+    "林小柚": "Yoyo Lin", "陳志明": "Chih-ming Chen", "黃怡君": "Yi-chun Huang", "吳家豪": "Chia-hao Wu", "蘇品妤": "Pin-yu Su", "張育誠": "Yu-cheng Chang",
+    "許雅婷": "Ya-ting Hsu", "李承恩": "Cheng-en Lee", "周以安": "Yi-an Chou", "葉家瑜": "Chia-yu Yeh", "小安": "An", "小": "A", "阿凱": "Kai", "小芬": "Fen",
+    "王阿姨的女兒": "Auntie Wang's daughter", "大樓主委": "Building committee chair", "兩寶爸": "Dad of two", "開達": "Kaida"
+  };
+  const EN = {
+    // 導覽與共用
+    "首頁": "Home", "作品": "Projects", "商店": "Store", "點子區": "Ideas", "提交作品": "Submit a project", "產品地圖": "Product map", "重新整理": "Reload", "載入中": "Loading", "米色": "Beige", "成為測試者": "Become a tester",
+    "登入": "Log in", "登出": "Log out", "測試者": "Tester", "取消": "Cancel", "稍後": "Later", "刪除": "Delete", "全部": "All", "免費": "Free", "付費": "Paid",
+    "原型示範：所有作品、人物與金額皆為假資料，不會實際收款。網域尚未決定。": "Prototype demo: all projects, people and amounts are made up. No real payments. Domain not decided yet.",
+    "第一版原型 · 你新增的資料只存在這個瀏覽器": "First prototype · Anything you add stays in this browser only",
+    "清除示範資料": "Clear demo data", "開達 Kaida 首頁": "Kaida home", "主要導覽": "Main navigation", "切換風格": "Switch style", "切換語言": "Switch language",
+    "Kaida 圖示": "Kaida icon", "四個階段": "Four stages", "截圖": "Screenshots", "分享圖卡預覽": "Share card preview", "創作者示範工具": "Creator demo tools",
+    "清除示範資料？": "Clear demo data?", "會清掉你在這個瀏覽器新增的作品、回饋、點子與登入狀態，回到初始假資料。": "This removes the projects, feedback, ideas and login you added in this browser and restores the original demo data.",
+    "清除": "Clear", "已清除": "Cleared", "已登出": "Logged out", "還有欄位需要補上": "Some fields still need filling in",
+    // 階段
+    "點子": "Idea", "封測": "Beta", "發布": "Launch", "募資": "Funding", "交付": "Delivered", "封測中": "In beta", "已發布": "Launched", "募資中": "Funding",
+    "目前階段：募資中": "Current stage: Funding", "目前階段：封測中": "Current stage: In beta", "目前階段：已發布": "Current stage: Launched", "目前階段：點子": "Current stage: Idea",
+    // 首頁
+    "給台灣 vibe coding 創作者": "For Taiwan's vibe coders", "從開工，": "From first commit,", "到": "to ", "達成。": "done.",
+    "點子在這裡發表，作品在這裡封測，有人氣的專案在這裡募資，然後真的做出來交給支持者。Threads 負責熱度，開達負責把事情做完。": "Post ideas here, beta test your project here, fund the popular ones here, and actually ship them to backers. Threads brings the buzz. Kaida gets it done.",
+    "開": "Start", "開工・開測・開募": "build · test · fund", "達": "Reach", "達標・達成・送達": "goal · done · delivered",
+    "封測完成": "beta done", "測試者評分": "tester rating", "健檢未通過": "check failures", "目標 {n} ·": "goal {n} ·", "撥款": "Payout",
+    "，做到哪撥到哪 · 示範資料": ", paid as you deliver · demo data", "{n} 點子": "{n} Idea", "開工": "Start", "{n} 封測": "{n} Beta", "開測": "Test",
+    "{n} 發布": "{n} Launch", "上架": "Ship", "{n} 募資": "{n} Fund", "達成": "Done",
+    "發表點子，概要公開、細節只給成員看，並記錄發表時間。不會寫程式的人也能找創作者一起做。": "Post an idea. The summary is public, details are members-only, and the post time is recorded. Non-coders can find a creator to build it.",
+    "照任務試用、填結構化回饋。AI 健檢同步檢查能不能開、有沒有外洩金鑰、手機好不好用。": "Testers follow tasks and fill in structured feedback. The AI check makes sure it opens, leaks no keys and works on phones.",
+    "門檻：≥{n} 人完成任務，健檢無未通過": "Gate: ≥{n} testers finish, no failed checks",
+    "固定的作品頁和封測紀錄，不會兩天就被洗掉。一鍵產生 Threads 分享卡，把熱度帶回來。": "A permanent project page and beta record that won't scroll away in two days. One tap makes a Threads share card to bring the buzz back.",
+    "回饋型、全有或全無。達標後依里程碑分批撥款；沒達標全額退款。": "Reward-based, all-or-nothing. Paid out by milestone once funded; full refund if not.",
+    "撥款 {n}% → {n}% → {n}%": "Payout {n}% → {n}% → {n}%", "精選作品": "Featured projects", "看全部作品 →": "See all projects →",
+    "正在找測試者": "Looking for testers", "成為測試者 →": "Become a tester →",
+    // 卡片
+    "· 剩": "·", "天": "days left", "人完成": "done", "封測 {n} 人完成": "Beta {n} done", "封測 {n}/{n} 人完成": "Beta {n}/{n} done", "尚無評分": "No ratings yet",
+    "找創作者中": "Looking for a creator", "尚未開工": "Not started", "尚未開發": "Not built yet", "尚無": "None", "所有工具": "All tools",
+    "依階段篩選": "Filter by stage", "依使用工具篩選": "Filter by tool", "依價格篩選": "Filter by price", "沒有符合的作品。換個篩選條件看看。": "No matching projects. Try another filter.",
+    // 作品資料
+    "拍一下電子發票載具，AI 自動分類記帳，月底告訴你錢花去哪": "Snap your e-invoice carrier and AI sorts your spending, then tells you where the money went each month",
+    "LINE 傳站名就回你下一班車還有幾分鐘，長輩也會用": "Text a stop name on LINE and get the next bus time. Easy enough for grandparents",
+    "補習班老師的排課與請假系統，家長在 LINE 就能請假補課": "Scheduling and absence system for cram schools. Parents request make-up classes on LINE",
+    "標出今晚有開的攤位，排隊多久大家一起回報": "Shows which stalls are open tonight, with crowd-reported queue times",
+    "依你的心情推薦一本書，並告訴你哪間獨立書店有貨": "Recommends a book for your mood and tells you which indie bookstore has it",
+    "跟陌生人一起開 {n} 分鐘番茄鐘，安靜地互相督促": "Run {n}-minute pomodoros with strangers and keep each other focused",
+    "貼上履歷和職缺，AI 逐段指出哪裡要改，還幫你改成台灣企業習慣的寫法": "Paste your résumé and a job post. AI flags what to fix and rewrites it the way Taiwanese employers expect",
+    "小農用 LINE 收訂單、自動算運費、出貨前一天提醒客人": "Small farmers take orders on LINE, shipping is calculated, and buyers get a reminder the day before",
+    "幫家裡長輩設吃藥提醒，忘記吃會通知家人群組": "Medication reminders for elderly parents that alert the family group if a dose is missed",
+    "寵物美容店的線上預約與到店提醒（找人一起做）": "Online booking and reminders for pet groomers (looking for a co-builder)",
+    "白天是會計，晚上用 Claude 寫 app": "Accountant by day, builds apps with Claude at night", "退休工程師，在社大學 vibe coding": "Retired engineer learning vibe coding at a community college",
+    "藥師，用 Lovable 做出第一個 app": "Pharmacist, built a first app with Lovable", "補習班主任，Cursor 重度使用者": "Cram school director, heavy Cursor user",
+    "書店店員，用 Bolt 做的": "Bookstore clerk, built with Bolt", "大學生，第一次參加封測": "College student, first beta", "寵物美容師，有點子但還不會寫程式": "Pet groomer with an idea but no coding yet",
+    "研究生，用 Claude 一個週末做完": "Grad student, built it with Claude in a weekend", "人資顧問，用 Cursor 做的": "HR consultant, built with Cursor",
+    "幫家裡果園賣文旦，自己做了這個": "Built it to sell pomelos from the family orchard", "你提交的作品": "Your project",
+    "串接財政部電子發票載具，把每一張發票自動分成餐飲、交通、訂閱等類別。每月產生一張「{q}」報告，還會提醒你哪些訂閱已經三個月沒用。目前是網頁版，手機瀏覽器可以加到主畫面。": "Connects to Taiwan's e-invoice carrier and sorts every receipt into food, transport, subscriptions and more. Each month you get a “{q}” report, plus a nudge about subscriptions you haven't used in three months. Web app for now; add it to your phone's home screen.",
+    "錢都去哪了": "Where did my money go",
+    "加 LINE 好友後直接打站名或分享位置，就回覆附近站牌的到站時間。字很大、不用學新 app，給爸媽用剛好。資料來自公開的公車動態資訊。": "Add it as a LINE friend, then type a stop name or share your location to get arrival times nearby. Big text and no new app to learn, so it's perfect for parents. Uses public bus data.",
+    "藥師設計的用藥提醒。拍藥袋就能帶入藥名與時間，長輩按一下「{q}」，超過 {n} 分鐘沒按就通知家人。": "A medication reminder designed by a pharmacist. Snap the pill bag to fill in names and times. Parents tap “{q}”, and family is notified if nobody taps within {n} minutes.",
+    "吃了": "Taken",
+    "把紙本點名簿和 Excel 排課表搬上網。家長請假後，系統自動列出可補課的時段，老師一鍵確認。已有 {n} 家補習班在封測期間試用。": "Moves paper attendance and Excel timetables online. When a parent reports an absence, open make-up slots are listed and the teacher confirms in one tap. {n} cram schools tried it during beta.",
+    "回答三個問題，AI 推薦一本書，再列出台北、台中、台南有這本書的獨立書店。合作書店自己更新庫存。": "Answer three questions, get an AI book pick, and see which indie bookstores in Taipei, Taichung and Tainan have it. Partner stores update their own stock.",
+    "以饒河、寧夏、逢甲夜市為起點，網友回報攤位有沒有開、排隊多久。": "Starting with Raohe, Ningxia and Fengjia night markets, people report which stalls are open and how long the queues are.",
+    "目前美容店都用 LINE 一對一約時間，常常重複預約。想要一個可以看空檔、自動提醒的預約頁。正在找創作者合作。": "Groomers book one-on-one over LINE and double bookings happen a lot. I want a booking page with open slots and automatic reminders. Looking for a creator to build it.",
+    "打開就能加入一間安靜的讀書房，大家同時開始番茄鐘，休息時可以留一句話。不用註冊也能用，登入後會記錄每週專注時數。": "Open it and join a quiet study room. Everyone starts the timer together and can leave a note on breaks. No sign-up needed; log in to track weekly focus hours.",
+    "針對 {n}、LinkedIn 常見職缺格式，比對履歷與職缺需求，列出缺少的關鍵字和要補的成果數字。免費版每月 {n} 次，買斷後不限次數。": "Built for {n} and LinkedIn job formats. Compares your résumé to the job, then lists missing keywords and results to quantify. Free plan: {n} checks a month. Buy once for unlimited.",
+    "去年在開達募資成功、{n} 個里程碑都已交付。現在給所有小農用：商品頁、訂單表、黑貓與郵局運費自動計算。": "Funded on Kaida last year with all {n} milestones delivered. Now open to every small farm: product pages, order sheets, and automatic T-Cat and post office shipping rates.",
+    // 任務
+    "用測試帳號登入": "Log in with the test account", "匯入 {n} 張以上發票並看分類結果": "Import {n}+ invoices and check the categories", "打開月報告，找出一個你覺得分錯的類別": "Open the monthly report and find one category you think is wrong",
+    "試著手動修改分類": "Try changing a category by hand", "加入 LINE 機器人好友": "Add the LINE bot as a friend", "查詢你家附近一個站牌": "Look up a stop near your home",
+    "分享位置查詢附近站牌": "Share your location to find nearby stops", "請一位長輩試用並記錄卡住的地方": "Have an older relative try it and note where they get stuck",
+    "建立一位長輩的用藥資料": "Set up one parent's medications", "拍一張藥袋照片試試自動帶入": "Snap a pill bag and test auto-fill", "故意不按「{q}」，看家人是否收到通知": "Skip tapping “{q}” and check whether family gets notified",
+    "以老師身分建立一堂課": "Create a class as a teacher", "以家長身分請假並選補課時段": "Report an absence as a parent and pick a make-up slot", "回報一個你覺得流程卡卡的地方": "Report one step that felt clunky",
+    "完成三題問答拿到推薦": "Answer the three questions and get a pick", "點進一間書店的頁面": "Open one bookstore's page", "打開地圖並找到一個攤位": "Open the map and find a stall",
+    "回報一次排隊時間": "Report a queue time once", "加入一間讀書房": "Join a study room", "完成一顆番茄鐘": "Finish one pomodoro", "上傳一份履歷": "Upload a résumé",
+    "貼一個職缺看比對結果": "Paste a job post and view the match", "建立一個商品": "Create a product", "下一張測試訂單": "Place a test order",
+    "註冊或登入": "Sign up or log in", "完成核心功能一次": "Use the core feature once", "回報一個 bug 或卡住的地方": "Report a bug or a place you got stuck",
+    // 回饋
+    "資深測試者": "Senior tester", "發表於": "posted", "封測回報": "Beta report", "一般測試者": "Tester", "新手測試者": "New tester", "一般會員": "Member",
+    "外送平台的發票被分成「{q}」，應該是餐飲。": "Food delivery invoices land in “{q}” but should be Food.", "其他": "Other",
+    "月報告的圓餅圖在小螢幕上標籤重疊。": "The pie chart labels overlap on small screens.", "我媽打「{q}」找不到，要打「{q}」才行。": "My mom typed “{q}” and got nothing; it only works as “{q}”.",
+    "台大醫院": "台大醫院 (simplified 台)", "臺大醫院": "臺大醫院 (traditional 臺)",
+    "分享位置後等了快 {n} 秒才回。": "It took almost {n} seconds to reply after sharing location.", "藥袋照片如果反光就讀不到藥名。": "Glare on the pill bag photo stops it reading the names.",
+    "補課時段沒有考慮老師的通勤時間。": "Make-up slots ignore the teacher's commute time.",
+    "小問題": "Minor", "影響使用": "Major", "無法使用": "Blocking", "沒遇到問題": "No issues", "願意付費": "Would pay", "看價格": "Depends on price", "不會付費": "Wouldn't pay",
+    "完成 {n}/{n} 項任務（必做全完成）": "{n}/{n} tasks done (all required)", "完成 {n}/{n} 項任務": "{n}/{n} tasks done", "· 附截圖 {n} 張": "· {n} screenshot",
+    "{n} 分": "{n} stars", "{n} 則": "{n}",
+    // 作品詳情
+    "介紹": "About", "使用工具": "Built with", "試用連結": "Try it", "（示範網址）": "(demo URL)", "首頁": "Home", "主要功能": "Main feature", "結果頁": "Results",
+    "封測區": "Beta testing", "進行中": "In progress", "已結束": "Closed", "/ {n} 位完成任務": "/ {n} finished tasks", "已報名 {n} 位": "{n} signed up",
+    "平均評分": "Avg rating", "回報問題": "Issues reported", "已修正": "Fixed", "封測任務": "Beta tasks", "必做": "Required", "選做": "Optional",
+    "參加封測並回報": "Join the beta and report", "開啟試用連結": "Open the app", "測試者回饋": "Tester feedback", "還沒有回饋。": "No feedback yet.",
+    "還沒有回饋。成為第一個測試者吧。": "No feedback yet. Be the first tester.", "封測進度 {n}%": "Beta progress {n}%", "開募資門檻 {n} 人": "Funding gate: {n} testers",
+    "創作者設定的目標 {n} 人低於開募資門檻 {n} 人。": "The creator's target of {n} is below the funding gate of {n}.",
+    "這還是一個點子，還沒有可以試用的版本。創作者做出第一版後，就能在這裡開封測。": "This is still an idea with nothing to try yet. Once a creator builds a first version, the beta opens here.",
+    "到點子區看看其他點子": "Browse other ideas",
+    // 健檢
+    "AI 健檢結果": "AI health check", "示範資料": "demo data", "網址可以正常開啟": "URL opens", "前端程式碼沒有暴露 API 金鑰": "No API keys exposed in front-end code",
+    "手機版版面可用": "Works on mobile", "使用 HTTPS 加密連線": "Uses HTTPS", "有隱私權政策頁面": "Has a privacy policy", "首頁 {n} 秒內載入": "Home page loads in under {n}s",
+    "通過": "Pass", "注意": "Warn", "未通過": "Fail", "處理載具資料，已補上說明": "Handles invoice data; explanation added", "首次載入 {n} 秒": "First load {n}s",
+    "會收到使用者位置，建議補說明": "Collects location; add an explanation", "在前端 JS 找到疑似 OpenAI 金鑰（sk-…{n}Qx）": "Possible OpenAI key found in front-end JS (sk-…{n}Qx)",
+    "涉及健康資料，必須說明保存方式": "Handles health data; must explain storage", "地圖金鑰在前端，請在後台限制網域": "Map key is in the front end; restrict its domains",
+    "iPhone SE 寬度下地圖蓋住按鈕": "On iPhone SE width the map covers the buttons", "地圖載入 {n} 秒": "Map loads in {n}s",
+    "部分按鈕在窄螢幕太小（模擬結果）": "Some buttons are too small on narrow screens (simulated)", "網址是 http://，資料沒有加密": "URL uses http://, so data isn't encrypted",
+    "沒找到隱私權政策（模擬結果）": "No privacy policy found (simulated)", "已修正（模擬）": "Fixed (simulated)",
+    "原型沒有真的掃描。正式版會在上架前自動檢查，報告可加購完整版。": "The prototype doesn't really scan. The real version checks automatically before listing, with a paid full report.",
+    // 募資
+    "尚未開放": "Not open yet", "通過封測門檻並公開發布後，創作者才能開啟募資。目前狀態：": "Creators can open funding after passing the beta gate and launching. Current status:",
+    "至少 {n} 位測試者完成全部必做任務（目前 {n} 位）": "At least {n} testers finish all required tasks (now {n})", "AI 健檢沒有「{q}」項目": "No “{q}” items in the AI check",
+    "AI 健檢沒有「{q}」項目（目前 {n} 項未通過）": "No “{q}” items in the AI check ({n} failing now)",
+    "已達開募資門檻。創作者還沒有開啟募資。": "Funding gate passed. The creator hasn't opened funding yet.", "已達開募資門檻。": "Funding gate passed.",
+    "回饋型 · 全有或全無": "rewards · all-or-nothing", "示範用，不會實際收款。所有金額、支持者人數皆為假資料。": "Demo only, no real payments. All amounts and backer counts are made up.",
+    "早期創作者限時免抽成，募資成功的金額全部依里程碑撥給創作者。": "Zero commission for early creators. Everything raised goes to the creator by milestone.",
+    "目標 {n}": "Goal {n}", "{n} 位支持者 · 剩 {n} 天": "{n} backers · {n} days left",
+    "還差 {n}。若 {n} 天後沒有達標，所有支持者全額退款，創作者拿不到任何款項。": "{n} to go. If the goal isn't met in {n} days, every backer gets a full refund and the creator gets nothing.",
+    "已達標。募資結束後款項由合作的價金保管機構保管，依下方里程碑分批撥給創作者。": "Goal reached. After the campaign, a licensed escrow partner holds the funds and pays the creator by the milestones below.",
+    "封測數據": "Beta results", "位測試者完成": "testers done", "問題已修": "issues fixed", "看完整封測回饋": "See all beta feedback", "看 AI 健檢": "See the AI check",
+    "里程碑撥款": "Milestone payouts", "做到哪撥到哪。每個里程碑都有支持者看得到的成果，達成後才撥下一筆。": "Paid as delivered. Each milestone has a result backers can see, and the next payment waits until it's done.",
+    "上線前 · {n}": "Pre-launch · {n}", "正式上線 · {n}": "Launch · {n}", "上線滿 {n} 天 · {n}": "{n} days live · {n}",
+    "封測版修完回報的嚴重 bug，支持者可登入搶先版": "Serious beta bugs fixed; backers can log in to early access", "正式版上線，核心功能全部可用": "Full version live with all core features",
+    "連續 {n} 天正常運作、無重大事故": "{n} days running with no major incidents", "未撥款": "Not paid", "已撥款": "Paid",
+    "如果專案沒做完": "If the project isn't finished", "沒達標：全額退款。": "Goal missed: full refund.",
+    "創作者每 {n} 天要更新進度，連續未更新就暫停撥款並通知支持者。": "Creators post updates every {n} days. Missed updates pause payouts and notify backers.",
+    "中途失敗：尚未撥出的款項依比例退還；創作者需交付現有版本或公開原始碼。": "Failure midway: unpaid funds are refunded pro rata, and the creator hands over the current version or open-sources it.",
+    "回饋方案": "Rewards", "{n} 人支持": "{n} backers", "{n} 人支持 · 剩 {n} 份": "{n} backers · {n} left", "支持這個方案": "Back this reward",
+    "搶先版一年": "1 year early access", "正式上線前就能用，含一年進階功能": "Use it before launch, with a year of pro features", "終身方案": "Lifetime",
+    "進階功能永久使用，名字放進感謝頁": "Pro features forever, plus your name on the thanks page", "小店版": "Shop plan", "給工作室或小店，{n} 個帳號共用一份帳本": "For studios and small shops: {n} accounts share one ledger",
+    "單班一年": "One class, 1 year", "一個班級、無上限學生": "One class, unlimited students", "補習班終身版": "School lifetime", "全校使用、協助匯入舊資料": "Whole school, with help importing old data",
+    "進度更新": "Updates", "第 {n} 次進度更新：分類準確率從 {n}% 拉到 {n}%": "Update {n}: category accuracy up from {n}% to {n}%", "第 {n} 次進度更新：募資開跑，感謝 {n} 位封測夥伴": "Update {n}: funding is live, thanks to {n} beta testers",
+    "第 {n} 次進度更新：家長端改成 LINE 登入": "Update {n}: parents now log in with LINE", "第 {n} 次進度更新：募資開跑": "Update {n}: funding is live", "募資開跑": "Funding is live",
+    "已完成": "Completed", "募資成功 {n}，{n} 位支持者。{n}/{n} 個里程碑已交付並撥款，支持者已用開達登入取得回饋。": "Raised {n} from {n} backers. {n}/{n} milestones delivered and paid; backers unlocked their rewards with Log in with Kaida.",
+    "支持「{q}」": "Back “{q}”", "示範用，不會實際收款。正式版會導到合作的金流／價金保管服務付款。": "Demo only, no real payment. The real version sends you to a licensed payment and escrow partner.",
+    "若募資未達標，這筆款項會全額退回。": "If the goal isn't met, you get a full refund.", "模擬支持": "Simulate backing", "已模擬支持，沒有實際扣款": "Backing simulated, nothing charged",
+    // 分享卡
+    "Threads 分享卡": "Threads share card", "預覽": "preview", "募資 {n}% · {n}": "Funding {n}% · {n}", "封測 {n}/{n} 人完成": "Beta {n}/{n} done", "貼文文字範本": "Post text",
+    "複製文字": "Copy text", "已複製貼文文字": "Post text copied", "已選取文字，請按複製": "Text selected; press copy",
+    "原型只做預覽。正式版要產生可下載的圖片，並把連結預覽圖設成這張卡。": "Preview only. The real version will generate a downloadable image and use this card as the link preview.",
+    // 商店
+    "通過封測並發布的作品都會上架到這裡。用 Google 登入開達、買一次，之後在作品裡按「{q}」就能直接解鎖，不用另外註冊。": "Every project that passes beta and launches is listed here. Log in to Kaida with Google, buy once, then tap “{q}” inside the app to unlock it. No extra sign-up.",
+    "用開達登入": "Log in with Kaida", "我的購買": "My purchases", "{n} 個作品": "{n} projects", "永久使用": "Lifetime access", "到期日 {n}": "Expires {n}",
+    "・取得於 {n}": "· got it {n}", "✓ {n} 位封測完成": "✓ {n} beta testers", "✓ 健檢通過": "✓ Checks passed", "✓ 募資已交付": "✓ Funding delivered", "人使用": "users",
+    "{n} 人使用": "{n} users", "已擁有": "Owned", "免費・付費 {n} 起": "Free · paid from {n}", "{n}／年": "{n}/year", "{n} 買斷": "{n} one-time",
+    "這個分類還沒有作品。": "Nothing in this category yet.",
+    "早期創作者限時免抽成：現在上架與募資，開達都不收手續費。": "Zero commission for early creators: Kaida takes no fee on listings or funding for now.",
+    "商店只開放給已公開發布、通過封測與健檢的網頁作品。付款由持牌金流業者處理，開達不經手款項（示範用，不會實際收款）。": "The store is open only to launched web apps that passed beta and the health check. A licensed payment provider handles payments; Kaida never holds the money (demo only, no real payments).",
+    "免費使用": "Free", "免費版（每月 {n} 次）": "Free ({n} per month)", "一次買斷": "One-time purchase", "一年方案": "1-year plan", "購買": "Buy", "免費取得": "Get for free",
+    "買完用同一個 Google 帳號登入作品就會自動解鎖。最後更新 {n}。": "Log in to the app with the same Google account and it unlocks automatically. Last updated {n}.",
+    "你已擁有「{q}」，永久使用。": "You own “{q}”, with lifetime access.", "你已擁有「{q}」，到期日 {n}。": "You own “{q}”, until {n}.",
+    "前往使用": "Open app", "模擬：在作品裡用開達登入": "Simulate: log in with Kaida in the app", "購買「{q}」": "Buy “{q}”", "付款方式": "Payment method",
+    "信用卡": "Credit card", "超商代碼": "Convenience store code", "我同意付款後立即提供數位內容，並了解因此不適用七天鑑賞期。": "I agree that digital content is delivered right after payment, so the 7-day cooling-off period doesn't apply.",
+    "示範用，不會實際收款。正式版由持牌金流業者處理付款與退款。": "Demo only, no real payment. A licensed provider handles payments and refunds in the real version.",
+    "確認付款（示範）": "Confirm payment (demo)", "購買完成": "Purchase complete", "模擬：用開達登入作品": "Simulate: log in with Kaida",
+    "「{q}」已經加到你的開達帳號。打開作品後按「{q}」，用同一個 Google 帳號就會自動解鎖。": "“{q}” is now on your Kaida account. Open the app, tap “{q}”, and use the same Google account to unlock it.",
+    "「{q}」想取得你的：": "“{q}” wants access to:", "你在這個作品的使用權狀態": "Your access status for this app", "也提供 email（選填）": "Also share my email (optional)",
+    "作品只會拿到一組專屬 ID，不會知道你在開達買了哪些其他作品。": "The app only gets an ID made for it and can't see what else you bought on Kaida.", "允許": "Allow",
+    "已加入我的購買": "Added to My purchases", "已登入，但你還沒有使用權，作品會顯示購買連結": "Logged in, but you don't have access yet. The app will show a link to buy.",
+    // 登入
+    "登入開達": "Log in to Kaida", "登入後可以參加封測、提交作品、發表點子、支持募資和在商店購買。": "Log in to join betas, submit projects, post ideas, back campaigns and buy in the store.",
+    "原型沒有真正的帳號系統，會用示範帳號「{q}」登入，資料只存在你的瀏覽器。": "The prototype has no real accounts. You'll log in as the demo user “{q}” and data stays in your browser.",
+    "用 Google 登入（示範）": "Continue with Google (demo)", "用示範帳號登入": "Log in with the demo account",
+    "提交作品需要先登入。": "Log in to submit a project.", "參加封測需要先登入。": "Log in to join a beta.",
+    // 點子區
+    "有想法但不會寫程式？把點子貼上來，讓創作者來認領。概要公開，細節只給登入的成員看，發表時間會留下紀錄。": "Have an idea but can't code? Post it and let a creator pick it up. The summary is public, details are for logged-in members, and the post time is recorded.",
+    "菜市場攤販的 LINE 預訂單": "LINE pre-orders for market stalls", "讓傳統市場攤販收預訂、算總數，隔天早上照單備貨。": "Lets traditional market vendors take pre-orders, total them, and prep the next morning.",
+    "攤販不想學新 app，所以要在 LINE 裡完成。需要每日截單時間、價格常變動。": "Vendors won't learn a new app, so it has to live in LINE. Needs a daily cutoff and prices change often.",
+    "社區管委會公告與投票": "Building notices and votes", "管委會公告、區權會線上表決、包裹通知放在同一個地方。": "Committee notices, owners' meeting votes and parcel alerts in one place.",
+    "目前用 LINE 群組，重要公告會被洗掉。投票要能核對戶號。": "LINE groups bury important notices today. Votes need to verify unit numbers.",
+    "租屋看房檢查清單": "Apartment viewing checklist", "看房時一項項打勾拍照，自動產生比較表。": "Tick items and take photos during viewings, then get a comparison table.",
+    "包含水壓、採光、壁癌、是否可報稅等 {n} 項。希望能分享給室友一起看。": "{n} items including water pressure, light, wall mold and whether rent is tax-deductible. Should be shareable with roommates.",
+    "國小作業聯絡簿拍照整理": "School communication book scanner", "家長拍聯絡簿，自動整理成待辦與考試日曆。": "Parents snap the daily communication book and get to-dos and a test calendar.",
+    "手寫辨識是難點，需要家長確認。不能收集孩子的個資。": "Handwriting recognition is the hard part, so parents confirm. Must not collect children's personal data.",
+    "小商家": "small business", "社區": "community", "生活": "living", "租屋": "renting", "親子": "parenting",
+    "僅成員可見": "Members only", "登入後才看得到細節。": "Log in to see the details.", "· 發表於": "· posted", "我想做這個 ·": "I want to build this ·",
+    "發表點子": "Post an idea", "標題": "Title", "請填標題。": "Add a title.", "概要（公開）": "Summary (public)", "請填概要。": "Add a summary.", "細節": "Details",
+    "標籤": "Tags", "發表": "Post", "點子已發表": "Idea posted", "一兩句話說明要解決什麼問題。": "One or two sentences on the problem it solves.",
+    "使用情境、限制、你已經想到的做法。": "Use cases, constraints and any approach you've thought of.", "用空白分隔，例如：LINE 小商家": "Separate with spaces, e.g. LINE retail",
+    "（沒有填細節）": "(no details)",
+    // 測試者
+    "搶先試用台灣創作者的新作品，照任務試用、填寫回饋。回饋品質好，等級會提升，之後可換點數或互測額度（獎勵方式待定）。": "Try new projects from Taiwanese creators first. Follow the tasks and leave feedback. Good feedback raises your level, which can later turn into points or test credits (rewards TBD).",
+    "暱稱": "Nickname", "你有的裝置": "Your devices", "Android 手機": "Android phone", "Windows 電腦": "Windows PC", "平板": "Tablet", "有興趣的類型": "Interests",
+    "記帳理財": "Finance", "生活工具": "Everyday tools", "教育": "Education", "遊戲": "Games", "健康": "Health", "每週大概能花多少時間": "Time per week",
+    "{n} 分鐘以內": "Under {n} minutes", "{n} 小時左右": "About {n} hour", "{n} 小時以上": "{n}+ hours", "加入測試者": "Join as a tester", "正在封測的作品": "Projects in beta",
+    "你已經是測試者了。從下面挑一個作品開始吧。": "You're already a tester. Pick a project below to start.", "歡迎加入測試者": "Welcome aboard, tester",
+    // 封測回報表單
+    "先用": "Use the", "試用連結": "app link", "照任務試一遍，再回來填寫。必做任務全部完成，才會算進封測完成人數。": "to run through the tasks, then come back here. You only count as a finished tester once every required task is done.",
+    "你完成了哪些任務？": "Which tasks did you finish?", "至少勾選一項任務。": "Tick at least one task.", "遇到問題的嚴重程度": "How serious was the problem?",
+    "遇到什麼問題？": "What went wrong?", "寫下你做了什麼、預期會怎樣、實際發生什麼，創作者比較好修。": "Say what you did, what you expected and what happened, so the creator can fix it.",
+    "選了有問題，請描述一下發生什麼事。": "You picked a problem level, so describe what happened.", "使用的裝置與瀏覽器": "Device and browser",
+    "電腦 / Chrome": "Computer / Chrome", "電腦 / Safari": "Computer / Safari", "電腦 / Edge": "Computer / Edge", "LINE 內建瀏覽器": "LINE in-app browser",
+    "截圖（選填）": "Screenshot (optional)", "原型只在畫面上預覽，不會上傳。": "The prototype only previews it; nothing is uploaded.", "截圖預覽": "Screenshot preview",
+    "整體評分": "Overall rating", "請給一個評分。": "Pick a rating.", "如果正式上線，你會付費使用嗎？": "Would you pay for it once it launches?",
+    "這題會匯總成募資頁的參考數據。": "Answers are summarized on the funding page.", "給創作者的其他建議（選填）": "Other suggestions for the creator (optional)", "送出回饋": "Send feedback",
+    "例如：在第 {n} 個任務按「{q}」後畫面一直轉圈，等了 {n} 秒都沒反應。": "e.g. On task {n}, tapping “{q}” left a spinner for {n} seconds with no response.", "匯入": "Import",
+    "已送出，你已算進封測完成人數": "Sent. You now count as a finished tester", "已送出。必做任務沒全做完，暫不算完成人數": "Sent. Not all required tasks are done, so you don't count as finished yet",
+    // 提交作品
+    "送出後會先跑 AI 健檢，接著開放封測。第一版優先收網頁版作品。早期創作者限時免抽成。": "After you submit, the AI check runs and then the beta opens. Web apps first for now. Zero commission for early creators.",
+    "作品名稱": "Project name", "請填作品名稱。": "Add a project name.", "一句話介紹": "One-line pitch", "{n} 字以內，會顯示在作品卡片上。": "Up to {n} characters, shown on the project card.",
+    "請填一句話介紹。": "Add a one-line pitch.", "詳細介紹": "Description", "測試者會從這個連結開始試用。用 http:// 開頭的網址會在健檢被標為未通過。": "Testers start from this link. URLs starting with http:// fail the health check.",
+    "請填 http:// 或 https:// 開頭的網址。": "Use a URL starting with http:// or https://.", "使用的 AI 工具": "AI tools used", "至少選一個工具。": "Pick at least one tool.",
+    "想要的測試者人數": "Testers wanted", "之後若想開募資，至少需要 {n} 位完成任務。": "To open funding later, at least {n} testers must finish.", "請填 {n} 到 {n} 之間的數字。": "Enter a number from {n} to {n}.",
+    "寫成測試者照著做就能完成的步驟。「{q}」全部完成才算一位完成封測。": "Write steps a tester can follow. A tester counts as finished once every “{q}” task is done.",
+    "新增任務": "Add a task", "至少要有一項必做任務。": "Add at least one required task.", "送出並開始封測": "Submit and start the beta", "例如：發票喵": "e.g. InvoiceCat",
+    "例如：拍一下發票，AI 自動分類記帳": "e.g. Snap a receipt and AI files the expense", "解決什麼問題、給誰用、目前做到哪裡。": "What it solves, who it's for, and how far along it is.",
+    "任務內容": "Task", "刪除任務": "Delete task", "已送出，健檢完成，封測已開始": "Submitted. Health check done, beta started",
+    // 創作者工具
+    "你是這個作品的創作者": "You created this project", "下面是給原型用的模擬按鈕，用來快速看到封測達標後的畫面。": "These buttons are prototype shortcuts to see what happens once the beta gate is passed.",
+    "模擬 {n} 位測試者完成": "Simulate {n} tester finishing", "模擬 {n} 位": "Simulate {n}", "模擬：修好健檢問題": "Simulate: fix check issues",
+    "公開發布": "Launch publicly", "已公開發布": "Launched", "開啟募資": "Open funding", "上架到商店": "List in the store", "已上架到商店": "Listed in the store",
+    "第一版只賣網頁作品。付款由持牌金流分帳，款項直接撥給你。早期創作者限時免抽成。": "Web apps only for now. A licensed provider splits payments and pays you directly. Zero commission for early creators.",
+    "方案": "Plan", "價格（新台幣）": "Price (NT$)", "示範設定。里程碑撥款比例由平台固定為 {n}% / {n}% / {n}%。": "Demo settings. Milestone payouts are fixed at {n}% / {n}% / {n}%.",
+    "目標金額（新台幣）": "Goal (NT$)", "募資天數": "Campaign length (days)", "回饋方案（名稱）": "Reward name", "回饋方案（金額）": "Reward price", "開始募資": "Start funding",
+    "創作者自訂回饋": "Creator-defined reward", "募資進行中。": "Funding in progress.", "募資已開啟（示範）": "Funding opened (demo)",
+    "已上架商店：{n}": "Listed: {n}"
+  };
+
+  const PATTERNS = [
+    [/^\/ (.+)$/, (m) => "/ " + tr(m[1])],
+    [/^(.+) · (.+)$/, (m) => tr(m[1]) + " · " + tr(m[2])],
+    [/^(.+) \+ (.+)$/, (m) => m[0]],
+    [/^by (.+)$/, (m) => "by " + tr(m[1])],
+    [/^(.+) 截圖 (\d+)（示意）$/, (m) => `${tr(m[1])} screenshot ${m[2]} (mock)`],
+    [/^封測回報：(.+)$/, (m) => "Beta report: " + tr(m[1])],
+    [/^範例專案：(.+)$/, (m) => "Sample project: " + tr(m[1])],
+    [/^目前階段：(.+)$/, (m) => "Current stage: " + tr(m[1])],
+    [/^暱稱（(.+)）$/, (m) => `Nickname (${tr(m[1])})`],
+    [/^已解鎖：(.+?)(?:（到 (.+)）)?$/, (m) => "Unlocked: " + tr(m[1]) + (m[2] ? ` (until ${m[2]})` : "")],
+    [/^(.+) 分$/, (m) => m[1] + " stars"],
+    [/^(.+)（測試者）$/, (m) => tr(m[1]) + " (tester)"]
+  ];
+
+  Object.assign(EN, {"台股籌碼雷達": "TAIEX Flow Radar", "盤後一鍵看懂今天外資、投信在買什麼": "After the close, see in one tap what foreign and local funds bought today", "台灣妖怪卡牌": "Taiwan Yokai Cards", "用魔神仔、虎姑婆組牌對戰，一場五分鐘": "Build decks of Taiwanese folklore spirits and duel in five-minute matches", "美股財報速讀": "US Earnings Digest", "財報一出，三分鐘用中文看懂營收、指引和電話會議重點": "The moment earnings drop, get revenue, guidance and call highlights in three minutes", "總經一頁週報": "Macro One-Pager", "利率、通膨、匯率、景氣燈號，每週一頁看完": "Rates, inflation, FX and business-cycle signals on one page each week", "小陽台花園": "Little Balcony Garden", "每天花三分鐘澆水，種出一整個陽台的花": "Water for three minutes a day and grow a balcony full of flowers", "全部分類": "All categories", "依分類篩選": "Filter by category", "依子分類篩選": "Filter by subcategory", "陳思妤": "Sophie Chen", "林柏宇": "Po-Yu Lin", "鄭怡君": "Yi-Chun Cheng", "黃冠廷": "Kuan-Ting Huang", "蔡宗翰": "Tsung-Han Tsai", "傳說對決對線小教練": "Arena of Valor lane coach", "電競": "esports", "選好英雄和對手，告訴你前五分鐘怎麼對線、什麼時候該回城。": "Pick your hero and opponent; it tells you how to play the first five minutes of lane and when to recall.", "想做成手機上開著不用切換的懸浮小卡。資料要從公開的對戰統計來，不能違反遊戲條款。": "Ideally a floating card on your phone so you never switch apps. Data must come from public match stats without breaking the game's terms.", "大學電競社社長": "University esports club president", "槍戰遊戲準心練習場": "Shooter aim trainer", "瀏覽器就能開的瞄準訓練，記錄每天的反應時間和命中率。": "Aim training that runs in the browser and logs your daily reaction time and accuracy.", "想要可以模擬不同遊戲的靈敏度換算。排行榜只跟朋友比。": "Should convert sensitivity between different games. Leaderboards only against friends.", "勞保勞退試算": "Labor pension calculator", "退休": "retirement", "輸入年資和薪水，算出退休每月大概領多少、還差多少。": "Enter your years of service and salary to see roughly how much you'll get per month in retirement and how far short you are.", "公式要跟勞動部一致，規則變動時要能更新。不能要求使用者輸入身分證字號。": "Formulas must match the Ministry of Labor and update when rules change. Must not ask for national ID numbers.", "上班族小雯": "Wen, office worker", "分類": "Category", "大類": "Category", "子類": "Subcategory", "工程師兼散戶，下班用 Claude 做的": "Engineer and retail investor, built it with Claude after work", "每天收盤後整理證交所公開的三大法人買賣超，挑出連續買超的個股，用一張圖看產業資金流向。只整理公開資料，不構成投資建議。": "After each close it compiles the exchange's public institutional buy/sell data, flags stocks with consecutive net buying and shows sector money flows in one chart. Public data only; not investment advice.", "查一檔你持有的股票": "Look up a stock you own", "看今天的產業資金流向圖": "Check today's sector flow chart", "設定一檔股票的買超提醒": "Set a net-buying alert for a stock", "收盤後尖峰載入 3.8 秒": "3.8 s load at the after-close peak", "前券商研究員，用 ChatGPT 和 Lovable 做的": "Former brokerage analyst, built with ChatGPT and Lovable", "追蹤你關注的美股，財報公布後自動整理成中文重點：營收與 EPS 是否優於預期、財測調整、法說會問答摘要。不提供買賣建議。": "Follow the US stocks you care about; after earnings it summarizes beats or misses on revenue and EPS, guidance changes and the call Q&A. No buy or sell advice.", "加入三檔關注的美股": "Add three US stocks to follow", "讀一份財報摘要並回報看不懂的地方": "Read one summary and report anything unclear", "免費版（每月 5 份）": "Free (5 per month)", "月訂閱": "Monthly", "{n}／月": "{n}/month", "經濟系學生，用 Claude 做的期末專題": "Economics student, a final project built with Claude", "每週一整理美國聯準會、台灣央行、CPI、美元台幣與國發會景氣燈號，畫成一頁圖表，附上一段白話解讀。": "Every Monday it charts the Fed, Taiwan's central bank, CPI, USD/TWD and the national business-cycle signal on one page, with a plain-language take.", "讀完本週週報": "Read this week's issue", "指出一張看不懂的圖": "Point out a chart you didn't understand", "桌遊店店員，用 Cursor 做的第一款遊戲": "Board game shop clerk, first game made with Cursor", "以台灣民間傳說為主題的卡牌對戰網頁遊戲，30 張起手牌組、線上配對或跟電腦打。正在找測試者試平衡。": "A browser card battler based on Taiwanese folklore with 30-card starter decks; play online or against the computer. Looking for testers to check balance.", "完成新手教學": "Finish the tutorial", "跟電腦打三場": "Play three games against the computer", "回報一張你覺得太強的牌": "Report a card you think is too strong", "手機直向時手牌會擠在一起": "Cards in hand overlap in portrait on phones", "插畫家，跟 Claude 一起做的療癒小遊戲": "Illustrator, made this cozy game with Claude", "沒有輸贏的療癒遊戲：照顧陽台上的植物，隨季節開花，偶爾有鳥來拜訪。免費玩，買斷可解鎖更多盆栽和背景音樂。": "A cozy game with no winning or losing: tend your balcony plants, watch them bloom with the seasons, and get the odd bird visit. Free to play; buy once to unlock more pots and music.", "種下第一盆植物": "Plant your first pot", "隔天回來澆水": "Come back the next day to water it", "免費遊玩": "Free to play", "解鎖完整版": "Unlock full version", "你對什麼有興趣？": "What are you into?", "選幾個你想看的類型，首頁會優先推薦相關的作品。之後隨時可以在帳號頁修改。": "Pick a few topics and your home page will recommend matching projects first. You can change them anytime in your account.", "完成，幫我推薦": "Done, recommend for me", "先跳過": "Skip for now", "我的帳號": "My account", "為你推薦": "Recommended for you", "調整興趣 →": "Edit interests →", "已記下 {n} 個興趣": "Saved {n} interests", "已購買 {n} 個作品": "{n} purchased", "我的興趣": "My interests", "{n} 項已選": "{n} selected", "項已選": "selected", "勾選你想看的類型，首頁的「為你推薦」會依這裡排序。": "Tick the topics you want; Recommended for you on the home page is sorted by these.", "儲存興趣": "Save interests", "全部取消": "Clear all", "選最接近的大類和子類，作品列表、商店和推薦都會用到。": "Pick the closest category and subcategory. Project lists, the store and recommendations all use it.", "告訴我們你對什麼有興趣，首頁就會推薦相關作品。": "Tell us what you're into and the home page will recommend matching projects.", "選擇興趣": "Pick interests", "登入後才能看帳號設定。": "Sign in to see your account settings.", "興趣已更新": "Interests updated", "這個分類還沒有點子，來當第一個吧。": "No ideas in this category yet. Be the first.", "你選的類型還沒有作品，先看看其他精選吧。": "Nothing in your topics yet. Check out the featured picks meanwhile.", "全部": "All", "AI 創作者流程圖": "AI creator flow diagram"});
+  Object.assign(EN, { "登入開達": "Sign in to Kaida", "已登入：": "Signed in: ", "興趣可以在": "You can edit interests in ", "修改。": ".",
+    "已經有帳號就直接登入；第一次來會順便建立帳號。登入後也能提交作品、發表點子和在商店購買。": "Already have an account? Just sign in. First time here creates one. Signing in also lets you submit projects, post ideas and buy in the store.",
+    "你已經是測試者了": "You're already a tester", "從下面挑一個作品開始吧。": "Pick a project below to get started.", "填測試者資料": "Fill in your tester profile", "登入後就能填。": "Available after you sign in." });
+  Object.assign(EN, { "同時成為測試者": "Also become a tester", "搶先試用新作品、填回饋升等級，之後可換點數或互測額度。": "Try new projects first and level up with feedback; later redeem points or peer-testing credits.",
+    "成為測試者要先登入。登入視窗裡勾選「同時成為測試者」就完成了。": "Sign in first. Tick “Also become a tester” in the sign-in window and you're done.", "登入並成為測試者": "Sign in and become a tester" });
+  Object.assign(EN, { "同時加入（預設都勾選，可以取消）": "Also join as (both ticked by default, untick if you like)", "成為創作者": "Become a creator",
+    "提交自己的作品，找測試者封測，之後可以上架商店或開募資。": "Submit your own projects, get them beta tested, then list them in the store or raise funds.",
+    "歡迎加入測試者和創作者": "Welcome, tester and creator", "歡迎加入創作者": "Welcome, creator", "創作者": "Creator", "測試者": "Tester", "身分": "Roles", "身分已更新": "Roles updated",
+    "接封測任務、填回饋。": "Take beta tasks and leave feedback.", "提交作品、上架商店、開募資。": "Submit projects, list in the store, raise funds.",
+    "成為測試者要先登入。登入視窗裡的「成為測試者」預設已勾選，登入就完成了。": "Sign in first. “Become a tester” is ticked by default in the sign-in window, so signing in is all it takes." });
+  // 分類名稱直接從假資料註冊進字典
+  ((window.MOCK && window.MOCK.categories) || []).forEach((c) => { EN[c.zh] = c.en; c.subs.forEach((t) => { EN[t[1]] = t[2]; }); });
+
+  const NUM = /NT\$[\d,]+|\d+(?:[.,:\-]\d+)*/g;
+  function tr(t) {
+    if (!t) return t;
+    if (NAMES[t]) return NAMES[t];
+    if (EN[t]) return EN[t];
+    const qs = [], ns = [];
+    const key = t.replace(/「([^」]*)」/g, (_, q) => (qs.push(q), "「{q}」")).replace(NUM, (n) => (ns.push(n), "{n}"));
+    const tpl = EN[key];
+    if (tpl) { let qi = 0, ni = 0; return tpl.replace(/\{q\}/g, () => tr(qs[qi++] || "")).replace(/\{n\}/g, () => ns[ni++] || ""); }
+    for (const [re, fn] of PATTERNS) { const m = t.match(re); if (m) { const out = fn(m); if (out !== t) return out; } }
+    // 最後一招：拆開「·」「/」分隔的片段各自翻譯
+    if (/[·\/]/.test(t)) {
+      const parts = t.split(/(\s*[·\/]\s*)/);
+      if (parts.length > 1) { const out = parts.map((x) => (/[·\/]/.test(x) || !x.trim() ? x : tr(x.trim()))).join(""); if (out !== t) return out; }
+    }
+    return t;
+  }
+
+  let lang = "zh";
+  try { lang = localStorage.getItem("kaida-lang") || "zh"; } catch (e) { /* 預設中文 */ }
+  const ATTRS = ["placeholder", "aria-label", "title"];
+  function translateNode(root) {
+    if (lang !== "en") return;
+    const walk = (n) => {
+      if (n.nodeType === 3) {
+        const raw = n.nodeValue, t = raw.trim();
+        if (t && /[一-鿿]/.test(t)) { const out = tr(t); if (out !== t) { n.__zh = raw; n.nodeValue = raw.replace(t, out); } }
+        return;
+      }
+      if (n.nodeType !== 1 || n.tagName === "SCRIPT" || n.tagName === "STYLE") return;
+      ATTRS.forEach((a) => { const v = n.getAttribute && n.getAttribute(a); if (v && /[一-鿿]/.test(v)) { (n.__zhA = n.__zhA || {})[a] = v; n.setAttribute(a, tr(v.trim())); } });
+      if (n.tagName === "INPUT" && n.type === "text" && /[一-鿿]/.test(n.value)) n.value = tr(n.value);
+      n.childNodes.forEach(walk);
+    };
+    walk(root);
+  }
+  // 切回中文時，把頁面上沒重畫的部分（頁首、頁尾）還原
+  function restore(root) {
+    const walk = (n) => {
+      if (n.nodeType === 3) { if (n.__zh != null) { n.nodeValue = n.__zh; n.__zh = null; } return; }
+      if (n.nodeType !== 1) return;
+      if (n.__zhA) { Object.keys(n.__zhA).forEach((a) => n.setAttribute(a, n.__zhA[a])); n.__zhA = null; }
+      n.childNodes.forEach(walk);
+    };
+    walk(root);
+  }
+  const obs = new MutationObserver((muts) => { if (lang !== "en") return; muts.forEach((m) => m.addedNodes.forEach(translateNode)); });
+
+  window.KAIDA_I18N = {
+    tr, get lang() { return lang; },
+    set(l, rerender) {
+      lang = l === "en" ? "en" : "zh";
+      try { localStorage.setItem("kaida-lang", lang); } catch (e) { /* 忽略 */ }
+      document.documentElement.lang = lang === "en" ? "en" : "zh-Hant-TW";
+      document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+      if (lang === "zh") restore(document.body);
+      rerender && rerender();
+      translateNode(document.body);
+    },
+    start() { obs.observe(document.body, { childList: true, subtree: true }); }
+  };
+})();
+
+</script>
+<script>
+/* 原型主程式：純前端、無框架。
+   路由用網址 # 後的簡單代號：#works、#work.<id>、#feedback.<id>、#submit、#ideas、#tester
+   使用者新增的資料存在瀏覽器 localStorage（只在你自己的瀏覽器裡），頁尾可清除。 */
+(function () {
+  "use strict";
+  const M = window.MOCK;
+  const STORE_KEY = "vibe-proto-v1";
+  const $app = document.getElementById("app");
+
+  // ---------- state ----------
+  const blank = () => ({ user: null, newWorks: [], patches: {}, feedback: {}, ideas: [], wants: {}, backed: {}, owned: {} });
+  let S = blank();
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) { /* 無法讀取就用預設 */ }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { /* 私密模式等情況，僅保留在記憶體 */ } }
+
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  function allWorks() {
+    return M.works.map(clone).concat(S.newWorks.map(clone)).map((w) => {
+      const p = S.patches[w.id];
+      if (p) {
+        Object.assign(w, p.top || {});
+        if (p.beta) Object.assign(w.beta, p.beta);
+        if (p.funding) w.funding = Object.assign(w.funding || {}, p.funding);
+        if (p.health) w.health = p.health;
+      }
+      w.feedback = (S.feedback[w.id] || []).concat(w.feedback || []);
+      return w;
+    });
+  }
+  const getWork = (id) => allWorks().find((w) => w.id === id);
+  function patch(id, part, obj) {
+    const p = (S.patches[id] = S.patches[id] || {});
+    p[part] = Object.assign(p[part] || {}, obj);
+    save();
+  }
+
+  // ---------- helpers ----------
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = (n) => "NT$" + Math.round(n).toLocaleString("en-US");
+  const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
+  const today = () => new Date().toISOString().slice(0, 10);
+  const stageLabel = (s) => M.stages[s].label;
+  const stagePill = (s) => `<span class="stage ${s}">${stageLabel(s)}</span>`;
+  const stars = (n) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
+  const sevLabel = { none: "沒遇到問題", minor: "小問題", major: "影響使用", critical: "無法使用" };
+  const payLabel = { yes: "願意付費", maybe: "看價格", no: "不會付費" };
+
+  function toast(msg) {
+    const t = document.createElement("div");
+    t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2600);
+  }
+  function dialog(html, onMount) {
+    const back = document.createElement("div");
+    back.className = "dialog-back";
+    back.innerHTML = `<div class="dialog" role="dialog" aria-modal="true">${html}</div>`;
+    document.body.appendChild(back);
+    const close = () => back.remove();
+    back.addEventListener("click", (e) => { if (e.target === back || e.target.closest("[data-close]")) close(); });
+    onMount && onMount(back.querySelector(".dialog"), close);
+    const f = back.querySelector("button, input"); f && f.focus();
+    return close;
+  }
+  function needLogin(then) {
+    if (S.user) return then();
+    dialog(`<h2>登入開達</h2>
+      <p class="muted">登入後可以參加封測、提交作品、發表點子、支持募資和在商店購買。</p>
+      <div class="role-opts"><span class="small muted">同時加入（預設都勾選，可以取消）</span>
+        <label class="tester-opt"><input type="checkbox" id="dlg-tester" checked><span><b>成為測試者</b><span class="small muted">搶先試用新作品、填回饋升等級，之後可換點數或互測額度。</span></span></label>
+        <label class="tester-opt"><input type="checkbox" id="dlg-creator" checked><span><b>成為創作者</b><span class="small muted">提交自己的作品，找測試者封測，之後可以上架商店或開募資。</span></span></label></div>
+      <p class="small muted">原型沒有真正的帳號系統，會用示範帳號「小安」登入，資料只存在你的瀏覽器。</p>
+      <div class="btn-row"><button class="btn primary" id="dlg-login">用 Google 登入（示範）</button><button class="btn ghost" data-close>取消</button></div>`,
+      (el, close) => el.querySelector("#dlg-login").onclick = () => {
+        const t = el.querySelector("#dlg-tester").checked, c = el.querySelector("#dlg-creator").checked;
+        S.user = { name: "小安", tester: t, creator: c, interests: [], onboarded: false }; save(); close(); renderTop();
+        if (t || c) toast(t && c ? "歡迎加入測試者和創作者" : t ? "歡迎加入測試者" : "歡迎加入創作者");
+        askInterests(() => { render(); then(); });
+      });
+  }
+
+  // ---------- 分類（大類 → 子類）與興趣 ----------
+  const CATS = M.categories;
+  const catOf = (id) => CATS.find((c) => c.id === id);
+  const subName = (c, sid) => { const x = c && c.subs.find((t) => t[0] === sid); return x ? x[1] : ""; };
+  function catLine(o) {
+    const c = catOf(o.cat); if (!c) return "";
+    return `<span class="cat-line"><span>${esc(c.zh)}</span>${o.sub ? `<span>${esc(subName(c, o.sub))}</span>` : ""}</span>`;
+  }
+  const matchCat = (o, f) => (f.cat === "all" || o.cat === f.cat) && (f.sub === "all" || o.sub === f.sub);
+  // 兩排篩選：大類，選了大類再出現子類
+  function catFilters(items, f) {
+    const n = (fn) => items.filter(fn).length;
+    const c = catOf(f.cat);
+    return `<div class="cat-filter">
+      <div class="filters cats" role="group" aria-label="依分類篩選">
+        <button class="filter" data-cat="all" aria-pressed="${f.cat === "all"}">全部分類 <span class="num">${items.length}</span></button>
+        ${CATS.map((x) => { const k = n((o) => o.cat === x.id); return `<button class="filter${k ? "" : " zero"}" data-cat="${x.id}" aria-pressed="${f.cat === x.id}">${esc(x.zh)} <span class="num">${k}</span></button>`; }).join("")}
+      </div>
+      ${c ? `<div class="filters subs" role="group" aria-label="依子分類篩選">
+        <button class="filter sm" data-sub="all" aria-pressed="${f.sub === "all"}">全部</button>
+        ${c.subs.map(([id, zh]) => { const k = n((o) => o.cat === c.id && o.sub === id); return `<button class="filter sm${k ? "" : " zero"}" data-sub="${id}" aria-pressed="${f.sub === id}">${esc(zh)} <span class="num">${k}</span></button>`; }).join("")}
+      </div>` : ""}
+    </div>`;
+  }
+  function bindCatFilters(f, rerender) {
+    $app.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => { f.cat = b.dataset.cat; f.sub = "all"; rerender(); }));
+    $app.querySelectorAll("[data-sub]").forEach((b) => (b.onclick = () => { f.sub = b.dataset.sub; rerender(); }));
+  }
+  // 表單用的兩層下拉選單
+  function catSelects(prefix, cat, sub) {
+    const c0 = catOf(cat) || CATS[0];
+    return `<div class="cat-selects"><select id="${prefix}-cat" class="input" aria-label="大類">${CATS.map((c) => `<option value="${c.id}" ${c === c0 ? "selected" : ""}>${esc(c.zh)}</option>`).join("")}</select>
+      <select id="${prefix}-sub" class="input" aria-label="子類">${c0.subs.map(([id, zh]) => `<option value="${id}" ${id === sub ? "selected" : ""}>${esc(zh)}</option>`).join("")}</select></div>`;
+  }
+  function bindCatSelects(root, prefix) {
+    const cs = root.querySelector(`#${prefix}-cat`), ss = root.querySelector(`#${prefix}-sub`);
+    cs.onchange = () => { ss.innerHTML = catOf(cs.value).subs.map(([id, zh]) => `<option value="${id}">${esc(zh)}</option>`).join(""); };
+    return () => ({ cat: cs.value, sub: ss.value });
+  }
+  // 興趣：存成「大類.子類」
+  const interests = () => (S.user && S.user.interests) || [];
+  function interestPicker(sel) {
+    return `<div class="pick">${CATS.map((c) => `<fieldset class="pick-group"><legend>${esc(c.zh)}</legend><div class="checks-in">
+      ${c.subs.map(([id, zh]) => { const k = c.id + "." + id; return `<label><input type="checkbox" name="interest" value="${k}" ${sel.includes(k) ? "checked" : ""}> ${esc(zh)}</label>`; }).join("")}
+      </div></fieldset>`).join("")}</div>`;
+  }
+  const readPicker = (root) => [...root.querySelectorAll('[name="interest"]:checked')].map((x) => x.value);
+  function askInterests(then) {
+    dialog(`<h2>你對什麼有興趣？</h2>
+      <p class="muted">選幾個你想看的類型，首頁會優先推薦相關的作品。之後隨時可以在帳號頁修改。</p>
+      ${interestPicker(interests())}
+      <div class="btn-row sticky-actions"><button class="btn primary" id="dlg-int">完成，幫我推薦</button><button class="btn ghost" id="dlg-skip">先跳過</button></div>`,
+      (el, close) => {
+        el.classList.add("tall");
+        const done = (list) => { S.user.interests = list; S.user.onboarded = true; save(); close(); if (list.length) toast(`已記下 ${list.length} 個興趣`); then && then(); };
+        el.querySelector("#dlg-int").onclick = () => done(readPicker(el));
+        el.querySelector("#dlg-skip").onclick = () => done(interests());
+      });
+  }
+  // 推薦分數：子類相符 3 分、同大類 1 分；點子階段不推薦
+  function recommended(ws) {
+    const list = interests(); if (!list.length) return [];
+    const cats = list.map((k) => k.split(".")[0]);
+    return ws.filter((w) => w.stage !== "idea").map((w) => ({ w, sc: (list.includes(w.cat + "." + w.sub) ? 3 : 0) + (cats.includes(w.cat) ? 1 : 0) }))
+      .filter((x) => x.sc > 0).sort((a, b) => b.sc - a.sc || b.w.beta.completed - a.w.beta.completed).map((x) => x.w);
+  }
+
+  // 封測門檻判斷：回傳每一項條件是否達成
+  function gate(w) {
+    const fails = (w.health || []).filter((h) => h.status === "fail");
+    const items = [
+      { ok: w.beta.completed >= M.rules.minTesters, text: `至少 ${M.rules.minTesters} 位測試者完成全部必做任務（目前 ${w.beta.completed} 位）` },
+      { ok: (w.health || []).length > 0 && (!M.rules.blockOnHealthFail || fails.length === 0), text: fails.length ? `AI 健檢沒有「未通過」項目（目前 ${fails.length} 項未通過）` : "AI 健檢沒有「未通過」項目" }
+    ];
+    return { items, ok: items.every((i) => i.ok) };
+  }
+
+  // ---------- 標誌與階段軌道 ----------
+  const LOGO = `<svg role="img" aria-label="Kaida" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 376 100"><defs><clipPath id="cs-nav"><rect x="0" y="14" width="100" height="72"/></clipPath></defs><g clip-path="url(#cs-nav)"><path d="M13.5 96 V68 H36 V48 H58 V30 H68" fill="none" style="stroke:currentColor" stroke-width="11" stroke-linejoin="miter"/><circle cx="77" cy="23" r="9" style="fill:var(--logo-accent, #9a7440)"/></g><g transform="translate(114 0)"><defs><clipPath id="cw-b-nav"><rect x="-20" y="14" width="302.0" height="72"/></clipPath></defs><g clip-path="url(#cw-b-nav)" stroke-width="11" fill="none"><g style="stroke:currentColor"><line x1="5.5" y1="4.0" x2="5.5" y2="96.0"/><line x1="7.5" y1="54.0" x2="46.0" y2="4.0"/><line x1="15.5" y1="47.0" x2="50.0" y2="96.0"/></g><polyline points="59.36,95.36 84.00,29.66 108.64,95.36" style="stroke:currentColor" stroke-linejoin="miter" stroke-miterlimit="20"/><g style="stroke:currentColor"><line x1="125.5" y1="4.0" x2="125.5" y2="96.0"/></g><g style="stroke:currentColor"><line x1="151.5" y1="4.0" x2="151.5" y2="96.0"/><path d="M151.5 19.5 H165 A30.5 30.5 0 0 1 165 80.5 H151.5" fill="none"/></g><polyline points="210.36,95.36 235.00,29.66 259.64,95.36" style="stroke:currentColor" stroke-linejoin="miter" stroke-miterlimit="20"/></g></g></svg>`;
+  const TRACK = ["點子", "封測", "發布", "募資", "交付"];
+  function track(stage, names) {
+    const cur = M.stages[stage].order;
+    return `<div aria-label="目前階段：${stageLabel(stage)}"><div class="track" aria-hidden="true">${TRACK.map((_, i) => `<i class="${i < cur ? "on" : i === cur ? "now" : ""}"></i>`).join("")}</div>
+      ${names ? `<div class="track-names" aria-hidden="true">${TRACK.map((t, i) => `<span class="${i === cur ? "cur" : ""}">${t}</span>`).join("")}</div>` : ""}</div>`;
+  }
+
+  // ---------- 假截圖（SVG，跟著風格變色） ----------
+  function shotSVG(w, i) {
+    const f = (v) => `style="fill:var(${v})"`;
+    const rows = [0, 1, 2, 3].map((r) => `<rect x="16" y="${92 + r * 54}" width="148" height="44" ${f("--sunk")}/><rect x="26" y="${104 + r * 54}" width="${60 + ((r * 37 + i * 23) % 70)}" height="6" ${f("--muted")} opacity=".7"/><rect x="26" y="${118 + r * 54}" width="40" height="5" ${f("--line")}/>`).join("");
+    const labels = ["首頁", "主要功能", "結果頁"];
+    return `<svg viewBox="0 0 180 320" role="img" aria-label="${esc(w.name)} 截圖 ${i + 1}（示意）">
+      <rect width="180" height="320" ${f("--paper")}/>
+      <rect x="16" y="24" width="60" height="6" ${f("--muted")}/>
+      <text x="16" y="62" font-size="18" font-weight="600" ${f("--ink")} font-family="Noto Sans TC, sans-serif">${esc(labels[i])}</text>
+      ${rows}
+      <rect x="16" y="292" width="${60 + i * 30}" height="4" ${f("--signal")}/>
+    </svg>`;
+  }
+
+  // ---------- 風格切換 ----------
+  function applySkin(s) {
+    if (s === "cyber") document.documentElement.setAttribute("data-skin", "cyber");
+    else document.documentElement.removeAttribute("data-skin");
+    document.querySelectorAll(".skin button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.skin === (s === "cyber" ? "cyber" : "beige"))));
+    const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = s === "cyber" ? "#07080d" : "#f2ece1";
+  }
+  let savedSkin = null;
+  try { savedSkin = localStorage.getItem("kaida-skin"); } catch (e) { /* 無法讀取就用預設米色 */ }
+  applySkin(savedSkin);
+  document.querySelectorAll(".skin button").forEach((b) => (b.onclick = () => { applySkin(b.dataset.skin); try { localStorage.setItem("kaida-skin", b.dataset.skin); } catch (e) { /* 忽略 */ } }));
+  // ---------- 語言切換 ----------
+  const I18N = window.KAIDA_I18N;
+  const isEn = () => I18N && I18N.lang === "en";
+  const L = (zh, en) => (isEn() ? en : zh);
+  document.querySelectorAll(".lang button").forEach((b) => (b.onclick = () => I18N.set(b.dataset.lang, render)));
+  const ICON = `<svg role="img" aria-label="Kaida 圖示" width="28" height="28" style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#f2ece1"/><defs><clipPath id="cs-foot"><rect x="0" y="14" width="100" height="72"/></clipPath></defs><g clip-path="url(#cs-foot)"><path d="M13.5 96 V68 H36 V48 H58 V30 H68" fill="none" style="stroke:#2a2620" stroke-width="11" stroke-linejoin="miter"/><circle cx="77" cy="23" r="9" style="fill:#9a7440"/></g></svg>`;
+  document.querySelectorAll("[data-icon]").forEach((el) => (el.innerHTML = ICON));
+  document.querySelectorAll("[data-logo]").forEach((el) => (el.innerHTML = LOGO));
+
+  // ---------- top bar ----------
+  const NAV = [["", "首頁"], ["works", "作品"], ["store", "商店"], ["ideas", "點子區"], ["submit", "提交作品"], ["map", "產品地圖"]];
+  function renderTop() {
+    const cur = route().name;
+    const navKey = cur === "work" || cur === "feedback" ? "works" : cur;
+    document.getElementById("nav").innerHTML = NAV.map(([k, l]) => `<a href="#${k || "home"}" ${navKey === (k || "home") ? 'aria-current="page"' : ""}>${l}</a>`).join("");
+    const isT = S.user && S.user.tester;
+    const who = document.getElementById("whoami");
+    // 主要入口是「登入」，成為測試者放在登入流程裡；登入後還不是測試者才另外顯示
+    who.innerHTML = `${!S.user ? `<button class="nav-cta" id="login">登入</button>` : isT ? "" : `<a class="nav-cta" href="#tester" ${cur === "tester" ? 'aria-current="page"' : ""}>成為測試者</a>`}
+      ${S.user ? `<a class="me" href="#account" ${cur === "account" ? 'aria-current="page"' : ""} title="我的帳號"><span class="avatar" aria-hidden="true">${esc(S.user.name.slice(0, 1))}</span>${esc(S.user.name)}${isT ? '<span class="me-tag">測試者</span>' : ""}${S.user.creator ? '<span class="me-tag">創作者</span>' : ""}</a><button class="btn small ghost" id="logout">登出</button>`
+        : ""}`;
+    const li = who.querySelector("#login"); if (li) li.onclick = () => needLogin(render);
+    const lo = who.querySelector("#logout"); if (lo) lo.onclick = () => { S.user = null; save(); toast("已登出"); render(); };
+  }
+
+  // ---------- routing ----------
+  function route() {
+    const h = decodeURIComponent(location.hash.slice(1)) || "home";
+    const [name, id] = h.split(".");
+    return { name: name || "home", id };
+  }
+  function go(hash) { if (location.hash === "#" + hash) render(); else location.hash = hash; }
+
+  function render() {
+    const r = route();
+    renderTop();
+    const pages = { home: pHome, works: pWorks, store: pStore, work: pWork, feedback: pFeedback, submit: pSubmit, ideas: pIdeas, tester: pTester, map: pMap, account: pAccount };
+    (pages[r.name] || pHome)(r.id);
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- 卡片 ----------
+  function card(w) {
+    let meta;
+    if (w.stage === "idea") meta = `<span>找創作者中</span><span>${esc(w.author)}</span>`;
+    else if (w.stage === "funding") meta = `<span>募資 <b class="num">${pct(w.funding.raised, w.funding.goal)}%</b> · 剩 <span class="num">${w.funding.daysLeft}</span> 天</span><span>封測 <span class="num">${w.beta.completed}</span> 人完成</span>`;
+    else meta = `<span>封測 <b class="num">${w.beta.completed}/${w.beta.target}</b></span><span>${w.beta.avgRating ? "★ <span class=\"num\">" + w.beta.avgRating.toFixed(1) + "</span>" : "尚無評分"}</span>`;
+    const bar = w.stage === "beta" ? `<div class="mini-bar" aria-hidden="true"><i style="width:${pct(w.beta.completed, w.beta.target)}%"></i></div>`
+      : w.stage === "funding" ? `<div class="mini-bar" aria-hidden="true"><i style="width:${pct(w.funding.raised, w.funding.goal)}%;background:var(--signal-2)"></i></div>` : "";
+    return `<a class="card" href="#work.${w.id}">
+        <div class="top">${stagePill(w.stage)}<span class="mono-tools">${w.tools.length ? esc(w.tools.join(" + ")) : "尚未開工"}</span></div>
+        ${track(w.stage, false)}
+        ${catLine(w)}
+        <h3>${esc(w.name)}</h3>
+        <p class="tag">${esc(w.tagline)}</p>
+        ${bar}
+        <div class="meta">${meta}</div>
+      </a>`;
+  }
+
+  // ---------- 首頁 ----------
+  function pHome() {
+    const ws = allWorks();
+    const featured = ws.filter((w) => w.featured);
+    const needTesters = ws.filter((w) => w.stage === "beta" && w.beta.completed < w.beta.target);
+    const hw = ws.find((w) => w.id === "invoice-cat");
+    const fails = hw.health.filter((h) => h.status === "fail").length;
+    $app.innerHTML = `<div class="page" style="gap:56px">
+      <section class="hero">
+        <div class="copy">
+          <span class="eyebrow">給台灣 vibe coding 創作者</span>
+          <h1>從開工，<br><span class="to">到</span>達成。</h1>
+          <p class="lead">點子在這裡發表，作品在這裡封測，有人氣的專案在這裡募資，然後真的做出來交給支持者。Threads 負責熱度，開達負責把事情做完。</p>
+          <div class="btn-row"><a class="btn primary" href="#submit">提交作品</a><a class="btn" href="#tester">成為測試者</a></div>
+          <div class="etym"><span><b>開</b>開工・開測・開募</span><span><b>達</b>達標・達成・送達</span></div>
+        </div>
+        <a class="board" href="#work.${hw.id}" aria-label="範例專案：${esc(hw.name)}">
+          <div class="head"><div><h3>${esc(hw.name)}</h3><div class="small muted">${esc(hw.author)} · ${esc(hw.tools.join(" + "))}</div></div>${stagePill(hw.stage)}</div>
+          ${track(hw.stage, true)}
+          <div class="stats3">
+            <div><b>${hw.beta.completed}<span class="muted" style="font-size:13px">/${M.rules.minTesters}</span></b><span>封測完成</span></div>
+            <div><b>${hw.beta.avgRating.toFixed(1)}</b><span>測試者評分</span></div>
+            <div><b style="color:var(--pass)">${fails}</b><span>健檢未通過</span></div>
+          </div>
+          <div class="progress" id="funding">
+            <div class="row"><span class="num" style="font-weight:600">${money(hw.funding.raised)}</span><span class="small muted">目標 ${money(hw.funding.goal)} · <span class="num">${pct(hw.funding.raised, hw.funding.goal)}%</span></span></div>
+            <div class="bar"><i style="width:${pct(hw.funding.raised, hw.funding.goal)}%"></i></div>
+          </div>
+          <div class="small muted">撥款 <span class="num">40% → 40% → 20%</span>，做到哪撥到哪 · 示範資料</div>
+        </a>
+      </section>
+
+      ${S.user ? (() => {
+        const rec = recommended(ws).slice(0, 6);
+        if (!interests().length) return `<section class="notice info rec-ask"><span>告訴我們你對什麼有興趣，首頁就會推薦相關作品。</span><button class="btn small primary" id="pick-int">選擇興趣</button></section>`;
+        return `<section class="page" style="gap:16px">
+          <div class="section-head"><h2>為你推薦</h2><a href="#account" class="small">調整興趣 →</a></div>
+          <div class="chips">${interests().map((k) => { const [c, sb] = k.split("."); return `<span class="chip">${esc(subName(catOf(c), sb))}</span>`; }).join("")}</div>
+          ${rec.length ? `<div class="grid">${rec.map(card).join("")}</div>` : `<div class="empty">你選的類型還沒有作品，先看看其他精選吧。</div>`}
+        </section>`;
+      })() : ""}
+
+      <section class="flow" aria-label="四個階段">
+        <div class="flow-step"><span class="k">01 點子</span><h3>開工</h3>
+          <p>發表點子，概要公開、細節只給成員看，並記錄發表時間。不會寫程式的人也能找創作者一起做。</p></div>
+        <div class="flow-step"><span class="k">02 封測</span><h3>開測</h3>
+          <p>照任務試用、填結構化回饋。AI 健檢同步檢查能不能開、有沒有外洩金鑰、手機好不好用。</p>
+          <span class="gate">門檻：≥${M.rules.minTesters} 人完成任務，健檢無未通過</span></div>
+        <div class="flow-step"><span class="k">03 發布</span><h3>上架</h3>
+          <p>固定的作品頁和封測紀錄，不會兩天就被洗掉。一鍵產生 Threads 分享卡，把熱度帶回來。</p></div>
+        <div class="flow-step"><span class="k">04 募資</span><h3>達成</h3>
+          <p>回饋型、全有或全無。達標後依里程碑分批撥款；沒達標全額退款。</p>
+          <span class="gate">撥款 40% → 40% → 20%</span></div>
+      </section>
+
+      <section class="page" style="gap:16px">
+        <div class="section-head"><h2>精選作品</h2><a href="#works" class="small">看全部作品 →</a></div>
+        <div class="grid">${featured.map(card).join("")}</div>
+      </section>
+
+      ${needTesters.length ? `<section class="page" style="gap:16px">
+        <div class="section-head"><h2>正在找測試者</h2><a href="#tester" class="small">成為測試者 →</a></div>
+        <div class="grid">${needTesters.map(card).join("")}</div>
+      </section>` : ""}
+    </div>`;
+    const pk = $app.querySelector("#pick-int"); if (pk) pk.onclick = () => askInterests(render);
+  }
+
+  // ---------- 商店（照 store-license/設計提案.md：開達當授權中心、用開達登入、付款前同意排除鑑賞期） ----------
+  const isPaid = (p) => p.type !== "free";
+  function planPrice(p) {
+    if (p.type === "free") return "免費";
+    if (p.type === "once") return `${money(p.price)} 買斷`;
+    return `${money(p.price)}／${p.months === 12 ? "年" : p.months === 1 ? "月" : p.months + " 個月"}`;
+  }
+  function priceSummary(w) {
+    const ps = w.store.plans;
+    const paid = ps.filter(isPaid);
+    if (!paid.length) return "免費";
+    const min = Math.min(...paid.map((p) => p.price));
+    return ps.some((p) => !isPaid(p)) ? `免費・付費 ${money(min)} 起` : planPrice(paid[0]);
+  }
+  const listed = (w) => !!w.store && (w.stage === "launched" || w.stage === "funding");
+  function addMonths(d, m) { const x = new Date(d); x.setMonth(x.getMonth() + m); return x.toISOString().slice(0, 10); }
+
+  function storeCard(w) {
+    const own = S.owned[w.id];
+    return `<a class="card" href="#work.${w.id}">
+        <div class="top"><span class="price-tag ${w.store.plans.some(isPaid) ? "paid" : "free"}">${esc(priceSummary(w))}</span><span class="mono-tools">${esc(w.tools.join(" + "))}</span></div>
+        ${catLine(w)}
+        <h3>${esc(w.name)}</h3>
+        <p class="tag">${esc(w.tagline)}</p>
+        <div class="trust small"><span>✓ ${w.beta.completed} 位封測完成</span><span>✓ 健檢通過</span>${w.funded ? `<span>✓ 募資已交付</span>` : ""}</div>
+        <div class="meta"><span>★ <span class="num">${w.beta.avgRating.toFixed(1)}</span> · <span class="num">${w.store.users.toLocaleString("en-US")}</span> 人使用</span><span>${own ? "<b>已擁有</b>" : esc(w.author)}</span></div>
+      </a>`;
+  }
+
+  let storeFilter = "all";
+  const storeCat = { cat: "all", sub: "all" };
+  function pStore() {
+    const ws = allWorks().filter(listed);
+    const list = ws.filter((w) => storeFilter === "all" || (storeFilter === "free" ? w.store.plans.some((p) => !isPaid(p)) : w.store.plans.some(isPaid))).filter((w) => matchCat(w, storeCat));
+    const mine = ws.filter((w) => S.owned[w.id]);
+    $app.innerHTML = `<div class="page">
+      <header class="detail-head">
+        <span class="eyebrow">Kaida Store</span>
+        <h1 style="font-size:36px">商店</h1>
+        <p class="muted" style="max-width:40em">通過封測並發布的作品都會上架到這裡。用 Google 登入開達、買一次，之後在作品裡按「用開達登入」就能直接解鎖，不用另外註冊。</p>
+      </header>
+      ${mine.length ? `<section class="panel"><h2>我的購買 <span class="sub">${mine.length} 個作品</span></h2>
+        <ul class="tasks">${mine.map((w) => { const o = S.owned[w.id]; return `<li><span class="req must">${esc(o.label)}</span><span style="flex:1"><a href="#work.${w.id}">${esc(w.name)}</a><span class="small muted">　${o.expires ? "到期日 " + o.expires : "永久使用"}・取得於 ${o.date}</span></span><button class="btn small ghost" data-kl="${w.id}">用開達登入</button></li>`; }).join("")}</ul></section>` : ""}
+      ${catFilters(ws, storeCat)}
+      <div class="filters" role="group" aria-label="依價格篩選">
+        ${[["all", "全部"], ["free", "免費"], ["paid", "付費"]].map(([k, l]) => `<button class="filter" data-sf="${k}" aria-pressed="${storeFilter === k}">${l}</button>`).join("")}
+      </div>
+      ${list.length ? `<div class="grid">${list.map(storeCard).join("")}</div>` : `<div class="empty">這個分類還沒有作品。</div>`}
+      <div class="notice info">早期創作者限時免抽成：現在上架與募資，開達都不收手續費。</div>
+      <p class="small muted">商店只開放給已公開發布、通過封測與健檢的網頁作品。付款由持牌金流業者處理，開達不經手款項（示範用，不會實際收款）。</p>
+    </div>`;
+    $app.querySelectorAll("[data-sf]").forEach((b) => (b.onclick = () => { storeFilter = b.dataset.sf; pStore(); }));
+    bindCatFilters(storeCat, pStore);
+    $app.querySelectorAll("[data-kl]").forEach((b) => (b.onclick = () => kaidaLogin(getWork(b.dataset.kl))));
+  }
+
+  function storePanel(w) {
+    if (!listed(w)) return "";
+    const own = S.owned[w.id];
+    return `<section class="panel" id="store">
+      <h2>商店 <span class="sub">${w.store.users.toLocaleString("en-US")} 人使用</span></h2>
+      ${own ? `<div class="notice info">你已擁有「${esc(own.label)}」${own.expires ? `，到期日 ${own.expires}` : "，永久使用"}。</div>
+        <div class="btn-row"><a class="btn primary" href="${esc(w.url)}" target="_blank" rel="noopener">前往使用</a><button class="btn ghost" data-kl="${w.id}">模擬：在作品裡用開達登入</button></div>`
+      : `<div class="rewards">${w.store.plans.map((p) => `<div class="reward"><div class="row"><b>${esc(p.label)}</b><span class="p">${planPrice(p)}</span></div>
+          <div><button class="btn small ${isPaid(p) ? "primary" : ""}" data-buy="${p.id}">${isPaid(p) ? "購買" : "免費取得"}</button></div></div>`).join("")}</div>`}
+      <p class="small muted">買完用同一個 Google 帳號登入作品就會自動解鎖。最後更新 ${esc(w.store.updated)}。</p>
+    </section>`;
+  }
+
+  function grant(w, p) {
+    S.owned[w.id] = { plan: p.id, label: p.label, date: today(), expires: p.type === "term" ? addMonths(today(), p.months) : null };
+    save();
+  }
+  function buy(w, planId) {
+    const p = w.store.plans.find((x) => x.id === planId);
+    needLogin(() => {
+      if (!isPaid(p)) { grant(w, p); toast("已加入我的購買"); pWork(w.id); return; }
+      dialog(`<h2>購買「${esc(w.name)}」</h2>
+        <div class="row" style="display:flex;justify-content:space-between;gap:8px"><span>${esc(p.label)}</span><b class="num">${planPrice(p)}</b></div>
+        <div class="field"><span class="label">付款方式</span><div class="checks-in">${["信用卡", "LINE Pay", "超商代碼"].map((m, i) => `<label><input type="radio" name="pm" ${i === 0 ? "checked" : ""}> ${m}</label>`).join("")}</div></div>
+        <label class="task-check" style="display:block"><span style="display:flex;gap:10px;align-items:flex-start;font-size:14px"><input type="checkbox" id="agree" style="margin-top:5px"> 我同意付款後立即提供數位內容，並了解因此不適用七天鑑賞期。</span></label>
+        <div class="notice">示範用，不會實際收款。正式版由持牌金流業者處理付款與退款。</div>
+        <div class="btn-row"><button class="btn primary" id="pay" disabled>確認付款（示範）</button><button class="btn ghost" data-close>取消</button></div>`,
+        (el, close) => {
+          const ag = el.querySelector("#agree"), pay = el.querySelector("#pay");
+          ag.onchange = () => (pay.disabled = !ag.checked);
+          pay.onclick = () => { grant(w, p); close(); pWork(w.id);
+            dialog(`<h2>購買完成</h2><p>「${esc(p.label)}」已經加到你的開達帳號。打開作品後按「用開達登入」，用同一個 Google 帳號就會自動解鎖。</p>
+              <div class="btn-row"><button class="btn primary" id="go-kl">模擬：用開達登入作品</button><button class="btn ghost" data-close>稍後</button></div>`,
+              (el2, close2) => (el2.querySelector("#go-kl").onclick = () => { close2(); kaidaLogin(w); }));
+          };
+        });
+    });
+  }
+  // 模擬創作者 app 裡的「用開達登入」同意畫面
+  function kaidaLogin(w) {
+    const own = S.owned[w.id];
+    dialog(`<div style="display:flex;align-items:center;gap:10px"><span data-icon-dlg></span><b>用開達登入</b></div>
+      <h2 style="font-size:18px">「${esc(w.name)}」想取得你的：</h2>
+      <ul class="gate-list"><li><span class="ok">✓</span><span>暱稱（${esc(S.user ? S.user.name : "小安")}）</span></li><li><span class="ok">✓</span><span>你在這個作品的使用權狀態</span></li>
+        <li><label style="display:flex;gap:8px"><input type="checkbox"> 也提供 email（選填）</label></li></ul>
+      <p class="small muted">作品只會拿到一組專屬 ID，不會知道你在開達買了哪些其他作品。</p>
+      <div class="btn-row"><button class="btn primary" id="allow">允許</button><button class="btn ghost" data-close>取消</button></div>`,
+      (el, close) => {
+        el.querySelector("[data-icon-dlg]").innerHTML = ICON;
+        el.querySelector("#allow").onclick = () => { close(); toast(own ? `已解鎖：${own.label}${own.expires ? "（到 " + own.expires + "）" : ""}` : "已登入，但你還沒有使用權，作品會顯示購買連結"); };
+      });
+  }
+
+  // ---------- 作品列表 ----------
+  let listFilter = { stage: "all", tool: "all", cat: "all", sub: "all" };
+  function pWorks() {
+    const ws = allWorks();
+    const counts = ws.reduce((a, w) => ((a[w.stage] = (a[w.stage] || 0) + 1), a), {});
+    const list = ws
+      .filter((w) => listFilter.stage === "all" || w.stage === listFilter.stage)
+      .filter((w) => listFilter.tool === "all" || w.tools.includes(listFilter.tool))
+      .filter((w) => matchCat(w, listFilter))
+      .sort((a, b) => M.stages[b.stage].order - M.stages[a.stage].order);
+    $app.innerHTML = `<div class="page">
+      <div class="section-head"><h1 style="font-size:32px">作品</h1><a class="btn primary small" href="#submit">提交作品</a></div>
+      ${catFilters(ws, listFilter)}
+      <div class="filters" role="group" aria-label="依階段篩選">
+        <button class="filter" data-stage="all" aria-pressed="${listFilter.stage === "all"}">全部 <span class="num">${ws.length}</span></button>
+        ${Object.keys(M.stages).map((s) => `<button class="filter" data-stage="${s}" aria-pressed="${listFilter.stage === s}">${stageLabel(s)} <span class="num">${counts[s] || 0}</span></button>`).join("")}
+        <select id="tool-filter" aria-label="依使用工具篩選">
+          <option value="all">所有工具</option>
+          ${M.tools.map((t) => `<option ${listFilter.tool === t ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+      ${list.length ? `<div class="grid">${list.map(card).join("")}</div>` : `<div class="empty">沒有符合的作品。換個篩選條件看看。</div>`}
+    </div>`;
+    $app.querySelectorAll("[data-stage]").forEach((b) => (b.onclick = () => { listFilter.stage = b.dataset.stage; pWorks(); }));
+    $app.querySelector("#tool-filter").onchange = (e) => { listFilter.tool = e.target.value; pWorks(); };
+    bindCatFilters(listFilter, pWorks);
+  }
+
+  // ---------- 作品詳情 ----------
+  function pWork(id) {
+    const w = getWork(id);
+    if (!w) { $app.innerHTML = `<div class="empty">找不到這個作品。<a href="#works">回作品列表</a></div>`; return; }
+    const g = gate(w);
+    const isIdea = w.stage === "idea";
+
+    const betaPanel = isIdea ? `<section class="panel" id="beta"><h2>封測</h2>
+        <p class="muted">這還是一個點子，還沒有可以試用的版本。創作者做出第一版後，就能在這裡開封測。</p>
+        <a class="btn small" href="#ideas">到點子區看看其他點子</a></section>`
+      : `<section class="panel" id="beta">
+        <h2>封測區 <span class="sub">${w.stage === "beta" ? "進行中" : "已結束"}</span></h2>
+        <div class="progress">
+          <div class="row"><span><span class="big">${w.beta.completed}</span> <span class="muted">/ ${w.beta.target} 位完成任務</span></span><span class="small muted">已報名 ${w.beta.joined} 位</span></div>
+          <div class="bar striped" aria-label="封測進度 ${pct(w.beta.completed, w.beta.target)}%">
+            <i style="width:${pct(w.beta.completed, w.beta.target)}%"></i>
+            ${w.beta.target !== M.rules.minTesters ? `<span class="tick" style="left:${Math.min(100, (M.rules.minTesters / Math.max(w.beta.target, M.rules.minTesters)) * 100)}%" title="開募資門檻 ${M.rules.minTesters} 人"></span>` : ""}
+          </div>
+          ${w.beta.target < M.rules.minTesters ? `<p class="small" style="color:var(--warn)">創作者設定的目標 ${w.beta.target} 人低於開募資門檻 ${M.rules.minTesters} 人。</p>` : ""}
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>${w.beta.avgRating ? w.beta.avgRating.toFixed(1) : "–"}</b><span>平均評分</span></div>
+          <div class="stat"><b>${w.beta.bugsReported}</b><span>回報問題</span></div>
+          <div class="stat"><b>${w.beta.bugsFixed}</b><span>已修正</span></div>
+        </div>
+        <div><h3 style="margin-bottom:8px">封測任務</h3>
+          <ul class="tasks">${w.tasks.map((t) => `<li><span class="req ${t.required ? "must" : ""}">${t.required ? "必做" : "選做"}</span><span>${esc(t.title)}</span></li>`).join("")}</ul>
+        </div>
+        ${w.stage === "beta" ? `<div class="btn-row"><a class="btn primary" href="#feedback.${w.id}">參加封測並回報</a>${w.url ? `<a class="btn ghost" href="${esc(w.url)}" target="_blank" rel="noopener">開啟試用連結</a>` : ""}</div>` : ""}
+        <div><h3 style="margin-bottom:8px">測試者回饋 <span class="sub">${w.feedback.length} 則</span></h3>
+          ${w.feedback.length ? `<div class="feedback-list">${w.feedback.map((f) => fbItem(f, w)).join("")}</div>` : `<div class="empty">還沒有回饋。${w.stage === "beta" ? "成為第一個測試者吧。" : ""}</div>`}
+        </div>
+      </section>`;
+
+    const healthPanel = isIdea ? "" : `<section class="panel" id="health">
+        <h2>AI 健檢結果 <span class="sub">示範資料</span></h2>
+        <ul class="checks">${w.health.map((h) => `<li class="${h.status}"><span class="ic" aria-hidden="true">${h.status === "pass" ? "✓" : h.status === "warn" ? "!" : "✕"}</span>
+          <span>${esc(h.item)}${h.note ? `<span class="note">${esc(h.note)}</span>` : ""}</span>
+          <span class="st">${{ pass: "通過", warn: "注意", fail: "未通過" }[h.status]}</span></li>`).join("")}</ul>
+        <p class="small muted">原型沒有真的掃描。正式版會在上架前自動檢查，報告可加購完整版。</p>
+      </section>`;
+
+    $app.innerHTML = `<div class="page">
+      <nav class="crumb"><a href="#works">作品</a> / ${esc(w.name)}</nav>
+      <header class="detail-head">
+        <div style="max-width:420px">${track(w.stage, true)}</div>
+        ${catLine(w)}
+        <h1>${esc(w.name)}</h1>
+        <p style="font-size:17px">${esc(w.tagline)}</p>
+        <p class="by">${esc(w.author)} · ${esc(w.authorNote || "")}</p>
+      </header>
+      <div class="detail-layout">
+        <div class="page" style="gap:16px">
+          ${isIdea ? "" : `<div class="shots" aria-label="截圖">${[0, 1, 2].map((i) => shotSVG(w, i)).join("")}</div>`}
+          <section class="panel"><h2>介紹</h2><p>${esc(w.description)}</p>
+            <dl class="kv">
+              <dt>使用工具</dt><dd><div class="chips">${w.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join("") || "尚未開發"}</div></dd>
+              <dt>試用連結</dt><dd>${w.url ? `<a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.url)}</a> <span class="small muted">（示範網址）</span>` : "尚無"}</dd>
+            </dl>
+          </section>
+          ${betaPanel}
+          ${healthPanel}
+          ${fundingPanel(w, g)}
+        </div>
+        <aside class="side">
+          ${storePanel(w)}
+          ${w.owner ? creatorTools(w, g) : ""}
+          ${isIdea ? "" : sharePanel(w)}
+        </aside>
+      </div>
+    </div>`;
+    bindWork(w, g);
+  }
+
+  function fbItem(f, w) {
+    const req = w.tasks.filter((t) => t.required).map((t) => t.id);
+    const done = req.every((r) => f.tasksDone.includes(r));
+    return `<article class="fb">
+      <div class="h"><span><b>${esc(f.tester)}</b> · ${esc(f.level)}</span><span>${esc(f.date)}</span></div>
+      <div class="h"><span class="stars" aria-label="${f.rating} 分">${stars(f.rating)}</span>
+        <span>完成 ${f.tasksDone.length}/${w.tasks.length} 項任務${done ? "（必做全完成）" : ""}</span></div>
+      ${f.issue ? `<p><span class="sev ${f.severity}">${sevLabel[f.severity]}</span> ${esc(f.issue)}</p>` : `<p><span class="sev none">沒遇到問題</span></p>`}
+      <div class="h"><span>${esc(f.device)}</span><span>${payLabel[f.pay] || ""}${f.shot ? " · 附截圖 1 張" : ""}</span></div>
+    </article>`;
+  }
+
+  function fundingPanel(w, g) {
+    if (w.stage === "idea") return "";
+    if (w.funded) {
+      return `<section class="panel" id="funding"><h2>募資 <span class="sub">已完成</span></h2>
+        <div class="notice info">募資成功 ${money(w.funded.raised)}，${w.funded.backers} 位支持者。${w.funded.milestonesDone}/3 個里程碑已交付並撥款，支持者已用開達登入取得回饋。</div></section>`;
+    }
+    if (w.stage !== "funding") {
+      return `<section class="panel" id="funding">
+        <h2>募資 <span class="sub">尚未開放</span></h2>
+        <p class="muted small">通過封測門檻並公開發布後，創作者才能開啟募資。目前狀態：</p>
+        <ul class="gate-list">${g.items.map((i) => `<li><span class="${i.ok ? "ok" : "no"}" aria-hidden="true">${i.ok ? "✓" : "✕"}</span><span>${esc(i.text)}</span></li>`).join("")}</ul>
+        ${g.ok ? `<p class="small">已達開募資門檻。${w.stage === "launched" ? "創作者還沒有開啟募資。" : ""}</p>` : ""}
+      </section>`;
+    }
+    const f = w.funding;
+    const p = Math.round((f.raised / f.goal) * 100);
+    const reached = f.raised >= f.goal;
+    return `<section class="panel" id="funding">
+      <h2>募資 <span class="sub">回饋型 · 全有或全無</span></h2>
+      <div class="notice">示範用，不會實際收款。所有金額、支持者人數皆為假資料。</div>
+      <p class="small muted">早期創作者限時免抽成，募資成功的金額全部依里程碑撥給創作者。</p>
+      <div class="progress">
+        <div class="row"><span class="big">${money(f.raised)}</span><span class="num" style="font-weight:700">${p}%</span></div>
+        <div class="bar"><i style="width:${Math.min(100, p)}%"></i></div>
+        <div class="row small muted"><span>目標 ${money(f.goal)}</span><span>${f.backers} 位支持者 · 剩 ${f.daysLeft} 天</span></div>
+      </div>
+      <div class="notice ${reached ? "info" : ""}" style="${reached ? "" : "border-color:var(--line);background:var(--sunk)"}">
+        ${reached ? `已達標。募資結束後款項由合作的價金保管機構保管，依下方里程碑分批撥給創作者。` : `還差 ${money(f.goal - f.raised)}。若 ${f.daysLeft} 天後沒有達標，所有支持者全額退款，創作者拿不到任何款項。`}
+      </div>
+
+      <div><h3 style="margin-bottom:6px">封測數據</h3>
+        <div class="stat-row">
+          <div class="stat"><b>${w.beta.completed}</b><span>位測試者完成</span></div>
+          <div class="stat"><b>${w.beta.avgRating.toFixed(1)}</b><span>平均評分</span></div>
+          <div class="stat"><b>${w.beta.bugsFixed}/${w.beta.bugsReported}</b><span>問題已修</span></div>
+        </div>
+        <p class="small muted" style="margin-top:6px"><a href="#" data-jump="beta">看完整封測回饋</a> · <a href="#" data-jump="health">看 AI 健檢</a></p>
+      </div>
+
+      <div><h3 style="margin-bottom:2px">里程碑撥款</h3>
+        <p class="small muted">做到哪撥到哪。每個里程碑都有支持者看得到的成果，達成後才撥下一筆。</p>
+        <ol class="milestones">${M.rules.milestones.map((m, i) => `<li><span class="pct">${m.pct}%</span><div><div class="t">${m.title} · ${money((f.goal > f.raised ? f.goal : f.raised) * m.pct / 100)}</div><div class="d">${m.desc}</div><div class="small" style="color:${i < f.milestonesDone ? "var(--pass)" : "var(--muted)"}">${i < f.milestonesDone ? "已撥款" : "未撥款"}</div></div></li>`).join("")}</ol>
+      </div>
+
+      <div><h3 style="margin-bottom:6px">如果專案沒做完</h3>
+        <ul class="gate-list small">
+          <li><span aria-hidden="true">•</span><span>沒達標：全額退款。</span></li>
+          <li><span aria-hidden="true">•</span><span>創作者每 ${M.rules.updateEveryDays} 天要更新進度，連續未更新就暫停撥款並通知支持者。</span></li>
+          <li><span aria-hidden="true">•</span><span>中途失敗：尚未撥出的款項依比例退還；創作者需交付現有版本或公開原始碼。</span></li>
+        </ul>
+      </div>
+
+      <div><h3 style="margin-bottom:6px">回饋方案</h3>
+        <div class="rewards">${f.rewards.map((r, i) => `<div class="reward">
+          <div class="row"><span class="p">${money(r.price)}</span><span class="small muted">${r.backers} 人支持${r.left != null ? ` · 剩 ${r.left} 份` : ""}</span></div>
+          <b>${esc(r.title)}</b><span class="small muted">${esc(r.desc)}</span>
+          <div><button class="btn small primary" data-back="${i}">支持這個方案</button></div></div>`).join("")}</div>
+      </div>
+
+      ${f.updates && f.updates.length ? `<div><h3 style="margin-bottom:6px">進度更新</h3>
+        <ul class="gate-list small">${f.updates.map((u) => `<li><span class="num muted">${esc(u.date)}</span><span>${esc(u.title)}</span></li>`).join("")}</ul></div>` : ""}
+    </section>`;
+  }
+
+  function shareText(w) {
+    if (isEn()) return shareTextEn(w);
+    const link = `https://（開達網域待定）/w/${w.id}`;
+    if (w.stage === "funding") {
+      return `我做的「${w.name}」正在募資，目前 ${pct(w.funding.raised, w.funding.goal)}%（${money(w.funding.raised)} / ${money(w.funding.goal)}），${w.funding.backers} 位支持者，剩 ${w.funding.daysLeft} 天。\n\n募資前做過封測：${w.beta.completed} 位測試者完成任務，平均 ${w.beta.avgRating.toFixed(1)} 分。沒達標會全額退款。\n\n${link}\n#vibecoding #台灣創作者`;
+    }
+    if (w.stage === "beta") {
+      return `「${w.name}」正在找封測夥伴！${w.tagline}\n\n目前 ${w.beta.completed}/${w.beta.target} 位完成任務，任務大約 10 分鐘，回饋會直接幫我修 bug。\n\n${link}\n#vibecoding #找測試者`;
+    }
+    return `「${w.name}」正式發布了！${w.tagline}\n\n${w.beta.completed} 位測試者一起封測過，平均 ${w.beta.avgRating ? w.beta.avgRating.toFixed(1) : "–"} 分。\n\n${link}\n#vibecoding #台灣創作者`;
+  }
+  function shareTextEn(w) {
+    const t = I18N.tr, link = `https://(Kaida domain TBD)/w/${w.id}`, name = t(w.name), tag = t(w.tagline);
+    if (w.stage === "funding") {
+      return `My project "${name}" is raising funds: ${pct(w.funding.raised, w.funding.goal)}% so far (NT$${w.funding.raised.toLocaleString()} / NT$${w.funding.goal.toLocaleString()}), ${w.funding.backers} backers, ${w.funding.daysLeft} days left.\n\nIt went through a beta first: ${w.beta.completed} testers finished the tasks, average rating ${w.beta.avgRating.toFixed(1)}. Full refund if the goal isn't met.\n\n${link}\n#vibecoding #TaiwanMakers`;
+    }
+    if (w.stage === "beta") {
+      return `"${name}" is looking for beta testers! ${tag}\n\n${w.beta.completed}/${w.beta.target} testers have finished so far. The tasks take about 10 minutes, and your feedback goes straight into fixing bugs.\n\n${link}\n#vibecoding #betatesters`;
+    }
+    return `"${name}" is officially live! ${tag}\n\n${w.beta.completed} testers helped beta test it, average rating ${w.beta.avgRating ? w.beta.avgRating.toFixed(1) : "–"}.\n\n${link}\n#vibecoding #TaiwanMakers`;
+  }
+  function sharePanel(w) {
+    const isF = w.stage === "funding";
+    const val = isF ? pct(w.funding.raised, w.funding.goal) : pct(w.beta.completed, w.beta.target);
+    const line = isF ? `募資 ${val}% · ${money(w.funding.raised)}` : `封測 ${w.beta.completed}/${w.beta.target} 人完成`;
+    return `<section class="panel" id="share">
+      <h2>Threads 分享卡 <span class="sub">預覽</span></h2>
+      <div class="share-card" aria-label="分享圖卡預覽">
+        <div class="sc-top">${LOGO}<span class="sc-stage">${stageLabel(w.stage)}</span></div>
+        <div><div class="sc-name">${esc(w.name)}</div><div class="sc-tag">${esc(w.tagline)}</div></div>
+        <div class="sc-stat"><span>${line}</span><div class="sc-bar"><i style="width:${val}%"></i></div><span style="opacity:.7">by ${esc(w.author)}</span></div>
+      </div>
+      <label class="small" for="share-text" style="font-weight:600">貼文文字範本</label>
+      <textarea id="share-text" class="share-text">${esc(shareText(w))}</textarea>
+      <div class="btn-row"><button class="btn small dark" id="copy-share">複製文字</button></div>
+      <p class="small muted">原型只做預覽。正式版要產生可下載的圖片，並把連結預覽圖設成這張卡。</p>
+    </section>`;
+  }
+
+  function creatorTools(w, g) {
+    const canLaunch = w.stage === "beta" && g.ok;
+    const canFund = w.stage === "launched" && g.ok;
+    return `<section class="creator-tools" aria-label="創作者示範工具">
+      <h3>你是這個作品的創作者</h3>
+      <p class="small muted">下面是給原型用的模擬按鈕，用來快速看到封測達標後的畫面。</p>
+      ${w.stage === "beta" ? `<div class="btn-row">
+        <button class="btn small ghost" data-sim="1">模擬 1 位測試者完成</button>
+        <button class="btn small ghost" data-sim="5">模擬 5 位</button>
+        <button class="btn small ghost" id="sim-fix">模擬：修好健檢問題</button></div>` : ""}
+      <ul class="gate-list small">${g.items.map((i) => `<li><span class="${i.ok ? "ok" : "no"}">${i.ok ? "✓" : "✕"}</span><span>${esc(i.text)}</span></li>`).join("")}</ul>
+      ${w.stage === "beta" ? `<button class="btn primary" id="do-launch" ${canLaunch ? "" : "disabled"}>公開發布</button>` : ""}
+      ${w.stage === "launched" ? `<button class="btn primary" id="do-fund" ${canFund ? "" : "disabled"}>開啟募資</button>` : ""}
+      ${w.stage === "funding" ? `<p class="small">募資進行中。</p>` : ""}
+      ${(w.stage === "launched" || w.stage === "funding") ? (w.store ? `<p class="small">已上架商店：${esc(priceSummary(w))}</p>` : `<button class="btn" id="do-store">上架到商店</button>`) : ""}
+    </section>`;
+  }
+
+  function bindWork(w, g) {
+    $app.querySelectorAll("[data-jump]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: "smooth" }); }));
+    const copy = $app.querySelector("#copy-share");
+    if (copy) copy.onclick = () => {
+      const ta = $app.querySelector("#share-text");
+      const fallback = () => { ta.focus(); ta.select(); toast("已選取文字，請按複製"); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(() => toast("已複製貼文文字"), fallback);
+      else fallback();
+    };
+    $app.querySelectorAll("[data-back]").forEach((b) => (b.onclick = () => {
+      const r = w.funding.rewards[+b.dataset.back];
+      dialog(`<h2>支持「${esc(r.title)}」</h2>
+        <p class="big num" style="font-size:24px;font-weight:700">${money(r.price)}</p>
+        <div class="notice">示範用，不會實際收款。正式版會導到合作的金流／價金保管服務付款。</div>
+        <p class="small muted">若募資未達標，這筆款項會全額退回。</p>
+        <div class="btn-row"><button class="btn primary" id="dlg-back">模擬支持</button><button class="btn ghost" data-close>取消</button></div>`,
+        (el, close) => (el.querySelector("#dlg-back").onclick = () => needLogin(() => {
+          patch(w.id, "funding", { raised: w.funding.raised + r.price, backers: w.funding.backers + 1 });
+          close(); toast("已模擬支持，沒有實際扣款"); pWork(w.id);
+        })));
+    }));
+    $app.querySelectorAll("[data-sim]").forEach((b) => (b.onclick = () => {
+      const n = +b.dataset.sim;
+      patch(w.id, "beta", { completed: w.beta.completed + n, joined: Math.max(w.beta.joined, w.beta.completed + n), avgRating: w.beta.avgRating || 4.2 });
+      pWork(w.id);
+    }));
+    const fix = $app.querySelector("#sim-fix");
+    if (fix) fix.onclick = () => { patch(w.id, "top", {}); S.patches[w.id].health = w.health.map((h) => ({ item: h.item, status: h.status === "fail" ? "pass" : h.status, note: h.status === "fail" ? "已修正（模擬）" : h.note })); save(); pWork(w.id); };
+    const launch = $app.querySelector("#do-launch");
+    if (launch) launch.onclick = () => { patch(w.id, "top", { stage: "launched" }); toast("已公開發布"); pWork(w.id); };
+    $app.querySelectorAll("[data-buy]").forEach((b) => (b.onclick = () => buy(w, b.dataset.buy)));
+    $app.querySelectorAll("[data-kl]").forEach((b) => (b.onclick = () => kaidaLogin(w)));
+    const st = $app.querySelector("#do-store");
+    if (st) st.onclick = () => dialog(`<h2>上架到商店</h2>
+      <p class="small muted">第一版只賣網頁作品。付款由持牌金流分帳，款項直接撥給你。早期創作者限時免抽成。</p>
+      <div class="field"><label for="st-type">方案</label><select id="st-type" class="input"><option value="free">免費</option><option value="once">一次買斷</option><option value="term">一年方案</option></select></div>
+      <div class="field" id="st-price-f" hidden><label for="st-price">價格（新台幣）</label><input id="st-price" type="number" min="30" value="490"></div>
+      <div class="btn-row"><button class="btn primary" id="dlg-store">上架</button><button class="btn ghost" data-close>取消</button></div>`,
+      (el, close) => {
+        const ty = el.querySelector("#st-type");
+        ty.onchange = () => (el.querySelector("#st-price-f").hidden = ty.value === "free");
+        el.querySelector("#dlg-store").onclick = () => {
+          const t = ty.value, price = Math.max(30, +el.querySelector("#st-price").value || 490);
+          const plan = t === "free" ? { id: "free", type: "free", label: "免費使用", price: 0 } : t === "once" ? { id: "once", type: "once", label: "一次買斷", price } : { id: "term", type: "term", label: "一年方案", price, months: 12 };
+          patch(w.id, "top", { store: { plans: [plan], users: 0, updated: today() } });
+          close(); toast("已上架到商店"); pWork(w.id);
+        };
+      });
+    const fund = $app.querySelector("#do-fund");
+    if (fund) fund.onclick = () => dialog(`<h2>開啟募資</h2>
+      <p class="small muted">示範設定。里程碑撥款比例由平台固定為 40% / 40% / 20%。</p>
+      <div class="field"><label for="f-goal">目標金額（新台幣）</label><input id="f-goal" type="number" min="10000" step="1000" value="100000"></div>
+      <div class="field"><label for="f-days">募資天數</label><input id="f-days" type="number" min="7" max="60" value="30"></div>
+      <div class="field"><label for="f-rw">回饋方案（名稱）</label><input id="f-rw" type="text" value="搶先版一年"></div>
+      <div class="field"><label for="f-rp">回饋方案（金額）</label><input id="f-rp" type="number" min="100" value="490"></div>
+      <div class="btn-row"><button class="btn primary" id="dlg-fund">開始募資</button><button class="btn ghost" data-close>取消</button></div>`,
+      (el, close) => (el.querySelector("#dlg-fund").onclick = () => {
+        const goal = Math.max(10000, +el.querySelector("#f-goal").value || 100000);
+        patch(w.id, "top", { stage: "funding" });
+        S.patches[w.id].funding = { goal, raised: 0, backers: 0, daysLeft: +el.querySelector("#f-days").value || 30, milestonesDone: 0,
+          rewards: [{ price: +el.querySelector("#f-rp").value || 490, title: el.querySelector("#f-rw").value || "搶先版", desc: "創作者自訂回饋", left: null, backers: 0 }],
+          updates: [{ date: today(), title: "募資開跑" }] };
+        save(); close(); toast("募資已開啟（示範）"); pWork(w.id);
+      }));
+  }
+
+  // ---------- 封測回饋表單 ----------
+  function pFeedback(id) {
+    const w = getWork(id);
+    if (!w || w.stage !== "beta") { $app.innerHTML = `<div class="empty">這個作品目前沒有開放封測。<a href="#works">回作品列表</a></div>`; return; }
+    if (!S.user) { $app.innerHTML = `<div class="page"><nav class="crumb"><a href="#works">作品</a> / <a href="#work.${w.id}">${esc(w.name)}</a> / 封測回報</nav><div class="empty">參加封測需要先登入。<br><br><button class="btn primary" id="lg">用示範帳號登入</button></div></div>`;
+      $app.querySelector("#lg").onclick = () => needLogin(() => pFeedback(id)); return; }
+    let rating = 0;
+    $app.innerHTML = `<div class="page">
+      <nav class="crumb"><a href="#works">作品</a> / <a href="#work.${w.id}">${esc(w.name)}</a> / 封測回報</nav>
+      <header class="detail-head"><h1 style="font-size:30px">封測回報：${esc(w.name)}</h1>
+        <p class="muted">先用 <a href="${esc(w.url)}" target="_blank" rel="noopener">試用連結</a> 照任務試一遍，再回來填寫。必做任務全部完成，才會算進封測完成人數。</p></header>
+      <form class="form form-shell" id="fb-form" novalidate>
+        <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="label" style="font-weight:600;font-size:14px;margin-bottom:6px">你完成了哪些任務？</legend>
+          <div class="task-check">${w.tasks.map((t) => `<label><input type="checkbox" name="task" value="${t.id}" id="task-${t.id}"><span><b class="small">${t.required ? "必做" : "選做"}</b> ${esc(t.title)}</span></label>`).join("")}</div>
+          <span class="err" id="err-task" hidden>至少勾選一項任務。</span></fieldset>
+        <div class="field"><label for="fb-sev">遇到問題的嚴重程度</label>
+          <select id="fb-sev" class="input">${Object.entries(sevLabel).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></div>
+        <div class="field" id="issue-field"><label for="fb-issue">遇到什麼問題？</label>
+          <textarea id="fb-issue" placeholder="例如：在第 2 個任務按「匯入」後畫面一直轉圈，等了 30 秒都沒反應。"></textarea>
+          <span class="hint">寫下你做了什麼、預期會怎樣、實際發生什麼，創作者比較好修。</span>
+          <span class="err" id="err-issue" hidden>選了有問題，請描述一下發生什麼事。</span></div>
+        <div class="field"><label for="fb-device">使用的裝置與瀏覽器</label>
+          <select id="fb-device" class="input"><option>iPhone / Safari</option><option>Android / Chrome</option><option>電腦 / Chrome</option><option>電腦 / Safari</option><option>電腦 / Edge</option><option>LINE 內建瀏覽器</option><option>其他</option></select></div>
+        <div class="field"><label for="fb-shot">截圖（選填）</label>
+          <input id="fb-shot" type="file" accept="image/*">
+          <img id="shot-prev" alt="截圖預覽" hidden style="max-height:160px;border-radius:8px;border:1px solid var(--line)">
+          <span class="hint">原型只在畫面上預覽，不會上傳。</span></div>
+        <div class="field"><span class="label" id="rate-l">整體評分</span>
+          <div class="rating" role="radiogroup" aria-labelledby="rate-l">${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="false" aria-label="${n} 分" data-r="${n}">★</button>`).join("")}</div>
+          <span class="err" id="err-rate" hidden>請給一個評分。</span></div>
+        <div class="field"><span class="label">如果正式上線，你會付費使用嗎？</span>
+          <div class="checks-in">${Object.entries(payLabel).map(([k, v], i) => `<label><input type="radio" name="pay" value="${k}" ${i === 1 ? "checked" : ""}> ${v}</label>`).join("")}</div>
+          <span class="hint">這題會匯總成募資頁的參考數據。</span></div>
+        <div class="field"><label for="fb-more">給創作者的其他建議（選填）</label><textarea id="fb-more" style="min-height:70px"></textarea></div>
+        <div class="btn-row"><button class="btn primary" type="submit">送出回饋</button><a class="btn ghost" href="#work.${w.id}">取消</a></div>
+      </form></div>`;
+    const form = $app.querySelector("#fb-form");
+    form.querySelectorAll("[data-r]").forEach((b) => (b.onclick = () => {
+      rating = +b.dataset.r;
+      form.querySelectorAll("[data-r]").forEach((x) => { const on = +x.dataset.r <= rating; x.classList.toggle("on", on); x.setAttribute("aria-checked", String(+x.dataset.r === rating)); });
+    }));
+    let shot = null;
+    form.querySelector("#fb-shot").onchange = (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const rd = new FileReader();
+      rd.onload = () => { const im = form.querySelector("#shot-prev"); im.src = rd.result; im.hidden = false; shot = file.name; };
+      rd.readAsDataURL(file);
+    };
+    const sevSel = form.querySelector("#fb-sev");
+    const syncSev = () => (form.querySelector("#issue-field").style.opacity = sevSel.value === "none" ? ".55" : "1");
+    sevSel.onchange = syncSev; syncSev();
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const tasksDone = [...form.querySelectorAll('[name="task"]:checked')].map((x) => x.value);
+      const sev = sevSel.value, issue = form.querySelector("#fb-issue").value.trim();
+      const errs = { task: !tasksDone.length, issue: sev !== "none" && !issue, rate: !rating };
+      Object.entries(errs).forEach(([k, bad]) => (form.querySelector("#err-" + k).hidden = !bad));
+      form.querySelector("#fb-issue").setAttribute("aria-invalid", String(errs.issue));
+      if (Object.values(errs).some(Boolean)) { toast("還有欄位需要補上"); return; }
+      const fb = { tester: S.user.name, level: S.user.tester ? "新手測試者" : "一般會員", rating, tasksDone, issue, severity: sev,
+        device: form.querySelector("#fb-device").value, date: today(), pay: form.querySelector('[name="pay"]:checked').value, shot, more: form.querySelector("#fb-more").value.trim() };
+      (S.feedback[w.id] = S.feedback[w.id] || []).unshift(fb);
+      const reqDone = w.tasks.filter((t) => t.required).every((t) => tasksDone.includes(t.id));
+      const n = w.feedback.length;
+      const newAvg = ((w.beta.avgRating || 0) * Math.max(n, w.beta.completed) + rating) / (Math.max(n, w.beta.completed) + 1);
+      patch(w.id, "beta", { completed: w.beta.completed + (reqDone ? 1 : 0), joined: w.beta.joined + 1, avgRating: Math.round(newAvg * 10) / 10, bugsReported: w.beta.bugsReported + (sev !== "none" ? 1 : 0) });
+      toast(reqDone ? "已送出，你已算進封測完成人數" : "已送出。必做任務沒全做完，暫不算完成人數");
+      go("work." + w.id);
+    };
+  }
+
+  // ---------- 提交作品表單 ----------
+  function pSubmit() {
+    if (!S.user) { $app.innerHTML = `<div class="page"><h1 style="font-size:32px">提交作品</h1><div class="empty">提交作品需要先登入。<br><br><button class="btn primary" id="lg">用示範帳號登入</button></div></div>`;
+      $app.querySelector("#lg").onclick = () => needLogin(pSubmit); return; }
+    const defTasks = [{ t: "註冊或登入", r: true }, { t: "完成核心功能一次", r: true }, { t: "回報一個 bug 或卡住的地方", r: true }];
+    $app.innerHTML = `<div class="page">
+      <header class="detail-head"><h1 style="font-size:32px">提交作品</h1>
+        <p class="muted">送出後會先跑 AI 健檢，接著開放封測。第一版優先收網頁版作品。早期創作者限時免抽成。</p></header>
+      <form class="form form-shell" id="sub-form" novalidate>
+        <div class="field"><label for="s-name">作品名稱</label><input id="s-name" type="text" maxlength="20" placeholder="例如：發票喵"><span class="err" id="e-name" hidden>請填作品名稱。</span></div>
+        <div class="field"><label for="s-tag">一句話介紹</label><input id="s-tag" type="text" maxlength="40" placeholder="例如：拍一下發票，AI 自動分類記帳"><span class="hint">40 字以內，會顯示在作品卡片上。</span><span class="err" id="e-tag" hidden>請填一句話介紹。</span></div>
+        <div class="field"><span class="label">分類</span>${catSelects("s", "life", "")}<span class="hint">選最接近的大類和子類，作品列表、商店和推薦都會用到。</span></div>
+        <div class="field"><label for="s-desc">詳細介紹</label><textarea id="s-desc" placeholder="解決什麼問題、給誰用、目前做到哪裡。"></textarea></div>
+        <div class="field"><label for="s-url">試用連結</label><input id="s-url" type="url" placeholder="https://"><span class="hint">測試者會從這個連結開始試用。用 http:// 開頭的網址會在健檢被標為未通過。</span><span class="err" id="e-url" hidden>請填 http:// 或 https:// 開頭的網址。</span></div>
+        <div class="field"><span class="label">使用的 AI 工具</span>
+          <div class="checks-in">${M.tools.map((t) => `<label><input type="checkbox" name="tool" value="${t}"> ${t}</label>`).join("")}</div>
+          <span class="err" id="e-tool" hidden>至少選一個工具。</span></div>
+        <div class="field"><label for="s-n">想要的測試者人數</label><input id="s-n" type="number" min="5" max="200" value="${M.rules.minTesters}" style="max-width:140px">
+          <span class="hint">之後若想開募資，至少需要 ${M.rules.minTesters} 位完成任務。</span><span class="err" id="e-n" hidden>請填 5 到 200 之間的數字。</span></div>
+        <div class="field"><span class="label">封測任務</span>
+          <span class="hint">寫成測試者照著做就能完成的步驟。「必做」全部完成才算一位完成封測。</span>
+          <div class="task-editor" id="task-ed"></div>
+          <div><button type="button" class="btn small ghost" id="add-task">新增任務</button></div>
+          <span class="err" id="e-task" hidden>至少要有一項必做任務。</span></div>
+        <div class="btn-row"><button class="btn primary" type="submit">送出並開始封測</button></div>
+      </form></div>`;
+    const ed = $app.querySelector("#task-ed");
+    let tid = 0;
+    const addRow = (t = "", r = true) => {
+      const id = "tk" + tid++;
+      const row = document.createElement("div"); row.className = "row";
+      row.innerHTML = `<input type="text" id="${id}" value="${esc(t)}" placeholder="任務內容" aria-label="任務內容"><label><input type="checkbox" ${r ? "checked" : ""} aria-label="必做"> 必做</label><button type="button" class="btn small ghost" aria-label="刪除任務">刪除</button>`;
+      row.querySelector("button").onclick = () => row.remove();
+      ed.appendChild(row);
+    };
+    defTasks.forEach((d) => addRow(d.t, d.r));
+    $app.querySelector("#add-task").onclick = () => addRow("", false);
+    const form = $app.querySelector("#sub-form");
+    const readCat = bindCatSelects(form, "s");
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const v = (s) => form.querySelector(s).value.trim();
+      const tools = [...form.querySelectorAll('[name="tool"]:checked')].map((x) => x.value);
+      const tasks = [...ed.querySelectorAll(".row")].map((r, i) => ({ id: "t" + (i + 1), title: r.querySelector('input[type="text"]').value.trim(), required: r.querySelector('input[type="checkbox"]').checked })).filter((t) => t.title);
+      const n = +form.querySelector("#s-n").value;
+      const errs = { name: !v("#s-name"), tag: !v("#s-tag"), url: !/^https?:\/\/\S+\.\S+/.test(v("#s-url")), tool: !tools.length, n: !(n >= 5 && n <= 200), task: !tasks.some((t) => t.required) };
+      Object.entries(errs).forEach(([k, bad]) => (form.querySelector("#e-" + k).hidden = !bad));
+      ["name", "tag", "url"].forEach((k) => form.querySelector("#s-" + k).setAttribute("aria-invalid", String(errs[k])));
+      if (Object.values(errs).some(Boolean)) { toast("還有欄位需要補上"); return; }
+      const url = v("#s-url");
+      const id = "my-" + Date.now().toString(36);
+      S.newWorks.push({
+        id, owner: true, ...readCat(), name: v("#s-name"), tagline: v("#s-tag"), author: S.user.name, authorNote: "你提交的作品", tools, stage: "beta", featured: false,
+        hue: Math.floor(Math.random() * 360), url, description: v("#s-desc") || v("#s-tag"), tasks,
+        beta: { target: n, completed: 0, joined: 0, avgRating: 0, bugsReported: 0, bugsFixed: 0 },
+        health: [
+          { item: "網址可以正常開啟", status: "pass" },
+          { item: "前端程式碼沒有暴露 API 金鑰", status: "pass" },
+          { item: "手機版版面可用", status: "warn", note: "部分按鈕在窄螢幕太小（模擬結果）" },
+          { item: "使用 HTTPS 加密連線", status: url.startsWith("https://") ? "pass" : "fail", note: url.startsWith("https://") ? "" : "網址是 http://，資料沒有加密" },
+          { item: "有隱私權政策頁面", status: "warn", note: "沒找到隱私權政策（模擬結果）" },
+          { item: "首頁 3 秒內載入", status: "pass" }
+        ],
+        feedback: []
+      });
+      save();
+      toast("已送出，健檢完成，封測已開始");
+      go("work." + id);
+    };
+  }
+
+  // ---------- 點子區 ----------
+  const ideaCat = { cat: "all", sub: "all" };
+  function pIdeas() {
+    const all = S.ideas.concat(M.ideas).map((i) => Object.assign({}, i, { wants: i.wants + (S.wants[i.id] ? 1 : 0) }));
+    const ideas = all.filter((i) => matchCat(i, ideaCat));
+    const member = !!S.user;
+    $app.innerHTML = `<div class="page">
+      <header class="detail-head"><h1 style="font-size:32px">點子區</h1>
+        <p class="muted">有想法但不會寫程式？把點子貼上來，讓創作者來認領。概要公開，細節只給登入的成員看，發表時間會留下紀錄。</p></header>
+      ${catFilters(all, ideaCat)}
+      <div class="two-col">
+        <div class="page" style="gap:12px">
+          ${ideas.length ? "" : `<div class="empty">這個分類還沒有點子，來當第一個吧。</div>`}
+          ${ideas.map((i) => `<article class="idea">
+            ${catLine(i)}
+            <div class="section-head"><h3>${esc(i.title)}</h3><div class="chips">${(i.tags || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div></div>
+            <p>${esc(i.summary)}</p>
+            <div class="detail locked"><span><span class="locked-tag">僅成員可見</span></span>
+              ${member ? `<span>${esc(i.detail)}</span>` : `<span class="blur" aria-hidden="true">${esc(i.detail)}</span><span class="small muted">登入後才看得到細節。</span>`}</div>
+            <div class="foot"><span>${esc(i.author)} · 發表於 <span class="num">${esc(i.date)}</span></span>
+              <button class="btn small ${S.wants[i.id] ? "dark" : "ghost"}" data-want="${i.id}">我想做這個 · <span class="num">${i.wants}</span></button></div>
+          </article>`).join("")}
+        </div>
+        <aside class="side">
+          <form class="form form-shell" id="idea-form" novalidate style="gap:14px">
+            <h2>發表點子</h2>
+            <div class="field"><label for="i-title">標題</label><input id="i-title" type="text" maxlength="30"><span class="err" id="ie-title" hidden>請填標題。</span></div>
+            <div class="field"><label for="i-sum">概要（公開）</label><textarea id="i-sum" style="min-height:70px" maxlength="80" placeholder="一兩句話說明要解決什麼問題。"></textarea><span class="err" id="ie-sum" hidden>請填概要。</span></div>
+            <div class="field"><label for="i-detail">細節 <span class="locked-tag">僅成員可見</span></label><textarea id="i-detail" placeholder="使用情境、限制、你已經想到的做法。"></textarea></div>
+            <div class="field"><span class="label">分類</span>${catSelects("i", ideaCat.cat === "all" ? "life" : ideaCat.cat, "")}</div>
+            <div class="field"><label for="i-tags">標籤</label><input id="i-tags" type="text" placeholder="用空白分隔，例如：LINE 小商家"></div>
+            <button class="btn primary" type="submit">發表</button>
+          </form>
+        </aside>
+      </div></div>`;
+    $app.querySelectorAll("[data-want]").forEach((b) => (b.onclick = () => needLogin(() => { S.wants[b.dataset.want] = !S.wants[b.dataset.want]; save(); pIdeas(); })));
+    const form = $app.querySelector("#idea-form");
+    const readCat = bindCatSelects(form, "i");
+    bindCatFilters(ideaCat, pIdeas);
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      needLogin(() => {
+        const t = form.querySelector("#i-title").value.trim(), s = form.querySelector("#i-sum").value.trim();
+        form.querySelector("#ie-title").hidden = !!t; form.querySelector("#ie-sum").hidden = !!s;
+        if (!t || !s) return;
+        S.ideas.unshift({ id: "my-i" + Date.now().toString(36), ...readCat(), title: t, summary: s, detail: form.querySelector("#i-detail").value.trim() || "（沒有填細節）",
+          tags: form.querySelector("#i-tags").value.trim().split(/\s+/).filter(Boolean), author: S.user.name, date: today(), wants: 0 });
+        save(); toast("點子已發表"); pIdeas();
+      });
+    };
+  }
+
+  // ---------- 產品地圖（文字中英各寫一份，不經過自動翻譯） ----------
+  // 從 AI 創作者的角度：每一步「你做什麼」與「開達幫你什麼」；on = 原型裡可以試
+  const FLOW = [
+    { on: 1, href: "#ideas", t: ["有一個點子", "Start with an idea"],
+      you: ["把想法寫下來；不會寫程式的人也可以把點子丟到點子區，等創作者認領。", "Write the idea down. People who can't code can post it in Ideas for a creator to pick up."],
+      kd: ["點子區、細節僅成員可見、記錄發表時間，降低被抄的風險。", "An ideas board, member-only details and a timestamp to reduce copying."] },
+    { on: 0, t: ["用 AI 做出第一版", "Build v1 with AI"],
+      you: ["用 ChatGPT、Claude、Cursor 等工具 vibe coding，先做出一個能打開的網頁版。", "Vibe-code with ChatGPT, Claude, Cursor or similar until you have a web version that opens."],
+      kd: ["之後提供上架前檢查清單、範本，並幫點子人媒合會做的創作者。", "Later: a pre-launch checklist, templates, and matching idea people with creators."] },
+    { on: 1, href: "#submit", t: ["提交作品，跑 AI 健檢", "Submit and run the AI health check"],
+      you: ["填名稱、一句話介紹、試用連結、用了哪些工具，以及想請測試者做的任務。", "Add a name, a one-line pitch, a try-it link, the tools you used and the tasks for testers."],
+      kd: ["檢查能不能打開、前端有沒有外洩金鑰、手機版能不能用（原型為示範資料）。", "Checks that it opens, that no keys leak in the front end and that it works on phones (demo data for now)."] },
+    { on: 1, href: "#tester", t: ["封測：讓真實的人試用", "Beta: real people try it"],
+      you: ["分享封測連結，看測試者照任務走完。", "Share the beta link and watch testers work through the tasks."],
+      kd: ["找測試者、結構化回饋表：完成哪些任務、遇到什麼問題、截圖、評分、願不願意付費。", "Finds testers and collects structured feedback: tasks done, problems, screenshots, ratings and willingness to pay."] },
+    { on: 1, t: ["照回饋迭代", "Iterate on the feedback"],
+      you: ["修 bug、改版，再測一輪。好作品通常是改出來的。", "Fix bugs, ship a new version and test again. Good products are usually rewritten into shape."],
+      kd: ["整理回饋、重跑健檢；至少 20 位測試者完成、健檢沒有重大問題，就能往下走。", "Sorts the feedback and reruns the check. Once 20 testers finish with no major issues, you can move on."] },
+    { on: 1, href: "#works", t: ["發布作品", "Launch"],
+      you: ["公開作品頁，到 Threads 分享封測成績，把熱度帶回來。", "Open your project page and share your beta results on Threads to bring people back."],
+      kd: ["固定的作品頁、一鍵產生 Threads 分享卡，貼文不會兩天就被沖掉。", "A permanent project page and a one-tap Threads share card, so it isn't buried in two days."] },
+    { on: 1, href: "#store", t: ["上架商店或開募資", "List it in the store or raise funds"],
+      you: ["選免費、買斷或期間授權上架；想把它做大，就開回饋型募資。", "List it free, as a one-time purchase or a term license. To grow it, open a reward-based campaign."],
+      kd: ["用開達登入解鎖授權，早期創作者限時免抽成；募資全有或全無，沒達標全額退款。", "Sign in with Kaida unlocks licenses, early creators pay no commission for now; funding is all-or-nothing with full refunds."] },
+    { on: 1, t: ["交付與持續更新", "Deliver and keep updating"],
+      you: ["照里程碑交付，每兩週更新一次進度，收到的回饋放進下一版。", "Deliver by milestone, post an update every two weeks and fold new feedback into the next version."],
+      kd: ["里程碑達成才撥下一筆（40／40／20），失敗時退還未撥款項或交付現有版本。", "The next payout comes only after each milestone (40/40/20); if it fails, unpaid funds are refunded or the current version is handed over."] }
+  ];
+  const ROAD = [
+    ["0", "需求驗證", "Validate demand", "第 1–2 個月", "Months 1–2", "LINE／Discord 社群、10 位創作者試封測、問付費意願", "LINE/Discord community, 10 creators try the beta, ask about willingness to pay", "半數願意付費、回饋品質可用", "Half are willing to pay and feedback is usable"],
+    ["1", "封測平台", "Beta platform", "第 3–5 個月", "Months 3–5", "作品頁與封測任務、AI 健檢報告、測試者等級", "Project pages and beta tasks, AI health reports, tester levels", "50 個作品完成封測、測試者持續回訪", "50 projects finish beta and testers keep coming back"],
+    ["2", "發布與點子", "Launch and ideas", "第 6–8 個月", "Months 6–8", "公開發布頁、點子區與媒合、曝光加值、商店上架", "Public launch pages, ideas and matching, paid features, store listings", "3 個專案準備募資、累積支持者名單", "3 projects ready to raise funds, with a backer list"],
+    ["3", "募資", "Funding", "第 9–12 個月", "Months 9–12", "先與現有募資平台合作試辦、里程碑撥款，再評估自建金流", "Pilot with an existing crowdfunding platform, milestone payouts, then decide on our own payments", "首批專案募資成功並按時交付", "First projects are funded and deliver on time"]
+  ];
+  // 流程圖：寬版橫向、手機直向，兩份 SVG 用 CSS 切換
+  function flowDiagram() {
+    const N = [["有點子", "Idea"], ["用 AI 做第一版", "Build v1 with AI"], ["提交・AI 健檢", "Submit + check"], ["封測", "Beta test"], ["照回饋迭代", "Iterate"], ["發布", "Launch"], ["上架商店", "Store"], ["開募資", "Fundraise"], ["交付・更新", "Deliver"]];
+    const num = [1, 2, 3, 4, 5, 6, 7, 7, 8];
+    const node = (i, x, y, w, h, cls = "") => `<g class="fd-node${cls}"><rect class="fd-shadow" x="${x + 4}" y="${y + 4}" width="${w}" height="${h}"/><rect x="${x}" y="${y}" width="${w}" height="${h}"/>
+      <text x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle"><tspan class="fd-num">${num[i]}</tspan> ${L(...N[i])}</text></g>`;
+    let mk = "fd-arrow-w";
+    const ar = (d, cls = "") => `<path class="fd-line${cls}" d="${d}" marker-end="url(#${mk})"/>`;
+    const lab = (x, y, t, anchor = "middle") => `<text class="fd-lab" x="${x}" y="${y}" text-anchor="${anchor}">${t}</text>`;
+    const gate = (cx, cy, r) => `<g class="fd-gate"><path d="M${cx} ${cy - r} L${cx + r} ${cy} L${cx} ${cy + r} L${cx - r} ${cy} Z"/><text x="${cx}" y="${cy + 4}" text-anchor="middle">${L("過門檻？", "Gate?")}</text></g>`;
+    const defs = () => `<defs><marker id="${mk}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="fd-head"/></marker></defs>`;
+    const W = 118, H = 52;
+    const wide = `<svg class="fd fd-wide" viewBox="0 0 1100 320" role="img" aria-label="${L("AI 創作者流程圖", "AI creator flow diagram")}">${defs()}
+      ${node(0, 10, 70, W, H)}${node(1, 150, 70, W, H)}${node(2, 290, 70, W, H)}${node(3, 430, 70, W, H, " hot")}
+      ${node(4, 430, 200, W, H, " hot")}${gate(600, 96, 34)}${node(5, 680, 70, W, H)}
+      ${node(6, 820, 10, W, H, " goal")}${node(7, 820, 130, W, H, " goal")}${node(8, 970, 70, W, H, " goal")}
+      ${ar("M128 96 H148")}${ar("M268 96 H288")}${ar("M408 96 H428")}${ar("M548 96 H564")}
+      ${ar("M634 96 H678")}${lab(656, 88, L("是", "yes"))}
+      ${ar("M600 130 V226 H550")}${lab(608, 180, L("否", "no"), "start")}
+      ${ar("M489 200 V124")}${lab(497, 166, L("再測一輪", "test again"), "start")}
+      ${lab(600, 52, L("≥20 位完成", "20+ finish"))}
+      ${ar("M798 96 H809 V36 H818")}${ar("M798 96 H809 V156 H818")}
+      ${ar("M938 36 H954 V96 H968")}${ar("M938 156 H954 V96 H968")}
+      ${lab(879, 200, L("沒達標全額退款", "full refund if missed"))}
+      ${ar("M1029 122 V292 H489 V254", " loop")}${lab(760, 284, L("新的回饋 → 下一版", "new feedback → next version"))}
+    </svg>`;
+    mk = "fd-arrow-t";
+    const tall = `<svg class="fd fd-tall" viewBox="0 0 360 620" role="img" aria-label="${L("AI 創作者流程圖", "AI creator flow diagram")}">${defs()}
+      ${node(0, 40, 10, 200, 44)}${node(1, 40, 80, 200, 44)}${node(2, 40, 150, 200, 44)}${node(3, 40, 220, 200, 44, " hot")}
+      ${node(4, 262, 220, 92, 44, " hot small")}${gate(140, 322, 32)}${node(5, 40, 384, 200, 44)}
+      ${node(6, 16, 466, 156, 44, " goal")}${node(7, 188, 466, 156, 44, " goal")}${node(8, 40, 556, 200, 44, " goal")}
+      ${ar("M140 54 V78")}${ar("M140 124 V148")}${ar("M140 194 V218")}${ar("M140 264 V288")}
+      ${ar("M140 354 V382")}${lab(148, 372, L("是", "yes"), "start")}
+      ${ar("M172 322 H300 V266")}${lab(232, 314, L("否", "no"))}
+      ${ar("M262 242 H242")}
+      ${ar("M140 428 V446 H94 V464")}${ar("M140 428 V446 H266 V464")}
+      ${ar("M94 510 V532 H140 V554")}${ar("M266 510 V532 H140")}
+      ${ar("M240 578 H357 V242 H356", " loop")}${lab(296, 608, L("新的回饋 → 下一版", "feedback → next"))}
+    </svg>`;
+    return `<figure class="fd-wrap">${wide}${tall}<figcaption class="small muted">${L("實線是主流程，虛線是上線後的回饋回到下一版。", "Solid lines are the main path; the dashed line is post-launch feedback flowing into the next version.")}</figcaption></figure>`;
+  }
+  function pMap() {
+    const steps = FLOW.map((f, i) => `<li class="cf-step">
+        <span class="cf-n">${String(i + 1).padStart(2, "0")}</span>
+        <div class="cf-body">
+          <div class="cf-head"><h3>${L(...f.t)}</h3><span class="cf-tag${f.on ? " on" : ""}">${f.on ? L("原型可試", "In the prototype") : L("之後再做", "Later")}</span></div>
+          <div class="cf-cols"><p><b>${L("你做", "You")}</b>${L(...f.you)}</p><p><b>${L("開達幫你", "Kaida")}</b>${L(...f.kd)}</p></div>
+          ${f.href ? `<a class="cf-go" href="${f.href}">${L("去看看", "Take a look")} →</a>` : ""}
+        </div>
+      </li>`).join("");
+    const road = ROAD.map((r, i) => `<div class="road-row${i === 0 ? " now" : ""}">
+        <div class="ph"><b data-now="${L("現在", "NOW")}">${L(r[1], r[2])}</b><span>${L("階段", "Phase")} ${r[0]} · ${L(r[3], r[4])}</span></div>
+        <div>${L(r[5], r[6])}</div>
+        <div class="pass" data-l="${L("過關條件", "TO PASS")}">${L(r[7], r[8])}</div>
+      </div>`).join("");
+    $app.innerHTML = `<div class="page map-page">
+      <header class="detail-head"><h1 style="font-size:32px">${L("產品地圖", "Product map")}</h1>
+        <p class="muted">${L("開達為什麼存在、一位 AI 創作者在這裡從點子走到交付的完整流程，以及接下來要做什麼。", "Why Kaida exists, the full path an AI creator takes here from idea to delivery, and what we build next.")}</p></header>
+      <section class="origin">
+        <span class="k">${L("創作初衷", "WHY WE STARTED")}</span>
+        <h2>${L("好作品，不該沒人看見。", "Good work shouldn't go unseen.")}</h2>
+        ${L(`<p>開達來自一位剛畢業大學生的突發奇想。</p>
+        <p>在這個 AI 大時代，做出一個作品從來沒有這麼容易，被看見卻越來越難。很多人已經有能力做出好東西，卻因為沒有追蹤數、沒有管道，作品貼出去兩天就被沖掉。好作品沒有得到有效的關注，是不是很可惜呢？</p>
+        <p>我們也相信，好產品不是一次就做對，而是一版一版迭代出來的。所以開達把這條路鋪成看得見的步驟：先讓真實的人試用、留下回饋，跟著回饋修改，夠好了再發布、上架或募資，最後把承諾交付給支持你的人。</p>
+        <p><b>讓認真做出來的東西，被認真看見。</b></p>`,
+        `<p>Kaida started as a sudden idea from a fresh university graduate.</p>
+        <p>In this age of AI, making something has never been easier, yet getting it seen keeps getting harder. Plenty of people can now build good things, but without followers or a channel, their work is buried two days after they post it. Isn't it a shame when good work never gets real attention?</p>
+        <p>We also believe good products are rarely right the first time. They get better one iteration at a time. So Kaida lays the path out as visible steps: real people try your work and leave feedback, you improve it from that feedback, and when it's ready you launch, list it in the store or raise funds, then deliver what you promised to the people who backed you.</p>
+        <p><b>Work made with care deserves to be seen with care.</b></p>`)}
+        <span class="sign">— ${L("開達 Kaida", "Kaida")}</span>
+      </section>
+      <section class="page" style="gap:14px">
+        <div class="section-head"><h2>${L("AI 創作者的完整流程", "The full journey of an AI creator")}</h2></div>
+        <p class="muted">${L("從一個想法，到有人付費使用、真正交付。每一步都寫了你要做的事，以及開達在那一步幫你什麼。", "From an idea to people paying for it and getting it delivered. Each step shows what you do and how Kaida helps.")}</p>
+        ${flowDiagram()}
+        <ol class="cflow">${steps}</ol>
+        <p class="loop">${L("第 4、5 步會來回好幾輪：封測沒過門檻就改完再測。上架或募資之後收到的回饋，也會回到第 5 步，變成下一版。", "Steps 4 and 5 loop several times: if a beta misses the gate, fix it and test again. Feedback after launch or funding also goes back to step 5 and becomes the next version.")}</p>
+      </section>
+      <section class="page" style="gap:14px">
+        <h2>${L("路線圖", "Roadmap")}</h2>
+        <div class="road">${road}</div>
+        <p class="small muted">${L("時間與數字都是待驗證的假設。", "Timelines and numbers are assumptions still to be tested.")}</p>
+      </section>
+    </div>`;
+  }
+
+  // ---------- 我的帳號：可以隨時修改興趣 ----------
+  function pAccount() {
+    if (!S.user) { $app.innerHTML = `<div class="page"><h1 style="font-size:32px">我的帳號</h1><div class="empty">登入後才能看帳號設定。<br><br><button class="btn primary" id="lg">用示範帳號登入</button></div></div>`;
+      $app.querySelector("#lg").onclick = () => needLogin(render); return; }
+    const owned = Object.keys(S.owned).length;
+    $app.innerHTML = `<div class="page">
+      <header class="detail-head"><h1 style="font-size:32px">我的帳號</h1>
+        <p class="muted">${esc(S.user.name)} · 已購買 ${owned} 個作品</p></header>
+      <section class="panel"><h2>身分</h2>
+        <div class="role-opts">
+          <label class="tester-opt"><input type="checkbox" data-role="tester" ${S.user.tester ? "checked" : ""}><span><b>測試者</b><span class="small muted">接封測任務、填回饋。</span></span></label>
+          <label class="tester-opt"><input type="checkbox" data-role="creator" ${S.user.creator ? "checked" : ""}><span><b>創作者</b><span class="small muted">提交作品、上架商店、開募資。</span></span></label>
+        </div></section>
+      <section class="panel"><h2>我的興趣 <span class="sub"><span class="num" id="int-n">${interests().length}</span> 項已選</span></h2>
+        <p class="small muted">勾選你想看的類型，首頁的「為你推薦」會依這裡排序。</p>
+        <form id="int-form">${interestPicker(interests())}
+          <div class="btn-row" style="margin-top:14px"><button class="btn primary" type="submit">儲存興趣</button><button class="btn ghost" type="button" id="int-clear">全部取消</button></div></form>
+      </section>
+    </div>`;
+    $app.querySelectorAll("[data-role]").forEach((x) => (x.onchange = () => { S.user[x.dataset.role] = x.checked; save(); renderTop(); toast("身分已更新"); }));
+    const f = $app.querySelector("#int-form");
+    f.onchange = () => ($app.querySelector("#int-n").textContent = readPicker(f).length);
+    $app.querySelector("#int-clear").onclick = () => { f.querySelectorAll('[name="interest"]').forEach((x) => (x.checked = false)); f.onchange(); };
+    f.onsubmit = (e) => { e.preventDefault(); S.user.interests = readPicker(f); S.user.onboarded = true; save(); toast("興趣已更新"); go("home"); };
+  }
+
+  // ---------- 成為測試者 ----------
+  function pTester() {
+    const beta = allWorks().filter((w) => w.stage === "beta");
+    const isT = S.user && S.user.tester;
+    const step1 = S.user
+      ? `<div class="t-step done"><span class="t-n">1</span><div><b>已登入：<span>${esc(S.user.name)}</span></b><span class="small muted">興趣可以在<a href="#account">我的帳號</a>修改。</span></div></div>`
+      : `<div class="t-step"><span class="t-n">1</span><div class="t-login"><b>登入開達</b>
+          <span class="small muted">成為測試者要先登入。登入視窗裡的「成為測試者」預設已勾選，登入就完成了。</span>
+          <button class="btn primary" id="t-login">登入並成為測試者</button></div></div>`;
+    const step2 = isT ? `<div class="t-step done"><span class="t-n">2</span><div><b>你已經是測試者了</b><span class="small muted">從下面挑一個作品開始吧。</span></div></div>`
+      : `<div class="t-step${S.user ? "" : " off"}"><span class="t-n">2</span><div style="display:grid;gap:14px;min-width:0"><b>填測試者資料</b>
+        ${S.user ? `<form class="form" id="t-form" novalidate>
+        <div class="field"><label for="t-name">暱稱</label><input id="t-name" type="text" value="${esc(S.user.name)}"></div>
+        <div class="field"><span class="label">你有的裝置</span><div class="checks-in">${["iPhone", "Android 手機", "Windows 電腦", "Mac", "平板"].map((d) => `<label><input type="checkbox" name="dev" value="${d}"> ${d}</label>`).join("")}</div></div>
+        <div class="field"><label for="t-time">每週大概能花多少時間</label><select id="t-time" class="input"><option>30 分鐘以內</option><option selected>1 小時左右</option><option>2 小時以上</option></select></div>
+        <div class="btn-row"><button class="btn primary" type="submit">加入測試者</button></div>
+      </form>` : `<span class="small muted">登入後就能填。</span>`}</div></div>`;
+    $app.innerHTML = `<div class="page">
+      <header class="detail-head"><h1 style="font-size:32px">成為測試者</h1>
+        <p class="muted">搶先試用台灣創作者的新作品，照任務試用、填寫回饋。回饋品質好，等級會提升，之後可換點數或互測額度（獎勵方式待定）。</p></header>
+      <div class="form-shell t-steps">${step1}${step2}</div>
+      <section class="page" style="gap:14px"><h2>正在封測的作品</h2><div class="grid">${beta.map(card).join("")}</div></section>
+    </div>`;
+    const lg = $app.querySelector("#t-login"); if (lg) lg.onclick = () => needLogin(() => {});
+    const f = $app.querySelector("#t-form");
+    if (f) f.onsubmit = (e) => { e.preventDefault(); Object.assign(S.user, { name: f.querySelector("#t-name").value.trim() || S.user.name, tester: true }); save(); toast("歡迎加入測試者"); render(); };
+  }
+
+  document.getElementById("reset").onclick = () => {
+    dialog(`<h2>清除示範資料？</h2><p class="muted">會清掉你在這個瀏覽器新增的作品、回饋、點子與登入狀態，回到初始假資料。</p>
+      <div class="btn-row"><button class="btn primary" id="dlg-reset">清除</button><button class="btn ghost" data-close>取消</button></div>`,
+      (el, close) => (el.querySelector("#dlg-reset").onclick = () => { S = blank(); save(); close(); toast("已清除"); go("home"); }));
+  };
+
+  // 重新整理：重新載入整個網頁（會再播一次進場動畫），你新增的資料仍保留
+  document.getElementById("reload").onclick = () => location.reload();
+  // 換頁時關掉還開著的對話框
+  window.addEventListener("hashchange", () => document.querySelectorAll(".dialog-back").forEach((d) => d.remove()));
+  window.addEventListener("hashchange", render);
+  if (I18N) { I18N.start(); I18N.set(I18N.lang, render); } else render();
+
+  // ---------- 進場動畫：字型與頁面資源都載完、球落到階梯頂端才進入 ----------
+  (function splash() {
+    const el = document.getElementById("splash");
+    if (!el) return;
+    const loaded = new Promise((res) => (document.readyState === "complete" ? res() : window.addEventListener("load", res, { once: true })));
+    const fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    const timeout = new Promise((res) => setTimeout(res, 8000));
+    const ready = Promise.race([Promise.all([loaded, fonts]), timeout]);
+    // 進度條：頁面、字型各佔一段，完成就往前跳；等待中慢慢往目前上限爬，載完跑到 100%
+    // 進度條借用封測的樣子：20 位測試者完成就是 100%，跑滿顯示通過門檻
+    const barEl = el.querySelector(".sp-bar i"), pctEl = el.querySelector(".sp-pct"), labEl = el.querySelector(".sp-label");
+    let done = 0.15, shown = 0, full = false;
+    loaded.then(() => (done += 0.35)); fonts.then(() => (done += 0.4));
+    ready.then(() => (full = true));
+    (function tick() {
+      if (!el.isConnected) return;
+      const target = full ? 1 : Math.min(0.95, done + (1 - done) * 0.5);
+      shown += (target - shown) * (full ? 0.25 : 0.06);
+      if (full && 1 - shown < 0.004) shown = 1;
+      barEl.style.transform = `scaleX(${shown.toFixed(3)})`;
+      pctEl.textContent = Math.round(shown * 100) + "%";
+      const n = Math.floor(shown * 20 + 1e-6);
+      labEl.textContent = n >= 20 ? L("封測通過，準備發布", "Beta passed, launching") : L(`封測 ${n}/20 位完成`, `Beta ${n}/20 testers done`);
+      if (shown < 1) requestAnimationFrame(tick);
+    })();
+    const still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const line = el.querySelector(".sp-stairs");
+    let isReady = false, arrived = false, finished = false;
+    const finish = () => {
+      if (finished) return; finished = true;
+      el.classList.add("done"); document.documentElement.classList.remove("splashing");
+      setTimeout(() => el.remove(), 360);
+    };
+    // redraw：線剛好收掉時才載好，就先從底部重畫一次再讓球落下
+    const arrive = (redraw) => {
+      if (arrived) return; arrived = true;
+      el.classList.add("arrived"); if (redraw) el.classList.add("redraw");
+      setTimeout(finish, still ? 150 : redraw ? 1150 : 800);
+    };
+    // 載好時看線畫到哪：正在畫就等它畫滿、已畫滿就直接落球、正在收就等下一輪重畫
+    const CYCLE = 900, FULL = 450, HOLD_END = 675;
+    ready.then(() => {
+      isReady = true;
+      if (still) return arrive(false);
+      const a = line.getAnimations && line.getAnimations()[0];
+      const t = a && a.currentTime != null ? a.currentTime % CYCLE : FULL;
+      if (t < FULL) setTimeout(() => arrive(false), FULL - t);
+      else if (t <= HOLD_END) arrive(false);
+    });
+    line.addEventListener("animationiteration", () => { if (isReady) arrive(true); });
+    setTimeout(() => { arrive(false); setTimeout(finish, 1300); }, 9000);
+  })();
+})();
+
+</script>
+
+</body>
+</html>
