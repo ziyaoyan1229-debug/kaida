@@ -1,4 +1,4 @@
-/* 開達 Kaida 封測作品共用樣式：米色（預設）與 Cyber 兩種外觀，跟主站共用 kaida-skin 設定 */
+/* 開達 Kaida 封測作品共用樣式：只用米色外觀 */
 :root {
   --paper: #f2ece1;
   --surface: #f8f4ec;
@@ -20,27 +20,6 @@
   --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --h-weight: 500;
   color-scheme: light;
-}
-:root[data-skin="cyber"] {
-  --paper: #07080d;
-  --surface: #0c1018;
-  --sunk: #131a27;
-  --ink: #e8f1ff;
-  --muted: #7f8ca8;
-  --line: #1e2840;
-  --accent: #22e8ff;
-  --accent-ink: #03141a;
-  --signal: #22e8ff;
-  --accent-text: #22e8ff;
-  --pass: #7cffb2;
-  --warn: #ffd23e;
-  --fail: #ff5470;
-  --glow: 0 0 16px rgba(34, 232, 255, .45);
-  --r: 0px;
-  --f-display: "Chakra Petch", "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
-  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --h-weight: 700;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -72,7 +51,6 @@ a { color: var(--accent-text); }
   border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
   padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted);
 }
-:root[data-skin="cyber"] .chip-btn { border-radius: 0; }
 
 h1 { font-family: var(--f-display); font-weight: var(--h-weight); font-size: 28px; margin: 0 0 4px; letter-spacing: .01em; }
 h2 { font-family: var(--f-display); font-weight: var(--h-weight); font-size: 18px; margin: 28px 0 10px; }
