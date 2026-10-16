@@ -1,0 +1,56 @@
+# 每週一早上（台北時間 06:00）更新夜市店家資料檔 apps/nightmarket/stall-db.js
+# 需要 repo secret NM_PLACES_KEY（只開 Places API (New) 的伺服器用金鑰）；沒設定就跳過
+name: Night market stall data
+
+on:
+  schedule:
+    - cron: "0 22 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: nightmarket-stall-db
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check key
+        id: key
+        env:
+          NM_PLACES_KEY: ${{ secrets.NM_PLACES_KEY }}
+        run: |
+          if [ -z "$NM_PLACES_KEY" ]; then
+            echo "::notice::NM_PLACES_KEY is not set, skipping the stall data update."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.ok == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.key.outputs.ok == 'true'
+        with:
+          node-version: 20
+      - name: Update stall-db.js
+        if: steps.key.outputs.ok == 'true'
+        env:
+          NM_PLACES_KEY: ${{ secrets.NM_PLACES_KEY }}
+        run: node apps/nightmarket/tools/update-stall-db.js
+      - name: Commit
+        if: steps.key.outputs.ok == 'true'
+        run: |
+          if git diff --quiet -- apps/nightmarket/stall-db.js; then echo "No changes"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/nightmarket/stall-db.js
+          git commit -m "nightmarket: weekly stall data refresh"
+          git push
+          # 機器人推的 commit 不一定會觸發網站重建，主動請 GitHub Pages 重建一次
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "::warning::Pages rebuild request failed; the next push will deploy it."
+        env:
+          GH_TOKEN: ${{ github.token }}
