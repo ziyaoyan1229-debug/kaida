@@ -39,7 +39,8 @@
       reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
       allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。", night: "夜市夜景",
       stallQPh: "在這個夜市找店家（例如：臭豆腐）", stallFound: function (n, q) { return "「" + q + "」找到 " + n + " 家"; },
-      stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…"
+      stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…",
+      stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; }
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
@@ -74,7 +75,8 @@
       reviewsLoading: "Loading reviews…", noReviews: "No reviews yet.", reviewsError: "Couldn't load reviews right now.",
       allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.", night: "Night",
       stallQPh: "Search this market (e.g. stinky tofu)", stallFound: function (n, q) { return n + " found for “" + q + "”"; },
-      stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…"
+      stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…",
+      stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; }
     }
   };
 
@@ -396,10 +398,25 @@
     if (!q) return null;
     var hits = stallHits[stallQ] || {};
     // 店名有關鍵字的排前面，其餘照 Google 的相關度
-    var core = q.length >= 3 ? q.slice(-2) : null; // 「烤香腸」的「香腸」
-    function rank(s) { var n = norm(s.name); return n.indexOf(q) >= 0 ? 0 : core && n.indexOf(core) >= 0 ? 1 : norm(s.type).indexOf(q) >= 0 ? 2 : 3 + (hits[s.id] || 0); }
+    // 長一點的關鍵字拆成兩字詞：「豬肝湯」看「豬肝」「肝湯」，店名對到越多越前面
+    var grams = [];
+    if (q.length >= 3) for (var g = 0; g < q.length - 1; g++) grams.push(q.slice(g, g + 2));
+    function rank(s) {
+      var n = norm(s.name);
+      if (n.indexOf(q) >= 0) return 0;
+      var hit = grams.filter(function (x) { return n.indexOf(x) >= 0; }).length;
+      if (hit) return 2 - hit / grams.length;
+      return norm(s.type).indexOf(q) >= 0 ? 2 : 3 + (hits[s.id] || 0);
+    }
     return stalls.filter(function (s) { return hits[s.id] || norm(s.name + " " + s.type).indexOf(q) >= 0; })
       .sort(function (a, b) { return rank(a) - rank(b); });
+  }
+  // 店名有沒有對到關鍵字（整個詞，或長關鍵字裡的兩字詞，例如「豬肝湯」的「豬肝」）
+  function nameHits(name) {
+    var q = norm(stallQ), n = norm(name);
+    if (n.indexOf(q) >= 0) return true;
+    for (var i = 0; q.length >= 3 && i < q.length - 1; i++) if (n.indexOf(q.slice(i, i + 2)) >= 0) return true;
+    return false;
   }
   function renderStalls(mode) {
     var box = $("dStalls");
@@ -415,7 +432,8 @@
     var list = shown || stalls;
     $("dSeeMap").hidden = !list.length;
     $("dSeeMap").textContent = t("seeMap")(list.length);
-    $("dStallHint").textContent = !shown ? "" : stallBusy && !list.length ? t("stallSearching") : list.length ? t("stallFound")(list.length, stallQ) + (stallBusy ? " · " + t("stallSearching") : "") : t("stallNoMatch")(stallQ);
+    var exact = shown && list.some(function (s) { return nameHits(s.name); });
+    $("dStallHint").textContent = !shown ? "" : stallBusy && !list.length ? t("stallSearching") : list.length ? (exact ? t("stallFound")(list.length, stallQ) : t("stallRelated")(list.length, stallQ)) + (stallBusy ? " · " + t("stallSearching") : "") : t("stallNoMatch")(stallQ);
     box.innerHTML = list.map(function (s) {
       var i = stalls.indexOf(s);
       return '<li><button type="button" class="stall-row" data-stall="' + esc(s.id) + '"><span class="thumb">' + (s.thumb ? '<img src="' + esc(s.thumb) + '" alt="" loading="lazy" onerror="this.remove()">' : "") + '<span class="no">' + (i + 1) + '</span></span><span class="nm">' + esc(s.name) +

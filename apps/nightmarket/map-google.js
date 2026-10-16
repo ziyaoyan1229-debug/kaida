@@ -341,22 +341,33 @@
       searchStalls: async function (m, q) {
         var area = curArea;
         if (!area) return [];
-        var key = m.id + ":" + opts.lang() + ":" + q;
-        if (!qcache[key]) qcache[key] = search(q, FIELDS, { locationRestriction: box(area.center, 700), maxResultCount: 20 });
-        var list = await qcache[key];
-        var ids = [];
-        list.forEach(function (p) {
-          if (!p.location || distM(ll(p.location), area.center) > 750) return;
-          // 只留吃的喝的（關鍵字「香」會搜到香舖、金紙店）
-          if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
-          var have = area.stalls.filter(function (s) { return s.id === p.id; })[0];
-          if (!have) {
-            have = toStall(p);
-            area.stalls.push(have);
-            if (curArea === area && polygon) addStallMarker(have, area.stalls.length - 1);
-          }
-          ids.push(p.id);
-        });
+        var where = { locationRestriction: box(area.center, 700), maxResultCount: 20 };
+        function find(text) {
+          var key = m.id + ":" + opts.lang() + ":" + text;
+          if (!qcache[key]) qcache[key] = search(text, FIELDS, where);
+          return qcache[key];
+        }
+        function keep(list, ids) {
+          list.forEach(function (p) {
+            if (!p.location || ids.indexOf(p.id) >= 0 || distM(ll(p.location), area.center) > 750) return;
+            // 只留吃的喝的（關鍵字「香」會搜到香舖、金紙店）
+            if (p.types && p.types.length && !p.types.some(function (t) { return FOOD.test(t); })) return;
+            var have = area.stalls.filter(function (s) { return s.id === p.id; })[0];
+            if (!have) {
+              have = toStall(p);
+              area.stalls.push(have);
+              if (curArea === area && polygon) addStallMarker(have, area.stalls.length - 1);
+            }
+            ids.push(p.id);
+          });
+          return ids;
+        }
+        var ids = keep(await find(q), []);
+        // 「釋迦冰品」這種組合詞常常整個找不到，就拆成前後兩個詞再找一次
+        if (!ids.length && q.length >= 4) {
+          var parts = await Promise.all([find(q.slice(0, 2)), find(q.slice(-2))]);
+          keep(parts[0].concat(parts[1]), ids);
+        }
         return ids;
       },
       // 有關鍵字時，不符合的攤位標記變淡
