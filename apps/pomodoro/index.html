@@ -199,6 +199,9 @@
   .s-down { position: absolute; left: 50%; bottom: 12px; z-index: 3; width: 44px; height: 44px; margin-left: -22px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff;
     background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.5); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.18); animation: sdown 2.4s ease-in-out infinite; }
   .s-down svg { display: block; width: 22px; height: 22px; margin: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
+  /* 音樂上面的往上箭頭：回到房間畫面 */
+  .s-up { display: block; width: 44px; height: 44px; margin: 10px auto 2px; border-radius: 50%; padding: 0; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .s-up svg { display: block; width: 22px; height: 22px; margin: auto; }
   .s-down:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
   @keyframes sdown { 50% { transform: translateY(4px); } }
   .scene-wrap.loading .s-down { visibility: hidden; }
@@ -390,7 +393,7 @@
     .s-body .scene-wrap { margin: 0; position: sticky; top: var(--rb-h, 72px); border-radius: 14px; overflow: hidden; }
     .s-body .k3 { aspect-ratio: auto; height: calc(100vh - var(--rb-h, 72px) - 16px); height: calc(100dvh - var(--rb-h, 72px) - 16px); min-height: 260px; max-height: none; }
     .s-side { min-width: 0; }
-    .s-down { display: none; }
+    .s-down, .s-up { display: none; }
     .s-side > .music { margin-top: 0; }
     .s-side .timer-row { gap: 10px; }
     .s-side .timer-row .ring { width: 104px; height: 104px; }
@@ -605,6 +608,7 @@
     <div class="s-body">
     <div class="scene-wrap"><div class="rchat" id="rchat" hidden role="dialog" aria-modal="false"></div><div class="k3" id="scene3d" hidden><div class="k3-load" id="k3-load" hidden><div class="kl-bg"></div><div class="kl-name" id="kl-name"></div><div class="kl-sub" id="kl-sub"></div><div class="kl-track"><div class="kl-bar"></div><div class="kl-walk"><svg viewBox="-22 -64 44 66" id="kl-me" aria-hidden="true"></svg></div></div></div></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg><button type="button" class="s-down" id="s-more" data-i18n-aria="s.more" aria-label="往下滑：音樂、成員和更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="says" id="says"></div><button type="button" class="sit-btn" id="sit-btn" hidden data-i18n="s.sit">坐下</button></div>
     <div class="s-side">
+    <button type="button" class="s-up" id="s-back" data-i18n-aria="s.backUp" aria-label="回到房間畫面"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14.5l6-6 6 6"/></svg></button>
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
     <div class="timer timer-row">
@@ -741,7 +745,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙|運動一下吧🏃|今天要讀到12點！|伸個懶腰～|拍拍手👏|來跳個舞💃|肚子好餓🍙|深呼吸…|衝刺最後一小時🚀|好想睡💤", "s.up": "休息一下 ☕", "s.sit": "坐下", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "風吹聲", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.koto": "和風古箏", "mu.synth": "太空電子", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙|運動一下吧🏃|今天要讀到12點！|伸個懶腰～|拍拍手👏|來跳個舞💃|肚子好餓🍙|深呼吸…|衝刺最後一小時🚀|好想睡💤", "s.up": "休息一下 ☕", "s.sit": "坐下", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.backUp": "回到房間畫面", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "風吹聲", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.koto": "和風古箏", "mu.synth": "太空電子", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "act.music": "練音樂", "act.piano": "練琴", "act.sing": "練唱", "act.craft": "做手作", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -832,7 +836,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙|Let's exercise 🏃|Studying till 12!|Big stretch~|Clap clap 👏|Dance break 💃|So hungry 🍙|Deep breath…|Final sprint 🚀|So sleepy 💤", "s.up": "Take a break ☕", "s.sit": "Sit here", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "Wind", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.koto": "Koto", "mu.synth": "Space synth", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙|Let's exercise 🏃|Studying till 12!|Big stretch~|Clap clap 👏|Dance break 💃|So hungry 🍙|Deep breath…|Final sprint 🚀|So sleepy 💤", "s.up": "Take a break ☕", "s.sit": "Sit here", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.backUp": "Back to the room", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "Wind", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.koto": "Koto", "mu.synth": "Space synth", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "act.music": "Practicing music", "act.piano": "Practicing piano", "act.sing": "Singing practice", "act.craft": "Crafting", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -1622,14 +1626,14 @@
     if (m.dk == null) return seated ? focusSince(m.joined, now) : 0;
     return m.dk + (seated ? focusSince(m.dkAt || m.joined, now) : 0);
   }
-  function clock(ms) {
+  function deskClock(ms) {
     var m = Math.floor(ms / 60000);
     return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0");
   }
   function renderDeskTimes() {
     if (!session || !use3d || !window.KaidaScene3D || !window.KaidaScene3D.times) return;
     var now = Date.now(), out = {};
-    sceneMembers().forEach(function (m) { out[m.id] = clock(deskMs(m, now)); });
+    sceneMembers().forEach(function (m) { out[m.id] = deskClock(deskMs(m, now)); });
     window.KaidaScene3D.times(out);
   }
   function sceneMembers() {
@@ -2790,6 +2794,7 @@
   document.getElementById("room-list").addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target.id === "join-code") document.querySelector('[data-act="join"]').click();
   });
+  document.getElementById("s-back").addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
   document.getElementById("s-more").addEventListener("click", function () {
     var side = document.querySelector(".s-side"), top = side.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--rb-h")) || 72);
     window.scrollTo({ top: top, behavior: "smooth" });
