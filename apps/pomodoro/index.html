@@ -249,6 +249,7 @@
   .set-btn { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
   .set-btn:focus-visible, .sheet-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .rb-set { color: var(--rb-ink); }
+  .set-quit { margin-top: 18px; color: #c0392b; border-color: currentColor; }
   .sheet { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
   .sheet-bg { position: absolute; inset: 0; background: rgba(20, 12, 8, .42); }
   .sheet-panel { position: relative; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; background: var(--surface); color: var(--ink); border-radius: 18px 18px 0 0; padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -8px 30px rgba(0,0,0,.2); animation: sheetup .22s ease-out; }
@@ -579,6 +580,7 @@
       <div class="opt" id="row-view"><span data-i18n="opt.view">房間視角</span><span class="vseg" role="group" id="opt-view"><button type="button" data-view="l" data-i18n="opt.viewL">大</button><button type="button" data-view="m" data-i18n="opt.viewM">中</button><button type="button" data-view="s" data-i18n="opt.viewS">小</button></span></div>
       <div class="opt" id="row-layout"><span data-i18n="opt.layout">房間佈置</span><span class="vseg" role="group" id="opt-layout"><button type="button" data-layout="theme" data-i18n="opt.layTheme">主題版</button><button type="button" data-layout="classic" data-i18n="opt.layClassic">經典版</button></span></div>
       <div class="opt-hint" data-i18n="s.drag">拖曳轉視角 · 兩指縮放、轉動、移動</div>
+      <button class="btn ghost block set-quit" id="set-quit" type="button" data-i18n="set.quit">退出</button>
   </div>
 </div></div>
 
@@ -721,7 +723,7 @@
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
-      "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
+      "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "set.quit": "退出", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "set.title": "設定", "hop.t": "準備房間中", "set.close": "關閉", "set.lang": "語言 Language", "set.reload": "重新整理（拿到最新版本）", "set.sound": "聲音與提醒", "set.room": "房間", "opt.view": "房間視角", "opt.viewL": "大", "opt.viewM": "中", "opt.viewS": "小", "opt.wake": "讀書時保持螢幕亮著", "opt.mute": "全部靜音", "mu.mute": "靜音", "mu.unmute": "取消靜音", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
@@ -758,7 +760,7 @@
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
       "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙|運動一下吧🏃|今天要讀到12點！|伸個懶腰～|拍拍手👏|來跳個舞💃|肚子好餓🍙|深呼吸…|衝刺最後一小時🚀|好想睡💤", "s.up": "休息一下 ☕", "s.sit": "坐下", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.backUp": "回到房間畫面", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "風吹聲", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.koto": "和風古箏", "mu.synth": "太空電子", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
-      "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "act.music": "練音樂", "act.piano": "練琴", "act.sing": "練唱", "act.craft": "做手作", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
+      "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "act.music": "練音樂", "act.piano": "練琴", "act.sing": "練唱", "act.craft": "做手作", "act.other": "其他", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
       "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
@@ -812,7 +814,7 @@
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
-      "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
+      "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "set.quit": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
       "opt.sound": "Chime and vibrate between phases", "set.title": "Settings", "hop.t": "Getting your room ready", "set.close": "Close", "set.lang": "語言 Language", "set.reload": "Reload (get the latest version)", "set.sound": "Sound and reminders", "set.room": "Room", "opt.view": "Room view", "opt.viewL": "Close", "opt.viewM": "Medium", "opt.viewS": "Wide", "opt.wake": "Keep screen on while studying", "opt.mute": "Mute all sound", "mu.mute": "Mute", "mu.unmute": "Unmute", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
@@ -849,7 +851,7 @@
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
       "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙|Let's exercise 🏃|Studying till 12!|Big stretch~|Clap clap 👏|Dance break 💃|So hungry 🍙|Deep breath…|Final sprint 🚀|So sleepy 💤", "s.up": "Take a break ☕", "s.sit": "Sit here", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.backUp": "Back to the room", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "Wind", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.koto": "Koto", "mu.synth": "Space synth", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
-      "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "act.music": "Practicing music", "act.piano": "Practicing piano", "act.sing": "Singing practice", "act.craft": "Crafting", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
+      "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "act.music": "Practicing music", "act.piano": "Practicing piano", "act.sing": "Singing practice", "act.craft": "Crafting", "act.other": "Something else", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
       "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
@@ -1020,7 +1022,15 @@
     net.onChange = function () { checkRoomChat(); if (current === "session") renderScene(true); };
     net.onStatus = function (st) { netStatus = st; if (current === "session") renderNet(); };
   }
-  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
+  // 「其他」：角色每 10 分鐘隨機換一個動作（每個人自己的節奏，別人看到的也一樣）
+  function myAct() {
+    if (data.act !== "other") return S.ACTS.indexOf(data.act) >= 0 ? data.act : "read";
+    var k = data.me.id + ":" + Math.floor(Date.now() / 600000), x = 0;
+    for (var i = 0; i < k.length; i++) x = (x * 31 + k.charCodeAt(i)) | 0;
+    return S.ACTS[Math.abs(x) % S.ACTS.length];
+  }
+  function actLabel() { return t("act." + (data.act === "other" ? "other" : myAct())); }
+  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: myAct(), up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
   function needName() {
     if (data.me.name) return false;
     K.toast(t("r.needName")); show("char"); return true;
@@ -1551,7 +1561,7 @@
   }
   function timeLabel(m) { return m === "custom" ? t("r.custom") + " " + modeCfg().focus + "/" + modeCfg().brk : m === "rand" ? t("r.rand") : TIME_LABEL[m] || ""; }
   function startSummary() {
-    var bits = [t("r.tab." + roomTab), t("act." + (S.ACTS.indexOf(data.act) >= 0 ? data.act : "read"))];
+    var bits = [t("r.tab." + roomTab), actLabel()];
     if (roomTab === "private" || roomTab === "sim" || roomTab === "solo") bits.push(themeName(data.theme, data.me.name));
     else if (roomTab === "quick") bits.push(data.qTheme === "rand" ? t("r.randRoom") : themeName(data.qTheme, data.me.name));
     if (roomTab !== "join") bits.push(timeLabel(data.mode));
@@ -1602,7 +1612,7 @@
     var starts = '<label class="a4-cell"><span>' + K.esc(t("r.howH")) + '</span><select id="pick-start" class="a4-select">' +
       START_KEYS.map(function (k) { return '<option value="' + k + '"' + (roomTab === k ? " selected" : "") + '>' + K.esc(t("r.tab." + k)) + '</option>'; }).join("") + '</select></label>';
     var acts = '<label class="a4-cell"><span>' + K.esc(t("r.doH").replace(/[？?]$/, "")) + '</span><select id="pick-act" class="a4-select">' +
-      S.ACTS.map(function (a) { return '<option value="' + a + '"' + (data.act === a ? " selected" : "") + '>' + K.esc(t("act." + a)) + '</option>'; }).join("") + '</select></label>';
+      S.ACTS.concat("other").map(function (a) { return '<option value="' + a + '"' + (data.act === a ? " selected" : "") + '>' + K.esc(t("act." + a)) + '</option>'; }).join("") + '</select></label>';
     var qthemes = '<button type="button" class="tcard" data-qtheme="rand" aria-pressed="' + (data.qTheme === "rand") + '"><span class="sw rnd">?</span>' + K.esc(t("r.randRoom")) + '</button>' +
       THEME_KEYS.map(function (k) {
         var c = THEME_SW[k] || ["#c08a5a", "#f3e3c6"];
@@ -1675,7 +1685,7 @@
   }
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: myAct(), me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
@@ -1724,7 +1734,7 @@
     renderSays(); renderMusic(); renderDoing();
   }
   function renderDoing() {
-    document.getElementById("doing").innerHTML = '<span class="lab">' + K.esc(t("s.doing")) + '</span><b class="doing-now">' + K.esc(t("act." + (S.ACTS.indexOf(data.act) >= 0 ? data.act : "read"))) + '</b>';
+    document.getElementById("doing").innerHTML = '<span class="lab">' + K.esc(t("s.doing")) + '</span><b class="doing-now">' + K.esc(data.act === "other" ? t("act.other") + " · " + t("act." + myAct()) : actLabel()) + '</b>';
   }
 
   // 背景音樂：每個人自己選，不會同步給別人
@@ -1857,6 +1867,7 @@
     document.getElementById("rb-time").textContent = shown;
     var ub = document.querySelector("#says [data-up]"); if (ub) ub.classList.toggle("shake", needAck(p));
     document.getElementById("rb-foc").setAttribute("aria-pressed", String(!!data.opts.focusMode));
+    if (data.act === "other" && session.pubAct !== myAct()) { session.pubAct = myAct(); renderDoing(); if (session.kind === "room" && net) net.publishMe({ act: session.pubAct }); }
     // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」，
     // 按了「我回來了」坐回座位就再蓋上
     var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && !session.away && current === "session" && (p.focus || (!session.up && !needAck(p)));
@@ -1971,7 +1982,7 @@
     el.innerHTML = html;
   }
   function syncMe() {
-    if (session && session.kind === "room" && net) net.publishMe({ name: data.me.name, look: data.look, act: data.act, fl: data.me.flag });
+    if (session && session.kind === "room" && net) net.publishMe({ name: data.me.name, look: data.look, act: myAct(), fl: data.me.flag });
   }
   document.getElementById("view-char").addEventListener("change", function (e) {
     if (e.target.id !== "c-flag") return;
@@ -2951,11 +2962,13 @@
   // 設定：小木頭左邊和房間計時列各有一個齒輪
   (function () {
     var sh = document.getElementById("settings"), from = null;
-    function open() { from = document.activeElement; renderSetPals(); sh.hidden = false; sh.querySelector(".sheet-x").focus(); }
+    function open() { from = document.activeElement; renderSetPals(); document.getElementById("set-quit").hidden = current !== "session"; sh.hidden = false; sh.querySelector(".sheet-x").focus(); }
     function close() { sh.hidden = true; if (from && from.focus) from.focus(); }
     document.getElementById("set-btn").addEventListener("click", open);
     document.getElementById("rb-set").addEventListener("click", open);
     sh.addEventListener("click", function (e) { if (e.target.closest("[data-close-set]")) close(); });
+    // 設定最底下的「退出」：離開房間（專注中會先確認）
+    document.getElementById("set-quit").addEventListener("click", function () { sh.hidden = true; from = null; document.getElementById("leave").click(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
   })();
   K.applyStatic();
