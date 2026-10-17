@@ -182,7 +182,8 @@ function applyLayout() {
   SEATS.length = 0; OBST.length = 0; SPOTS.length = 0;
   (L.seats || BASE_SEATS).forEach((s0) => { const s = Object.assign({}, s0); s.dx = s.x + Math.sin(s.ry) * DESK_D; s.dz = s.z + Math.cos(s.ry) * DESK_D; SEATS.push(s); });
   BASE_OBST.forEach((o) => { if (hide.indexOf(o[4]) >= 0) return; const d = off(o[4]); OBST.push([o[0] + d[0], o[1] + d[1], o[2] + d[0], o[3] + d[1]]); });
-  (L.obst || []).forEach((o) => OBST.push(o));
+  const RI = RICH[THEME] || {};
+  (L.obst || []).concat(RI.obst || []).forEach((o) => OBST.push(o));
   SEATS.forEach((s) => {
     const c = Math.abs(Math.cos(s.ry)), sn = Math.abs(Math.sin(s.ry));
     const hx = c * 0.56 + sn * 0.32, hz = sn * 0.56 + c * 0.32;
@@ -198,7 +199,7 @@ function applyLayout() {
     if (!s.m && LAYOUTS[THEME] && inObst(s.x, s.z)) return;
     const d = off(s.m), o = Object.assign({}, s, { x: s.x + d[0], z: s.z + d[1] }); if (L.poses && L.poses[s.m]) o.pose = L.poses[s.m]; SPOTS.push(o);
   });
-  (L.spots || []).forEach((s) => { if (s.in || !inObst(s.x, s.z)) SPOTS.push(s); });
+  (L.spots || []).concat(RI.spots || []).forEach((s) => { if (s.in || !inObst(s.x, s.z)) SPOTS.push(s); });
   buildGrid();
 }
 
@@ -1433,6 +1434,327 @@ const LAYOUTS = {
   }
 };
 
+/* ===== 各主題房間的小擺設 =====
+   每間再多放一些符合場景的東西：obst 是放在地上的家具範圍，spots 是休息時可以去的新地方 */
+function glowMat(c, k) { return new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: k || 0.6, roughness: 0.6 }); }
+function potPlant(x, z, s, pot, leaf) {
+  const g = xg(x, z); g.scale.setScalar(s || 1);
+  cyl(0.2, 0.15, 0.36, pot || "#c98f6a", 0, 0.18, 0, g, 14);
+  for (let i = 0; i < 7; i++) { const l = sph(0.16, i % 2 ? (leaf || "#6f9a5a") : "#8fae7a", Math.cos(i * 0.9) * 0.14, 0.55 + (i % 3) * 0.16, Math.sin(i * 0.9) * 0.14, g, 10, 8); l.scale.set(0.8, 1.4, 0.8); }
+  plants.push(g); return g;
+}
+function wallShelf(x, y, z, side, w, items) {
+  // 牆上的小層板，items 是放在上面的東西 [顏色, 寬, 高, 形狀]
+  const g = new THREE.Group(); g.position.set(x, y, z); if (side === "left") g.rotation.y = R90; scene.add(g);
+  box(w, 0.04, 0.22, "#7a4a2a", 0, 0, 0.11, g);
+  let px = -w / 2 + 0.08;
+  items.forEach(([c, iw, ih, shape]) => { if (shape === "cup") cyl(iw / 2, iw / 2.4, ih, c, px + iw / 2, ih / 2 + 0.02, 0.12, g, 12); else if (shape === "ball") sph(iw / 2, c, px + iw / 2, iw / 2 + 0.02, 0.12, g, 10, 8); else box(iw, ih, 0.14, c, px + iw / 2, ih / 2 + 0.02, 0.12, g); px += iw + 0.05; });
+  return g;
+}
+function wallPic(tex, w, h, x, y, z, side, fc) { return framed(tex, w, h, x, y, z, side, fc); }
+function floorRug(x, z, rx, rz, c1, c2, ry) {
+  const r = new THREE.Mesh(new THREE.CircleGeometry(1, 40), mat(c1)); r.rotation.x = -R90; r.rotation.z = ry || 0; r.scale.set(rx, rz, 1); r.position.set(x, 0.007, z); r.receiveShadow = true; scene.add(r);
+  if (c2) { const r2 = new THREE.Mesh(new THREE.RingGeometry(0.8, 0.88, 40), mat(c2)); r2.rotation.x = -R90; r2.rotation.z = ry || 0; r2.scale.set(rx, rz, 1); r2.position.set(x, 0.009, z); scene.add(r2); }
+}
+function standLamp(x, z, shade, light) {
+  const g = xg(x, z);
+  cyl(0.14, 0.16, 0.04, "#2a2620", 0, 0.02, 0, g, 14); cyl(0.015, 0.015, 1.5, "#2a2620", 0, 0.77, 0, g, 6);
+  const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.22, 0.26, 18, 1, true), mat(shade || "#f3e3c6", { side: THREE.DoubleSide, emissive: 0xffc070, emissiveIntensity: 0.4 })); sh.position.y = 1.55; g.add(sh);
+  if (light) { const l = new THREE.PointLight(light, 0.6, 3, 1.6); l.position.set(x, 1.4, z); scene.add(l); }
+  return g;
+}
+function crate(x, z, ry, c, n) { const g = xg(x, z, ry); for (let i = 0; i < (n || 1); i++) { box(0.4, 0.3, 0.4, c || "#a07a50", 0, 0.15 + i * 0.31, 0, g); box(0.42, 0.04, 0.05, "#7a5a3e", 0, 0.15 + i * 0.31, 0.2, g); } return g; }
+
+const RICH = {
+  cafe: {
+    obst: [[6.25, 0.3, 6.95, 1.7], [-4.6, 4.9, -4.0, 5.5], [-4.75, 5.6, -4.05, 6.3]],
+    spots: [{ x: 5.75, z: 1.0, ry: R90, pose: "snack" }],
+    build() {
+      // 甜點櫃：玻璃罩裡放蛋糕
+      const pc = xg(6.6, 1.0, -R90);
+      box(1.3, 0.85, 0.6, "#4a2f22", 0, 0.425, 0, pc); box(1.32, 0.04, 0.62, "#2a1c16", 0, 0.87, 0, pc);
+      const gl = box(1.24, 0.45, 0.56, new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, roughness: 0.05 }), 0, 1.12, 0, pc); gl.castShadow = false;
+      [["#f6d6e0", -0.42], ["#c98f52", -0.14], ["#f3efe6", 0.14], ["#7a4a2a", 0.42]].forEach(([c, x], i) => { cyl(0.11, 0.11, 0.14, c, x, 0.97, 0, pc, 16); sph(0.025, "#c2453b", x, 1.06, 0, pc, 8, 6); cyl(0.13, 0.13, 0.01, "#f8f4ec", x, 0.9, 0, pc, 16); });
+      const cl = new THREE.PointLight(0xffd9a0, 0.5, 2, 1.6); cl.position.set(6.6, 1.3, 1.0); scene.add(cl);
+      // 牆上的馬克杯架、衣帽架、角落橄欖樹
+      wallShelf(-4.98, 1.55, -1.6, "left", 1.6, [["#f8f4ec", 0.13, 0.13, "cup"], ["#c2453b", 0.13, 0.13, "cup"], ["#3f5f4a", 0.13, 0.13, "cup"], ["#e0b04f", 0.13, 0.13, "cup"], ["#f8f4ec", 0.13, 0.13, "cup"], ["#7a4a2a", 0.2, 0.26], ["#c9a45a", 0.2, 0.22]]);
+      wallShelf(-4.98, 1.1, -1.6, "left", 1.6, [["#3a2418", 0.18, 0.32], ["#6e4a34", 0.18, 0.28], ["#e8d3b0", 0.18, 0.3], ["#3a2418", 0.18, 0.32], ["#9cbf7a", 0.2, 0.2, "ball"]]);
+      const cr = xg(-4.3, 5.2); cyl(0.02, 0.025, 1.7, "#2a1c16", 0, 0.85, 0, cr, 6); cyl(0.2, 0.22, 0.03, "#2a1c16", 0, 0.015, 0, cr, 12);
+      [0, 2.1, 4.2].forEach((a, i) => { const hk = cap(0.012, 0.12, "#2a1c16", cr); hk.position.set(Math.sin(a) * 0.08, 1.62, Math.cos(a) * 0.08); hk.rotation.set(Math.cos(a) * 0.8, 0, -Math.sin(a) * 0.8); });
+      const coat = cap(0.13, 0.45, "#a0603a", cr); coat.position.set(0.1, 1.25, 0.05); coat.scale.z = 0.6; sph(0.1, "#c2453b", -0.08, 1.58, -0.05, cr, 10, 8).scale.y = 0.5;
+      potPlant(-4.4, 5.95, 1.3, "#3a2418", "#7a8a5a");
+      floorRug(6.0, 1.0, 0.6, 1.0, "#a0603a");
+    }
+  },
+  library: {
+    obst: [[-4.75, 0.7, -4.15, 1.7], [-4.75, 2.3, -4.25, 2.9], [5.5, 4.1, 6.3, 4.7], [6.5, -3.2, 7.0, -2.7]],
+    spots: [{ x: 5.9, z: 5.1, ry: PI, pose: "book" }, { x: -3.8, z: 1.2, ry: -R90, pose: "book" }],
+    build() {
+      // 卡片目錄櫃（很多小抽屜）
+      const cc = xg(-4.45, 1.2, R90);
+      box(1.0, 1.1, 0.55, "#6a3a26", 0, 0.55, 0, cc);
+      for (let r = 0; r < 5; r++) for (let k = 0; k < 4; k++) { box(0.2, 0.17, 0.02, "#8a5a3a", -0.33 + k * 0.22, 0.17 + r * 0.2, 0.28, cc); box(0.05, 0.02, 0.02, "#c9a45a", -0.33 + k * 0.22, 0.2 + r * 0.2, 0.3, cc); }
+      box(0.3, 0.2, 0.25, "#3a2216", 0.25, 1.2, 0, cc); box(0.02, 0.3, 0.02, "#c9a45a", -0.25, 1.25, 0, cc); sph(0.06, glowMat("#3f7a52", 0.3), -0.25, 1.42, 0, cc, 10, 8).scale.y = 0.5;
+      // 老爺鐘
+      const gc = xg(-4.5, 2.6, R90);
+      box(0.45, 2.0, 0.35, "#4a2416", 0, 1.0, 0, gc); box(0.5, 0.08, 0.4, "#3a1c10", 0, 2.04, 0, gc);
+      const fc = cyl(0.17, 0.17, 0.02, "#f4ecd8", 0, 1.65, 0.18, gc, 24); fc.rotation.x = R90;
+      box(0.012, 0.12, 0.01, "#2a2620", 0, 1.69, 0.2, gc); box(0.012, 0.09, 0.01, "#2a2620", 0.03, 1.63, 0.2, gc).rotation.z = 1.2;
+      box(0.26, 0.9, 0.01, new THREE.MeshStandardMaterial({ color: 0xffe8c0, transparent: true, opacity: 0.25 }), 0, 0.85, 0.18, gc).castShadow = false;
+      cyl(0.07, 0.07, 0.02, "#c9a45a", 0, 0.6, 0.15, gc, 16).rotation.x = R90;
+      // 還書推車
+      const bc = xg(5.9, 4.4, 0);
+      box(0.8, 0.04, 0.45, "#5a3424", 0, 0.35, 0, bc); box(0.8, 0.04, 0.45, "#5a3424", 0, 0.75, 0, bc);
+      [[-0.37, -0.2], [0.37, -0.2], [-0.37, 0.2], [0.37, 0.2]].forEach(([a, b]) => { box(0.03, 0.8, 0.03, "#2a2620", a, 0.42, b, bc); sph(0.04, "#2a2620", a, 0.04, b, bc, 8, 6); });
+      [0.37, 0.77].forEach((y, r) => { for (let k = 0; k < 7; k++) { const bk = box(0.07, 0.24 + (k % 3) * 0.03, 0.3, ["#7a2a2a", "#2f5a7a", "#c9a45a", "#3f6a4a", "#8a5a8a"][(k + r) % 5], -0.32 + k * 0.1, y + 0.14, 0, bc); bk.rotation.z = (k % 4 === 3) ? 0.3 : 0; } });
+      // 綠色檯燈的大書桌燈、地上的書堆、蕨類
+      const gl = xg(6.75, -2.95); cyl(0.14, 0.16, 0.9, "#4a2416", 0, 0.45, 0, gl, 8);
+      const fern = potPlant(6.75, -2.95, 1.0, "#5a3424", "#4a7a3e"); fern.position.y = 0.9;
+      [[5.2, 1.0], [3.3, 3.3]].forEach(([x, z], j) => { for (let k = 0; k < 5; k++) { const b = box(0.32 - k * 0.02, 0.06, 0.24, ["#7a2a2a", "#2f5a7a", "#c9a45a", "#3f6a4a", "#e8d3b0"][(k + j) % 5], x, 0.03 + k * 0.06, z, scene); b.rotation.y = k * 0.3; } });
+      standLamp(5.25, -0.8, "#2f5a44", 0xffd090);
+      floorRug(6.1, 0.6, 1.1, 1.4, "#7a2a2a", "#c9a45a");
+    }
+  },
+  study: {
+    obst: [[6.3, 0.9, 7.0, 2.1], [6.45, 2.6, 7.0, 3.4], [6.1, -0.9, 6.7, -0.3], [-4.4, 4.9, -3.6, 5.7]],
+    spots: [{ x: 5.8, z: 1.5, ry: R90, pose: "stand" }],
+    build() {
+      // 影印機桌
+      const pr = xg(6.65, 1.5, -R90);
+      box(1.1, 0.75, 0.6, "#b9bfc7", 0, 0.375, 0, pr);
+      box(0.6, 0.32, 0.45, "#e8ecef", -0.15, 0.91, 0, pr); box(0.5, 0.04, 0.3, "#4a525c", -0.15, 1.08, 0.02, pr); box(0.4, 0.01, 0.3, "#ffffff", -0.15, 0.8, 0.25, pr);
+      const led = sph(0.02, new THREE.MeshBasicMaterial({ color: 0x7cffb2 }), 0.08, 1.0, 0.23, pr, 8, 6); led.castShadow = false;
+      for (let k = 0; k < 4; k++) box(0.28, 0.02, 0.36, "#ffffff", 0.32, 0.77 + k * 0.022, 0, pr);
+      // 分類垃圾桶
+      [["#3a78c8", 2.75], ["#43b07e", 3.0], ["#f08a3c", 3.25]].forEach(([c, z]) => { cyl(0.12, 0.1, 0.5, c, 6.72, 0.25, z, scene, 14); cyl(0.125, 0.125, 0.03, "#e8ecef", 6.72, 0.51, z, scene, 14); });
+      // 考試倒數立牌
+      const cd = xg(6.4, -0.6, -0.6);
+      [-1, 1].forEach((sd) => box(0.03, 1.2, 0.03, "#4a525c", sd * 0.28, 0.6, 0, cd));
+      const days = 12 + (new Date().getDate() % 18);
+      wallPlaneIn(cd, signTex([{ t: "距離考試", s: 26, b: 1, c: "#2a2620" }, { t: days + " 天", s: 54, b: 1, c: "#c2453b" }, { t: "一起加油！", s: 20, c: "#3f6fa0" }], { bg: "#fff8dc", w: 200, h: 220 }), 0.56, 0.62, 0, 1.0, 0.02);
+      // 時間表、飲水機旁的杯子、前面的大盆栽
+      framed(signTex([{ t: "開放時間", s: 24, b: 1 }, { t: "08:00 – 22:00", s: 20 }, { t: "每 50 分鐘休息 10 分", s: 16, c: "#3f6fa0" }], { bg: "#f4f6f7", fg: "#2a2620", w: 256, h: 140 }), 0.9, 0.5, 6.2, 1.9, -3.94, "back", "#8e96a0");
+      for (let k = 0; k < 5; k++) cyl(0.035, 0.03, 0.08, "#f3efe6", 5.25 + k * 0.01, 0.04 + k * 0.07, -3.55, scene, 10);
+      potPlant(-4.0, 5.3, 1.3, "#e8ecef", "#5a8a4a"); potPlant(6.7, 5.4, 1.1, "#e8ecef", "#5a8a4a");
+      box(1.4, 0.006, 0.8, "#d8dde2", -2.6, 0.004, -1.5, scene).castShadow = false;
+    }
+  },
+  space: {
+    obst: [[-3.9, -3.9, -1.8, -3.25], [6.3, -1.0, 7.0, 0.1], [6.35, 2.6, 7.05, 3.6], [-4.6, 4.6, -3.8, 5.4]],
+    spots: [{ x: -2.85, z: -2.85, ry: PI, pose: "stand" }, { x: 5.85, z: -0.45, ry: R90, pose: "gaze" }],
+    build() {
+      // 牆邊的控制面板，一排會閃的按鈕
+      const cp = xg(-2.85, -3.6);
+      box(2.0, 0.95, 0.55, "#c9d0d8", 0, 0.475, 0, cp); const top = box(2.0, 0.06, 0.6, "#3e4654", 0, 0.98, 0.05, cp); top.rotation.x = 0.3;
+      const blink = [];
+      for (let k = 0; k < 14; k++) { const b = sph(0.03, new THREE.MeshBasicMaterial({ color: [0x4ad8ff, 0x7cffb2, 0xffd84a, 0xff6a6a][k % 4] }), -0.85 + k * 0.13, 1.03, 0.08 + (k % 2) * 0.1, cp, 8, 6); b.castShadow = false; blink.push(b); }
+      const sc2 = canvasTex(256, 96, (g, w, h) => { g.fillStyle = "#06121e"; g.fillRect(0, 0, w, h); g.strokeStyle = "#7cffb2"; g.lineWidth = 2; g.beginPath(); for (let x = 0; x < w; x += 3) g.lineTo(x, 50 + Math.sin(x / 7) * 18 * Math.sin(x / 40)); g.stroke(); g.fillStyle = "#4ad8ff"; g.font = "bold 16px monospace"; g.fillText("NAV · OK", 8, 20); });
+      const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.5), new THREE.MeshBasicMaterial({ map: sc2 })); scr.position.set(0, 1.55, -0.2); cp.add(scr);
+      blink.forEach((b, i) => { b.userData.ph = i * 1.3; }); spaceBlinks = blink;
+      // 太空衣展示架
+      const su = xg(6.65, -0.45, -R90);
+      cyl(0.25, 0.28, 0.06, "#3e4654", 0, 0.03, 0, su, 16); cyl(0.02, 0.02, 0.6, "#9aa4b0", 0, 0.3, 0, su, 6);
+      [-0.09, 0.09].forEach((x) => { const l = cap(0.08, 0.35, "#f3efe6", su); l.position.set(x, 0.5, 0); });
+      const bd = cap(0.2, 0.3, "#f3efe6", su); bd.position.y = 1.05; bd.scale.z = 0.8;
+      [-1, 1].forEach((sd) => { const a = cap(0.065, 0.3, "#f3efe6", su); a.position.set(sd * 0.26, 1.05, 0); a.rotation.z = sd * 0.25; });
+      box(0.12, 0.1, 0.03, "#c2453b", 0.07, 1.15, 0.18, su); box(0.16, 0.06, 0.02, "#2f4a7a", -0.06, 1.2, 0.18, su);
+      const hl = sph(0.2, new THREE.MeshStandardMaterial({ color: 0xd8e8f8, transparent: true, opacity: 0.55, roughness: 0.05, metalness: 0.3 }), 0, 1.5, 0, su, 18, 14); hl.castShadow = false;
+      sph(0.14, "#f0c8a0", 0, 1.48, -0.02, su, 12, 10).visible = false;
+      // 氧氣筒、火箭模型、吊在天花板的行星
+      [[6.6, 2.85, "#e8e8f0"], [6.8, 3.2, "#f08a3c"], [6.55, 3.35, "#e8e8f0"]].forEach(([x, z, c]) => { cyl(0.13, 0.13, 0.95, c, x, 0.48, z, scene, 14); sph(0.13, c, x, 0.95, z, scene, 12, 8); cyl(0.03, 0.03, 0.1, "#3e4654", x, 1.1, z, scene, 8); });
+      const rk = xg(-4.2, 5.0, 0.4);
+      cyl(0.3, 0.35, 0.12, "#3e4654", 0, 0.06, 0, rk, 16); cyl(0.13, 0.15, 1.0, "#f3efe6", 0, 0.65, 0, rk, 16);
+      const nose = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.35, 16), mat("#c2453b")); nose.position.y = 1.32; rk.add(nose);
+      [0, 2.1, 4.2].forEach((a) => { const f = box(0.02, 0.3, 0.22, "#c2453b", Math.sin(a) * 0.17, 0.3, Math.cos(a) * 0.17, rk); f.rotation.y = a; });
+      const win = cyl(0.06, 0.06, 0.02, "#4ad8ff", 0, 0.85, 0.14, rk, 14); win.rotation.x = R90;
+      [[-3.4, 3.3, -2.4, 0.35, "#f2a65a", 1], [5.6, 3.2, -2.3, 0.22, "#7a9ad8", 0], [6.2, 2.9, 5.2, 0.18, "#c9b48a", 0]].forEach(([x, y, z, r, c, ring]) => {
+        box(0.006, 4.4 - y, 0.006, "#9aa4b0", x, (4.4 + y) / 2, z, scene);
+        const pl = sph(r, c, x, y, z, scene, 18, 14); plants.push(pl);
+        if (ring) { const rg = new THREE.Mesh(new THREE.TorusGeometry(r * 1.6, 0.02, 6, 36), mat("#e8d8b0")); rg.position.set(x, y, z); rg.rotation.x = 1.2; scene.add(rg); }
+      });
+      floorRug(5.8, 3.8, 1.2, 1.2, "#1a2440", "#4ad8ff");
+    }
+  },
+  school: {
+    obst: [[6.25, 3.3, 7.0, 4.2], [-4.75, -1.95, -4.15, -0.85], [6.2, 0.2, 7.0, 0.9], [-1.6, 5.5, 3.4, 6.1]],
+    spots: [{ x: 5.75, z: 3.75, ry: R90, pose: "exercise" }, { x: -3.7, z: -1.4, ry: -R90, pose: "gaze" }],
+    build() {
+      // 體育角：裝球的籃子
+      const bk = xg(6.6, 3.75);
+      cyl(0.4, 0.35, 0.55, new THREE.MeshStandardMaterial({ color: 0x5a6a7a, wireframe: true }), 0, 0.28, 0, bk, 10).castShadow = false;
+      [[-0.12, 0.22, -0.1, "#e86a2a"], [0.14, 0.24, 0.08, "#f3efe6"], [0.0, 0.48, 0.0, "#e86a2a"], [-0.1, 0.5, 0.15, "#f6c445"], [0.15, 0.5, -0.12, "#3a78c8"]].forEach(([x, y, z, c]) => sph(0.12, c, x, y, z, bk, 12, 10));
+      // 班級魚缸
+      const ft = xg(-4.45, -1.4, R90);
+      box(1.0, 0.7, 0.5, "#8a6a3a", 0, 0.35, 0, ft);
+      const tank = box(0.9, 0.5, 0.4, new THREE.MeshStandardMaterial({ color: 0x9ad8f0, transparent: true, opacity: 0.45, roughness: 0.05 }), 0, 0.96, 0, ft); tank.castShadow = false;
+      box(0.88, 0.04, 0.38, "#d8c39a", 0, 0.73, 0, ft); [[-0.25, "#4a8a3a"], [0.2, "#6aa04a"]].forEach(([x, c]) => { const w = cap(0.03, 0.3, c, ft); w.position.set(x, 0.9, 0); });
+      [[-0.1, 0.95, "#f08a3c"], [0.15, 1.05, "#f6c445"]].forEach(([x, y, c]) => { const f = sph(0.04, c, x, y, 0.05, ft, 8, 6); f.scale.set(1.6, 1, 0.6); });
+      // 書包櫃、摺紙鶴、同學的畫
+      const cub = xg(6.6, 0.55, -R90);
+      box(1.4, 1.0, 0.5, "#c9a878", 0, 0.5, 0, cub);
+      for (let r = 0; r < 2; r++) for (let k = 0; k < 4; k++) { box(0.3, 0.38, 0.02, "#a8835a", -0.5 + k * 0.33, 0.27 + r * 0.45, 0.24, cub); box(0.24, 0.26, 0.14, ["#c2453b", "#3a78c8", "#e0b04f", "#43b07e", "#e86aa0", "#f08a3c", "#5a5f6b", "#8a5a8a"][r * 4 + k], -0.5 + k * 0.33, 0.24 + r * 0.45, 0.25, cub); }
+      for (let i = 0; i < 12; i++) { const x = -1.2 + (i % 6) * 0.9, z = i < 6 ? 0.2 : 3.9; box(0.004, 0.6, 0.004, "#f3efe6", x, 3.0, z, scene); const cr = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.14, 3), mat(["#e86a7a", "#f6c445", "#6ad0ff", "#8ae08a"][i % 4])); cr.position.set(x, 2.68, z); cr.rotation.z = R90; scene.add(cr); }
+      [[-0.55, "#ffd0d6", "🌈"], [0.0, "#cfe8ff", "🐱"], [0.55, "#fff8dc", "🌻"]].forEach(([dz, bg, em]) => framed(signTex([{ t: em, s: 64 }], { bg, w: 128, h: 128 }), 0.42, 0.42, -4.99, 1.75, -1.4 + dz, "left", "#e0b04f"));
+      // 前面一排小盆栽和澆水壺
+      const sill = xg(0.9, 5.8); box(5.0, 0.4, 0.5, "#c9a878", 0, 0.2, 0, sill);
+      for (let k = 0; k < 7; k++) { cyl(0.1, 0.08, 0.14, ["#e86a7a", "#f6c445", "#6ad0ff"][k % 3], -2.1 + k * 0.7, 0.47, 0, sill, 12); sph(0.11, "#6f9a5a", -2.1 + k * 0.7, 0.6, 0, sill, 10, 8); }
+      cyl(0.09, 0.1, 0.18, "#43b07e", 2.2, 0.49, 0.05, sill, 12);
+    }
+  },
+  konbini: {
+    obst: [[6.25, -1.6, 7.0, -0.8], [5.6, 3.4, 7.0, 4.2], [4.25, 5.35, 4.75, 5.85], [-4.75, 4.4, -3.55, 4.9]],
+    spots: [{ x: 5.85, z: -1.2, ry: R90, pose: "stand" }, { x: 6.3, z: 3.0, ry: PI, pose: "snack" }],
+    build() {
+      // ATM／事務機
+      const atm = xg(6.65, -1.2, -R90);
+      box(0.75, 1.45, 0.6, "#3a78c8", 0, 0.725, 0, atm); box(0.6, 0.35, 0.02, new THREE.MeshBasicMaterial({ color: 0xbfe6ff }), 0, 1.05, 0.31, atm);
+      box(0.55, 0.06, 0.2, "#2a2f38", 0, 0.78, 0.32, atm); box(0.75, 0.12, 0.62, "#f6c445", 0, 1.5, 0, atm);
+      // 冰淇淋冰櫃
+      const fz = xg(6.3, 3.8);
+      box(1.3, 0.75, 0.7, "#f4f6f7", 0, 0.375, 0, fz); box(1.2, 0.02, 0.6, new THREE.MeshStandardMaterial({ color: 0xcfeaff, transparent: true, opacity: 0.5, roughness: 0.05 }), 0, 0.76, 0, fz).castShadow = false;
+      for (let k = 0; k < 8; k++) box(0.12, 0.08, 0.2, ["#f6d6e0", "#f6c445", "#8ad8a8", "#c98f52"][k % 4], -0.5 + k * 0.14, 0.7, (k % 2) * 0.2 - 0.1, fz);
+      wallPlaneIn(fz, signTex([{ t: "ICE 🍦", s: 34, b: 1, c: "#3a78c8" }], { bg: "#ffffff", w: 200, h: 60 }), 0.9, 0.27, 0, 0.45, 0.36);
+      // 關東煮鍋（放在吧台上）
+      const od = xg(2.0, -3.62); box(0.5, 0.12, 0.36, "#9aa2ab", 0, 1.08, 0, od); box(0.46, 0.02, 0.32, "#c98f52", 0, 1.14, 0, od);
+      [[-0.15, 0, "#f3efe6"], [0, 0.06, "#e8c070"], [0.14, -0.05, "#a0603a"]].forEach(([x, z, c]) => { cyl(0.004, 0.004, 0.2, "#c9a878", x, 1.24, z, od, 4); sph(0.04, c, x, 1.17, z, od, 8, 6); });
+      // 雨傘架、分類垃圾桶、門口腳踏墊
+      const ub = xg(4.5, 5.6); cyl(0.17, 0.15, 0.5, "#9aa2ab", 0, 0.25, 0, ub, 12);
+      [["#e8473a", 0.4], ["#3a78c8", -0.3], ["#2a2620", 0.1]].forEach(([c, r], i) => { const u = cyl(0.02, 0.06, 0.8, c, Math.sin(i * 2) * 0.05, 0.6, Math.cos(i * 2) * 0.05, ub, 8); u.rotation.z = r * 0.3; });
+      [["#3a78c8", -4.5], ["#43b07e", -4.15], ["#f08a3c", -3.8]].forEach(([c, x]) => { box(0.3, 0.75, 0.4, c, x, 0.375, 4.65, scene); box(0.16, 0.04, 0.02, "#ffffff", x, 0.65, 4.86, scene); });
+      box(1.6, 0.01, 0.8, "#2f9a6a", 3.0, 0.006, 6.0, scene).castShadow = false;
+    }
+  },
+  washitsu: {
+    obst: [[6.3, -1.4, 7.0, -0.2], [-4.1, 4.5, -3.5, 5.1], [6.2, -3.3, 7.0, -2.6], [-1.6, 5.6, 0.0, 6.2]],
+    spots: [{ x: -3.25, z: 4.8, ry: -R90, pose: "gaze" }],
+    build() {
+      // 屏風
+      const by = xg(6.6, -0.8, -R90 + 0.1);
+      for (let k = 0; k < 4; k++) { const p = new THREE.Group(); p.position.set(-0.45 + k * 0.3, 0, (k % 2) * 0.1); p.rotation.y = (k % 2 ? -1 : 1) * 0.3; by.add(p); box(0.3, 1.5, 0.03, "#3a2618", 0, 0.75, 0, p); box(0.26, 1.4, 0.035, ["#e8d8a8", "#f1ead8"][k % 2], 0, 0.78, 0, p); }
+      const crane = canvasTex(128, 128, (g) => { g.fillStyle = "rgba(0,0,0,0)"; g.clearRect(0, 0, 128, 128); g.fillStyle = "#c2302a"; g.beginPath(); g.arc(80, 30, 14, 0, 7); g.fill(); g.strokeStyle = "#3a5a4a"; g.lineWidth = 6; g.beginPath(); g.moveTo(10, 120); g.quadraticCurveTo(50, 60, 120, 110); g.stroke(); });
+      const cm = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), new THREE.MeshBasicMaterial({ map: crane, transparent: true })); cm.position.set(0, 0.85, 0.12); by.add(cm);
+      // 插花台
+      const ik = xg(-3.8, 4.8);
+      box(0.6, 0.5, 0.6, "#3a2618", 0, 0.25, 0, ik); cyl(0.12, 0.14, 0.1, "#2a3a3a", 0, 0.55, 0, ik, 16);
+      [[0, 0.3, 0.0, "#5a8a3e"], [0.1, 0.22, 0.4, "#5a8a3e"], [-0.08, 0.18, -0.5, "#5a8a3e"]].forEach(([x, h, r, c]) => { const st = cyl(0.008, 0.008, h * 2, c, x, 0.6 + h, 0, ik, 4); st.rotation.z = r; });
+      [[0.0, 1.2, 0.02, "#f2a0b8"], [0.32, 0.98, 0.0, "#ffffff"], [-0.24, 0.92, 0.04, "#f2a0b8"]].forEach(([x, y, z, c]) => sph(0.06, c, x, y, z, ik, 10, 8));
+      // 衣櫃（簞笥）、門口的木屐、竹子盆栽
+      const tn = xg(6.6, -2.95, -R90);
+      box(1.2, 1.1, 0.55, "#6a4a30", 0, 0.55, 0, tn);
+      for (let r = 0; r < 3; r++) for (let k = 0; k < 2; k++) { box(0.55, 0.3, 0.02, "#7a5a3e", -0.28 + k * 0.56, 0.2 + r * 0.34, 0.28, tn); cyl(0.04, 0.04, 0.02, "#2a2620", -0.28 + k * 0.56, 0.2 + r * 0.34, 0.3, tn, 10).rotation.x = R90; }
+      cyl(0.11, 0.1, 0.05, "#f4ecd8", 0.3, 1.13, 0, tn, 14); box(0.3, 0.2, 0.2, "#c2302a", -0.25, 1.2, 0, tn);
+      [[-0.15, "#8a6a4a"], [0.15, "#8a6a4a"]].forEach(([dx, c]) => { box(0.12, 0.03, 0.26, c, -0.8 + dx, 0.05, 5.9, scene); box(0.1, 0.04, 0.02, "#2a2620", -0.8 + dx, 0.02, 5.8, scene); });
+      const bm = xg(-0.6, 5.9); box(1.4, 0.3, 0.4, "#5a4030", 0, 0.15, 0, bm);
+      for (let k = 0; k < 7; k++) { const h = 1.2 + (k % 3) * 0.35; cyl(0.025, 0.03, h, "#7aa04a", -0.6 + k * 0.2, 0.3 + h / 2, (k % 2) * 0.08 - 0.04, bm, 6); const lf = sph(0.12, "#5a8a3e", -0.6 + k * 0.2 + 0.08, 0.3 + h, 0, bm, 8, 6); lf.scale.set(1.6, 0.4, 0.6); }
+      plants.push(bm);
+    }
+  },
+  cabin: {
+    obst: [[6.3, 2.6, 7.0, 3.4], [6.2, 4.6, 7.0, 5.3], [-4.6, 4.6, -3.8, 5.4], [6.35, -0.9, 7.0, -0.1]],
+    spots: [{ x: 5.85, z: 3.0, ry: R90, pose: "music" }, { x: -3.35, z: -0.0, ry: -1.8, pose: "warm" }],
+    build() {
+      // 立在架上的吉他
+      const gt = xg(6.65, 3.0, -R90);
+      [-0.15, 0.15].forEach((x) => { const l = box(0.03, 0.5, 0.03, "#2a2620", x, 0.25, -0.1, gt); l.rotation.x = 0.2; });
+      const body = cyl(0.2, 0.2, 0.09, "#c98f52", 0, 0.45, 0, gt, 20); body.rotation.x = R90; body.scale.set(1, 1, 1);
+      const b2 = cyl(0.15, 0.15, 0.09, "#c98f52", 0, 0.75, 0, gt, 20); b2.rotation.x = R90;
+      cyl(0.05, 0.05, 0.1, "#2a1c16", 0, 0.6, 0.01, gt, 14).rotation.x = R90;
+      box(0.06, 0.6, 0.03, "#5a3a22", 0, 1.15, 0, gt); box(0.08, 0.14, 0.04, "#3a2414", 0, 1.5, 0, gt);
+      // 鹿角、獎槳、雪鞋掛在牆上
+      const ant = new THREE.Group(); ant.position.set(-4.95, 2.45, 0.1); ant.rotation.y = R90; scene.add(ant);
+      cyl(0.2, 0.2, 0.05, "#5a3a20", 0, 0, 0, ant, 16).rotation.x = R90;
+      [-1, 1].forEach((sd) => { const a = cyl(0.02, 0.025, 0.5, "#e8dcc4", sd * 0.18, 0.2, 0.08, ant, 6); a.rotation.z = sd * -0.7; [0.1, 0.25].forEach((t, k) => { const b = cyl(0.012, 0.015, 0.18, "#e8dcc4", sd * (0.1 + t * 0.6), 0.12 + t * 0.5, 0.08, ant, 5); b.rotation.z = sd * 0.3 * (k + 1); }); });
+      [[5.6, "#a83a2e"], [6.3, "#3f6a3a"]].forEach(([x, c], i) => { const pd = new THREE.Group(); pd.position.set(x, 2.1, -3.93); pd.rotation.z = i ? -0.35 : 0.35; scene.add(pd); box(0.04, 1.3, 0.03, "#8a5a3a", 0, 0, 0, pd); const bl = sph(0.13, c, 0, -0.65, 0, pd, 12, 8); bl.scale.set(1, 1.8, 0.2); });
+      // 背包、靴子、木箱、角落的小松樹
+      const bp = xg(6.6, 4.95, -R90 + 0.3);
+      box(0.4, 0.55, 0.25, "#a83a2e", 0, 0.32, 0, bp); box(0.3, 0.18, 0.08, "#7a2a20", 0, 0.25, 0.15, bp); const roll = cyl(0.08, 0.08, 0.42, "#3f6a3a", 0, 0.66, 0, bp, 10); roll.rotation.z = R90;
+      [[0.35, 0.2], [0.55, 0.25]].forEach(([dx, dz]) => { box(0.12, 0.25, 0.14, "#5a3a20", dx, 0.125, dz, bp); box(0.14, 0.06, 0.24, "#3a2414", dx, 0.03, dz + 0.04, bp); });
+      crate(6.65, -0.5, 0.2, "#a07a50", 2); sph(0.1, "#c2453b", 6.65, 0.72, -0.5, scene, 10, 8); sph(0.1, "#e0b04f", 6.75, 0.72, -0.38, scene, 10, 8);
+      const pt = xg(-4.2, 5.0); cyl(0.2, 0.16, 0.3, "#8a5a3a", 0, 0.15, 0, pt, 12);
+      [[0.45, 0.5, 0.55], [0.35, 0.45, 0.9], [0.22, 0.35, 1.2]].forEach(([r, h, y]) => { const c = new THREE.Mesh(new THREE.ConeGeometry(r, h, 10), mat("#3f6a44")); c.position.y = y; c.castShadow = true; pt.add(c); });
+      floorRug(-3.0, -0.2, 0.7, 0.5, "#e8dcc4");
+    }
+  },
+  beach: {
+    obst: [[6.3, -1.1, 7.0, 0.3], [-1.2, 5.55, 1.2, 6.25], [6.3, 4.8, 7.0, 5.6], [4.45, 2.6, 5.05, 3.0], [-4.5, 4.1, -4.1, 4.5], [-4.5, 5.4, -4.1, 5.8]],
+    spots: [{ x: 0.0, z: 5.9, ry: 0.3, pose: "lounge", in: true }, { x: 5.85, z: -0.4, ry: R90, pose: "stand" }],
+    build() {
+      // 衝浪板架
+      const sr = xg(6.65, -0.4, -R90);
+      [-0.55, 0.55].forEach((x) => box(0.05, 1.3, 0.05, "#a07a50", x, 0.65, -0.2, sr));
+      [["#f2a65a", 0.0], ["#7ac4c4", 0.17], ["#e8574a", 0.34]].forEach(([c, z], i) => { const b = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 1.3, 6, 14), mat(c)); b.scale.z = 0.12; b.rotation.z = R90; b.position.set(0, 0.4 + i * 0.32, -0.15 + z * 0.2); b.castShadow = true; sr.add(b); });
+      // 吊床：兩根柱子拉一張網
+      const hm = xg(0, 5.9, 0.3);
+      [-1.1, 1.1].forEach((x) => cyl(0.05, 0.06, 1.4, "#a07a50", x, 0.7, 0, hm, 8));
+      const cloth = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.9, 16, 1, true, Math.PI * 0.55, Math.PI * 0.9), mat("#f2a65a", { side: THREE.DoubleSide })); cloth.rotation.z = R90; cloth.position.y = 0.75; cloth.scale.set(1, 1, 0.9); cloth.castShadow = true; hm.add(cloth);
+      [-1, 1].forEach((sd) => { const r = cyl(0.01, 0.01, 0.35, "#f3efe6", sd * 1.0, 0.95, 0, hm, 4); r.rotation.z = sd * 0.9; });
+      // 冰桶、海灘球、沙堡、火把
+      const cb = xg(4.75, 2.8, 0.4); box(0.55, 0.38, 0.36, "#3a8ab0", 0, 0.19, 0, cb); box(0.57, 0.08, 0.38, "#f3efe6", 0, 0.42, 0, cb);
+      [-0.12, 0.0, 0.12].forEach((x, i) => cyl(0.03, 0.03, 0.16, ["#e8473a", "#f6c445", "#8ad8a8"][i], x, 0.52, 0.05, cb, 8));
+      const bb = sph(0.22, "#ffffff", 3.9, 0.22, 5.2, scene, 16, 12); [0, 1, 2].forEach((k) => { const s = new THREE.Mesh(new THREE.SphereGeometry(0.225, 16, 12, k * 2.1, 0.7), mat(["#e8473a", "#3a8ab0", "#f6c445"][k])); s.position.copy(bb.position); scene.add(s); });
+      const sc = xg(6.65, 5.2); cyl(0.4, 0.45, 0.1, "#e8d0a0", 0, 0.05, 0, sc, 16); cyl(0.2, 0.25, 0.3, "#e8d0a0", 0, 0.25, 0, sc, 4).rotation.y = 0.78; [[-0.25, 0], [0.25, 0], [0, -0.25], [0, 0.25]].forEach(([a, b]) => cyl(0.07, 0.08, 0.25, "#e8d0a0", a, 0.22, b, sc, 6));
+      const flag = box(0.12, 0.08, 0.005, "#e8473a", 0.06, 0.62, 0, sc); cyl(0.005, 0.005, 0.3, "#3a3a34", 0, 0.5, 0, sc, 4); cyl(0.12, 0.08, 0.15, "#f6c445", 0.4, 0.075, 0.3, sc, 12);
+      [[-4.3, 4.3], [-4.3, 5.6]].forEach(([x, z]) => { cyl(0.04, 0.05, 1.5, "#8a6a40", x, 0.75, z, scene, 8); cyl(0.08, 0.06, 0.15, "#5a3a20", x, 1.55, z, scene, 8); const f = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.2, 8), new THREE.MeshBasicMaterial({ color: 0xffa040 })); f.position.set(x, 1.72, z); scene.add(f); fireMeshes.push(f); f.userData.base = 0.2; glowBulb(x, 1.72, z, 0xffa040, 0.6); });
+      floorRug(2.2, 4.5, 1.1, 0.7, "#f6f2e8", "#7ac4c4", 0.3);
+    }
+  },
+  rooftop: {
+    obst: [[6.3, 0.0, 7.0, 0.9], [-4.1, 5.0, -3.1, 5.8], [5.9, 2.0, 7.0, 2.8], [-1.0, 5.9, 1.4, 6.3]],
+    spots: [{ x: 5.85, z: 0.45, ry: R90, pose: "snack" }, { x: -3.6, z: 4.6, ry: PI, pose: "warm" }],
+    build() {
+      // 自動販賣機
+      const vm = xg(6.65, 0.45, -R90);
+      box(0.85, 1.8, 0.65, "#c2302a", 0, 0.9, 0, vm); box(0.62, 0.95, 0.02, new THREE.MeshBasicMaterial({ color: 0xe8f4ff }), -0.06, 1.2, 0.33, vm);
+      for (let r = 0; r < 3; r++) for (let k = 0; k < 5; k++) cyl(0.035, 0.035, 0.16, new THREE.MeshBasicMaterial({ color: [0x3a78c8, 0xf6c445, 0x43b07e, 0xe8473a, 0xffffff][(k + r) % 5] }), -0.28 + k * 0.11, 0.95 + r * 0.28, 0.32, vm, 8);
+      box(0.4, 0.12, 0.05, "#2a2620", -0.05, 0.35, 0.33, vm); box(0.1, 0.25, 0.03, "#2a2620", 0.33, 1.0, 0.33, vm);
+      const vl = new THREE.PointLight(0xffffff, 0.5, 2.5, 1.6); vl.position.set(6.1, 1.2, 0.45); scene.add(vl);
+      // 烤肉架
+      const bq = xg(-3.6, 5.4);
+      [0, 2.1, 4.2].forEach((a) => { const l = cyl(0.015, 0.015, 0.7, "#2a2620", Math.sin(a) * 0.2, 0.33, Math.cos(a) * 0.2, bq, 6); l.rotation.set(Math.cos(a) * 0.25, 0, -Math.sin(a) * 0.25); });
+      const bowl = new THREE.Mesh(new THREE.SphereGeometry(0.32, 18, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat("#2a2620", { side: THREE.DoubleSide })); bowl.position.y = 0.75; bq.add(bowl);
+      const grill = cyl(0.31, 0.31, 0.01, new THREE.MeshStandardMaterial({ color: 0x8a8e94, wireframe: true }), 0, 0.75, 0, bq, 12); grill.castShadow = false;
+      [[-0.1, 0.05, "#a0603a"], [0.08, -0.08, "#c2453b"], [0.12, 0.1, "#6aa04a"]].forEach(([x, z, c]) => { const k = cap(0.03, 0.14, c, bq); k.rotation.z = R90; k.position.set(x, 0.78, z); });
+      const coal = new THREE.PointLight(0xff7a3a, 0.7, 2, 1.6); coal.position.set(-3.6, 0.9, 5.4); scene.add(coal);
+      // 一排盆栽、滑板、摺疊椅
+      [-0.8, -0.1, 0.6, 1.2].forEach((x, i) => potPlant(x, 6.1, 0.9, ["#c94a6a", "#3a3e44", "#f2a65a", "#3a3e44"][i], "#6a9a50"));
+      const sk = xg(6.4, 2.4, 0.5); box(0.22, 0.02, 0.8, "#f2a65a", 0, 0.1, 0, sk); [[-0.08, -0.28], [0.08, -0.28], [-0.08, 0.28], [0.08, 0.28]].forEach(([a, b]) => { const w = cyl(0.03, 0.03, 0.03, "#ffe06a", a, 0.04, b, sk, 10); w.rotation.z = R90; });
+      const fc = xg(6.6, 2.4, -2.2); box(0.42, 0.04, 0.42, "#6ae8ff", 0, 0.42, 0, fc); box(0.42, 0.4, 0.04, "#6ae8ff", 0, 0.66, -0.2, fc); [[-0.18, -1], [0.18, -1]].forEach(([x]) => { const a = box(0.03, 0.6, 0.03, "#3a3e44", x, 0.3, 0, fc); a.rotation.x = 0.4; const b = box(0.03, 0.6, 0.03, "#3a3e44", x, 0.3, 0, fc); b.rotation.x = -0.4; });
+      floorRug(-3.6, 5.0, 0.9, 0.7, "#3a3e44", "#f2a65a");
+    }
+  },
+  lodge: {
+    obst: [[6.3, -1.2, 7.0, 0.2], [-4.3, 4.8, -3.3, 5.8], [6.3, 4.4, 7.0, 5.4], [-4.75, -0.2, -4.2, 0.5]],
+    spots: [{ x: -3.0, z: 5.3, ry: -1.6, pose: "gaze" }, { x: 5.85, z: -0.5, ry: R90, pose: "stand" }],
+    build() {
+      // 雪板架
+      const sk = xg(6.65, -0.5, -R90);
+      box(1.3, 0.06, 0.2, "#5a3a20", 0, 0.1, 0, sk); box(1.3, 0.06, 0.08, "#5a3a20", 0, 1.3, -0.1, sk);
+      [["#c2302a", -0.45], ["#2a5aa8", -0.15], ["#f6c445", 0.15], ["#3f6a54", 0.45]].forEach(([c, x]) => { const s = box(0.1, 1.6, 0.03, c, x, 0.85, -0.04, sk); s.rotation.x = -0.08; });
+      // 聖誕樹（掛燈和星星）
+      const tr = xg(-3.8, 5.3);
+      box(0.4, 0.3, 0.4, "#b0302a", 0, 0.15, 0, tr);
+      [[0.75, 0.7, 0.6], [0.6, 0.6, 1.05], [0.42, 0.55, 1.45], [0.25, 0.4, 1.8]].forEach(([r, h, y]) => { const c = new THREE.Mesh(new THREE.ConeGeometry(r, h, 12), mat("#2f5a44")); c.position.y = y; c.castShadow = true; tr.add(c); });
+      const star = sph(0.09, new THREE.MeshBasicMaterial({ color: 0xffd84a }), 0, 2.05, 0, tr, 10, 8); star.castShadow = false; glowBulb(-3.8, 2.05, 5.3, 0xffd84a, 0.5);
+      for (let i = 0; i < 18; i++) { const a = i * 1.4, y = 0.45 + (i / 18) * 1.4, r = 0.68 - (i / 18) * 0.5; const b = sph(0.035, new THREE.MeshBasicMaterial({ color: [0xff5a4a, 0xffd84a, 0x6ad0ff, 0xffffff][i % 4] }), Math.cos(a) * r, y, Math.sin(a) * r, tr, 6, 5); b.castShadow = false; }
+      [[0.5, 0.3, "#c2302a"], [-0.45, 0.4, "#2a5aa8"], [0.1, 0.55, "#f6c445"]].forEach(([x, z, c]) => { box(0.26, 0.2, 0.26, c, x, 0.1, z, tr); box(0.27, 0.03, 0.05, "#ffffff", x, 0.21, z, tr); });
+      const tl = new THREE.PointLight(0xffc070, 0.6, 3, 1.6); tl.position.set(-3.8, 1.3, 5.3); scene.add(tl);
+      // 木雪橇、門口的雪靴、牆上的駝鹿頭
+      const sl = xg(6.65, 4.9, -R90);
+      [-0.22, 0.22].forEach((x) => { box(0.04, 0.04, 1.0, "#5a3a20", x, 0.04, 0, sl); const tip = cyl(0.1, 0.1, 0.04, "#5a3a20", x, 0.12, 0.5, sl, 12, 0); tip.rotation.z = R90; });
+      for (let k = 0; k < 5; k++) box(0.55, 0.03, 0.12, "#a8784a", 0, 0.2, -0.36 + k * 0.17, sl);
+      [[-0.2, "#c2302a"], [0.2, "#ffffff"]].forEach(([x, c]) => box(0.18, 0.06, 0.14, c, x, 0.25, -0.2, sl));
+      [[-4.55, 0.0], [-4.35, 0.2]].forEach(([x, z]) => { box(0.16, 0.28, 0.2, "#5a3a20", x, 0.14, z, scene); box(0.18, 0.08, 0.3, "#3a2414", x, 0.04, z + 0.06, scene); cyl(0.09, 0.09, 0.06, "#f2ece0", x, 0.3, z, scene, 10); });
+      const mo = new THREE.Group(); mo.position.set(-4.92, 2.5, -2.3); mo.rotation.y = R90; scene.add(mo);
+      cyl(0.18, 0.18, 0.05, "#5a3a20", 0, 0, 0, mo, 14).rotation.x = R90;
+      const hd = sph(0.15, "#6a4a30", 0, -0.05, 0.15, mo, 12, 10); hd.scale.set(0.9, 1.0, 1.4); sph(0.07, "#3a2414", 0, -0.12, 0.33, mo, 8, 6);
+      [-1, 1].forEach((sd) => { const an = sph(0.14, "#d8c8a8", sd * 0.25, 0.12, 0.1, mo, 10, 8); an.scale.set(1.3, 0.3, 0.8); });
+      floorRug(-3.2, -1.8, 0.8, 0.6, "#f2ece0", "#b0302a");
+    }
+  }
+};
+let spaceBlinks = [];
+function wallPlaneIn(g, tex, w, h, x, y, z) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 })); m.position.set(x, y, z); g.add(m); return m; }
+
 /* ===== 房間外面的景色 =====
    房間像一個放在戶外的模型：外面鋪一大片地面，再依主題擺樹、房子、海或星星，縮小時看得到 */
 const OUT = { home: "garden", school: "garden", cafe: "street", library: "street", study: "street", konbini: "street", rooftop: "city", washitsu: "zen", cabin: "forest", lodge: "snow", beach: "beach", space: "space" };
@@ -1883,6 +2205,7 @@ function buildRoom() {
   if (TH.decor) TH.decor();
   REMAP = null;
   if (LY.build) LY.build();
+  if (RICH[THEME]) RICH[THEME].build();
   snowPts = null; seaMesh = null; buildOutside();
 }
 function makeParticles(n, color, size, spawn) {
@@ -2010,9 +2333,10 @@ function update(members) {
     zoomT = focusZoom; panT.set((p.x - target.x) * 0.92, 0, (p.z - target.z) * 0.92); // 幾乎置中（座位隨機，角落的位子也要看得到自己）；clampPan 會擋住不讓看到房間外面 clampPan();
     zoom = zoomT; panOff.copy(panT);
   }
-  // 書桌上的東西：誰坐哪裡就放他的活動道具
-  for (let i = 0; i < 6; i++) {
-    const m = list[i], act = m ? (ACTS3.indexOf(m.act) >= 0 ? m.act : "read") : "";
+  // 書桌上的東西：誰坐哪張桌子，那張桌子就放他的活動道具（座位是隨機的，要照 st.seat 找人）
+  const atSeat = {}; list.forEach((m) => { const st = chars[m.id]; if (st) atSeat[st.seat] = m; });
+  for (let i = 0; i < SEATS.length; i++) {
+    const m = atSeat[i], act = m ? (ACTS3.indexOf(m.act) >= 0 ? m.act : "read") : "";
     const sp = seatProps[i];
     if (sp.act !== act) { sp.group.remove(sp.prop); sp.prop = makeProp(act); sp.group.add(sp.prop); sp.act = act; }
   }
@@ -2279,6 +2603,7 @@ function frame() {
   tickParticles(steam, dt, { rate: 0.5, move: (a, i, d, l) => { a[i + 1] += d * 0.35; a[i] += Math.sin(t * 2 + i) * d * 0.05; } });
   steam.pts.material.opacity = 0.45;
   bulbs.forEach((b) => { b.sp.material.opacity = 0.45 + Math.sin(t * 1.5 + b.phase) * 0.25; });
+  spaceBlinks.forEach((b) => { b.visible = Math.sin(t * 2.2 + b.userData.ph) > -0.4; });
   pendulum.rotation.z = Math.sin(t * 2.2) * 0.22;
   if (now > tvNext) { drawTV(t); tvNext = now + 120; }
   tvLight.intensity = 0.5 + Math.sin(t * 5) * 0.08 + (Math.floor(t / 12) % 3 === 1 ? 0.15 : 0);
@@ -2418,7 +2743,7 @@ function setTheme(name) {
   if (!mounted) return;
   Object.keys(chars).forEach((id) => removeChar(id)); chars = {}; reserved = {};
   while (scene.children.length) scene.remove(scene.children[0]);
-  fireMeshes = []; bulbs = []; curtains = []; plants = []; speakers = []; notes = []; seatProps = [];
+  fireMeshes = []; bulbs = []; curtains = []; plants = []; speakers = []; notes = []; seatProps = []; spaceBlinks = [];
   applyLayout(); buildRoom(); lighting(); envNext = 0; focusMe = true;
   if (lastList) update(lastList);
 }

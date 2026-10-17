@@ -239,6 +239,37 @@
     return spb;
   }
 
+  /* 和風：古箏撥弦，都節音階（ミ ファ ラ シ ド），慢慢彈，偶爾一個低音 */
+  var KOTO = [64, 65, 69, 71, 72, 76, 77, 81];
+  var KO_PAT = [[0, 2, 4, 5], [7, 5, 4, 2], [3, 4, 2, 1], [0, 1, 2, -1], [4, 6, 7, 5], [4, 3, 2, 0], [2, 3, 1, 0], [0, -1, -1, -1]];
+  function koto(midi, t, gain) {
+    tone("triangle", midi, t, 1.6, gain, { rev: true, lp: 2600 });
+    tone("sine", midi + 12, t, 0.35, gain * 0.35, { rev: true });
+    tone("sawtooth", midi, t, 0.06, gain * 0.25, { lp: 3500 });   // 指甲撥到弦的那一下
+  }
+  function kotoBeat(t, beat) {
+    var spb = 60 / 66 / 2, ph = Math.floor(beat / 4) % KO_PAT.length, n = KO_PAT[ph][beat % 4];
+    if (n >= 0) koto(KOTO[n], t + (Math.random() - 0.5) * 0.03, 0.06);
+    if (beat % 16 === 0) { koto(40, t, 0.07); koto(52, t + 0.02, 0.04); }
+    if (beat % 8 === 6 && Math.random() < 0.35) { koto(KOTO[n >= 0 ? n : 0] + 12, t + spb * 0.5, 0.03); }
+    return spb;
+  }
+
+  /* 太空電子：Am F C G，柔軟的合成器長音鋪底，上面一串閃閃的琶音 */
+  var SY = [[45, [57, 60, 64, 69]], [41, [57, 60, 65, 69]], [48, [55, 60, 64, 67]], [43, [55, 59, 62, 67]]];
+  function synthBeat(t, beat) {
+    var spb = 60 / 100 / 2, bar = Math.floor(beat / 16) % SY.length, b = beat % 16, ch = SY[bar];
+    if (b === 0) {
+      tone("sine", ch[0], t, spb * 16, 0.07, { attack: 0.3 });
+      ch[1].forEach(function (m, i) { tone("sawtooth", m, t, spb * 16, 0.012, { attack: 1.5, lp: 900, rev: true, detune: (i % 2 ? 7 : -7) }); });
+    }
+    var arp = ch[1][[0, 1, 2, 3, 2, 1, 2, 3][b % 8]] + 12;
+    tone("square", arp, t, spb * 0.9, 0.012, { lp: 2200, rev: true });
+    tone("sine", arp + 12, t, spb * 1.5, 0.01, { rev: true });
+    if (b % 4 === 2 && Math.random() < 0.3) tone("sine", arp + 24, t, 0.6, 0.012, { rev: true, detune: 10 });
+    return spb;
+  }
+
   /* 咖啡廳：錄音素材（Moodist 的 cafe，CC0／Pixabay 授權），剪成 60 秒、頭尾交叉淡化可無縫循環 */
   function cafeBeat() { return 0.5; }
 
@@ -280,7 +311,7 @@
         cur === "lofi" ? lofiBeat(nextT, step) : cur === "forest" ? forestBeat(nextT) :
         cur === "piano" ? pianoBeat(nextT, step) : cur === "waves" ? wavesBeat(nextT) :
         cur === "bossa" ? bossaBeat(nextT, step) : cur === "musicbox" ? musicboxBeat(nextT, step) :
-        cur === "folk" ? folkBeat(nextT, step) : cur === "cafe" ? cafeBeat() : cur === "night" ? nightBeat() : lightBeat(nextT, step);
+        cur === "folk" ? folkBeat(nextT, step) : cur === "koto" ? kotoBeat(nextT, step) : cur === "synth" ? synthBeat(nextT, step) : cur === "cafe" ? cafeBeat() : cur === "night" ? nightBeat() : lightBeat(nextT, step);
       L.nextT += d; L.step++;
     }
   }
