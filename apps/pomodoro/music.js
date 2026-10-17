@@ -5,8 +5,8 @@
 (function () {
   // 兩個聲道：music（一般音樂）和 amb（白噪音／環境音），可以同時播、各自調音量
   var ctx = null, L = null, layers = {
-    music: { name: "music", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.6, noiseSrc: null, nodes: [] },
-    amb: { name: "amb", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.6, noiseSrc: null, nodes: [] }
+    music: { name: "music", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.3, noiseSrc: null, nodes: [] },
+    amb: { name: "amb", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.3, noiseSrc: null, nodes: [] }
   };
   L = layers.music;
 
