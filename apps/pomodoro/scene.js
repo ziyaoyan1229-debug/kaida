@@ -274,39 +274,66 @@
       '<ellipse cx="-2.2" cy="-11.9" rx="1.2" ry=".85" fill="' + INK + '"/><circle cx="-2.5" cy="-12.2" r=".3" fill="#fff" opacity=".8"/>' +
       '<path d="M-2.2 -11.1 v.5 M-2.2 -10.6 q-.9 .8 -1.6 .1 M-2.2 -10.6 q.9 .8 1.6 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/><path d="M-2.9 -10 q.7 1.4 1.4 0 Z" fill="#f08a9a"/>';
   }
-  // 貴賓：一球一球的捲毛
+  // 貴賓：坐姿跟大家一樣，頭頂一球毛、垂耳捲捲、腳和尾巴是小毛球
   function poodlePet() {
-    var p1 = "#c98a5a", ps = "#a46a3c", pl = "#6e4222";
-    function puff(cx, cy, r) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + ps + '" stroke="' + pl + '" stroke-width=".45"/><circle cx="' + (cx - r * .18) + '" cy="' + (cy - r * .18) + '" r="' + (r * .78) + '" fill="' + p1 + '"/>'; }
-    var g = puff(9.4, -9.6, 2.2) + '<path d="M7.2 -4 Q9 -6 9.4 -8" stroke="' + pl + '" stroke-width="1" fill="none"/>';
-    [[5.4, -3.6, 3.2], [5.6, -7.4, 2.8], [1.6, -8.4, 2.8], [-2.4, -8, 2.8], [-4.8, -4.2, 3], [-.4, -3.4, 3.4], [3, -1.8, 2.6]].forEach(function (p) { g += puff(p[0], p[1], p[2]); });
-    g += puff(-4.6, -.8, 1.7) + puff(-.8, -.8, 1.7);
-    g += puff(-8.6, -13, 2.6) + puff(-8.2, -10, 2.2) + puff(4.2, -13, 2.6) + puff(3.8, -10, 2.2);
-    [[-2.2, -14.4, 5.4], [-5.6, -18.6, 2.4], [-2.2, -20, 2.6], [1.2, -18.6, 2.4]].forEach(function (p) { g += puff(p[0], p[1], p[2]); });
-    g += '<path d="M-6 -12.4 C-6 -14.8 1.6 -14.8 1.6 -12.4 C1.6 -9.6 -6 -9.6 -6 -12.4 Z" fill="#e2b48a"/>' +
-      petEyes(-4.6, .2, -14.6, .9, "#3a2a1a") + petBlush(-6.4, 2, -12.6) +
-      '<ellipse cx="-2.2" cy="-12.4" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-12.7" r=".3" fill="#fff" opacity=".8"/>' +
-      '<path d="M-2.2 -11.6 v.45 M-2.2 -11.15 q-.8 .7 -1.4 .1 M-2.2 -11.15 q.8 .7 1.4 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/>' +
-      '<path d="M-4 -19.6 l1.8 -.6 l-.2 1.6 Z M-.4 -19.6 l-1.8 -.6 l.2 1.6 Z" fill="#f08a9a" stroke="#c05a6a" stroke-width=".3"/>';
+    var p1 = "#d39466", ps = "#ad6e40", pl = "#6e4222", pm = "#ecc49e";
+    function puff(cx, cy, r) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + ps + '" stroke="' + pl + '" stroke-width=".45"/><circle cx="' + (cx - r * .2) + '" cy="' + (cy - r * .2) + '" r="' + (r * .74) + '" fill="' + p1 + '"/>'; }
+    function curls(pts) { return '<g fill="none" stroke="' + ps + '" stroke-width=".45" stroke-linecap="round">' + pts.map(function (p) { return '<path d="M' + p[0] + ' ' + p[1] + ' a.9 .9 0 1 1 1.4 .6"/>'; }).join("") + '</g>'; }
+    var g = puff(9.6, -6.6, 2.3) + '<path d="M7.4 -3 Q8.8 -4.4 9.2 -5" stroke="' + pl + '" stroke-width=".9" fill="none"/>' +
+      sitBody(p1, ps, pl, null, p1) + curls([[1, -8], [4, -7.4], [5.6, -4.6], [2.6, -4.4], [-1.6, -5.6], [-4.6, -6.4], [6, -1.6]]) +
+      puff(-4.6, -.9, 1.9) + puff(-.6, -.9, 1.9) +
+      lit(fluffPath(-2.2, -13.8, 6.4, 5.6), p1, ps, pl) + curls([[-5.4, -17.4], [-1.6, -18], [1.4, -16.6]]) +
+      puff(-5.4, -19.4, 2.5) + puff(-2.2, -20.8, 2.8) + puff(1, -19.4, 2.5) + puff(-2.2, -18.4, 2.2);
+    [-9.4, 5].forEach(function (x) {
+      g += lit("M" + x + " -16.4 C" + (x - 2.6) + " -16 " + (x - 2.8) + " -9.6 " + x + " -8.6 C" + (x + 2.8) + " -9.6 " + (x + 2.6) + " -16 " + x + " -16.4 Z", p1, ps, pl) +
+        curls([[x - 1.2, -14.4], [x - .6, -11.4]]);
+    });
+    g += '<path d="M-6.2 -11.6 C-6.2 -14 1.8 -14 1.8 -11.6 C1.8 -9 -6.2 -9 -6.2 -11.6 Z" fill="' + pm + '"/>' +
+      petEyes(-4.8, .4, -14.4, .9, "#3a2a1a") + petBlush(-6.4, 2, -12.4) +
+      '<ellipse cx="-2.2" cy="-12.2" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-12.5" r=".3" fill="#fff" opacity=".8"/>' +
+      '<path d="M-2.2 -11.4 v.45 M-2.2 -10.95 q-.8 .7 -1.4 .1 M-2.2 -10.95 q.8 .7 1.4 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/>' +
+      '<path d="M-4.4 -22.4 l2.2 1.1 l-2.2 1.1 Z M0 -22.4 l-2.2 1.1 l2.2 1.1 Z" fill="#f08a9a" stroke="#c05a6a" stroke-width=".3"/><circle cx="-2.2" cy="-21.3" r=".55" fill="#c05a6a"/>';
     return g;
   }
+  // 小雞：圓身體 + 圓頭，頭頂三根毛、小翅膀、尖嘴
+  function chickPet() {
+    var y1 = "#ffd84e", ys = "#eab42a", yl = "#b88414";
+    return '<path d="M-3 -.3 v-1.8 M-3 -.3 l-1.1 .4 M-3 -.3 l1.1 .4 M1.6 -.3 v-1.8 M1.6 -.3 l-1.1 .4 M1.6 -.3 l1.1 .4" stroke="#e08a2a" stroke-width=".75" stroke-linecap="round"/>' +
+      '<path d="M6.6 -6.6 l2.6 -1.6 l-.6 1.8 l1.6 .2 l-2.6 1.6 Z" fill="' + ys + '" stroke="' + yl + '" stroke-width=".4" stroke-linejoin="round"/>' +
+      lit("M0 -10.6 C4.6 -10.6 7.4 -7.6 7.2 -4.6 C7 -1.6 4.2 -.9 0 -.9 C-4.2 -.9 -7 -1.6 -7.2 -4.6 C-7.4 -7.6 -4.6 -10.6 0 -10.6 Z", y1, ys, yl) +
+      '<path d="M-3.4 -2.2 C-4.6 -4.6 -3.6 -7.4 -.6 -7.6 C2 -7.4 2.6 -4.6 1.6 -2.2 Z" fill="#fff4b8" opacity=".8"/>' +
+      '<path d="M1.6 -7.6 C4.8 -7.8 6.6 -5.4 6 -3 C4.2 -3.4 2.2 -4.8 1.6 -7.6 Z" fill="' + ys + '" stroke="' + yl + '" stroke-width=".4"/><path d="M3 -6.4 l1.6 2 M4.2 -6.8 l1.4 2.2" stroke="' + yl + '" stroke-width=".3" opacity=".7"/>' +
+      lit(fluffPath(-1.6, -13.6, 5.6, 4.8), y1, ys, yl) + shine(-3.8, -16, 1.9, .8) +
+      '<path d="M-2.4 -18.2 C-2.8 -20.6 -1.6 -21.8 -.4 -21.6 C-1.2 -20.6 -1 -19.4 -1.2 -18.4 Z M-1.2 -18.4 C-.4 -20.4 1.4 -20.8 2.2 -20 C1 -19.6 .2 -19 -.4 -18.2 Z M-2.6 -18.2 C-3.6 -19.8 -5 -19.8 -5.6 -19 C-4.4 -18.8 -3.6 -18.4 -3 -17.8 Z" fill="' + y1 + '" stroke="' + yl + '" stroke-width=".35" stroke-linejoin="round"/>' +
+      petEyes(-4, .6, -14, .9, "#3a2a20") + petBlush(-5.6, 2.2, -12) +
+      '<path d="M-1.6 -13 L-3.4 -12.2 L-1.6 -11.4 L.2 -12.2 Z" fill="#f59a3a" stroke="#c0601a" stroke-width=".35" stroke-linejoin="round"/><path d="M-3.4 -12.2 H.2" stroke="#c0601a" stroke-width=".3"/>';
+  }
+  // 倉鼠：坐姿，圓耳朵、白肚子，兩手抱著葵花子
+  function hamsterPet() {
+    var h1 = "#eec28a", hs = "#cc9a5a", hl = "#9a6a30", hc = "#fff6e8";
+    return '<ellipse cx="7.6" cy="-1.6" rx="1.2" ry=".9" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".4"/>' +
+      lit("M-7 0 C-8.8 -3.6 -8 -8.4 -3.4 -9.6 L3.4 -9.4 C8.2 -8.4 9.2 -3.6 8 0 Z", h1, hs, hl) +
+      '<path d="M-5.2 -.8 C-6.4 -4.4 -4.8 -8 -1.8 -8.2 C1.2 -8 2.4 -4.4 1.4 -.8 Z" fill="' + hc + '"/>' +
+      '<ellipse cx="-4.6" cy="-.6" rx="1.7" ry=".95" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx=".4" cy="-.6" rx="1.7" ry=".95" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>' +
+      '<circle cx="-7.4" cy="-17.6" r="2.4" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".5"/><circle cx="3" cy="-17.6" r="2.4" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".5"/><circle cx="-7.4" cy="-17.6" r="1.3" fill="#f4b4bc"/><circle cx="3" cy="-17.6" r="1.3" fill="#f4b4bc"/>' +
+      lit(fluffPath(-2.2, -13, 7, 5.4), h1, hs, hl) + shine(-5, -16, 2.2, .9) +
+      '<path d="M-2.2 -18.2 q.5 1.6 0 3" stroke="' + hs + '" stroke-width="1" stroke-linecap="round" fill="none"/>' +
+      '<path d="M-9 -11.6 C-8.6 -9 -5.6 -7.6 -2.2 -7.8 C1.2 -7.6 4.2 -9 4.6 -11.6 C2.4 -10.8 .4 -11.6 -2.2 -11.6 C-4.8 -11.6 -6.8 -10.8 -9 -11.6 Z" fill="' + hc + '"/>' +
+      petEyes(-4.9, .5, -13.6, .9, "#3a2a20") + petBlush(-7.2, 2.8, -11) + snout(-2.2, -11.8, "#d98e9a") +
+      '<path d="M-2.2 -6.8 C-.6 -6.6 .2 -4.8 -.4 -3.4 C-1 -2.4 -3.4 -2.4 -4 -3.4 C-4.6 -4.8 -3.8 -6.6 -2.2 -6.8 Z" fill="#5a4a3e" stroke="#2f2622" stroke-width=".3"/><path d="M-2.2 -6.4 v3.6 M-3.2 -5.8 q-.2 1.4 .2 2.4 M-1.2 -5.8 q.2 1.4 -.2 2.4" stroke="#f2ead8" stroke-width=".35" fill="none"/>' +
+      '<ellipse cx="-4.4" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx="0" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>';
+  }
   function pet(kind, x, y) {
-    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="1" cy="0" rx="9.5" ry="2.1" fill="rgba(60,40,20,.18)"/>';
+    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="1" cy="0" rx="' + (kind === "chick" || kind === "hamster" ? 6.6 : 9.5) + '" ry="' + (kind === "chick" || kind === "hamster" ? 1.6 : 2.1) + '" fill="rgba(60,40,20,.18)"/>';
     if (kind === "cat") g += catPet("#f0a052", "#d07a32", "#9a5420", "#fff1de", "#7a8a3a", true);
     else if (kind === "blackcat") g += catPet("#3c3842", "#26232b", "#141218", "#5a5560", "#e2b63a", false);
     else if (kind === "calico") g += catPet("#fffaf2", "#e6dccc", "#a89a86", "#fffaf2", "#6a8a3a", false, true);
     else if (kind === "corgi") g += corgiPet();
     else if (kind === "poodle") g += poodlePet();
-    else if (kind === "chick") {
-      var y1 = "#ffd84e", ys = "#eab42a", yl = "#b88414";
-      g += '<path d="M-3 -.3 v-1.8 M-3 -.3 l-1.1 .4 M-3 -.3 l1.1 .4 M1.5 -.3 v-1.8 M1.5 -.3 l-1.1 .4 M1.5 -.3 l1.1 .4" stroke="#e08a2a" stroke-width=".75" stroke-linecap="round"/>' +
-        lit("M0 -15 C5 -15 8 -11.4 7.8 -7.4 C7.6 -3 4.4 -.8 0 -.8 C-4.4 -.8 -7.6 -3 -7.8 -7.4 C-8 -11.4 -5 -15 0 -15 Z", y1, ys, yl) +
-        '<path d="M2 -8.6 C5.4 -8.6 7.4 -6.4 7.2 -3.8 C5 -3.2 2.8 -4.6 2 -8.6 Z" fill="' + ys + '" stroke="' + yl + '" stroke-width=".4"/><path d="M3.6 -7 l1.8 2.2 M4.6 -7.6 l1.6 2.6" stroke="' + yl + '" stroke-width=".3" opacity=".6"/>' +
-        '<path d="M-1.2 -14.6 C-1.2 -17.4 .4 -18.6 1.6 -18.2 C.6 -17.4 .8 -16.4 1.8 -15.8 C.4 -16.2 -.4 -15.6 -1.2 -14.6 Z M.2 -14.8 C1 -16.6 2.6 -17 3.4 -16.2 C2.4 -16 1.6 -15.4 .2 -14.8 Z" fill="' + y1 + '" stroke="' + yl + '" stroke-width=".35"/>' +
-        shine(-3.8, -11.8, 2.2, 1) +
-        petEyes(-4.4, -.4, -9.6, .9, "#3a2a20") + petBlush(-5.8, 1.2, -7.4) +
-        '<path d="M-3.8 -8.4 C-5 -8.6 -6.6 -8 -7 -7.6 C-6.4 -7 -5 -6.8 -3.8 -7.2 Z" fill="#f08a2a" stroke="#c0601a" stroke-width=".3"/><path d="M-7 -7.6 L-3.8 -7.8" stroke="#c0601a" stroke-width=".3"/>';
-    } else if (kind === "shiba") {
+    // 小雞和倉鼠比貓狗小一號
+    else if (kind === "chick") g += '<g transform="scale(.72)">' + chickPet() + '</g>';
+    else if (kind === "hamster") g += '<g transform="scale(.75)">' + hamsterPet() + '</g>';
+    if (kind === "shiba") {
       var s1 = "#e09a52", ss = "#bc7234", sl = "#8a4c1c", sc = "#fff6e8";
       g += '<path class="tail" d="M6.6 -6 C12.4 -8 14 -14.6 9.4 -15.6 C6.8 -16 6.4 -12.6 9 -12.2 C10.8 -11.6 9.8 -9 6.6 -8.6 Z" fill="' + s1 + '" stroke="' + sl + '" stroke-width=".55" stroke-linejoin="round"/><path d="M9.4 -15.2 C7.6 -15.4 7.2 -13 9.2 -12.6" fill="none" stroke="' + sc + '" stroke-width="1.3" stroke-linecap="round"/>' +
         sitBody(s1, ss, sl, sc, sc) +
@@ -338,16 +365,6 @@
         '<path d="M-9.4 -13 C-7.2 -13.4 -4.4 -12.6 -2.2 -9.2 C0 -12.6 2.8 -13.4 5 -13 C4 -9.6 .6 -8 -2.2 -8 C-5 -8 -8.4 -9.6 -9.4 -13 Z" fill="' + fc + '"/>' +
         petEyes(-4.9, .5, -14.9, .95, "#c87a2a") + petBlush(-7, 2.6, -12.6) +
         '<ellipse cx="-2.2" cy="-9.8" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-10.1" r=".3" fill="#fff" opacity=".8"/>';
-    } else if (kind === "hamster") {
-      var h1 = "#eec28a", hs = "#cc9a5a", hl = "#9a6a30", hc = "#fff6e8";
-      g += lit("M0 -14 C5.4 -14 8.6 -10.4 8.6 -6.4 C8.6 -2.4 5.4 -.6 0 -.6 C-5.4 -.6 -8.6 -2.4 -8.6 -6.4 C-8.6 -10.4 -5.4 -14 0 -14 Z", h1, hs, hl) +
-        '<path d="M-5.4 -1.4 C-7 -4 -6 -8 -1 -8.2 C4 -8 4.4 -4 3.2 -1.4 Z" fill="' + hc + '"/>' +
-        '<circle cx="-5.4" cy="-12.8" r="2.4" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".5"/><circle cx="3.6" cy="-12.8" r="2.4" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".5"/><circle cx="-5.4" cy="-12.8" r="1.3" fill="#f4b4bc"/><circle cx="3.6" cy="-12.8" r="1.3" fill="#f4b4bc"/>' +
-        '<path d="M-1 -14 q.5 1.6 0 3" stroke="' + hs + '" stroke-width="1" stroke-linecap="round" fill="none"/>' + shine(-4.4, -11.4, 2, .9) +
-        petEyes(-3.6, 1.6, -8.8, .85, "#3a2a20") + petBlush(-5.8, 3.6, -6.8) + snout(-1, -7.4, "#d98e9a") +
-        '<ellipse cx="-1" cy="-3.2" rx="2.2" ry="1.7" fill="#9acb6b" stroke="#5a8f42" stroke-width=".4"/><path d="M-1 -4.8 v-1.1" stroke="#5a8f42" stroke-width=".6"/><path d="M-1.6 -3.6 q.6 .5 1.2 0" fill="none" stroke="#5a8f42" stroke-width=".3"/>' +
-        '<ellipse cx="-3.4" cy="-3.6" rx="1.4" ry="1.05" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx="1.4" cy="-3.6" rx="1.4" ry="1.05" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>' +
-        '<ellipse cx="-4.6" cy="-.6" rx="1.6" ry=".9" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx="2.6" cy="-.6" rx="1.6" ry=".9" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>';
     }
     return g + '</g>';
   }
