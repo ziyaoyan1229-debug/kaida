@@ -2251,13 +2251,16 @@ function pickSpotPose(id, poses) {
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
 function tagText(m) { return m.name; }
+// 專注模式（勿擾）：名字前面一個玻璃感的靜音符號
+const DND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke-width="1.6"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
 function addChar(m, seat) {
   const c = makeChar(m.look);
   scene.add(c.root);
   if (c.cat) scene.add(c.cat);
   c.root.userData.cid = m.id;
   const tag = document.createElement("div"); tag.className = "k3-tag" + (m.me ? " me" : "");
-  tag.nm = document.createElement("span"); tag.nm.textContent = tagText(m); tag.ft = document.createElement("span"); tag.ft.className = "k3-ft"; tag.append(tag.nm, tag.ft);
+  tag.dnd = document.createElement("span"); tag.dnd.className = "k3-dnd"; tag.dnd.hidden = !m.dnd; tag.dnd.innerHTML = DND_SVG;
+  tag.nm = document.createElement("span"); tag.nm.textContent = tagText(m); tag.ft = document.createElement("span"); tag.ft.className = "k3-ft"; tag.append(tag.dnd, tag.nm, tag.ft);
   tag.addEventListener("click", () => window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id: st.m.id } })));
   const bub = document.createElement("div"); bub.className = "k3-bubble"; bub.hidden = true;
   overlay.appendChild(tag); overlay.appendChild(bub);
@@ -2316,7 +2319,7 @@ function update(members) {
     if (st && st.lookKey !== lk) { const keep = { pos: st.pos.clone(), ry: st.ry, mode: st.mode, spot: st.spot }; removeChar(m.id); st = addChar(m, i); if (keep.mode !== "sit" || m.up) { st.pos.copy(keep.pos); st.ry = keep.ry; st.mode = keep.mode === "walk" ? "idle" : keep.mode; st.spot = keep.spot; if (keep.spot >= 0) reserved[keep.spot] = m.id; } }
     if (!st) st = addChar(m, i);
     const wasUp = st.m.up;
-    st.m = m; st.tag.nm.textContent = tagText(m);
+    st.m = m; st.tag.nm.textContent = tagText(m); if (st.tag.dnd.hidden === !!m.dnd) st.tag.dnd.hidden = !m.dnd;
     if (st.seat !== i) { st.seat = i; if (!m.up) { const p = seatPos(i); walkTo(st, p, "sit"); } }
     if (m.up && !wasUp) {
       // 起身：從椅子後面站起來，走去一個地方

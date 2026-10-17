@@ -214,6 +214,11 @@
   .k3-tag { text-align: center; border-radius: 10px; }
   .k3-tag .k3-ft { display: block; font-size: 10px; line-height: 1.2; font-family: var(--f-mono); font-variant-numeric: tabular-nums; opacity: .75; }
   .k3-tag.me { background: #2a2620; color: #f8f4ec; border-color: #2a2620; }
+  /* 勿擾：玻璃感的小圓，貼在名字前面 */
+  .k3-dnd { position: absolute; right: 100%; top: 50%; margin-right: 3px; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+    background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.6); -webkit-backdrop-filter: blur(8px) saturate(1.6); backdrop-filter: blur(8px) saturate(1.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 2px 8px rgba(0,0,0,.25); }
+  .k3-dnd[hidden] { display: none; }
+  .k3-dnd svg { width: 13px; height: 13px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
   .k3-bubble { font-size: 13px; line-height: 1.35; padding: 4px 10px; border-radius: 12px; background: #fffdf8; color: #2a2620; box-shadow: 0 2px 6px rgba(60, 40, 20, .18); max-width: 160px; white-space: normal; text-align: center; }
   .k3-hint { position: absolute; right: 8px; top: 6px; font-size: 11px; color: rgba(255, 253, 248, .9); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; }
   .music { margin: 10px 0 0; }
@@ -725,7 +730,7 @@
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
-      "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "set.quit": "退出", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
+      "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "set.quit": "退出", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.dnd": "專注中，請勿打擾", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "set.title": "設定", "hop.t": "準備房間中", "set.close": "關閉", "set.lang": "語言 Language", "set.reload": "重新整理（拿到最新版本）", "set.sound": "聲音與提醒", "set.room": "房間", "opt.view": "房間視角", "opt.viewL": "大", "opt.viewM": "中", "opt.viewS": "小", "opt.wake": "讀書時保持螢幕亮著", "opt.mute": "全部靜音", "mu.mute": "靜音", "mu.unmute": "取消靜音", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
@@ -816,7 +821,7 @@
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
-      "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "set.quit": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
+      "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "set.quit": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.dnd": "Focusing, do not disturb", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
       "opt.sound": "Chime and vibrate between phases", "set.title": "Settings", "hop.t": "Getting your room ready", "set.close": "Close", "set.lang": "語言 Language", "set.reload": "Reload (get the latest version)", "set.sound": "Sound and reminders", "set.room": "Room", "opt.view": "Room view", "opt.viewL": "Close", "opt.viewM": "Medium", "opt.viewS": "Wide", "opt.wake": "Keep screen on while studying", "opt.mute": "Mute all sound", "mu.mute": "Mute", "mu.unmute": "Unmute", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
@@ -1032,7 +1037,7 @@
     return S.ACTS[Math.abs(x) % S.ACTS.length];
   }
   function actLabel() { return t("act." + (data.act === "other" ? "other" : myAct())); }
-  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: myAct(), up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
+  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: myAct(), dnd: !!data.opts.focusMode, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
   function needName() {
     if (data.me.name) return false;
     K.toast(t("r.needName")); show("char"); return true;
@@ -1109,7 +1114,7 @@
   /* 模擬室友 */
   var BOTS = [
     { id: "bot1", fl: "TW", name: "小熊", act: "pc", look: { g: "girl", skin: 0, hair: 1, top: "hoodie", face: "glasses", style: "bob" } },
-    { id: "bot2", fl: "SG", name: "Mia", act: "draw", look: { g: "girl", skin: 1, hair: 2, top: "sweater", hat: "beret", style: "long", pet: "bunny" } },
+    { id: "bot2", fl: "SG", name: "Mia", act: "draw", dnd: true, look: { g: "girl", skin: 1, hair: 2, top: "sweater", hat: "beret", style: "long", pet: "bunny" } },
     { id: "bot3", fl: "HK", name: "阿凱", act: "homework", look: { g: "boy", skin: 2, hair: 3, top: "stripe", ears: "phones", style: "spiky", back: "backpack" } },
     { id: "bot4", fl: "JP", name: "柚子", act: "read", look: { g: "girl", skin: 0, hair: 0, top: "tee-pink", hat: "straw", neck: "scarf" } },
     { id: "bot5", fl: "MY", name: "小林", act: "pc", look: { g: "boy", skin: 1, hair: 0, top: "tee-blue", hat: "beanie", pet: "cat" } }
@@ -1354,7 +1359,7 @@
         rchat.seen[m.id] = m.ctAt;
         (rchat.logs[m.id] = rchat.logs[m.id] || []).push({ me: false, text: m.ct, t: m.ctAt });
         // 只有對方走過來找我、而且我還沒關掉這次的聊天，才自動打開聊天框
-        if (!rchat.with && current === "session" && document.getElementById("fov").hidden && m.vis === data.me.id && rchat.shut[m.id] !== m.visAt) rchat.with = m.id;
+        if (!rchat.with && !data.opts.focusMode && current === "session" && document.getElementById("fov").hidden && m.vis === data.me.id && rchat.shut[m.id] !== m.visAt) rchat.with = m.id;
         if (rchat.with === m.id) renderRoomChat(); else K.toast(t("rc.from", { n: m.name, m: m.ct }));
       }
       if (m.vis === data.me.id && m.visAt && m.visAt !== rchat.visSeen[m.id] && m.visAt > session.joinedAt - 5000) {
@@ -1687,19 +1692,19 @@
   }
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: myAct(), me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: myAct(), dnd: !!data.opts.focusMode, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, dnd: !!m.dnd, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
       list.push(me);
       if (session.kind === "sim") BOTS.forEach(function (b) {
         var sy = sim.says[b.id];
-        list.push({ id: b.id, name: b.name, fl: b.fl, joined: session.joinedAt - botSeed(b.id) % 40 * 60000, hr: 600 + botSeed(b.id) % 9000, look: Object.assign(S.defaultLook(), b.look), act: b.act, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
+        list.push({ id: b.id, name: b.name, fl: b.fl, joined: session.joinedAt - botSeed(b.id) % 40 * 60000, hr: 600 + botSeed(b.id) % 9000, look: Object.assign(S.defaultLook(), b.look), act: b.act, dnd: !!b.dnd, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
       });
     }
     return list.slice(0, 6);
@@ -2536,7 +2541,7 @@
       row("p.hours", K.esc(hrs(m.hr || 0))) +
       row("p.country", cn ? (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(cn) : "—") +
       '<div class="pc-row"><span>ID</span><b><span class="mono">' + K.esc(m.id) + '</span> <button class="linkbtn" type="button" data-copy="' + K.esc(m.id) + '">' + K.esc(t("f.copy")) + '</button></b></div>' +
-      (m.me ? "" : '<div class="btn-row" style="justify-content:center;margin-top:10px">' + '<button class="btn" type="button" data-rchat="' + K.esc(m.id) + '">💬 ' + K.esc(t("c.chat")) + '</button>' + (data.friends[m.id] || /^bot/.test(m.id) ? ""
+      (m.me ? "" : '<div class="btn-row" style="justify-content:center;margin-top:10px">' + (m.dnd ? '<button class="btn" type="button" disabled>🔇 ' + K.esc(t("c.dnd")) + '</button>' : '<button class="btn" type="button" data-rchat="' + K.esc(m.id) + '">💬 ' + K.esc(t("c.chat")) + '</button>') + (data.friends[m.id] || /^bot/.test(m.id) ? ""
         : data.reqOut[m.id] ? '<span class="small muted">' + K.esc(t("f.reqWait")) + '</span>' : '<button class="btn" type="button" data-padd="' + K.esc(m.id) + '">' + K.esc(t("f.sendReq")) + '</button>') + '</div>');
     document.getElementById("modal").hidden = false;
   });
@@ -2907,7 +2912,7 @@
   renderView();
   // 專注模式（設定裡和房間計時列旁邊的按鈕是同一個開關）
   var optFocus = document.getElementById("opt-focus"); optFocus.checked = !!data.opts.focusMode;
-  function setFocusMode(on) { data.opts.focusMode = !!on; optFocus.checked = !!on; persist(); if (session && current === "session") renderSession(Date.now()); }
+  function setFocusMode(on) { data.opts.focusMode = !!on; optFocus.checked = !!on; persist(); if (session && session.kind === "room" && net) net.publishMe({ dnd: !!on }); if (session && current === "session") renderSession(Date.now()); }
   optFocus.addEventListener("change", function () { setFocusMode(optFocus.checked); });
   document.getElementById("rb-foc").addEventListener("click", function () { setFocusMode(!data.opts.focusMode); K.toast(t("opt.focusS") + (data.opts.focusMode ? " ✓" : " ✕")); });
   document.getElementById("fov-x").addEventListener("click", function () { setFocusMode(false); });
