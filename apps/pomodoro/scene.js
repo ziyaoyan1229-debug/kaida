@@ -180,6 +180,8 @@
     if (look.hat === "catband") s += '<path d="M-14 ' + (hy - 10) + ' C-14 ' + (hy - 18) + ' 14 ' + (hy - 18) + ' 14 ' + (hy - 10) + '" fill="none" stroke="#3d3a4a" stroke-width="2"/><path d="M-13 ' + (hy - 12) + ' L-10 ' + (hy - 25) + ' L-3 ' + (hy - 16) + ' Z M13 ' + (hy - 12) + ' L10 ' + (hy - 25) + ' L3 ' + (hy - 16) + ' Z" fill="#3d3a4a"/><path d="M-10.5 ' + (hy - 14) + ' L-9.6 ' + (hy - 21) + ' L-5.5 ' + (hy - 16) + ' Z M10.5 ' + (hy - 14) + ' L9.6 ' + (hy - 21) + ' L5.5 ' + (hy - 16) + ' Z" fill="#f2c4c8"/>';
     if (look.hat === "bucket") s += '<path d="M-22 ' + (hy - 5) + ' L22 ' + (hy - 5) + ' L15 ' + (hy - 11) + ' L13 ' + (hy - 22) + ' C5 ' + (hy - 25) + ' -5 ' + (hy - 25) + ' -13 ' + (hy - 22) + ' L-15 ' + (hy - 11) + ' Z" fill="#c9b48a"/><path d="M-14.6 ' + (hy - 11) + ' H14.6" stroke="#a8916a" stroke-width="2.4"/>';
     if (look.hat === "crown") s += '<path d="M-9 ' + (hy - 12) + ' L-9 ' + (hy - 21) + ' L-4.5 ' + (hy - 16) + ' L0 ' + (hy - 23) + ' L4.5 ' + (hy - 16) + ' L9 ' + (hy - 21) + ' L9 ' + (hy - 12) + ' Z" fill="#e8b93a" stroke="#c99a2a" stroke-width=".8"/><circle cx="0" cy="' + (hy - 15) + '" r="1.6" fill="#c2453b"/>';
+    // 寵物坐在頭頂，跟著頭一起點頭（戴帽子就坐在帽子上）
+    if (opt.headPet) s += '<g transform="translate(2 ' + (hy - (look.hat && look.hat !== "catband" ? 20 : 15) + (opt.headPet === "chick" || opt.headPet === "hamster" ? 4 : 0)) + ') scale(' + (opt.headPet === "chick" || opt.headPet === "hamster" ? ".5" : ".52") + ')">' + pet(opt.headPet, 0, 0).replace(/<ellipse[^>]*rgba\(60,40,20,\.18\)"\/>/, "") + '</g>';
     s += HEAD_CLOSE;
     s += '</g>';
     if (look.pet && !opt.noPet) s += pet(look.pet, opt.petX != null ? opt.petX : 20, 0);
@@ -601,8 +603,8 @@
       '<g class="ex ex2">' + arc(-5.5) + dot(5.5) + '<path d="M-2.5 ' + (hy + 6) + ' q2.5 2 5 -.6" fill="none" stroke="' + lip + '" stroke-width="1.1" stroke-linecap="round"/></g>' +
       '<g class="ex ex3"><circle cx="-5.5" cy="' + y + '" r="2.2" fill="' + ink + '"/><circle cx="5.5" cy="' + y + '" r="2.2" fill="' + ink + '"/><ellipse cx="0" cy="' + (hy + 7) + '" rx="1.6" ry="2" fill="' + lip + '"/></g>';
   }
-  function bust(look, still) {
-    return '<g class="bust">' + character(look, "stand", still ? { smile: true, noPet: true } : { expr: true, noPet: true }) + '</g>';
+  function bust(look, still, headPet) {
+    return '<g class="bust">' + character(look, "stand", still ? { smile: true, noPet: true, headPet: headPet } : { expr: true, noPet: true, headPet: headPet }) + '</g>';
   }
 
   /* 角色預覽（角色頁與選單用） */

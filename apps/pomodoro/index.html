@@ -1275,15 +1275,13 @@
     };
     var act = pick(Object.keys(ACTS_R));
     var pets = by("pet"), pet = chance(.6) ? pick(pets) : "";
-    var petSide = R(2) ? 1 : -1;
     readerSvg = '<svg viewBox="-56 -76 112 82" aria-hidden="true">' +
       '<ellipse cx="0" cy="2" rx="50" ry="3.5" fill="rgba(60,40,20,.14)"/>' +
-      '<g transform="translate(0 2)">' + S.bust(look, true) + '</g>' +
+      '<g transform="translate(0 2)">' + S.bust(look, true, pet) + '</g>' +
       // 書桌（擋住腿），桌上一本翻頁的書
       '<rect x="-40" y="-17" width="80" height="4" rx="1.5" fill="' + wood[0] + '"/><rect x="-38" y="-13" width="76" height="14" fill="' + wood[1] + '"/><rect x="-36" y="-11" width="72" height="2" fill="rgba(0,0,0,.08)"/>' +
       ACTS_R[act] +
       L[pick(Object.keys(L))] + Rt[pick(Object.keys(Rt))] +
-      (pet ? '<g transform="translate(' + (petSide * 50) + ' 2) scale(' + (pet === "chick" || pet === "hamster" ? ".62" : ".8") + ')">' + S.pet(pet, 0, 0) + '</g>' : "") +
       '<g class="zz" fill="var(--muted)" font-size="7" font-family="var(--f-mono)"><text x="14" y="-62">…</text></g>' +
       '</svg>';
     return readerSvg;
