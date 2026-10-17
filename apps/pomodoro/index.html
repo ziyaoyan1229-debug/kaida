@@ -507,8 +507,10 @@
   .pick-select { border-radius: 0; }
   .btn { border-radius: 0; }
   /* 全部按鍵：玻璃感（半透明、模糊背景、上緣一道亮光） */
-  .btn, .start-btn { border-radius: 14px; background: color-mix(in srgb, var(--ink) 80%, transparent); color: var(--paper); border: 1px solid color-mix(in srgb, #fff 28%, transparent);
+  .btn { border-radius: 14px; background: color-mix(in srgb, var(--ink) 80%, transparent); color: var(--paper); border: 1px solid color-mix(in srgb, #fff 28%, transparent);
     -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 14px rgba(0,0,0,.12); }
+  /* 開始鍵維持原本的方形實心樣式 */
+  .btn.start-btn { border-radius: 0; background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--glow); }
   .btn.ghost, .btn.danger { background: color-mix(in srgb, var(--surface) 50%, transparent); border-color: color-mix(in srgb, var(--ink) 16%, transparent); box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 2px 10px rgba(0,0,0,.06); }
   .rail button, .music button, .cats button, .presets button, .vseg { border-radius: 999px; background: color-mix(in srgb, var(--surface) 45%, transparent); border-color: color-mix(in srgb, var(--ink) 16%, transparent);
     -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 2px 8px rgba(0,0,0,.05); }
@@ -1908,7 +1910,7 @@
     // 按了「我回來了」坐回座位就再蓋上
     var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && !session.away && current === "session" && (p.focus || (!session.up && !needAck(p)));
     if (fon) placeFovDn();
-    if (fo.hidden === fon) { fo.hidden = !fon; if (fon) window.scrollTo(0, 0); }
+    if (fo.hidden === fon) { fo.hidden = !fon; if (fon) ["fov-dn", "s-more"].forEach(function (id) { var a = document.getElementById(id); a.style.animation = "none"; void a.offsetWidth; a.style.animation = ""; }); if (fon) window.scrollTo(0, 0); }
     if (fon) {
       fo.style.background = (THEME_SW[session.theme] || THEME_SW.home)[0] + "eb";
       document.getElementById("fov-ph").textContent = t(p.focus ? "ph.focus" : "ph.break");
@@ -2959,9 +2961,11 @@
   document.getElementById("rb-foc").addEventListener("click", function () { setFocusMode(!data.opts.focusMode); K.toast(t("opt.focusS") + (data.opts.focusMode ? " ✓" : " ✕")); });
   document.getElementById("fov-x").addEventListener("click", function () { setFocusMode(false); });
   function placeFovDn() {
-    var s = document.getElementById("s-more").getBoundingClientRect(), dn = document.getElementById("fov-dn");
-    if (!s.width) return; // 專注畫面貼在頁面最上面，所以用頁面座標
-    dn.style.top = Math.round(s.top + window.scrollY) + "px"; dn.style.bottom = "auto"; dn.style.left = Math.round(s.left + window.scrollX) + "px"; dn.style.marginLeft = "0";
+    var m = document.getElementById("s-more"), dn = document.getElementById("fov-dn"), op = m.offsetParent;
+    if (!op || !m.offsetWidth) return;
+    // 用沒有跳動位移的位置（offsetTop），專注畫面貼在頁面最上面，所以換成頁面座標
+    var w = op.getBoundingClientRect();
+    dn.style.top = (w.top + window.scrollY + op.clientTop + m.offsetTop) + "px"; dn.style.bottom = "auto"; dn.style.left = (w.left + window.scrollX + op.clientLeft + m.offsetLeft) + "px"; dn.style.marginLeft = "0";
   }
   window.addEventListener("resize", placeFovDn);
   document.getElementById("fov-dn").addEventListener("click", function () { document.getElementById("s-more").click(); });
