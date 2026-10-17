@@ -189,6 +189,10 @@
   .scene-wrap .says > * { pointer-events: auto; }
   .scene-wrap .says button { border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.5); color: #fff; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,.35);
     -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.18); }
+  .sit-btn { position: absolute; z-index: 6; transform: translate(-50%, -130%); padding: 9px 22px; border-radius: 999px; font-size: 16px; font-weight: 600; color: #fff; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,.35);
+    background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.6); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 18px rgba(0,0,0,.22); animation: sitpop .18s ease-out; }
+  .sit-btn[hidden] { display: none; }
+  @keyframes sitpop { from { opacity: 0; transform: translate(-50%, -110%) scale(.9); } }
   .scene-wrap .says button.up { background: rgba(255,255,255,.88); color: #2B1E18; text-shadow: none; border-color: rgba(255,255,255,.9); }
   .says-run { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; display: flex; gap: 8px; padding: 4px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
   .says-run::-webkit-scrollbar { display: none; }
@@ -546,7 +550,7 @@
       <button type="button" class="set-btn rb-set" id="rb-set" data-i18n-aria="set.title" aria-label="設定"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><div class="rb-acts"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button></div>
     </div>
     <div class="s-body">
-    <div class="scene-wrap"><div class="k3" id="scene3d" hidden><div class="k3-load" id="k3-load" hidden><div class="kl-bg"></div><div class="kl-name" id="kl-name"></div><div class="kl-sub" id="kl-sub"></div><div class="kl-track"><div class="kl-bar"></div><div class="kl-walk"><svg viewBox="-22 -64 44 66" id="kl-me" aria-hidden="true"></svg></div></div></div></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg><button type="button" class="s-down" id="s-more" data-i18n-aria="s.more" aria-label="往下滑：音樂、成員和更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="says" id="says"></div></div>
+    <div class="scene-wrap"><div class="k3" id="scene3d" hidden><div class="k3-load" id="k3-load" hidden><div class="kl-bg"></div><div class="kl-name" id="kl-name"></div><div class="kl-sub" id="kl-sub"></div><div class="kl-track"><div class="kl-bar"></div><div class="kl-walk"><svg viewBox="-22 -64 44 66" id="kl-me" aria-hidden="true"></svg></div></div></div></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg><button type="button" class="s-down" id="s-more" data-i18n-aria="s.more" aria-label="往下滑：音樂、成員和更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="says" id="says"></div><button type="button" class="sit-btn" id="sit-btn" hidden data-i18n="s.sit">坐下</button></div>
     <div class="s-side">
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
@@ -681,7 +685,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.sit": "坐下", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "act.music": "練音樂", "act.piano": "練琴", "act.sing": "練唱", "act.craft": "做手作", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -765,7 +769,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.sit": "Sit here", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "act.music": "Practicing music", "act.piano": "Practicing piano", "act.sing": "Singing practice", "act.craft": "Crafting", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -1432,12 +1436,12 @@
   }
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, hr: myTotal(), away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
@@ -2193,6 +2197,25 @@
     var p = phaseAt("cur", Date.now(), roomOrigin());
     return m.away ? t("s.st.away") : m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break");
   }
+  // 點空桌子 → 玻璃「坐下」按鈕 → 換到那個位子
+  var sitBtn = document.getElementById("sit-btn"), sitSeat = -1, sitTimer = 0;
+  function hideSit() { sitBtn.hidden = true; sitSeat = -1; clearTimeout(sitTimer); }
+  window.addEventListener("kaida3d-seat", function (e) {
+    var d = e.detail;
+    if (!session || d.seat < 0) { hideSit(); return; }
+    var wrap = sitBtn.parentNode, k3 = document.getElementById("scene3d"), ox = k3.offsetLeft, oy = k3.offsetTop;
+    sitSeat = d.seat;
+    sitBtn.style.left = Math.max(60, Math.min(wrap.clientWidth - 60, ox + d.x)) + "px";
+    sitBtn.style.top = Math.max(70, oy + d.y) + "px";
+    sitBtn.hidden = false;
+    clearTimeout(sitTimer); sitTimer = setTimeout(hideSit, 5000);
+  });
+  sitBtn.addEventListener("click", function () {
+    if (!session || sitSeat < 0) return;
+    session.seat = sitSeat; hideSit(); persist();
+    if (session.kind === "room" && net) net.publishMe({ seat: session.seat });
+    if (session.up && !session.away) setUp(false); else renderScene(true);
+  });
   window.addEventListener("kaida3d-pick", function (e) {
     if (!session) return;
     var m = sceneMembers().filter(function (x) { return x.id === e.detail.id; })[0]; if (!m) return;
