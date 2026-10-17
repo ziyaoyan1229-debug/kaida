@@ -418,7 +418,24 @@
   #quote-rooms > p, #quote-rooms > cite { transition: opacity .6s ease; }
   #quote-rooms.fade-out > p, #quote-rooms.fade-out > cite { opacity: 0; }
   .pick-card.a4 { padding: 0; }
-  .a4-time { display: flex; align-items: flex-end; justify-content: space-between; margin: 4px 0 14px; }
+  .a4-time { display: flex; align-items: flex-end; justify-content: space-between; margin: 4px 0 14px; position: relative; }
+  .a4-time > div { position: relative; z-index: 1; }
+  /* 主頁中間：半透明的小人物在認真讀書（每次打開人物和桌上的東西都隨機） */
+  .a4-time .reader { order: 1; flex: 0 1 170px; min-width: 0; margin: 0 8px -2px; opacity: .55; pointer-events: none; }
+  .a4-time .side { order: 2; }
+  .a4-time > div:not(.reader) { flex: none; }
+  .reader svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .reader .head { animation: rdnod 3.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 90%; }
+  .reader .pg { transform-box: fill-box; transform-origin: 0% 50%; animation: rdpage 5s ease-in-out infinite; }
+  .reader .stm { animation: rdsteam 2.6s ease-in-out infinite; opacity: 0; } .reader .stm.s2 { animation-delay: 1.3s; }
+  .reader .glow { animation: rdglow 3s ease-in-out infinite; }
+  .reader .zz { animation: rdthink 4s ease-in-out infinite; opacity: 0; }
+  @keyframes rdnod { 0%, 100% { transform: rotate(0); } 45% { transform: rotate(4deg) translateY(.6px); } 55% { transform: rotate(3deg) translateY(.6px); } }
+  @keyframes rdpage { 0%, 70% { transform: scaleX(1); } 82%, 100% { transform: scaleX(-1); } }
+  @keyframes rdsteam { 0% { transform: translateY(2px); opacity: 0; } 40% { opacity: .9; } 100% { transform: translateY(-7px); opacity: 0; } }
+  @keyframes rdglow { 50% { opacity: .55; } }
+  @keyframes rdthink { 0%, 50% { opacity: 0; transform: translateY(2px); } 65%, 85% { opacity: .9; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-3px); } }
+  @media (prefers-reduced-motion: reduce) { .reader * { animation: none !important; } }
   .a4-time .lab { display: block; font-size: 11px; color: var(--muted); letter-spacing: .25em; }
   .a4-time .big { display: block; font-family: var(--f-display); font-size: 96px; font-weight: 700; line-height: .9; letter-spacing: -.02em; }
   .a4-time .big i { font-style: normal; font-size: 28px; color: var(--signal); letter-spacing: 0; }
@@ -1187,10 +1204,46 @@
   var THEME_SW = { home: ["#c08a5a", "#f3e3c6"], cafe: ["#6e4a34", "#e8d3b0"], library: ["#7a2a2a", "#c9a45a"], study: ["#9aa6b2", "#eef0f2"], space: ["#1a2440", "#4ad8ff"], school: ["#7d9a86", "#f1e7cf"], konbini: ["#2f9a6a", "#f4f6f7"], washitsu: ["#c9c08a", "#5a4030"], cabin: ["#5a3a26", "#3f6a3a"], beach: ["#7ac4c4", "#f2a65a"], rooftop: ["#2e3236", "#ff6ab0"], lodge: ["#b0302a", "#f2ece0"] };
   var TIME_LABEL = { std: "25/5", deep: "50/10", long: "100/30", test: "1/0.5 TEST" };
   // A4：這一輪的時間放大當主角
+  var readerSvg = null;
+  function readerArt() {
+    if (readerSvg) return readerSvg;
+    var R = function (n) { return Math.floor(Math.random() * n); }, pick = function (a) { return a[R(a.length)]; }, chance = function (p) { return Math.random() < p; };
+    var by = function (slot) { return S.ITEMS.filter(function (it) { return it.slot === slot; }).map(function (it) { return it.id; }); };
+    var look = Object.assign(S.defaultLook(), { g: pick(["girl", "boy"]), skin: R(S.SKINS.length), hair: R(S.HAIRS.length), top: pick(by("top")),
+      hat: chance(.35) ? pick(by("hat")) : "", face: chance(.3) ? pick(by("face")) : "", neck: chance(.2) ? pick(by("neck")) : "", ears: chance(.2) ? pick(by("ears")) : "" });
+    var wood = pick([["#a8754a", "#8a5c38"], ["#c99a6a", "#a87c50"], ["#7a5a44", "#5e4432"], ["#e8dcc8", "#c9b89c"]]);
+    var bookC = pick(["#c2453b", "#5d7fa8", "#6a8f5a", "#d9a03a", "#8a5a9a"]);
+    // 桌上的裝飾：左右各挑一樣
+    var L = {
+      lamp: '<g transform="translate(-30 -17)"><ellipse class="glow" cx="6" cy="-6" rx="14" ry="9" fill="#ffe6a0" opacity=".35"/><rect x="-1" y="-12" width="2" height="12" fill="#5a4a3a"/><path d="M-7 -12 L7 -12 L4 -20 L-4 -20 Z" fill="#e8b93a"/><ellipse cx="0" cy="0" rx="5" ry="1.4" fill="#5a4a3a"/></g>',
+      plant: '<g transform="translate(-30 -17)"><path d="M-5 0 L5 0 L4 -7 L-4 -7 Z" fill="#c8775a"/><ellipse cx="-3" cy="-11" rx="3" ry="6" fill="#5e8c3a" transform="rotate(-25 -3 -11)"/><ellipse cx="3" cy="-12" rx="3" ry="6.5" fill="#6aa046" transform="rotate(20 3 -12)"/><ellipse cx="0" cy="-14" rx="2.6" ry="6" fill="#4f7d32"/></g>',
+      books: '<g transform="translate(-30 -17)"><rect x="-8" y="-4" width="16" height="4" rx="1" fill="#5d7fa8"/><rect x="-7" y="-8" width="14" height="4" rx="1" fill="#d9a03a"/><rect x="-8.5" y="-12" width="15" height="4" rx="1" fill="#c2453b"/></g>',
+      clock: '<g transform="translate(-30 -17)"><circle cx="0" cy="-7" r="7" fill="#e8492c"/><path d="M-2 -14 q2 -3 4 0" fill="#5e8c3a"/><circle cx="0" cy="-7" r="4.3" fill="#fff7ea"/><path d="M0 -7 L0 -10 M0 -7 L2 -6" stroke="#2b1e18" stroke-width=".9" stroke-linecap="round"/></g>'
+    };
+    var Rt = {
+      mug: '<g transform="translate(30 -17)"><path class="stm" d="M-2 -10 q-2 -3 0 -6" stroke="#b9a48c" stroke-width="1.1" fill="none" stroke-linecap="round"/><path class="stm s2" d="M2 -10 q2 -3 0 -6" stroke="#b9a48c" stroke-width="1.1" fill="none" stroke-linecap="round"/><rect x="-5" y="-9" width="10" height="9" rx="2" fill="#f3efe6" stroke="#c9b89c" stroke-width=".6"/><path d="M5 -7 q4 0 4 3 q0 3 -4 3" fill="none" stroke="#c9b89c" stroke-width="1.2"/></g>',
+      pencils: '<g transform="translate(30 -17)"><rect x="-4.5" y="-9" width="9" height="9" rx="1.5" fill="#7fa6c9"/><path d="M-2 -9 L-3 -17 M1 -9 L2 -18 M3 -9 L5 -15" stroke="#e0b04f" stroke-width="1.6" stroke-linecap="round"/></g>',
+      tomato: '<g transform="translate(30 -17)"><ellipse cx="0" cy="-5" rx="6.5" ry="5.5" fill="#e8492c"/><ellipse cx="-2" cy="-7" rx="1.8" ry="1.1" fill="#fff" opacity=".45"/><path d="M-3 -10 L0 -8.6 L3 -10 L1.2 -9.6 L0 -12 L-1.2 -9.6 Z" fill="#4f7d32"/></g>',
+      cactus: '<g transform="translate(30 -17)"><path d="M-4 0 L4 0 L3.4 -5 L-3.4 -5 Z" fill="#c8775a"/><rect x="-2.2" y="-14" width="4.4" height="10" rx="2.2" fill="#6aa046"/><rect x="1.6" y="-11" width="3.2" height="5" rx="1.6" fill="#6aa046"/><circle cx="0" cy="-14.5" r="1.2" fill="#e88aa8"/></g>'
+    };
+    var pets = by("pet"), pet = chance(.6) ? pick(pets) : "";
+    var petSide = R(2) ? 1 : -1;
+    readerSvg = '<svg viewBox="-56 -76 112 82" aria-hidden="true">' +
+      '<ellipse cx="0" cy="2" rx="50" ry="3.5" fill="rgba(60,40,20,.14)"/>' +
+      '<g transform="translate(0 2)">' + S.bust(look, true) + '</g>' +
+      // 書桌（擋住腿），桌上一本翻頁的書
+      '<rect x="-40" y="-17" width="80" height="4" rx="1.5" fill="' + wood[0] + '"/><rect x="-38" y="-13" width="76" height="14" fill="' + wood[1] + '"/><rect x="-36" y="-11" width="72" height="2" fill="rgba(0,0,0,.08)"/>' +
+      '<g transform="translate(0 -18) scale(1.35)"><path d="M-12 0 L0 1.5 L12 0 L12 -2 L0 -.5 L-12 -2 Z" fill="' + bookC + '"/><path d="M-11 -2 Q-5 -4.2 0 -1 L0 -.5 L-11 -2 Z" fill="#fffaf0"/><path d="M0 -1 Q5 -4.2 11 -2 L0 -.5 Z" fill="#fffaf0"/><path class="pg" d="M0 -1 Q5 -5 10 -2.6 L0 -.6 Z" fill="#f3ead8"/></g>' +
+      L[pick(Object.keys(L))] + Rt[pick(Object.keys(Rt))] +
+      (pet ? '<g transform="translate(' + (petSide * 50) + ' 2) scale(' + (pet === "chick" || pet === "hamster" ? ".62" : ".8") + ')">' + S.pet(pet, 0, 0) + '</g>' : "") +
+      '<g class="zz" fill="var(--muted)" font-size="7" font-family="var(--f-mono)"><text x="14" y="-62">…</text></g>' +
+      '</svg>';
+    return readerSvg;
+  }
   function bigTime() {
-    if (data.mode === "rand") return '<div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">?</b></div><div class="side"><b>' + K.esc(t("r.rand")) + '</b><span>' + K.esc(t("r.randBig")) + '</span></div>';
+    if (data.mode === "rand") return '<div class="reader">' + readerArt() + '</div><div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">?</b></div><div class="side"><b>' + K.esc(t("r.rand")) + '</b><span>' + K.esc(t("r.randBig")) + '</span></div>';
     var c = modeCfg();
-    return '<div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">' + c.focus + '<i>′</i></b></div><div class="side"><b>＋' + c.brk + '′</b><span>' + K.esc(t("r.brkLab")) + '</span></div>';
+    return '<div class="reader">' + readerArt() + '</div><div><span class="lab">' + K.esc(t("r.round")) + '</span><b class="big">' + c.focus + '<i>′</i></b></div><div class="side"><b>＋' + c.brk + '′</b><span>' + K.esc(t("r.brkLab")) + '</span></div>';
   }
   function timeLabel(m) { return m === "custom" ? t("r.custom") + " " + modeCfg().focus + "/" + modeCfg().brk : m === "rand" ? t("r.rand") : TIME_LABEL[m] || ""; }
   function startSummary() {
