@@ -501,6 +501,9 @@
   /* 專注模式：主題顏色蓋住整個房間，只透一點點，中間大字顯示時間 */
   .fov { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #fff; text-align: center; padding: 24px; text-shadow: 0 2px 10px rgba(0,0,0,.25); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .fov[hidden] { display: none; }
+  /* 專注畫面打開時，後面的頁面不能捲動，也點不到設定 */
+  .fov { height: 100vh; height: 100lvh; bottom: auto; touch-action: none; overscroll-behavior: contain; }
+  html.fov-on, html.fov-on body { overflow: hidden; height: 100%; overscroll-behavior: none; }
   .fov-ph { font-size: 15px; letter-spacing: .4em; opacity: .9; }
   .fov-t { font-family: var(--f-display); font-weight: 700; font-size: clamp(76px, 26vw, 220px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .fov-sub { font-size: 14px; opacity: .85; }
@@ -513,7 +516,7 @@
   @media (prefers-reduced-motion: reduce) { #says [data-up].shake { animation: none; } }
   /* 房間裡聊天 */
   /* 聊天框放在房間畫面裡面，不超出房間 */
-  .rchat { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 6; max-width: 460px; margin: 0 auto; max-height: calc(100% - 16px); box-sizing: border-box; background: var(--surface); color: var(--ink); border-radius: 14px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .rchat { position: absolute; left: 8px; right: auto; top: 8px; z-index: 6; width: calc((100% - 16px) * 2 / 3); max-width: 307px; min-width: 240px; max-height: calc(100% - 16px); box-sizing: border-box; background: var(--surface); color: var(--ink); border-radius: 14px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
   .rchat[hidden] { display: none; }
   .rchat-head { display: flex; align-items: center; gap: 8px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
   .rchat.drag .rchat-head { cursor: grabbing; }
@@ -522,10 +525,16 @@
   .rchat-head .grip { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 34px; height: 8px; background: radial-gradient(circle, var(--muted) 1.6px, transparent 2px) 0 0 / 8.5px 4px; opacity: .7; }
   /* 右上的悄悄話開關 */
   .rchat-head .wh { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
-  .rchat-head .wh .switch { transform: scale(.8); transform-origin: right center; }
+  .rchat-head .wh .switch { transform: scale(.8); transform-origin: right center; margin-left: -8px; }
+  .rchat-head .wh { gap: 3px; font-size: 12px; }
   .rchat-head .end { order: -1; margin-left: -4px; }
   .rchat-head svg { width: 34px; height: 34px; flex: none; }
-  .rchat-head b { flex: 1; min-width: 0; font-size: 15px; }
+  .rchat-head b { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rchat-head svg { width: 28px !important; height: 28px !important; }
+  .rchat form .btn { padding: 0 12px; }
+  /* 右下角的拉角：自己縮放聊天框（有最小、最大限制） */
+  .rc-rs { position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; cursor: nwse-resize; touch-action: none; border-radius: 0 0 14px 0;
+    background: linear-gradient(135deg, transparent 50%, var(--muted) 50% 56%, transparent 56% 66%, var(--muted) 66% 72%, transparent 72%); opacity: .7; }
   .rchat-head button { width: 34px; height: 34px; border: 0; background: none; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
   .rchat-log { flex: none; height: 116px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
   .rchat-log .b { max-width: 80%; padding: 6px 10px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
@@ -1256,13 +1265,20 @@
     var m = rcMember(id); if (!m) { closeRoomChat(); return; }
     var old = document.getElementById("rc-in"), draft = old ? old.value : "", had = old && document.activeElement === old;
     // 左上角的叉叉＝結束對話
-    el.innerHTML = '<div class="rchat-head"><button type="button" class="end" data-rc="end" aria-label="' + K.esc(t("rc.end")) + '" title="' + K.esc(t("rc.end")) + '">×</button><svg viewBox="-30 -74 60 62" aria-hidden="true">' + S.bust(m.look) + '</svg><b>' + K.esc(t("rc.title", { n: m.name })) + '</b><label class="wh">🤫 ' + K.esc(t("rc.wh")) + '<span class="switch"><input type="checkbox" id="rc-wh"' + (rchat.whisper ? " checked" : "") + '><span></span></span></label><span class="grip" aria-hidden="true"></span></div>' +
+    el.innerHTML = '<div class="rchat-head"><button type="button" class="end" data-rc="end" aria-label="' + K.esc(t("rc.end")) + '" title="' + K.esc(t("rc.end")) + '">×</button><svg viewBox="-30 -74 60 62" aria-hidden="true">' + S.bust(m.look) + '</svg><b>' + K.esc(m.name) + '</b><label class="wh">🤫 ' + K.esc(t("rc.wh")) + '<span class="switch"><input type="checkbox" id="rc-wh"' + (rchat.whisper ? " checked" : "") + '><span></span></span></label><span class="grip" aria-hidden="true"></span></div>' +
       '<div class="rchat-log" id="rc-log">' + (rchat.vis === id ? '<span class="tip">' + K.esc(t(rchat.whisper ? "rc.tipWh" : "rc.tip", { n: m.name })) + '</span>' : "") +
       (rchat.logs[id] || []).map(function (b) { return '<div class="b ' + (b.me ? "me" : "them") + '">' + K.esc(b.text) + '</div>'; }).join("") + '</div>' +
-      '<form id="rc-form"><input type="text" id="rc-in" maxlength="80" autocomplete="off" placeholder="' + K.esc(t("rc.ph")) + '"><button class="btn" type="submit">' + K.esc(t("rc.send")) + '</button></form>';
-    el.hidden = false; placeChat();
+      '<span class="rc-rs" aria-hidden="true"></span><form id="rc-form"><input type="text" id="rc-in" maxlength="80" autocomplete="off" placeholder="' + K.esc(t("rc.ph")) + '"><button class="btn" type="submit">' + K.esc(t("rc.send")) + '</button></form>';
+    el.hidden = false; sizeChat(); placeChat();
     var inp = document.getElementById("rc-in"); inp.value = draft; if (focusIn || had) inp.focus();
     var log = document.getElementById("rc-log"); log.scrollTop = log.scrollHeight;
+  }
+  // 聊天框大小：寬 220～460、訊息區高 70～260，也不能比房間畫面大
+  function sizeChat() {
+    var el = document.getElementById("rchat"), w = el.parentNode, log = document.getElementById("rc-log"); if (!rchat.size || el.hidden) return;
+    var maxW = Math.min(460, w.clientWidth - 16), ww = Math.max(Math.min(220, maxW), Math.min(maxW, rchat.size.w));
+    el.style.width = ww + "px"; el.style.maxWidth = "none"; el.style.minWidth = "0";
+    if (log) { var maxH = Math.max(70, Math.min(260, w.clientHeight - (el.offsetHeight - log.offsetHeight) - 16)); log.style.height = Math.max(70, Math.min(maxH, rchat.size.h)) + "px"; }
   }
   // 聊天框可以拖著移動，但不會超出房間畫面
   function placeChat() {
@@ -1274,6 +1290,11 @@
   (function () {
     var el = document.getElementById("rchat"), d = null;
     el.addEventListener("pointerdown", function (e) {
+      if (e.target.closest(".rc-rs")) {
+        var log = document.getElementById("rc-log");
+        d = { rs: true, x0: e.clientX, y0: e.clientY, w0: el.offsetWidth, h0: log ? log.offsetHeight : 116 };
+        el.classList.add("drag"); try { el.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); return;
+      }
       if (!e.target.closest(".rchat-head") || e.target.closest("button, label")) return;
       var r = el.getBoundingClientRect(), w = el.parentNode.getBoundingClientRect();
       d = { dx: e.clientX - r.left, dy: e.clientY - r.top, wx: w.left, wy: w.top };
@@ -1281,10 +1302,12 @@
       el.classList.add("drag"); try { el.setPointerCapture(e.pointerId); } catch (er) {}
       e.preventDefault();
     });
-    el.addEventListener("pointermove", function (e) { if (!d) return; rchat.pos = { x: e.clientX - d.wx - d.dx, y: e.clientY - d.wy - d.dy }; placeChat(); });
+    el.addEventListener("pointermove", function (e) {
+      if (d && d.rs) { rchat.size = { w: d.w0 + e.clientX - d.x0, h: d.h0 + e.clientY - d.y0 }; sizeChat(); placeChat(); return; }
+      if (!d) return; rchat.pos = { x: e.clientX - d.wx - d.dx, y: e.clientY - d.wy - d.dy }; placeChat(); });
     function up() { d = null; el.classList.remove("drag"); }
     el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
-    window.addEventListener("resize", placeChat);
+    window.addEventListener("resize", function () { sizeChat(); placeChat(); });
   })();
   function sendRoomChat(line) {
     var inp = document.getElementById("rc-in"), id = rchat.with; if (!inp || !id || !session) return;
@@ -1412,7 +1435,7 @@
     current = v;
     document.body.classList.toggle("in-room", v === "session");
     applyRoomBar();
-    if (v !== "session") { document.getElementById("rchat").hidden = true; document.getElementById("fov").hidden = true; }
+    if (v !== "session") { document.getElementById("rchat").hidden = true; document.getElementById("fov").hidden = true; document.documentElement.classList.remove("fov-on"); }
     ["rooms", "session", "me", "friends", "char", "team", "shop"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
     document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
     document.getElementById("tab-char").setAttribute("aria-selected", v === "char");
@@ -1834,7 +1857,7 @@
     // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」，
     // 按了「我回來了」坐回座位就再蓋上
     var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && !session.away && current === "session" && (p.focus || (!session.up && !needAck(p)));
-    if (fo.hidden === fon) fo.hidden = !fon;
+    if (fo.hidden === fon) { fo.hidden = !fon; document.documentElement.classList.toggle("fov-on", fon); if (fon) window.scrollTo(0, 0); }
     if (fon) {
       fo.style.background = (THEME_SW[session.theme] || THEME_SW.home)[0] + "eb";
       document.getElementById("fov-ph").textContent = t(p.focus ? "ph.focus" : "ph.break");
