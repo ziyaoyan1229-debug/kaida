@@ -1775,15 +1775,17 @@
     document.getElementById("rb-time").textContent = shown;
     var ub = document.querySelector("#says [data-up]"); if (ub) ub.classList.toggle("shake", needAck(p));
     document.getElementById("rb-foc").setAttribute("aria-pressed", String(!!data.opts.focusMode));
-    // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」
-    var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && p.focus && !session.away && current === "session";
+    // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」，
+    // 按了「我回來了」坐回座位就再蓋上
+    var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && !session.away && current === "session" && (p.focus || (!session.up && !needAck(p)));
     if (fo.hidden === fon) fo.hidden = !fon;
     if (fon) {
       fo.style.background = (THEME_SW[session.theme] || THEME_SW.home)[0] + "eb";
-      document.getElementById("fov-ph").textContent = t("ph.focus");
+      document.getElementById("fov-ph").textContent = t(p.focus ? "ph.focus" : "ph.break");
       document.getElementById("fov-t").textContent = shown;
       var de = new Date(p.end);
-      document.getElementById("fov-sub").textContent = data.opts.countUp ? t("fov.subUp", { r: roomName(), m: ROOMS.cur.focus }) : t("fov.sub", { r: roomName(), t: String(de.getHours()).padStart(2, "0") + ":" + String(de.getMinutes()).padStart(2, "0") });
+      var hm = String(de.getHours()).padStart(2, "0") + ":" + String(de.getMinutes()).padStart(2, "0");
+      document.getElementById("fov-sub").textContent = !p.focus ? roomName() + " · " + t("s.nextFocus", { time: hm }) : data.opts.countUp ? t("fov.subUp", { r: roomName(), m: ROOMS.cur.focus }) : t("fov.sub", { r: roomName(), t: String(de.getHours()).padStart(2, "0") + ":" + String(de.getMinutes()).padStart(2, "0") });
     }
     var fill = document.getElementById("rb-fill");
     fill.style.width = (Math.max(0, Math.min(1, 1 - left / p.len)) * 100).toFixed(2) + "%";
@@ -2752,7 +2754,7 @@
     window.scrollTo({ top: top, behavior: "smooth" });
   });
   document.getElementById("says").addEventListener("click", function (e) {
-    if (e.target.closest("[data-up]")) { ackBreak(); setUp(!session.up); return; }
+    if (e.target.closest("[data-up]")) { ackBreak(); setUp(!session.up); renderSession(Date.now()); return; }
     var b = e.target.closest("[data-say]"); if (b) say(b.dataset.say);
   });
   // 暫離：人還在房間裡，角色起身離開座位走動；跳回房間才走回座位
