@@ -26,7 +26,7 @@
     L.skin = Math.max(0, Math.min(7, +look.skin || 0)); L.hair = Math.max(0, Math.min(12, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
-      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0, dk: m.dk == null ? null : Math.max(0, Math.min(864e5, +m.dk || 0)), dkAt: +m.dkAt || 0, hr: Math.max(0, Math.min(1e7, Math.floor(+m.hr || 0)))
+      joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0, dk: m.dk == null ? null : Math.max(0, Math.min(864e5, +m.dk || 0)), dkAt: +m.dkAt || 0, seat: m.seat >= 0 && m.seat < 12 ? Math.floor(m.seat) : -1, hr: Math.max(0, Math.min(1e7, Math.floor(+m.hr || 0)))
     };
   }
 

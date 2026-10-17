@@ -1544,7 +1544,8 @@ function buildRoom() {
     box(0.36, 0.06, 0.38, ["#e8c9a0", "#d27d6b", "#9cbf7a"][i % 3], 0, 0.4, 0.02, ch);
     [[-0.19, -0.18], [0.19, -0.18], [-0.19, 0.18], [0.19, 0.18]].forEach(([lx, lz]) => box(0.04, 0.36, 0.04, "#7a4a2a", lx, 0.18, lz, ch));
     const prop = makeProp(""); d.add(prop);
-    seatProps[i] = { group: d, prop, act: "" };
+    d.userData.seat = i; ch.userData.seat = i;
+    seatProps[i] = { group: d, chair: ch, prop, act: "" };
   });
 
   // 粒子：火星、灰塵、蒸氣
@@ -1624,7 +1625,10 @@ function update(members) {
   const list = members.slice(0, 6), ids = {};
   // 座位隨機：用「id + 進房時間」算出想坐的位子，被坐走就往下一個空位；每次進房都不同，但每台手機看到的一樣
   const used = {}, seatOf = {};
+  // 自己點桌子選的位子優先（同一個位子有兩個人選，先進房的拿到）
+  list.forEach((m) => { const s = m.seat; if (s >= 0 && s < SEATS.length && !used[s]) { used[s] = 1; seatOf[m.id] = s; } });
   list.forEach((m) => {
+    if (seatOf[m.id] != null) return;
     let h = 7; const key = m.id + ":" + (m.joined || 0);
     for (let k = 0; k < key.length; k++) h = (h * 31 + key.charCodeAt(k)) % 1000003;
     let si = h % SEATS.length; while (used[si]) si = (si + 1) % SEATS.length;
@@ -1951,7 +1955,13 @@ function mount(el) {
     if (!id) { // 點得不準時，找畫面上最近的人
       let best = 1e9; Object.values(chars).forEach((st) => { tmpV.set(st.pos.x, 0.9, st.pos.z).project(camera); const d = Math.hypot(tmpV.x - ndc.x, tmpV.y - ndc.y); if (d < best && d < 0.12) { best = d; id = st.m.id; } });
     }
-    if (id) window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id } }));
+    if (id) { window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id } })); return; }
+    // 點到空的桌子或椅子：問要不要坐過去
+    const seatHit = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
+    let si = -1;
+    if (seatHit) { let o = seatHit.object; while (o && o.userData.seat == null) o = o.parent; si = o ? o.userData.seat : -1; }
+    const taken = Object.values(chars).some((st) => st.seat === si);
+    window.dispatchEvent(new CustomEvent("kaida3d-seat", { detail: { seat: si >= 0 && !taken ? si : -1, x: e.clientX - r.left, y: e.clientY - r.top } }));
   });
   window.addEventListener("pointermove", (e) => {
     if (!drag || pinch) return;
