@@ -389,6 +389,10 @@
   .shop .it .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; margin-top: 6px; width: 100%; }
   .shop .it.on { border: 2px solid var(--signal); }
   .shop .it { cursor: pointer; }
+  /* 我的衣櫃：一排左右滑動選 */
+  .shop.wardrobe { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; margin: 0 -16px; padding: 2px 16px 8px; scrollbar-width: none; }
+  .shop.wardrobe::-webkit-scrollbar { display: none; }
+  .shop.wardrobe .it { flex: 0 0 40%; max-width: 180px; scroll-snap-align: start; }
   .shop .it.try { border: 2px dashed var(--ink); background: var(--surface); }
   @media (max-width: 639px), (max-width: 999px) and (orientation: portrait) {
     body.in-room .scene-wrap { margin-bottom: 0; }
@@ -527,7 +531,17 @@
   .fov-dn { position: absolute; left: 50%; top: auto; bottom: 22px; margin-left: -22px; width: 44px; height: 44px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff;
     background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.5); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.18); animation: sdown 2.4s ease-in-out infinite; }
   .fov-dn svg { display: block; width: 22px; height: 22px; margin: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
-  @media (min-width: 640px) and (orientation: landscape), (min-width: 1000px) { .fov { position: fixed; } .fov-dn { display: none; } }
+  /* 橫向／寬螢幕：專注畫面蓋整個螢幕，箭頭在右側中間；點了只蓋房間、露出旁邊的設定區 */
+  @keyframes sside { 50% { transform: translateX(-4px); } }
+  @keyframes sside2 { 50% { transform: translateX(4px); } }
+  @media (min-width: 640px) and (orientation: landscape), (min-width: 1000px) {
+    .fov { position: fixed; transition: right .3s ease; }
+    .fov-dn { left: auto !important; right: 18px; top: 50% !important; bottom: auto !important; margin: -22px 0 0 !important; animation-name: sside; }
+    .fov-dn svg { transform: rotate(90deg); } /* 向左：縮小專注畫面、露出右側設定欄 */
+    .fov.side .fov-dn { animation-name: sside2; }
+    .fov.side .fov-t { font-size: clamp(56px, 12vw, 150px); }
+    .fov.side .fov-dn svg { transform: rotate(-90deg); } /* 向右：回到全螢幕 */
+  }
   .fov-ph { font-size: 15px; letter-spacing: .4em; opacity: .9; }
   .fov-t { font-family: var(--f-display); font-weight: 700; font-size: clamp(76px, 26vw, 220px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .fov-sub { font-size: 14px; opacity: .85; }
@@ -2031,7 +2045,7 @@
           : '<button class="btn ghost block" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>') + '</div>';
       el.innerHTML = html; return;
     }
-    html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
+    html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop wardrobe">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
     html += '<h2>' + K.esc(t("c.shop")) + '</h2>' + (shop.length ? '<div class="shop">' + shop.map(function (it) { return card(it, false); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneHere")) + '</p>');
     el.innerHTML = html;
   }
@@ -2968,7 +2982,9 @@
   document.getElementById("rb-foc").addEventListener("click", function () { setFocusMode(!data.opts.focusMode); K.toast(t("opt.focusS") + (data.opts.focusMode ? " ✓" : " ✕")); });
   document.getElementById("fov-x").addEventListener("click", function () { setFocusMode(false); });
   function placeFovDn() {
-    var m = document.getElementById("s-more"), dn = document.getElementById("fov-dn"), op = m.offsetParent;
+    var m = document.getElementById("s-more"), dn = document.getElementById("fov-dn"), op = m.offsetParent, fo0 = document.getElementById("fov");
+    if (getComputedStyle(fo0).position === "fixed") { fo0.style.height = ""; fo0.style.right = fo0.classList.contains("side") ? sideGap() + "px" : ""; return; }
+    fo0.classList.remove("side"); fo0.style.right = "";
     if (!op || !m.offsetWidth) return;
     // 用沒有跳動位移的位置（offsetTop），專注畫面貼在頁面最上面，所以換成頁面座標
     var w = op.getBoundingClientRect();
@@ -2977,7 +2993,13 @@
     var fo = document.getElementById("fov"); fo.style.height = getComputedStyle(fo).position === "absolute" ? (w.bottom + window.scrollY) + "px" : "";
   }
   window.addEventListener("resize", placeFovDn);
-  document.getElementById("fov-dn").addEventListener("click", function () { document.getElementById("s-more").click(); });
+  // 寬螢幕時旁邊設定區的寬度（專注畫面縮到它左邊為止）
+  function sideGap() { var sd = document.querySelector(".s-side"); return sd ? Math.max(0, window.innerWidth - sd.getBoundingClientRect().left + 8) : 0; }
+  document.getElementById("fov-dn").addEventListener("click", function () {
+    var fo = document.getElementById("fov");
+    if (getComputedStyle(fo).position === "fixed") { fo.classList.toggle("side"); placeFovDn(); return; }
+    document.getElementById("s-more").click();
+  });
   // 倒數／計時
   function renderClockOpt() { document.querySelectorAll("#opt-clock [data-clock]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.clock === "up") === !!data.opts.countUp)); }); }
   document.getElementById("opt-clock").addEventListener("click", function (e) {
