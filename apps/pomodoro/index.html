@@ -560,6 +560,17 @@
   .idrow b { flex: 1; min-width: 0; }
   .idrow .cp { flex: none; width: 34px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); cursor: pointer; }
   .shop-top { display: flex; align-items: center; gap: 14px; }
+  .shop-head { position: sticky; top: 0; z-index: 6; background: var(--paper); margin: 0 -16px; padding: 8px 16px 6px; box-shadow: 0 6px 10px -8px rgba(0,0,0,.25); }
+  .shop-head .card { margin: 0; }
+  .shop-head .card { padding: 10px 14px; }
+  .shop-head .shop-top svg { width: 84px; height: 81px; }
+  .shop-head .shop-top p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .shop-head .cats { position: static; margin: 10px -16px 0; }
+  .swrow { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 14px; }
+  .swc { position: relative; width: 38px; height: 38px; border-radius: 50%; padding: 0; cursor: pointer; border: 1px solid var(--line); box-shadow: 0 0 0 2px var(--paper); }
+  .swc[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+  .swc.own::after { content: ""; position: absolute; right: -2px; bottom: -2px; width: 12px; height: 12px; border-radius: 50%; background: var(--signal); border: 2px solid var(--paper); }
+  .swbuy { display: grid; gap: 8px; }
   .shop-top svg { width: 110px; height: 106px; flex: none; }
   .shop .it .sw-big { display: block; width: 64px; height: 64px; border-radius: 50%; margin: 10px auto 8px; border: 1px solid var(--line); }
   .help-list { margin: 8px 0 14px; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.55; text-align: left; }
@@ -773,7 +784,7 @@
       "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.use": "換上", "c.boughtCol": "買了新顏色！",
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
@@ -864,7 +875,7 @@
       "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.use": "Use", "c.boughtCol": "New color bought!",
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
@@ -1899,7 +1910,7 @@
     look[it.slot] = it.id;
     return '<svg viewBox="-36 -96 72 102" aria-hidden="true"><g>' + S.preview(look).replace(/<rect[^>]*\/><rect[^>]*\/>/, "") + '</g></svg>';
   }
-  var shopCat = "top";
+  var shopCat = "top", shopPick = {};
   function countryName(c) { try { return new Intl.DisplayNames([K.lang() === "en" ? "en" : "zh-TW"], { type: "region" }).of(c); } catch (er) { return c; } }
   var PALS = [["kraft", "#F2ECE1", "#2A2620"], ["tomato", "#F6EDE3", "#C23B22"], ["matcha", "#EDF0E4", "#3F6B44"], ["night", "#14161B", "#F0694A"], ["sea", "#E9EFF3", "#2E6696"]];
   function applyPal() {
@@ -1955,7 +1966,10 @@
   /* ===== 商店：衣服配件、膚色、髮色 ===== */
   function renderShop() {
     var el = document.getElementById("view-shop"), L = data.look, html = "";
-    html += '<div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(L) + '</svg>' +
+    var colTab = shopCat === "skin" || shopCat === "hair", pick = colTab && shopPick[shopCat] != null ? shopPick[shopCat] : null;
+    var PL = pick != null ? Object.assign({}, L, (function () { var o = {}; o[shopCat] = pick; return o; })()) : L;
+    // 上面（預覽、木頭、分類）固定不動，只有下面的商品可以滑
+    html += '<div class="shop-head"><div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(PL) + '</svg>' +
       '<div style="min-width:0"><div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
       '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("c.woodP")) + '</p></div></div></div>';
     var CATS2 = [{ id: "skin", slots: [] }, { id: "hair", slots: [] }].concat(S.CATS);
@@ -1973,16 +1987,18 @@
     }
     html += '<div class="cats" role="tablist">' + CATS2.map(function (c) {
       return '<button type="button" role="tab" data-cat="' + c.id + '" aria-selected="' + (c.id === cat.id) + '">' + K.esc(t("cat." + c.id)) + '</button>';
-    }).join("") + '</div>';
+    }).join("") + '</div></div>';
     if (cat.id === "skin" || cat.id === "hair") {
       var ck = cat.id, cown = ck === "skin" ? data.ownSkin : data.ownHair;
-      html += '<div class="shop" style="margin-top:12px">' + (ck === "skin" ? S.SKINS : S.HAIRS).map(function (c, i) {
-        var on = L[ck] === i, has = cown.indexOf(i) >= 0;
-        var btn = has ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.colorOn")) + '</button>' : '<button class="btn ghost" type="button" data-usecol="' + ck + ':' + i + '">' + K.esc(t("c.use")) + '</button>')
-          : data.wood >= COLOR_PRICE ? '<button class="btn" type="button" data-buycol="' + ck + ':' + i + '">🪵 ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
-          : '<button class="btn ghost" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>';
-        return '<div class="it' + (on ? " on" : "") + '"><span class="sw-big" style="background:' + c + '"></span><b>' + K.esc(t("cat." + ck)) + ' ' + (i + 1) + '</b>' + btn + '</div>';
+      // 顏色排成一兩排小圓點，點了先在上面預覽，下面一個按鍵買或換上
+      var sel = pick != null ? pick : L[ck], has = cown.indexOf(sel) >= 0;
+      html += '<div class="swrow">' + (ck === "skin" ? S.SKINS : S.HAIRS).map(function (c, i) {
+        return '<button type="button" class="swc' + (cown.indexOf(i) >= 0 ? " own" : "") + '" data-pickcol="' + ck + ':' + i + '" aria-pressed="' + (i === sel) + '" aria-label="' + K.esc(t("cat." + ck)) + ' ' + (i + 1) + '" style="background:' + c + '"></button>';
       }).join("") + '</div>';
+      html += '<div class="swbuy"><span class="small muted">' + K.esc(t("cat." + ck)) + ' ' + (sel + 1) + (has ? " · " + K.esc(t("c.owned")) : "") + '</span>' +
+        (has ? (L[ck] === sel ? '<button class="btn ghost block" type="button" disabled>' + K.esc(t("c.colorOn")) + '</button>' : '<button class="btn block" type="button" data-usecol="' + ck + ':' + sel + '">' + K.esc(t("c.use")) + '</button>')
+          : data.wood >= COLOR_PRICE ? '<button class="btn block" type="button" data-buycol="' + ck + ':' + sel + '">🪵 ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
+          : '<button class="btn ghost block" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>') + '</div>';
       el.innerHTML = html; return;
     }
     html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
@@ -2004,7 +2020,8 @@
     function keepName() { var i = document.getElementById("c-name"); if (i && i.value.trim()) data.me.name = i.value.trim().slice(0, 16); }
     keepName();
     if (ds.act === "go-shop") { show("shop"); window.scrollTo(0, 0); return; }
-    if (ds.cat) { shopCat = ds.cat; rerenderLook(); var cs = document.querySelector(".cats"); if (cs) cs.scrollIntoView({ block: "start" }); return; }
+    if (ds.pickcol) { var pc = ds.pickcol.split(":"); shopPick[pc[0]] = +pc[1]; rerenderLook(); return; }
+    if (ds.cat) { shopCat = ds.cat; shopPick = {}; rerenderLook(); var vs = document.getElementById("view-shop"); if (current === "shop" && vs.getBoundingClientRect().top < 0) vs.scrollIntoView({ block: "start" }); return; }
     if (ds.g) L.g = ds.g;
     else if (ds.skin != null || ds.hair != null) {
       // 建好角色後，換沒買過的膚色／髮色要小木頭；買過的可以隨時換回來
@@ -2020,7 +2037,7 @@
       var pr = (ds.buycol || ds.usecol).split(":"), ck = pr[0], ci = +pr[1], cown = ck === "skin" ? data.ownSkin : data.ownHair;
       if (ds.buycol) { if (data.wood < COLOR_PRICE || cown.indexOf(ci) >= 0) return; data.wood -= COLOR_PRICE; cown.push(ci); updateWood(); K.toast(t("c.boughtCol")); }
       else if (cown.indexOf(ci) < 0) return;
-      L[ck] = ci; paidColor[ck] = ci; data.paidColor = paidColor;
+      L[ck] = ci; paidColor[ck] = ci; data.paidColor = paidColor; delete shopPick[ck];
     }
     else if (ds.wear) { var it = S.item(ds.wear); if (it.slot === "top") L.top = it.id; else L[it.slot] = L[it.slot] === it.id ? "" : it.id; }
     else if (ds.buy) {
