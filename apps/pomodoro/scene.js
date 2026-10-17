@@ -70,9 +70,9 @@
   ];
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
 
-  var ACTS = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson"];
+  var ACTS = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson", "music", "piano", "sing", "craft"];
   // 平面畫面只有四種桌面道具，其他活動借用最像的那一種
-  var BASE = { read: "read", novel: "read", research: "read", homework: "homework", report: "homework", vocab: "homework", journal: "homework", code: "pc", pc: "pc", lesson: "pc", draw: "draw", calligraphy: "draw" };
+  var BASE = { read: "read", novel: "read", research: "read", homework: "homework", report: "homework", vocab: "homework", journal: "homework", code: "pc", pc: "pc", lesson: "pc", draw: "draw", calligraphy: "draw", music: "music", piano: "piano", sing: "read", craft: "draw" };
 
   /* 預設角色 */
   function defaultLook() { return { g: "girl", skin: 0, hair: 0, top: "tee-blue", style: "", hat: "", face: "", neck: "", ears: "", back: "", pet: "" }; }
@@ -391,6 +391,11 @@
       s += '<circle cx="-10" cy="-19" r="2" fill="#e7a6a8"/><circle cx="-5" cy="-18" r="2" fill="#7fa6c9"/><path d="M-1 -20 q3 -2 6 0" fill="none" stroke="#8fae7a" stroke-width="1.4"/>';
       s += '<g fill="#c2453b"><rect x="11" y="-21" width="2" height="6"/></g><rect x="14" y="-21" width="2" height="6" fill="#5d7fa8"/><rect x="17" y="-21" width="2" height="6" fill="#e8b93a"/>';
       s += '<g class="pencil"><rect x="-2" y="-28" width="2" height="9" fill="#5d7fa8" transform="rotate(25 -1 -23)"/></g>';
+    } else if (act === "music") {
+      s += '<g transform="rotate(-28 2 -20)"><rect x="4" y="-21.5" width="20" height="3" rx="1" fill="#7a4a2a"/><ellipse cx="-2" cy="-20" rx="8" ry="6.5" fill="#d9903e"/><ellipse cx="5" cy="-20" rx="5" ry="4.5" fill="#d9903e"/><circle cx="0" cy="-20" r="2" fill="#3b2a20"/></g>';
+    } else if (act === "piano") {
+      s += '<rect x="-18" y="-21" width="36" height="6" rx="1" fill="#2a2620"/><rect x="-16.5" y="-19.5" width="33" height="3.5" fill="#fbf8f2"/>';
+      s += '<g fill="#1c1a18">' + [-14, -11, -5, -2, 1, 7, 10, 13].map(function (x) { return '<rect x="' + x + '" y="-19.5" width="1.6" height="2"/>'; }).join("") + '</g>';
     }
     return s;
   }
