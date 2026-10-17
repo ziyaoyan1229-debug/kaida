@@ -2,8 +2,8 @@
    window.KaidaScene3D.mount(el) → 是否成功；.update(members)；members: [{ id, name, look, act, me, bubble, up }] */
 import * as THREE from "./vendor/three.module.min.js";
 
-const ACTS3 = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson"];
-const WRITE_ACTS = ["homework", "draw", "report", "vocab", "journal", "calligraphy"];
+const ACTS3 = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson", "music", "piano", "sing", "craft"];
+const WRITE_ACTS = ["homework", "draw", "report", "vocab", "journal", "calligraphy", "craft"];
 const SKINS = ["#f6d7bd", "#e9b994", "#c98e64", "#fbe6d4", "#d9a27a", "#a8704a", "#8a5532", "#5e3a24"];
 const HAIRS = ["#3b2a20", "#7a4a2a", "#c58b4c", "#2c2c34", "#151515", "#e6c27a", "#b0302a", "#9a9aa0", "#f2efe8", "#e88aa8", "#5a7ad0", "#7a5ad0", "#4a8a6a"];
 const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f", cardigan: "#e6d3b3", plaid: "#c8574a", sport: "#3f6f6a", overalls: "#f3efe6", denim: "#5d7fa8", turtle: "#3a3640" };
@@ -529,6 +529,38 @@ function makeProp(act) {
     [["#e7a6a8", -0.12, -0.04], ["#7fa6c9", 0.0, 0.05], ["#8fae7a", 0.06, -0.06]].forEach(([c, x, z]) => { const d = new THREE.Mesh(new THREE.CircleGeometry(0.045, 14), new THREE.MeshBasicMaterial({ color: c })); d.rotation.x = -Math.PI / 2; d.position.set(x, top + 0.014, z); g.add(d); });
     ["#c2453b", "#5d7fa8", "#e8b93a"].forEach((c, i) => { const p = cyl(0.01, 0.01, 0.16, c, 0.25 + i * 0.03, top + 0.012, 0, g, 6); p.rotation.x = Math.PI / 2; });
     const pen = cyl(0.012, 0.012, 0.18, "#5d7fa8", 0.05, top + 0.04, -0.02, g, 6); pen.rotation.z = 1.2; pen.rotation.y = 0.5; g.userData.pen = pen;
+  } else if (act === "music") {
+    // 吉他抱在胸前，桌上攤著樂譜
+    const gt = new THREE.Group(); gt.position.set(0.1, top + 0.08, -0.4); gt.rotation.z = 0.5; g.add(gt); g.userData.gtr = gt;
+    [[0, 0, 0.17], [0.15, 0.0, 0.13]].forEach(([x, y, r]) => { const b2 = cyl(r, r, 0.07, "#d9903e", x - 0.08, y, 0, gt, 20); b2.rotation.x = Math.PI / 2; });
+    const hole = cyl(0.045, 0.045, 0.072, "#3b2a20", 0.0, 0, 0, gt, 14); hole.rotation.x = Math.PI / 2;
+    box(0.5, 0.05, 0.03, "#7a4a2a", 0.36, 0, 0, gt); box(0.1, 0.07, 0.035, "#5a3a26", 0.64, 0, 0, gt);
+    box(0.05, 0.1, 0.02, "#5a3a26", -0.13, 0, 0.04, gt);
+    box(0.34, 0.006, 0.24, "#fffaf0", -0.05, top + 0.003, 0.02, g);
+    for (let i = 0; i < 5; i++) box(0.28, 0.002, 0.003, "#6a6a6a", -0.05, top + 0.008, -0.06 + i * 0.012, g);
+    for (let i = 0; i < 5; i++) box(0.28, 0.002, 0.003, "#6a6a6a", -0.05, top + 0.008, 0.04 + i * 0.012, g);
+  } else if (act === "piano") {
+    // 桌上一台小電子琴
+    box(0.7, 0.05, 0.2, "#2a2620", 0, top + 0.025, 0.02, g);
+    for (let i = 0; i < 14; i++) box(0.042, 0.012, 0.11, "#fbf8f2", -0.295 + i * 0.0455, top + 0.055, -0.03, g);
+    [0, 1, 3, 4, 5, 7, 8, 10, 11, 12].forEach((k) => box(0.026, 0.016, 0.065, "#1c1a18", -0.272 + k * 0.0455, top + 0.064, 0.0, g));
+    box(0.66, 0.03, 0.06, "#3a3a44", 0, top + 0.06, 0.09, g);
+    const sh = box(0.28, 0.18, 0.006, "#fffaf0", 0, top + 0.16, 0.13, g); sh.rotation.x = -0.25;
+  } else if (act === "sing") {
+    // 麥克風架 + 歌詞
+    cyl(0.07, 0.07, 0.015, "#2a2620", 0.05, top + 0.008, 0.1, g, 14);
+    const pole = cyl(0.008, 0.008, 0.36, "#4a4a50", 0.05, top + 0.18, 0.1, g, 6);
+    const arm = cyl(0.007, 0.007, 0.2, "#4a4a50", 0.05, top + 0.36, 0.02, g, 6); arm.rotation.x = 1.1;
+    sph(0.035, "#2a2a30", 0.05, top + 0.4, -0.07, g, 10, 8);
+    box(0.24, 0.006, 0.3, "#fffaf0", -0.3, top + 0.003, 0.02, g).rotation.y = 0.2;
+    for (let i = 0; i < 5; i++) box(0.16, 0.002, 0.006, "#c2453b", -0.3, top + 0.008, -0.07 + i * 0.04, g).rotation.y = 0.2;
+  } else if (act === "craft") {
+    // 打毛線：毛線球、棒針、織到一半的布
+    sph(0.07, "#e7a6a8", 0.3, top + 0.07, 0.08, g, 14, 10);
+    sph(0.05, "#7fa6c9", 0.4, top + 0.05, -0.04, g, 12, 8);
+    box(0.22, 0.012, 0.14, "#e7a6a8", -0.02, top + 0.01, -0.06, g);
+    [-1, 1].forEach((sd) => { const nd = cyl(0.006, 0.006, 0.3, "#c99a3e", sd * 0.05, top + 0.03, -0.1, g, 6); nd.rotation.z = Math.PI / 2 - sd * 0.5; nd.rotation.y = 0.3; });
+    box(0.003, 0.003, 0.2, "#e7a6a8", 0.15, top + 0.02, 0.0, g).rotation.y = 0.6;
   } else {
     cyl(0.06, 0.05, 0.08, "#c98f6a", 0.3, top + 0.04, 0.05, g);
     sph(0.08, "#8fae7a", 0.3, top + 0.13, 0.05, g);
@@ -1556,7 +1588,7 @@ function pickSpot(id) {
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
-function tagText(m) { return m.name; }
+function tagText(m) { return m.ft ? m.name + "  " + m.ft : m.name; }
 function addChar(m, seat) {
   const c = makeChar(m.look);
   scene.add(c.root);
@@ -1699,6 +1731,10 @@ function animChar(st, dt, now) {
       if (act === "lesson" && Math.sin(s * 0.7) > 0.6) c.arms[0].rotation.x = -1.2 + Math.sin(s * 7) * 0.08;
       if (typing) { c.arms[0].rotation.x = -1.25 + Math.sin(s * 11) * 0.05; c.arms[1].rotation.x = -1.25 + Math.cos(s * 12) * 0.05; }
       if ((act === "read" || act === "novel" || act === "research") && Math.sin(s * 0.5) > 0.97) c.arms[1].rotation.x = -1.5;
+      if (act === "music") { c.head.rotation.x = 0.2; c.head.rotation.z = Math.sin(s * 2) * 0.06; c.arms[1].rotation.x = -1.25; c.arms[1].rotation.z = 0.45; c.arms[0].rotation.x = -0.8 + Math.sin(s * 9) * 0.12; c.arms[0].rotation.z = 0.3; }
+      if (act === "piano") { c.head.rotation.x = 0.22; c.head.rotation.z = Math.sin(s * 1.6) * 0.05; c.arms[0].rotation.x = -1.2 + Math.max(0, Math.sin(s * 6)) * 0.12; c.arms[1].rotation.x = -1.2 + Math.max(0, Math.sin(s * 6 + 2)) * 0.12; c.arms[0].rotation.z = 0.25 + Math.sin(s * 0.9) * 0.12; c.arms[1].rotation.z = -0.25 + Math.sin(s * 0.9) * 0.12; }
+      if (act === "sing") { c.head.rotation.x = -0.05 + Math.sin(s * 1.2) * 0.04; c.arms[0].rotation.x = -0.6; c.arms[1].rotation.x = -1.7 + Math.sin(s * 1.5) * 0.15; c.arms[1].rotation.z = -0.5; }
+      if (act === "craft") { c.arms[0].rotation.x = -1.2 + Math.sin(s * 6) * 0.08; c.arms[1].rotation.x = -1.2 - Math.sin(s * 6) * 0.08; c.arms[0].rotation.z = 0.45; c.arms[1].rotation.z = -0.45; }
     } else {
       c.head.rotation.y = Math.sin(s * 0.4) * 0.4; c.arms.forEach((a) => { a.rotation.x = -0.5; });
     }
