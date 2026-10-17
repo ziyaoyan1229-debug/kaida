@@ -155,6 +155,30 @@
   .k3.wait::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 3px solid rgba(138, 90, 56, .25); border-top-color: #b4532a; animation: k3spin .8s linear infinite; }
   @keyframes k3spin { to { transform: rotate(360deg); } }
   .k3.wait .k3-hint { display: none; }
+  /* 進房間的載入畫面：模糊的房間 + 你的角色沿著進度條走進去，走到底畫面變清楚 */
+  .k3-load { position: absolute; inset: 0; z-index: 3; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; padding-bottom: 22%; color: #FFF6EC; text-align: center; transition: opacity .6s ease .35s; }
+  .k3-load .kl-bg { position: absolute; inset: -20px; background: #5a3a2a center/cover no-repeat; filter: blur(9px) saturate(.75) brightness(.85); transform: scale(1.06); transition: filter .9s ease .3s, transform .9s ease .3s; }
+  .k3-load .kl-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(43,30,24,.1), rgba(43,30,24,.55)); }
+  .k3-load > :not(.kl-bg) { position: relative; }
+  .k3-load .kl-name { font-family: var(--f-display, "Noto Serif TC", serif); font-size: 30px; font-weight: 700; letter-spacing: .12em; text-shadow: 0 2px 8px rgba(0,0,0,.35); }
+  .k3-load .kl-sub { font-size: 13px; opacity: .88; }
+  .k3-load .kl-track { position: relative; width: 72%; max-width: 360px; height: 62px; margin-top: 10px; }
+  .k3-load .kl-track::before { content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,246,236,.3); }
+  .k3-load .kl-bar { position: absolute; left: 0; bottom: 4px; height: 3px; width: 0; border-radius: 2px; background: #FFB59E; transition: width 3.2s cubic-bezier(.2,.6,.3,1); }
+  .k3-load .kl-walk { position: absolute; left: 0; bottom: 6px; width: 42px; margin-left: -21px; transition: left 3.2s cubic-bezier(.2,.6,.3,1); }
+  .k3-load .kl-walk svg { display: block; width: 100%; animation: klstep .38s ease-in-out infinite; }
+  .k3-load.run .kl-bar { width: 86%; } .k3-load.run .kl-walk { left: 86%; }
+  .k3-load.done .kl-bar { width: 100%; transition-duration: .35s; } .k3-load.done .kl-walk { left: 100%; transition-duration: .35s; }
+  .k3-load.done { opacity: 0; } .k3-load.done .kl-bg { filter: none; transform: none; }
+  @keyframes klstep { 50% { transform: translateY(-3px) rotate(2deg); } }
+  .k3.wait.loading::after { display: none; }
+  /* 快速對話放在房間畫面底下，手機往下滑才是音樂、成員等設定 */
+  .scene-wrap .says { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; margin: 0; padding: 26px 12px 10px; background: linear-gradient(180deg, rgba(30,20,14,0), rgba(30,20,14,.45)); }
+  .scene-wrap .says button { background: rgba(255,250,244,.92); border-color: rgba(255,250,244,.6); color: #2B1E18; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+  .scene-wrap .says button.up { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .scene-wrap .k3-load ~ .says, .scene-wrap.loading .says { visibility: hidden; }
+  .s-more { display: block; width: 100%; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; padding: 8px 0 2px; cursor: pointer; }
+  .s-more::before { content: ""; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 5px; }
   .k3-canvas { display: block; width: 100% !important; height: 100% !important; }
   .k3-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   .k3-tag, .k3-bubble { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
@@ -162,7 +186,7 @@
   .k3-tag { pointer-events: auto; cursor: pointer; }
   .k3-tag.me { background: #2a2620; color: #f8f4ec; border-color: #2a2620; }
   .k3-bubble { font-size: 13px; line-height: 1.35; padding: 4px 10px; border-radius: 12px; background: #fffdf8; color: #2a2620; box-shadow: 0 2px 6px rgba(60, 40, 20, .18); max-width: 160px; white-space: normal; text-align: center; }
-  .k3-hint { position: absolute; right: 8px; bottom: 6px; font-size: 11px; color: rgba(255, 253, 248, .9); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; }
+  .k3-hint { position: absolute; right: 8px; top: 6px; font-size: 11px; color: rgba(255, 253, 248, .9); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; }
   .music { margin: 10px 0 0; }
   .mu-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .mu-col { min-width: 0; }
@@ -304,6 +328,10 @@
   .shop .it b { display: block; font-size: 14px; font-weight: 600; }
   .shop .it .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; margin-top: 6px; width: 100%; }
   .shop .it.on { border: 2px solid var(--signal); }
+  @media (max-width: 639px), (max-width: 999px) and (orientation: portrait) {
+    body.in-room .scene-wrap { margin-bottom: 0; }
+    body.in-room .k3 { aspect-ratio: auto; height: calc(100vh - var(--rb-h, 72px) - 34px); height: calc(100dvh - var(--rb-h, 72px) - 34px); max-height: none; min-height: 320px; }
+  }
   /* 寬螢幕（手機橫放、平板、電腦）：版面放寬，房間裡畫面在左、控制在右 */
   @media (min-width: 700px) { .wrap { max-width: 720px; } }
   @media (min-width: 640px) and (orientation: landscape), (min-width: 1000px) {
@@ -312,6 +340,7 @@
     .s-body .scene-wrap { margin: 0; position: sticky; top: var(--rb-h, 72px); border-radius: 14px; overflow: hidden; }
     .s-body .k3 { aspect-ratio: auto; height: calc(100vh - var(--rb-h, 72px) - 16px); height: calc(100dvh - var(--rb-h, 72px) - 16px); min-height: 260px; max-height: none; }
     .s-side { min-width: 0; }
+    .s-more { display: none; }
     .s-side > .music { margin-top: 0; }
     .s-side .timer-row { gap: 10px; }
     .s-side .timer-row .ring { width: 104px; height: 104px; }
@@ -427,11 +456,11 @@
       <div class="rb-acts"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button></div>
     </div>
     <div class="s-body">
-    <div class="scene-wrap"><div class="k3" id="scene3d" hidden><span class="k3-hint" data-i18n="s.drag">拖曳可以轉視角</span></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg></div>
+    <div class="scene-wrap"><div class="k3" id="scene3d" hidden><span class="k3-hint" data-i18n="s.drag">拖曳可以轉視角</span><div class="k3-load" id="k3-load" hidden><div class="kl-bg"></div><div class="kl-name" id="kl-name"></div><div class="kl-sub" id="kl-sub"></div><div class="kl-track"><div class="kl-bar"></div><div class="kl-walk"><svg viewBox="-22 -64 44 66" id="kl-me" aria-hidden="true"></svg></div></div></div></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg><div class="says" id="says"></div></div>
+    <button type="button" class="s-more" id="s-more" data-i18n="s.more">往下滑：音樂、成員和更多</button>
     <div class="s-side">
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
-    <div class="says" id="says"></div>
     <div class="timer timer-row">
       <svg class="ring" id="ring" viewBox="0 0 200 200" role="img" aria-live="off">
         <circle class="track" cx="100" cy="100" r="88" fill="none" stroke-width="10"/>
@@ -568,7 +597,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -652,7 +681,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -935,8 +964,42 @@
     document.getElementById("scene").style.display = "none";
     wait3dT = setTimeout(fallback2d, 15000);
   })();
+  // 進房間的載入畫面（提案 B）：3D 好了而且至少放 1.4 秒才進房間
+  var loadT0 = 0, loadTm = 0;
+  function showLoad() {
+    var el = document.getElementById("k3-load");
+    if (!session || !(use3d || wait3d)) return;
+    var th = session.theme || "home", n = sceneMembers().length;
+    el.querySelector(".kl-bg").style.backgroundImage = "url(thumbs/" + th + ".jpg)";
+    document.getElementById("kl-name").textContent = themeName(th, session.host);
+    document.getElementById("kl-sub").textContent = n > 1 ? t("s.loadN", { n: n }) : t("s.load1");
+    document.getElementById("kl-me").innerHTML = S.bust(data.look, true);
+    clearTimeout(loadTm);
+    el.className = "k3-load"; el.hidden = false; void el.offsetWidth; el.classList.add("run");
+    document.getElementById("scene3d").classList.add("loading");
+    document.querySelector(".scene-wrap").classList.add("loading");
+    loadT0 = Date.now();
+    if (use3d) { if (window.KaidaScene3D.focus) window.KaidaScene3D.focus(); finishLoad(); }
+  }
+  function finishLoad() {
+    var el = document.getElementById("k3-load");
+    if (el.hidden || el.classList.contains("done")) return;
+    clearTimeout(loadTm);
+    loadTm = setTimeout(function () {
+      el.classList.add("done");
+      document.querySelector(".scene-wrap").classList.remove("loading");
+      loadTm = setTimeout(function () { el.hidden = true; document.getElementById("scene3d").classList.remove("loading"); }, 1000);
+    }, Math.max(0, 2200 - (Date.now() - loadT0)));
+  }
+  function hideLoad() {
+    clearTimeout(loadTm);
+    document.getElementById("k3-load").hidden = true;
+    document.getElementById("scene3d").classList.remove("loading");
+    document.querySelector(".scene-wrap").classList.remove("loading");
+  }
   function fallback2d() {
     if (use3d || !wait3d) return;
+    hideLoad();
     wait3d = false; clearTimeout(wait3dT);
     var el = document.getElementById("scene3d");
     el.hidden = true; el.classList.remove("wait");
@@ -955,6 +1018,7 @@
     el.classList.remove("wait");
     document.getElementById("scene").style.display = "none";
     lastSig = ""; if (session) renderScene(true);
+    finishLoad();
   }
   window.addEventListener("kaida3d-ready", try3d);
   window.addEventListener("kaida3d-fail", fallback2d);
@@ -1025,7 +1089,7 @@
     // 第一次打開：先取暱稱、選好角色才能進讀書房
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session && !session.away) v = "session";
-    if (v === "session" && current !== "session") window.scrollTo(0, 0);
+    if (v === "session" && current !== "session") { window.scrollTo(0, 0); showLoad(); }
     if (current === "char" && v !== "char") dropTrialColors();
     current = v;
     document.body.classList.toggle("in-room", v === "session");
@@ -2195,6 +2259,10 @@
   });
   document.getElementById("room-list").addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target.id === "join-code") document.querySelector('[data-act="join"]').click();
+  });
+  document.getElementById("s-more").addEventListener("click", function () {
+    var side = document.querySelector(".s-side"), top = side.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--rb-h")) || 72);
+    window.scrollTo({ top: top, behavior: "smooth" });
   });
   document.getElementById("says").addEventListener("click", function (e) {
     if (e.target.closest("[data-up]")) { setUp(!session.up); return; }
