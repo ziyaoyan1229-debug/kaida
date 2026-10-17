@@ -1893,7 +1893,7 @@ function mount(el) {
     if (drag.pan) { panBy(e.clientX - drag.px, e.clientY - drag.py); drag.px = e.clientX; drag.py = e.clientY; return; }
     // 單指或滑鼠拖曳一律轉視角，放大時也一樣
     dragYaw = clampYaw(drag.yaw - (e.clientX - drag.x) * 0.005);
-    dragPitch = Math.max(-0.12, Math.min(0.15, drag.pitch + (e.clientY - drag.y) * 0.003));
+    dragPitch = Math.max(-0.28, Math.min(0.32, drag.pitch + (e.clientY - drag.y) * 0.004));
   });
   // 縮放：滾輪、兩指、雙擊還原
   el.addEventListener("wheel", (e) => { e.preventDefault(); setZoom(zoomT * Math.exp(e.deltaY * 0.0015)); }, { passive: false });

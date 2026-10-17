@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title data-i18n-title="app.title">番茄讀書會</title>
 <meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。不用註冊，資料只存在你的手機。">
 <meta name="theme-color" content="#f2ece1">
@@ -29,6 +29,9 @@
   :root { --f-body: "Twemoji Country Flags", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
   button, input, select, textarea { font-family: inherit; }
   body.in-room .hero, body.in-room nav.tabs { display: none; }
+  /* 手機像 app 一樣：整頁不能縮放、不會被拉出橡皮筋 */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  html, body { touch-action: manipulation; overscroll-behavior-y: none; }
   .roombar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; margin: 0 -16px 10px; padding: 8px 16px; background: var(--paper); border-bottom: 1px solid var(--line); }
   .rb-logo { flex: none; width: 46px; height: 58px; overflow: visible; }
   .rb-fire .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 0.9s ease-in-out infinite alternate; }
@@ -147,7 +150,7 @@
   .modal .msg { font-size: 20px; font-weight: 600; margin: 12px 0 6px; }
 
   .scene-wrap { margin: 0 -16px 12px; background: #c8976a; position: relative; }
-  .k3 { position: relative; width: 100%; aspect-ratio: 1 / 1.3; max-height: 72vh; overflow: hidden; touch-action: pan-y; cursor: grab; background: #e9dcc8; }
+  .k3 { position: relative; width: 100%; aspect-ratio: 1 / 1.3; max-height: 72vh; overflow: hidden; touch-action: none; overscroll-behavior: contain; cursor: grab; background: #e9dcc8; }
   @media (min-width: 520px) { .k3 { aspect-ratio: 4 / 3; } }
   .k3-canvas { display: block; width: 100% !important; height: 100% !important; }
   .k3-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -158,10 +161,13 @@
   .k3-bubble { font-size: 13px; line-height: 1.35; padding: 4px 10px; border-radius: 12px; background: #fffdf8; color: #2a2620; box-shadow: 0 2px 6px rgba(60, 40, 20, .18); max-width: 160px; white-space: normal; text-align: center; }
   .k3-hint { position: absolute; right: 8px; bottom: 6px; font-size: 11px; color: rgba(255, 253, 248, .9); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; }
   .music { margin: 10px 0 0; }
-  .mu-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .mu-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-  .mu-row::-webkit-scrollbar { display: none; }
+  .mu-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mu-col { min-width: 0; }
+  .mu-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .mu-head input[type=range] { flex: 1; min-width: 0; width: 100%; }
+  .mu-row { display: flex; flex-wrap: wrap; gap: 5px; }
   .mu-row button { flex: 0 0 auto; }
+  .music .mu-row button { padding: 4px 10px; font-size: 13px; min-height: 32px; }
   .music .lab { font-size: 13px; color: var(--muted); margin-right: 2px; }
   .music button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 14px; min-height: 36px; }
   .music button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
@@ -555,7 +561,7 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "mu.lab": "音樂", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙", "s.up": "休息一下 ☕", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "白噪音", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
@@ -639,7 +645,7 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "mu.lab": "Music", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙", "s.up": "Take a break ☕", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "White noise", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
@@ -817,9 +823,14 @@
     show("session");
     applyWake();
     // 進房間時依場景放對應的音樂（關掉音樂的人就不放）；之後在房間裡換的照樣算數
-    if (music().kind && window.KaidaMusic) playMusic(SCENE_MUSIC[session.theme] || music().kind);
+    if (window.KaidaMusic) {
+      if (music().kind) playMusic(SCENE_MUSIC[session.theme] || music().kind);
+      if (music().amb) playAmb(SCENE_AMB[session.theme] || music().amb);
+    }
   }
-  var SCENE_MUSIC = { home: "light", cafe: "jazz", library: "piano", study: "lofi", space: "musicbox", school: "light", konbini: "lofi", washitsu: "forest", cabin: "forest", beach: "waves", rooftop: "bossa", lodge: "fire" };
+  var SCENE_MUSIC = { home: "light", cafe: "jazz", library: "piano", study: "lofi", space: "musicbox", school: "light", konbini: "lofi", washitsu: "piano", cabin: "light", beach: "bossa", rooftop: "bossa", lodge: "jazz" };
+  // 有開環境音的人，進房間換成場景的環境音
+  var SCENE_AMB = { cafe: "rain", library: "noise", washitsu: "forest", cabin: "fire", beach: "waves", lodge: "fire", rooftop: "forest" };
 
   var busy = false;
   // 直接開始：先找同時間、有空位的公開房間，一間一間試；都沒有就自己開一間公開的
@@ -1173,37 +1184,63 @@
   }
 
   // 背景音樂：每個人自己選，不會同步給別人
+  // 兩道：左邊一般音樂（kind / vol），右邊白噪音、環境音（amb / ambVol），可以同時開
+  var MU_KINDS = ["", "jazz", "light", "lofi", "piano", "bossa", "musicbox"], AMB_KINDS = ["", "noise", "fire", "rain", "forest", "waves"];
   function music() {
     if (!data.music) data.music = { kind: "light", vol: 0.6 };
     if (!data.music.def) { data.music.def = 1; if (!data.music.kind) data.music.kind = "light"; } // 預設輕音樂
+    if (!data.music.two) { // 舊資料：以前只有一道，選的是環境音就搬到右邊
+      data.music.two = 1;
+      if (AMB_KINDS.indexOf(data.music.kind) > 0) { data.music.amb = data.music.kind; data.music.kind = ""; }
+      if (data.music.amb == null) data.music.amb = "";
+      if (data.music.ambVol == null) data.music.ambVol = 0.5;
+    }
     return data.music;
   }
   function renderMusic() {
-    var mu = music(), playing = window.KaidaMusic ? window.KaidaMusic.current() : "";
-    document.getElementById("music").innerHTML = '<div class="mu-head"><span class="lab">' + K.esc(t("mu.lab")) + '</span>' +
-      '<input type="range" id="mu-vol" min="0" max="100" value="' + Math.round(mu.vol * 100) + '" aria-label="' + K.esc(t("mu.vol")) + '"></div><div class="mu-row">' +
-      // 音樂類在前，環境音在後
-      ["", "jazz", "light", "lofi", "piano", "bossa", "musicbox", "noise", "fire", "rain", "forest", "waves"].map(function (k) {
-        return '<button type="button" data-mu="' + k + '" aria-pressed="' + (playing === k) + '">' + K.esc(t(k ? "mu." + k : "mu.off")) + '</button>';
-      }).join("") + '</div>';
+    var mu = music(), M = window.KaidaMusic, playing = M ? M.current("music") : "", playingA = M ? M.current("amb") : "";
+    function col(lab, id, v, list, attr, on) {
+      return '<div class="mu-col"><div class="mu-head"><span class="lab">' + K.esc(t(lab)) + '</span>' +
+        '<input type="range" id="' + id + '" min="0" max="100" value="' + Math.round(v * 100) + '" aria-label="' + K.esc(t(lab) + " " + t("mu.vol")) + '"></div><div class="mu-row">' +
+        list.map(function (k) {
+          return '<button type="button" ' + attr + '="' + k + '" aria-pressed="' + (on === k) + '">' + K.esc(t(k ? "mu." + k : "mu.off")) + '</button>';
+        }).join("") + '</div></div>';
+    }
+    document.getElementById("music").innerHTML = '<div class="mu-cols">' +
+      col("mu.lab", "mu-vol", mu.vol, MU_KINDS, "data-mu", playing) +
+      col("mu.amb", "amb-vol", mu.ambVol, AMB_KINDS, "data-amb", playingA) + '</div>';
   }
   function playMusic(k) {
     var mu = music(); mu.kind = k; K.save(STORE, data);
-    if (window.KaidaMusic) { window.KaidaMusic.setVolume(mu.vol); window.KaidaMusic.play(k); }
+    if (window.KaidaMusic) { window.KaidaMusic.setVolume(mu.vol, "music"); window.KaidaMusic.play(k, "music"); }
+    renderMusic();
+  }
+  function playAmb(k) {
+    var mu = music(); mu.amb = k; K.save(STORE, data);
+    if (window.KaidaMusic) { window.KaidaMusic.setVolume(mu.ambVol, "amb"); window.KaidaMusic.play(k, "amb"); }
     renderMusic();
   }
   document.getElementById("music").addEventListener("click", function (e) {
     var b = e.target.closest("[data-mu]"); if (b) playMusic(b.dataset.mu);
+    var a = e.target.closest("[data-amb]"); if (a) playAmb(a.dataset.amb);
   });
   document.getElementById("music").addEventListener("input", function (e) {
-    if (e.target.id !== "mu-vol") return;
-    music().vol = e.target.value / 100; K.save(STORE, data);
-    if (window.KaidaMusic) window.KaidaMusic.setVolume(music().vol);
+    var mu = music();
+    if (e.target.id === "mu-vol") { mu.vol = e.target.value / 100; if (window.KaidaMusic) window.KaidaMusic.setVolume(mu.vol, "music"); }
+    else if (e.target.id === "amb-vol") { mu.ambVol = e.target.value / 100; if (window.KaidaMusic) window.KaidaMusic.setVolume(mu.ambVol, "amb"); }
+    else return;
+    K.save(STORE, data);
   });
+  // iPhone 不理會 viewport 的 user-scalable=no，要自己擋掉整頁的雙指縮放（3D 房間的兩指縮放用的是 touch 事件，不受影響）
+  ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false }); });
+  document.addEventListener("touchmove", function (e) { if (e.touches.length > 1 && !e.target.closest(".k3")) e.preventDefault(); }, { passive: false });
   // 重新整理後，手機要等使用者點一下才能出聲
   function resumeMusic() {
-    if (!session || !music().kind || !window.KaidaMusic) return;
-    if (!window.KaidaMusic.current()) playMusic(music().kind); else window.KaidaMusic.unlock();
+    if (!session || !window.KaidaMusic) return;
+    var mu = music(), M = window.KaidaMusic, need = false;
+    if (mu.kind && !M.current("music")) { playMusic(mu.kind); need = true; }
+    if (mu.amb && !M.current("amb")) { playAmb(mu.amb); need = true; }
+    if (!need && (mu.kind || mu.amb)) M.unlock();
   }
   ["pointerdown", "touchend", "click"].forEach(function (ev) { document.addEventListener(ev, resumeMusic, true); });
 

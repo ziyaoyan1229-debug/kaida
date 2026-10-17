@@ -3,23 +3,30 @@
    雨聲：細密的雨 + 偶爾滴在窗台的水滴；Lo-fi：慢板的悶鋼琴 + 鼓 + 黑膠雜訊；森林：鳥叫；
    鋼琴：慢板的分解和弦獨奏；海浪：一波波的浪潮 + 偶爾的海鷗 */
 (function () {
-  var ctx = null, master = null, verb = null, cur = "", timer = null, nextT = 0, step = 0, vol = 0.6, noiseSrc = null, nodes = [];
+  // 兩個聲道：music（一般音樂）和 amb（白噪音／環境音），可以同時播、各自調音量
+  var ctx = null, L = null, layers = {
+    music: { name: "music", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.6, noiseSrc: null, nodes: [] },
+    amb: { name: "amb", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.6, noiseSrc: null, nodes: [] }
+  };
+  L = layers.music;
 
   function ensure() {
     if (ctx) return ctx;
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     ctx = new AC();
-    master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-    verb = ctx.createConvolver();
     var len = ctx.sampleRate * 2.4, buf = ctx.createBuffer(2, len, ctx.sampleRate);
     for (var c = 0; c < 2; c++) { var d = buf.getChannelData(c); for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
-    verb.buffer = buf;
-    var wet = ctx.createGain(); wet.gain.value = 0.28; verb.connect(wet); wet.connect(master);
+    Object.keys(layers).forEach(function (k) {
+      var y = layers[k];
+      y.master = ctx.createGain(); y.master.gain.value = 0; y.master.connect(ctx.destination);
+      y.verb = ctx.createConvolver(); y.verb.buffer = buf;
+      var wet = ctx.createGain(); wet.gain.value = 0.28; y.verb.connect(wet); wet.connect(y.master);
+    });
     return ctx;
   }
   function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
-  function out(g, rev) { g.connect(master); if (rev) g.connect(verb); }
+  function out(g, rev) { g.connect(L.master); if (rev) g.connect(L.verb); }
 
   function tone(type, midi, t, dur, gain, opt) {
     opt = opt || {};
@@ -97,13 +104,13 @@
       var d = buf.getChannelData(c), last = 0;
       for (var i = 0; i < len; i++) { var w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
     }
-    noiseSrc = ctx.createBufferSource(); noiseSrc.buffer = buf; noiseSrc.loop = true;
+    L.noiseSrc = ctx.createBufferSource(); L.noiseSrc.buffer = buf; L.noiseSrc.loop = true;
     var f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 900;
     var g = ctx.createGain(); g.gain.value = 0.9;
     // 慢慢起伏，像遠方的海浪
     var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.08; lg.gain.value = 0.25; lfo.connect(lg); lg.connect(g.gain); lfo.start();
-    noiseSrc.connect(f); f.connect(g); g.connect(master); noiseSrc.start();
-    nodes = [lfo];
+    L.noiseSrc.connect(f); f.connect(g); g.connect(L.master); L.noiseSrc.start();
+    L.nodes = [lfo];
   }
 
   /* 柴火：隨機的劈啪聲，偶爾木頭裂開的大聲一點 */
@@ -136,9 +143,9 @@
     var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
     var f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q || 0.7;
     var g = ctx.createGain(); g.gain.value = gain;
-    src.connect(f); f.connect(g); g.connect(master); src.start(0, Math.random() * 3);
-    nodes.push(src);
-    if (lfoRate) { var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = lfoRate; lg.gain.value = lfoDepth; lfo.connect(lg); lg.connect(g.gain); lfo.start(); nodes.push(lfo); }
+    src.connect(f); f.connect(g); g.connect(L.master); src.start(0, Math.random() * 3);
+    L.nodes.push(src);
+    if (lfoRate) { var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = lfoRate; lg.gain.value = lfoDepth; lfo.connect(lg); lg.connect(g.gain); lfo.start(); L.nodes.push(lfo); }
   }
   function sweep(f0, f1, t, dur, gain, pan) {
     var o = ctx.createOscillator(), g = ctx.createGain();
@@ -250,45 +257,59 @@
   }
 
   function loop() {
-    while (nextT < ctx.currentTime + 0.4) {
+    while (L.nextT < ctx.currentTime + 0.4) {
+      var cur = L.cur, nextT = L.nextT, step = L.step;
       var d = cur === "jazz" ? jazzBeat(nextT, step) : cur === "fire" ? fireBeat(nextT) : cur === "rain" ? rainBeat(nextT) :
         cur === "lofi" ? lofiBeat(nextT, step) : cur === "forest" ? forestBeat(nextT) :
         cur === "piano" ? pianoBeat(nextT, step) : cur === "waves" ? wavesBeat(nextT) :
         cur === "bossa" ? bossaBeat(nextT, step) : cur === "musicbox" ? musicboxBeat(nextT, step) : lightBeat(nextT, step);
-      nextT += d; step++;
+      L.nextT += d; L.step++;
     }
   }
 
-  function stopAll() {
-    clearInterval(timer); timer = null;
-    if (noiseSrc) { try { noiseSrc.stop(); } catch (e) {} noiseSrc = null; }
-    nodes.forEach(function (n) { try { n.stop(); } catch (e) {} }); nodes = [];
+  function stopAll(y) {
+    clearInterval(y.timer); y.timer = null;
+    if (y.noiseSrc) { try { y.noiseSrc.stop(); } catch (e) {} y.noiseSrc = null; }
+    y.nodes.forEach(function (n) { try { n.stop(); } catch (e) {} }); y.nodes = [];
   }
+  var AMB = { noise: 1, fire: 1, rain: 1, forest: 1, waves: 1 };
+  function layerOf(kind, layer) { return layers[layer || (AMB[kind] ? "amb" : "music")] || layers.music; }
 
-  function play(kind) {
-    if (!kind) { stop(); return true; }
+  function play(kind, layer) {
+    var y = layerOf(kind, layer);
+    if (!kind) { stop(y.name); return true; }
     if (!ensure()) return false;
     if (ctx.state !== "running") { try { ctx.resume(); } catch (e) {} }
-    if (kind === cur) { unlock(); return true; }
-    stopAll(); cur = kind;
+    if (kind === y.cur) { unlock(); return true; }
+    stopAll(y); y.cur = kind; L = y;
     var t = ctx.currentTime;
-    master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(vol, t + 1.2);
+    y.master.gain.cancelScheduledValues(t); y.master.gain.setValueAtTime(0, t); y.master.gain.linearRampToValueAtTime(y.vol, t + 1.2);
     if (kind === "noise") startNoise();
-    else { if (kind === "rain") startRain(); if (kind === "waves") startWaves(); nextT = t + 0.1; step = 0; loop(); timer = setInterval(loop, 100); }
+    else {
+      if (kind === "rain") startRain(); if (kind === "waves") startWaves();
+      y.nextT = t + 0.1; y.step = 0; loop();
+      y.timer = setInterval(function () { L = y; loop(); }, 100);
+    }
     unlock();
     return true;
   }
-  function stop() {
-    cur = "";
-    if (silent && !silent.paused) silent.pause();
-    if (!ctx) return;
-    var t = ctx.currentTime;
-    master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0, t + 0.5);
-    setTimeout(function () { if (!cur) stopAll(); }, 600);
+  function stop(layer) {
+    var list = layer ? [layers[layer]] : [layers.music, layers.amb];
+    list.forEach(function (y) {
+      if (!y) return;
+      y.cur = "";
+      if (!ctx || !y.master) return;
+      var t = ctx.currentTime;
+      y.master.gain.cancelScheduledValues(t); y.master.gain.setValueAtTime(y.master.gain.value, t); y.master.gain.linearRampToValueAtTime(0, t + 0.5);
+      setTimeout(function () { if (!y.cur) stopAll(y); }, 600);
+    });
+    if (silent && !silent.paused && !anyOn()) silent.pause();
   }
-  function setVolume(v) {
-    vol = Math.max(0, Math.min(1, v));
-    if (ctx && cur) master.gain.setTargetAtTime(vol, ctx.currentTime, 0.1);
+  function anyOn() { return !!(layers.music.cur || layers.amb.cur); }
+  function setVolume(v, layer) {
+    var y = layers[layer || "music"] || layers.music;
+    y.vol = Math.max(0, Math.min(1, v));
+    if (ctx && y.cur && y.master) y.master.gain.setTargetAtTime(y.vol, ctx.currentTime, 0.1);
   }
 
   // 手機（尤其 iPhone）：要在使用者點擊時解鎖，並放一段無聲的 <audio>，
@@ -307,10 +328,10 @@
     if (ctx.state !== "running") { try { ctx.resume(); } catch (e) {} }
     try {
       if (!silent) { silent = new Audio(silentUrl()); silent.loop = true; silent.setAttribute("playsinline", ""); silent.volume = 0.01; }
-      if (cur && silent.paused) { var pr = silent.play(); if (pr && pr.catch) pr.catch(function () {}); }
-      if (!cur && !silent.paused) silent.pause();
+      if (anyOn() && silent.paused) { var pr = silent.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      if (!anyOn() && !silent.paused) silent.pause();
     } catch (e) {}
   }
 
-  window.KaidaMusic = { unlock: unlock, play: play, stop: stop, setVolume: setVolume, current: function () { return cur; } };
+  window.KaidaMusic = { unlock: unlock, play: play, stop: stop, setVolume: setVolume, current: function (layer) { return (layers[layer || "music"] || layers.music).cur; } };
 })();
