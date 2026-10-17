@@ -257,7 +257,11 @@ function outline(root, t) {
     if (!g.boundingBox) g.computeBoundingBox();
     g.boundingBox.getSize(tmpSize);
     const e = new THREE.Mesh(g, OUTLINE_M);
-    e.scale.set(1 + t / Math.max(tmpSize.x / 2, 0.04), 1 + t / Math.max(tmpSize.y / 2, 0.04), 1 + t / Math.max(tmpSize.z / 2, 0.04));
+    const pr = g.parameters || {};
+    // 頭髮這種開口的半球殼：照外框盒縮放會把邊緣往外、往下撐開，看起來像頭髮岔開；改成以球心等比放大，邊才貼著
+    if (g.type === "SphereGeometry" && (pr.phiLength < Math.PI * 2 - 1e-3 || pr.thetaLength < Math.PI - 1e-3)) e.scale.setScalar(1 + t / pr.radius);
+    else if (g.type === "CylinderGeometry" && pr.openEnded) { const k = 1 + t / Math.max(pr.radiusTop, pr.radiusBottom); e.scale.set(k, 1, k); }
+    else e.scale.set(1 + t / Math.max(tmpSize.x / 2, 0.04), 1 + t / Math.max(tmpSize.y / 2, 0.04), 1 + t / Math.max(tmpSize.z / 2, 0.04));
     e.castShadow = false; e.receiveShadow = false; e.userData.outline = true;
     o.add(e);
   });
