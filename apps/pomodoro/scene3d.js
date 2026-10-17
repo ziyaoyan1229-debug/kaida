@@ -1621,7 +1621,16 @@ function update(members) {
   lastList = members;
   if (!mounted) return;
   const list = members.slice(0, 6), ids = {};
-  list.forEach((m, i) => {
+  // 座位隨機：用「id + 進房時間」算出想坐的位子，被坐走就往下一個空位；每次進房都不同，但每台手機看到的一樣
+  const used = {}, seatOf = {};
+  list.forEach((m) => {
+    let h = 7; const key = m.id + ":" + (m.joined || 0);
+    for (let k = 0; k < key.length; k++) h = (h * 31 + key.charCodeAt(k)) % 1000003;
+    let si = h % SEATS.length; while (used[si]) si = (si + 1) % SEATS.length;
+    used[si] = 1; seatOf[m.id] = si;
+  });
+  list.forEach((m) => {
+    const i = seatOf[m.id];
     ids[m.id] = 1;
     let st = chars[m.id];
     const lk = JSON.stringify(m.look || {});
