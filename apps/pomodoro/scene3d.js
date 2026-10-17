@@ -176,13 +176,15 @@ const BASE_OBST = [
   [-3.75, 3.3, -1.95, 4.3, "love"]     // 雙人沙發
 ];
 // 依主題重算這間房的座位、休息點和障礙物（家裡用原本的配置）
+// 經典版：每個主題房間都用同一套家具擺法（舊版），只換顏色和窗外
+let CLASSIC = false;
 function applyLayout() {
-  const L = LAYOUTS[THEME] || {}, hide = L.hide || [], mv = L.move || {};
+  const L = CLASSIC ? {} : LAYOUTS[THEME] || {}, hide = L.hide || [], mv = L.move || {};
   const off = (m) => mv[m] || [0, 0];
   SEATS.length = 0; OBST.length = 0; SPOTS.length = 0;
   (L.seats || BASE_SEATS).forEach((s0) => { const s = Object.assign({}, s0); s.dx = s.x + Math.sin(s.ry) * DESK_D; s.dz = s.z + Math.cos(s.ry) * DESK_D; SEATS.push(s); });
   BASE_OBST.forEach((o) => { if (hide.indexOf(o[4]) >= 0) return; const d = off(o[4]); OBST.push([o[0] + d[0], o[1] + d[1], o[2] + d[0], o[3] + d[1]]); });
-  const RI = RICH[THEME] || {};
+  const RI = CLASSIC ? {} : RICH[THEME] || {};
   (L.obst || []).concat(RI.obst || []).forEach((o) => OBST.push(o));
   SEATS.forEach((s) => {
     const c = Math.abs(Math.cos(s.ry)), sn = Math.abs(Math.sin(s.ry));
@@ -196,7 +198,7 @@ function applyLayout() {
   const inObst = (x, z) => OBST.some((o) => x > o[0] - 0.12 && x < o[2] + 0.12 && z > o[1] - 0.12 && z < o[3] + 0.12);
   BASE_SPOTS.forEach((s) => {
     if (s.m && hide.indexOf(s.m) >= 0) return;
-    if (!s.m && LAYOUTS[THEME] && inObst(s.x, s.z)) return;
+    if (!s.m && !CLASSIC && LAYOUTS[THEME] && inObst(s.x, s.z)) return;
     const d = off(s.m), o = Object.assign({}, s, { x: s.x + d[0], z: s.z + d[1] }); if (L.poses && L.poses[s.m]) o.pose = L.poses[s.m]; SPOTS.push(o);
   });
   (L.spots || []).concat(RI.spots || []).forEach((s) => { if (s.in || !inObst(s.x, s.z)) SPOTS.push(s); });
@@ -2124,7 +2126,7 @@ function buildRoom() {
   rug.visible = TH.rug !== null;
   rug.rotation.x = -Math.PI / 2; rug.position.set(0.3, 0.005, 1.1); rug.scale.set(1.35, 0.8, 1); rug.receiveShadow = true; scene.add(rug);
   const rug2 = new THREE.Mesh(new THREE.CircleGeometry(0.9, 32), mat("#d9a77e")); rug2.rotation.x = -Math.PI / 2; rug2.position.set(-3.6, 0.006, -1.6); rug2.scale.set(0.8, 1.2, 1); rug2.receiveShadow = true; scene.add(rug2);
-  const LY = LAYOUTS[THEME] || {}, LH = LY.hide || [];
+  const LY = CLASSIC ? {} : LAYOUTS[THEME] || {}, LH = LY.hide || [];
   Object.keys(MODS).forEach((k) => { MODS[k].visible = LH.indexOf(k) < 0; const d = (LY.move || {})[k]; if (d) MODS[k].position.set(d[0], 0, d[1]); });
   rug2.visible = LH.indexOf("fire") < 0;
 
@@ -2205,7 +2207,7 @@ function buildRoom() {
   if (TH.decor) TH.decor();
   REMAP = null;
   if (LY.build) LY.build();
-  if (RICH[THEME]) RICH[THEME].build();
+  if (!CLASSIC && RICH[THEME]) RICH[THEME].build();
   snowPts = null; seaMesh = null; buildOutside();
 }
 function makeParticles(n, color, size, spawn) {
@@ -2272,6 +2274,19 @@ function removeChar(id) {
   delete chars[id];
 }
 
+// 某人旁邊一個走得到的位置（離自己近的那一邊）
+function nearSpot(tp, from) {
+  let best = null, bd = 1e9;
+  for (const r of [0.8, 1.05, 1.3]) {
+    for (let k = 0; k < 12; k++) {
+      const a = k / 12 * Math.PI * 2, x = tp.x + Math.sin(a) * r, z = tp.z + Math.cos(a) * r;
+      const [c, rr] = cellOf(x, z); if (!free(c, rr)) continue;
+      const d = Math.hypot(x - from.x, z - from.z); if (d < bd) { bd = d; best = { x, z }; }
+    }
+    if (best) return best;
+  }
+  return { x: tp.x, z: tp.z };
+}
 function walkTo(st, to, then) {
   st.treat = Math.random() < 0.6 ? "drink" : "eat";
   st.path = findPath({ x: st.pos.x, z: st.pos.z }, to);
@@ -2325,6 +2340,19 @@ function update(members) {
       }
     }
   });
+  // 聊天：走到對方旁邊，面向他站著；聊完照原本起身／坐著的狀態回去
+  list.forEach((m) => {
+    const st = chars[m.id]; if (!st) return;
+    if (m.vis && m.visAt && m.visAt !== st.visAt && chars[m.vis] && m.vis !== m.id) {
+      st.visAt = m.visAt; st.visTo = m.vis; st.emo = null; releaseSpot(m.id); st.spot = -1;
+      walkTo(st, nearSpot(chars[m.vis].pos, st.pos), "chat");
+    } else if (!m.vis && st.visTo) {
+      st.visTo = null; st.visAt = 0;
+      if (st.mode === "chat" || st.after === "chat") {
+        if (m.up) { const si = pickSpot(m.id); st.spot = si; walkTo(st, SPOTS[si], "idle"); } else walkTo(st, seatPos(st.seat), "sit");
+      }
+    }
+  });
   Object.keys(chars).forEach((id) => { if (!ids[id]) removeChar(id); });
   const me = list.find((m) => m.me);
   if (focusMe && me && chars[me.id]) {
@@ -2351,6 +2379,7 @@ function animChar(st, dt, now) {
     const nxt = st.path[0];
     if (!nxt) {
       if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; if (st.carry || st.sip) { st.carry = st.sip = false; st.emo = "drink"; st.emoT0 = now; if (st.m.up) st.resumeAt = now + 4000; } }
+      else if (st.after === "chat") { st.mode = "chat"; }
       else if (st.after === "coffee") { st.mode = "coffee"; st.ry = Math.PI; st.brewT0 = now; }
       else { const sp = SPOTS[st.spot] || { ry: st.ry }; st.mode = "idle"; st.ry = sp.ry; st.waitUntil = now + 6000 + Math.random() * 8000; }
     } else {
@@ -2370,6 +2399,11 @@ function animChar(st, dt, now) {
     if (st.m.up) { const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle"); }
   } else if (st.mode === "idle" && st.m.up && now > st.waitUntil) {
     const si = pickSpot(st.m.id); st.spot = si; walkTo(st, SPOTS[si], "idle");
+  }
+  if (st.mode === "chat" && chars[st.visTo]) {
+    const tg = chars[st.visTo].pos; let diff = Math.atan2(tg.x - st.pos.x, tg.z - st.pos.z) - st.ry;
+    while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
+    st.ry += diff * Math.min(1, dt * 6);
   }
   c.root.position.copy(st.pos); c.root.rotation.y = st.ry;
   const pose0 = st.mode === "walk" ? "walk" : st.mode === "sit" ? "sit" : st.mode === "coffee" ? "brew" : (SPOTS[st.spot] ? SPOTS[st.spot].pose : "stand");
@@ -2740,6 +2774,13 @@ function setTheme(name) {
   if (!THEMES[name]) name = "home";
   if (name === THEME) return;
   THEME = name;
+  rebuild();
+}
+function setClassic(on) {
+  if (!!on === CLASSIC) return;
+  CLASSIC = !!on; rebuild();
+}
+function rebuild() {
   if (!mounted) return;
   Object.keys(chars).forEach((id) => removeChar(id)); chars = {}; reserved = {};
   while (scene.children.length) scene.remove(scene.children[0]);
@@ -2749,5 +2790,5 @@ function setTheme(name) {
 }
 // 名牌下面的專注時間，index 每秒傳進來 { id: "00:25:13" }
 function times(map) { Object.keys(chars).forEach((id) => { const st = chars[id], v = map[id] || ""; if (st.tag.ft.textContent !== v) st.tag.ft.textContent = v; }); }
-window.KaidaScene3D = { times, mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
+window.KaidaScene3D = { times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
