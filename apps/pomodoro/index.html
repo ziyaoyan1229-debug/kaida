@@ -6,6 +6,7 @@
 <title data-i18n-title="app.title">番茄讀書會</title>
 <meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。不用註冊，資料只存在你的手機。">
 <meta name="theme-color" content="#f2ece1">
+<script>/* 一開頁就套上配色，避免閃一下：新使用者預設深夜書房 */try{var _d=JSON.parse(localStorage.getItem("kaida-pomodoro-v1")||"null"),_p=_d?_d.pal||"kraft":"night";if(_p!=="kraft")document.documentElement.setAttribute("data-pal",_p)}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="番茄讀書會">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -956,6 +957,7 @@
   data.wood = data.wood || 0;
   // 2026/10 一次性禮物：已經玩過的人送 30 根小木頭；之後才加入的不送
   var gift30 = false;
+  if (!data.pal) data.pal = oldPlayer ? "kraft" : "night"; // 新使用者預設深夜書房，老玩家沒選過的維持原本
   if (!data.gift30) { data.gift30 = true; if (oldPlayer) { data.wood += 30; gift30 = true; } K.save(STORE, data); }
   // 熊貓下架：買過的退回 18 根小木頭
   if (data.owned.indexOf("panda") >= 0) { data.owned.splice(data.owned.indexOf("panda"), 1); data.wood += 18; }
@@ -1938,7 +1940,7 @@
   function countryName(c) { try { return new Intl.DisplayNames([K.lang() === "en" ? "en" : "zh-TW"], { type: "region" }).of(c); } catch (er) { return c; } }
   var PALS = [["kraft", "#F2ECE1", "#2A2620"], ["tomato", "#F6EDE3", "#C23B22"], ["matcha", "#EDF0E4", "#3F6B44"], ["night", "#14161B", "#F0694A"], ["sea", "#E9EFF3", "#2E6696"]];
   function applyPal() {
-    var ok = PALS.some(function (pl) { return pl[0] === data.pal; }); if (!ok) data.pal = "kraft";
+    var ok = PALS.some(function (pl) { return pl[0] === data.pal; }); if (!ok) data.pal = "night";
     if (data.pal === "kraft") document.documentElement.removeAttribute("data-pal"); else document.documentElement.setAttribute("data-pal", data.pal);
     var mc = document.querySelector('meta[name="theme-color"]'); if (mc) mc.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#f2ece1");
   }
