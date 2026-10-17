@@ -146,6 +146,11 @@
   .modal .card { max-width: 400px; width: 100%; margin: 0; text-align: center; padding: 24px 20px; }
   .modal .big-av { font-size: 48px; line-height: 1; }
   .modal .pcard { max-width: 240px; padding: 12px 16px 14px; text-align: left; }
+  /* 點人物跳出的個人介紹：玻璃框（背景淡一點，透出後面的房間） */
+  .modal:has(.pcard) { background: rgba(20, 16, 12, .22); }
+  .modal .pcard { border-radius: 22px; background: color-mix(in srgb, var(--surface) 55%, transparent); border: 1px solid rgba(255,255,255,.45);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 12px 32px rgba(0,0,0,.25); }
+  .modal .pcard .pc-row { border-top-color: color-mix(in srgb, var(--ink) 14%, transparent); }
   .pcard svg { display: block; margin: 0 auto; }
   .pcard .pc-name { text-align: center; font-weight: 700; font-size: 17px; margin: 2px 0 8px; }
   .pcard .pc-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 4px 0; border-top: 1px solid var(--line); }
@@ -811,7 +816,7 @@
       "c.woodP": "專注就能拿小木頭，根據時間比例計算。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 根小木頭", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 根小木頭", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 根小木頭", "c.use": "換上", "c.boughtCol": "買了新顏色！",
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
@@ -902,7 +907,7 @@
       "c.woodP": "Focusing earns logs, based on how long you focus. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 logs", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 logs", "gift.n": "🎁 Thanks for studying with us! Here are {n} logs", "c.use": "Use", "c.boughtCol": "New color bought!",
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
@@ -973,6 +978,9 @@
   var gift30 = false;
   if (!data.pal) data.pal = oldPlayer ? "kraft" : "night"; // 新使用者預設深夜書房，老玩家沒選過的維持原本
   if (!data.gift30) { data.gift30 = true; if (oldPlayer) { data.wood += 30; gift30 = true; } K.save(STORE, data); }
+  // 第二次禮物：目前已經在玩的人再送 100 根（每人一次）
+  var gift100 = false;
+  if (!data.gift100) { data.gift100 = true; if (oldPlayer) { data.wood += 100; gift100 = true; } K.save(STORE, data); }
   // 熊貓下架：買過的退回 18 根小木頭
   if (data.owned.indexOf("panda") >= 0) { data.owned.splice(data.owned.indexOf("panda"), 1); data.wood += 18; }
   if (data.look.pet === "panda") data.look.pet = "";
@@ -3084,7 +3092,7 @@
   startSocial(); updateBadge();
   tick();
   setInterval(tick, 1000);
-  if (gift30) setTimeout(function () { updateWood(); K.toast(t("gift.30")); }, 1200);
+  if (gift30 || gift100) setTimeout(function () { updateWood(); K.toast(t("gift.n", { n: (gift30 ? 30 : 0) + (gift100 ? 100 : 0) })); }, 1200);
 })();
 </script>
 </body>
