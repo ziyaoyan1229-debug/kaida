@@ -290,6 +290,7 @@ function outline(root, t) {
     o.add(e);
   });
 }
+function has(v, id) { return (" " + (v || "") + " ").indexOf(" " + id + " ") >= 0; }
 function makeChar(look) {
   look = look || {};
   const skin = SKINS[look.skin] || SKINS[0], hair = HAIRS[look.hair] || HAIRS[0];
@@ -319,13 +320,13 @@ function makeChar(look) {
   if (look.top === "overalls") { box(0.2, 0.16, 0.03, "#5d7fa8", 0, 0.14, 0.14, torso); const lw = cyl(0.172, 0.172, 0.12, "#5d7fa8", 0, 0.03, 0, torso); lw.scale.z = 0.85; [-0.07, 0.07].forEach((x) => { box(0.035, 0.22, 0.02, "#5d7fa8", x, 0.3, 0.13, torso); sph(0.015, "#e8b93a", x, 0.22, 0.15, torso, 6, 4); }); }
   if (look.top === "denim") { box(0.012, 0.32, 0.02, "#e8d6a8", 0, 0.2, 0.145, torso); [-0.08, 0.08].forEach((x) => box(0.06, 0.05, 0.02, "#4a6a90", x, 0.27, 0.145, torso)); }
   if (look.top === "turtle") cyl(0.12, 0.13, 0.09, "#2a2630", 0, 0.41, 0, torso, 16);
-  if (look.back === "cape") { const cp2 = box(0.36, 0.44, 0.025, "#b0302a", 0, 0.18, -0.16, torso); cp2.rotation.x = 0.12; }
-  if (look.neck === "tie") { box(0.05, 0.2, 0.02, "#3a5a8a", 0, 0.26, 0.15, torso); sph(0.03, "#3a5a8a", 0, 0.37, 0.15, torso, 8, 6); }
-  if (look.back === "backpack") { const bp = box(0.3, 0.32, 0.16, "#e0b04f", 0, 0.22, -0.2, torso); box(0.22, 0.12, 0.04, "#c99a3e", 0, 0.14, -0.29, torso); [-0.09, 0.09].forEach((x) => box(0.035, 0.3, 0.02, "#b98a30", x, 0.24, 0.135, torso)); bp.castShadow = true; }
-  if (look.back === "wings") { [-1, 1].forEach((sd) => { const w = sph(0.22, "#fffdf8", sd * 0.18, 0.3, -0.2, torso, 14, 10); w.scale.set(0.9, 0.55, 0.15); w.rotation.z = sd * -0.5; w.rotation.y = sd * 0.4; }); }
-  if (look.neck === "bowtie") [-1, 1].forEach((sd) => { const b3 = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.09, 8), mat("#c2453b")); b3.rotation.z = sd * Math.PI / 2; b3.position.set(sd * 0.045, 0.37, 0.15); torso.add(b3); });
-  if (look.neck === "pearls") { for (let i = 0; i < 9; i++) { const a = Math.PI * (0.15 + i * 0.0875); sph(0.022, mat("#fffdf8", { roughness: 0.2 }), Math.cos(a) * 0.14, 0.35 - Math.sin(a) * 0.03, Math.sin(a) * 0.13, torso, 8, 6); } }
-  if (look.neck === "scarf") { const sc = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.055, 8, 20), mat("#c2453b")); sc.rotation.x = Math.PI / 2; sc.position.y = 0.4; torso.add(sc); box(0.08, 0.18, 0.04, "#c2453b", 0.07, 0.3, 0.14, torso); }
+  if (has(look.back, "cape")) { const cp2 = box(0.36, 0.44, 0.025, "#b0302a", 0, 0.18, -0.16, torso); cp2.rotation.x = 0.12; }
+  if (has(look.neck, "tie")) { box(0.05, 0.2, 0.02, "#3a5a8a", 0, 0.26, 0.15, torso); sph(0.03, "#3a5a8a", 0, 0.37, 0.15, torso, 8, 6); }
+  if (has(look.back, "backpack")) { const bp = box(0.3, 0.32, 0.16, "#e0b04f", 0, 0.22, -0.2, torso); box(0.22, 0.12, 0.04, "#c99a3e", 0, 0.14, -0.29, torso); [-0.09, 0.09].forEach((x) => box(0.035, 0.3, 0.02, "#b98a30", x, 0.24, 0.135, torso)); bp.castShadow = true; }
+  if (has(look.back, "wings")) { [-1, 1].forEach((sd) => { const w = sph(0.22, "#fffdf8", sd * 0.18, 0.3, -0.2, torso, 14, 10); w.scale.set(0.9, 0.55, 0.15); w.rotation.z = sd * -0.5; w.rotation.y = sd * 0.4; }); }
+  if (has(look.neck, "bowtie")) [-1, 1].forEach((sd) => { const b3 = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.09, 8), mat("#c2453b")); b3.rotation.z = sd * Math.PI / 2; b3.position.set(sd * 0.045, 0.37, 0.15); torso.add(b3); });
+  if (has(look.neck, "pearls")) { for (let i = 0; i < 9; i++) { const a = Math.PI * (0.15 + i * 0.0875); sph(0.022, mat("#fffdf8", { roughness: 0.2 }), Math.cos(a) * 0.14, 0.35 - Math.sin(a) * 0.03, Math.sin(a) * 0.13, torso, 8, 6); } }
+  if (has(look.neck, "scarf")) { const sc = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.055, 8, 20), mat("#c2453b")); sc.rotation.x = Math.PI / 2; sc.position.y = 0.4; torso.add(sc); box(0.08, 0.18, 0.04, "#c2453b", 0.07, 0.3, 0.14, torso); }
   const arms = [];
   [-1, 1].forEach((s) => {
     const p = new THREE.Group(); p.position.set(0.2 * s, 0.36, 0); torso.add(p);
@@ -385,21 +386,21 @@ function makeChar(look) {
   if (!girl) [-0.1, 0.1].forEach((x) => { const br = box(0.085, 0.018, 0.012, hair === "#f2efe8" ? "#8a7a6a" : hair, x, 0.075, 0.29, head); br.rotation.z = -Math.sign(x) * 0.12; br.castShadow = false; });
   [-0.17, 0.17].forEach((x) => { const b = new THREE.Mesh(new THREE.CircleGeometry(girl ? 0.05 : 0.04, 14), new THREE.MeshBasicMaterial({ color: girl ? 0xf38c9a : 0xf0a0a0, transparent: true, opacity: girl ? 0.6 : 0.3 })); b.position.set(x, -0.08, 0.27); b.rotation.y = x * 1.6; head.add(b); });
   const mouth = new THREE.Mesh(new THREE.TorusGeometry(girl ? 0.026 : 0.032, girl ? 0.01 : 0.008, 6, 12, Math.PI), mat(girl ? "#d0606a" : "#7a4a3a")); mouth.rotation.z = Math.PI; mouth.position.set(0, -0.1, 0.29); head.add(mouth);
-  if (look.face === "glasses") [-0.1, 0.1].forEach((x) => { const gl = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.01, 6, 18), mat("#4a3a2c")); gl.position.set(x, -0.01, 0.3); head.add(gl); });
-  if (look.face === "shades") { [-0.1, 0.1].forEach((x) => { const sg = cyl(0.07, 0.07, 0.02, "#2a2620", x, -0.005, 0.3, head, 16); sg.rotation.x = Math.PI / 2; }); box(0.06, 0.015, 0.015, "#2a2620", 0, 0.01, 0.31, head); }
-  if (look.face === "star") { const st2 = cyl(0.04, 0.04, 0.01, "#e8b93a", 0.17, -0.06, 0.255, head, 5); st2.rotation.x = Math.PI / 2; st2.rotation.y = 0.3; }
-  if (look.ears === "muffs") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.022, 8, 24, Math.PI), mat("#c98e9a")); band.position.y = 0.02; head.add(band); [-0.33, 0.33].forEach((x) => sph(0.1, "#f2c4c8", x, 0, 0, head, 12, 10)); }
+  if (has(look.face, "glasses")) [-0.1, 0.1].forEach((x) => { const gl = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.01, 6, 18), mat("#4a3a2c")); gl.position.set(x, -0.01, 0.3); head.add(gl); });
+  if (has(look.face, "shades")) { [-0.1, 0.1].forEach((x) => { const sg = cyl(0.07, 0.07, 0.02, "#2a2620", x, -0.005, 0.3, head, 16); sg.rotation.x = Math.PI / 2; }); box(0.06, 0.015, 0.015, "#2a2620", 0, 0.01, 0.31, head); }
+  if (has(look.face, "star")) { const st2 = cyl(0.04, 0.04, 0.01, "#e8b93a", 0.17, -0.06, 0.255, head, 5); st2.rotation.x = Math.PI / 2; st2.rotation.y = 0.3; }
+  if (has(look.ears, "muffs")) { const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.022, 8, 24, Math.PI), mat("#c98e9a")); band.position.y = 0.02; head.add(band); [-0.33, 0.33].forEach((x) => sph(0.1, "#f2c4c8", x, 0, 0, head, 12, 10)); }
   if (look.hat === "cap") { const cp = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.45), mat("#5d7fa8")); cp.position.y = 0.03; cp.rotation.x = -0.12; cp.scale.set(1.06, 1, 1.05); head.add(cp); const brim = cyl(0.22, 0.22, 0.025, "#4a6a90", 0, 0.12, 0.34, head, 20); brim.scale.z = 0.8; brim.rotation.x = 0.15; sph(0.025, "#4a6a90", 0, 0.4, 0, head, 6, 4); }
-  if (look.hat === "bunnyband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.02, 6, 20, Math.PI), mat("#e7a6a8")); band.position.y = 0.05; band.rotation.y = Math.PI / 2; band.rotation.x = 0; head.add(band); [-1, 1].forEach((sd) => { const e = cap(0.055, 0.26, "#fffdf8", head); e.position.set(sd * 0.11, 0.48, -0.02); e.rotation.z = -sd * 0.18; const inn = cap(0.025, 0.2, "#f2c4c8", head); inn.position.set(sd * 0.11, 0.48, 0.03); inn.rotation.z = -sd * 0.18; }); }
+  if (look.hat === "bunnyband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.325, 0.02, 6, 20, Math.PI), mat("#e7a6a8")); band.position.set(0, 0.06, -0.03); band.rotation.x = -0.2; band.scale.set(1.04, 1, 1); band.rotation.x = 0; head.add(band); [-1, 1].forEach((sd) => { const e = cap(0.055, 0.26, "#fffdf8", head); e.position.set(sd * 0.11, 0.48, -0.02); e.rotation.z = -sd * 0.18; const inn = cap(0.025, 0.2, "#f2c4c8", head); inn.position.set(sd * 0.11, 0.48, 0.03); inn.rotation.z = -sd * 0.18; }); }
   if (look.hat === "flower") { const fl = new THREE.Group(); fl.position.set(-0.24, 0.22, 0.12); head.add(fl); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; sph(0.04, "#e7a6a8", Math.cos(a) * 0.045, Math.sin(a) * 0.045, 0, fl, 8, 6); } sph(0.03, "#f2cc4a", 0, 0, 0.02, fl, 8, 6); }
-  if (look.ears === "phones") {
+  if (has(look.ears, "phones")) {
     const band = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.025, 8, 24, Math.PI), mat("#5a6b7a")); band.position.y = 0.02; head.add(band);
     [-0.33, 0.33].forEach((x) => { const e = cyl(0.08, 0.08, 0.07, "#5a6b7a", x, 0.0, 0, head); e.rotation.z = Math.PI / 2; });
   }
   if (look.hat === "beanie") { const b = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.47), mat("#c8574a")); b.position.y = 0.04; b.rotation.x = -0.15; b.scale.set(1.06, 1.05, 1.05); head.add(b); cyl(0.38, 0.38, 0.09, "#a9463c", 0, 0.07, -0.02, head).rotation.x = -0.15; sph(0.08, "#f3efe6", 0, 0.43, -0.04, head); }
   if (look.hat === "straw") { cyl(0.55, 0.55, 0.025, "#e6c27a", 0, 0.2, -0.02, head, 28); cyl(0.27, 0.33, 0.2, "#e6c27a", 0, 0.3, -0.02, head); cyl(0.322, 0.322, 0.04, "#c2453b", 0, 0.23, -0.02, head); }
   if (look.hat === "beret") { const b = sph(0.36, "#3d3a4a", 0.04, 0.27, -0.03, head); b.scale.set(1.08, 0.38, 1.05); sph(0.03, "#3d3a4a", 0.04, 0.4, -0.03, head); }
-  if (look.hat === "catband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.02, 6, 20, Math.PI), mat("#3d3a4a")); band.position.y = 0.05; band.rotation.y = Math.PI / 2; head.add(band); [-1, 1].forEach((sd) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.16, 4), mat("#3d3a4a")); e.position.set(sd * 0.19, 0.38, 0); e.rotation.z = -sd * 0.35; head.add(e); const inn = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.1, 4), mat("#f2c4c8")); inn.position.set(sd * 0.19, 0.37, 0.05); inn.rotation.z = -sd * 0.35; head.add(inn); }); }
+  if (look.hat === "catband") { const band = new THREE.Mesh(new THREE.TorusGeometry(0.325, 0.02, 6, 20, Math.PI), mat("#3d3a4a")); band.position.set(0, 0.06, -0.03); band.rotation.x = -0.2; band.scale.set(1.04, 1, 1); head.add(band); [-1, 1].forEach((sd) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.16, 4), mat("#3d3a4a")); e.position.set(sd * 0.19, 0.38, 0); e.rotation.z = -sd * 0.35; head.add(e); const inn = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.1, 4), mat("#f2c4c8")); inn.position.set(sd * 0.19, 0.37, 0.05); inn.rotation.z = -sd * 0.35; head.add(inn); }); }
   if (look.hat === "bucket") { const br = cyl(0.42, 0.48, 0.08, "#c9b48a", 0, 0.17, -0.02, head, 24); br.rotation.x = -0.1; cyl(0.3, 0.34, 0.22, "#c9b48a", 0, 0.3, -0.02, head, 22).rotation.x = -0.1; cyl(0.345, 0.345, 0.04, "#a8916a", 0, 0.22, -0.02, head, 22).rotation.x = -0.1; }
   if (look.hat === "crown") { const cr = cyl(0.16, 0.16, 0.12, mat("#e8b93a", { metalness: 0.5, roughness: 0.35 }), 0, 0.33, 0, head, 10); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; const k = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.09, 6), mat("#e8b93a", { metalness: 0.5, roughness: 0.35 })); k.position.set(Math.cos(a) * 0.15, 0.43, Math.sin(a) * 0.15); head.add(k); } sph(0.03, "#c2453b", 0, 0.34, 0.16, head); cr.castShadow = true; }
   // 寵物夥伴

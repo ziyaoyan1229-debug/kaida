@@ -85,6 +85,16 @@
     { id: "top", slots: ["top"] }, { id: "legs", slots: ["legs"] }, { id: "set", slots: ["set"] }, { id: "style", slots: ["style"] }, { id: "hat", slots: ["hat"] },
     { id: "acc", slots: ["face", "neck", "ears", "back"] }, { id: "pet", slots: ["pet"] }
   ];
+  // 配飾（臉、脖子、耳朵、背後）可以疊加：同一格用空白分開，例如 "glasses star"；會打架的兩件不能一起戴
+  var STACK = ["face", "neck", "ears", "back"];
+  var CLASH = [["glasses", "shades"], ["bowtie", "tie"], ["muffs", "phones"], ["cape", "wings"], ["cape", "backpack"]];
+  function has(v, id) { return !!id && (" " + (v || "") + " ").indexOf(" " + id + " ") >= 0; }
+  function toggle(v, id) {
+    var list = String(v || "").split(" ").filter(Boolean);
+    if (list.indexOf(id) >= 0) return list.filter(function (x) { return x !== id; }).join(" ");
+    var bad = {}; CLASH.forEach(function (c) { if (c.indexOf(id) >= 0) c.forEach(function (x) { bad[x] = 1; }); });
+    return list.filter(function (x) { return !bad[x]; }).concat(id).join(" ");
+  }
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
 
   var ACTS = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson", "music", "piano", "sing", "craft"];
@@ -115,9 +125,9 @@
     }
     var style = look.style || "";
     // 背上的東西（在身體後面）
-    if (look.back === "wings") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".7"><path d="M-9 -26 C-24 -38 -32 -26 -27 -16 C-22 -12 -14 -16 -9 -20 Z"/><path d="M9 -26 C24 -38 32 -26 27 -16 C22 -12 14 -16 9 -20 Z"/></g>';
-    if (look.back === "cape") s += '<path d="M-11 -29 L-17 -8 Q0 -4 17 -8 L11 -29 Z" fill="#b0302a"/>';
-    if (look.back === "backpack") s += '<rect x="-15" y="-27" width="30" height="16" rx="5" fill="#e0b04f"/>';
+    if (has(look.back, "wings")) s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".7"><path d="M-9 -26 C-24 -38 -32 -26 -27 -16 C-22 -12 -14 -16 -9 -20 Z"/><path d="M9 -26 C24 -38 32 -26 27 -16 C22 -12 14 -16 9 -20 Z"/></g>';
+    if (has(look.back, "cape")) s += '<path d="M-11 -29 L-17 -8 Q0 -4 17 -8 L11 -29 Z" fill="#b0302a"/>';
+    if (has(look.back, "backpack")) s += '<rect x="-15" y="-27" width="30" height="16" rx="5" fill="#e0b04f"/>';
     // 長髮（在頭後面）：包在跟頭一樣會動的群組裡，轉頭、點頭時頭髮跟著動，不會像黏在背後
     var bh = "";
     if (style === "long") bh += '<path d="M-8 -56 C-17 -54.5 -19.5 -28 -17 -17 C-16 -14.5 -14 -14 -12 -14 L12 -14 C14 -14 16 -14.5 17 -17 C19.5 -28 17 -54.5 8 -56 Z" fill="' + hair + '"/>';
@@ -132,7 +142,7 @@
     if (top.plaid) s += '<g stroke="' + top.plaid + '" stroke-width="1.2" opacity=".75"><path d="M-12 -24 H12 M-12.6 -18 H12.6 M-6 -29 V-12 M0 -29 V-12 M6 -29 V-12"/></g>';
     if (top.zip) s += '<path d="M0 -28 V-12" stroke="' + top.zip + '" stroke-width="1.2"/><path d="M-12 -21 h4 M8 -21 h4" stroke="' + top.zip + '" stroke-width="1.6"/>';
     if (top.bib) s += '<path d="M-8 -22 H8 V-12 H-8 Z" fill="' + top.bib + '"/><path d="M-7 -29 L-6 -22 M7 -29 L6 -22" stroke="' + top.bib + '" stroke-width="2.2"/><circle cx="-6" cy="-21" r="1" fill="#e8b93a"/><circle cx="6" cy="-21" r="1" fill="#e8b93a"/>';
-    if (look.back === "backpack") s += '<path d="M-9 -29 L-10 -15 M9 -29 L10 -15" stroke="#b98a30" stroke-width="2.2" stroke-linecap="round"/>';
+    if (has(look.back, "backpack")) s += '<path d="M-9 -29 L-10 -15 M9 -29 L10 -15" stroke="#b98a30" stroke-width="2.2" stroke-linecap="round"/>';
     if (top.roll) s += '<rect x="-7.5" y="-31.5" width="15" height="5" rx="2.5" fill="' + top.roll + '"/>';
     if (top.knit) s += '<path d="M-11 -14 H11" stroke="#c99a3e" stroke-width="2"/><path d="M-4 -27 L0 -23 L4 -27" fill="none" stroke="#c99a3e" stroke-width="1.6"/>';
     var arm = top.color;
@@ -153,10 +163,10 @@
       s += '<path d="M11 -24 C14 -18 13 -14 12 -12" fill="none" stroke="' + arm + '" stroke-width="5.5" stroke-linecap="round"/>';
       s += '<circle cx="-12" cy="-11" r="2.6" fill="' + skin + '"/><circle cx="12" cy="-11" r="2.6" fill="' + skin + '"/>';
     }
-    if (look.neck === "scarf") s += '<path d="M-9 -29.5 C-4 -26 4 -26 9 -29.5 L9 -27 C4 -23.5 -4 -23.5 -9 -27 Z" fill="#c2453b"/><rect x="3" y="-27" width="4" height="9" rx="1.5" fill="#c2453b"/>';
-    if (look.neck === "bowtie") s += '<path d="M0 -28 L-6 -31 L-6 -25 Z M0 -28 L6 -31 L6 -25 Z" fill="#c2453b"/><circle cx="0" cy="-28" r="1.6" fill="#a9363a"/>';
-    if (look.neck === "tie") s += '<path d="M-1.8 -28.5 h3.6 l-.8 2 l1.4 8 l-2.4 2.6 l-2.4 -2.6 l1.4 -8 Z" fill="#3a5a8a"/><path d="M-1 -24 l2 -1.2 M-1.2 -21 l2.2 -1.3" stroke="#e8b93a" stroke-width=".7"/>';
-    if (look.neck === "pearls") s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".4">' + [-7, -4.5, -1.5, 1.5, 4.5, 7].map(function (x) { return '<circle cx="' + x + '" cy="' + (-27.5 + Math.abs(x) * -0.25 + 2.2) + '" r="1.3"/>'; }).join("") + '</g>';
+    if (has(look.neck, "scarf")) s += '<path d="M-9 -29.5 C-4 -26 4 -26 9 -29.5 L9 -27 C4 -23.5 -4 -23.5 -9 -27 Z" fill="#c2453b"/><rect x="3" y="-27" width="4" height="9" rx="1.5" fill="#c2453b"/>';
+    if (has(look.neck, "bowtie")) s += '<path d="M0 -28 L-6 -31 L-6 -25 Z M0 -28 L6 -31 L6 -25 Z" fill="#c2453b"/><circle cx="0" cy="-28" r="1.6" fill="#a9363a"/>';
+    if (has(look.neck, "tie")) s += '<path d="M-1.8 -28.5 h3.6 l-.8 2 l1.4 8 l-2.4 2.6 l-2.4 -2.6 l1.4 -8 Z" fill="#3a5a8a"/><path d="M-1 -24 l2 -1.2 M-1.2 -21 l2.2 -1.3" stroke="#e8b93a" stroke-width=".7"/>';
+    if (has(look.neck, "pearls")) s += '<g fill="#fffdf8" stroke="#d9cbb5" stroke-width=".4">' + [-7, -4.5, -1.5, 1.5, 4.5, 7].map(function (x) { return '<circle cx="' + x + '" cy="' + (-27.5 + Math.abs(x) * -0.25 + 2.2) + '" r="1.3"/>'; }).join("") + '</g>';
     var hy = -43;
     s += HEAD_OPEN;
     s += '<circle cx="0" cy="' + hy + '" r="15" fill="' + skin + '"/>';
@@ -186,14 +196,14 @@
     if (!opt.expr) s += opt.smile ? '<path d="M-2.2 ' + (hy + 6) + ' q2.2 2.4 4.4 0" fill="none" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>'
                    : '<path d="M-1.5 ' + (hy + 6.5) + ' h3" stroke="#7a4a3a" stroke-width="1.1" stroke-linecap="round"/>';
     if (opt.glow) s += '<ellipse cx="0" cy="' + (hy + 3) + '" rx="13" ry="9" fill="#bfe3ff" opacity=".22"/>';
-    if (look.face === "shades") s += '<g fill="#2a2620"><rect x="-10" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><rect x="1.5" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><path d="M-1.5 ' + hy + ' h3" stroke="#2a2620" stroke-width="1"/></g>';
-    if (look.face === "star") s += '<path d="M9 ' + (hy + 2) + ' l1.2 2.5 2.7 .3 -2 1.8 .6 2.7 -2.5 -1.4 -2.5 1.4 .6 -2.7 -2 -1.8 2.7 -.3 Z" fill="#e8b93a"/>';
-    if (look.ears === "muffs") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#c98e9a" stroke-width="2.4"/><circle cx="-15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/><circle cx="15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/>';
+    if (has(look.face, "shades")) s += '<g fill="#2a2620"><rect x="-10" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><rect x="1.5" y="' + (hy - 2) + '" width="8.5" height="5.5" rx="2"/><path d="M-1.5 ' + hy + ' h3" stroke="#2a2620" stroke-width="1"/></g>';
+    if (has(look.face, "star")) s += '<path d="M9 ' + (hy + 2) + ' l1.2 2.5 2.7 .3 -2 1.8 .6 2.7 -2.5 -1.4 -2.5 1.4 .6 -2.7 -2 -1.8 2.7 -.3 Z" fill="#e8b93a"/>';
+    if (has(look.ears, "muffs")) s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#c98e9a" stroke-width="2.4"/><circle cx="-15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/><circle cx="15.5" cy="' + hy + '" r="5.5" fill="#f2c4c8"/>';
     if (look.hat === "cap") s += '<path d="M-17.5 ' + (hy - 5) + ' C-17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 5) + ' Z" fill="#5d7fa8"/><path d="M-2 ' + (hy - 6) + ' Q12 ' + (hy - 9) + ' 22 ' + (hy - 5) + ' L14 ' + (hy - 3) + ' Z" fill="#4a6a90"/><circle cx="0" cy="' + (hy - 19) + '" r="1.5" fill="#4a6a90"/>';
     if (look.hat === "bunnyband") s += '<path d="M-14 ' + (hy - 10) + ' C-14 ' + (hy - 18) + ' 14 ' + (hy - 18) + ' 14 ' + (hy - 10) + '" fill="none" stroke="#e7a6a8" stroke-width="2"/><ellipse cx="-6" cy="' + (hy - 26) + '" rx="3.6" ry="10" fill="#f8f4ec" stroke="#e0d0c0" stroke-width=".6" transform="rotate(-12 -6 ' + (hy - 26) + ')"/><ellipse cx="6" cy="' + (hy - 26) + '" rx="3.6" ry="10" fill="#f8f4ec" stroke="#e0d0c0" stroke-width=".6" transform="rotate(12 6 ' + (hy - 26) + ')"/><ellipse cx="-6" cy="' + (hy - 25) + '" rx="1.6" ry="7" fill="#f2c4c8" transform="rotate(-12 -6 ' + (hy - 25) + ')"/><ellipse cx="6" cy="' + (hy - 25) + '" rx="1.6" ry="7" fill="#f2c4c8" transform="rotate(12 6 ' + (hy - 25) + ')"/>';
     if (look.hat === "flower") s += '<g transform="translate(-11 ' + (hy - 11) + ')">' + [0, 72, 144, 216, 288].map(function (a) { return '<circle cx="' + (Math.cos(a * Math.PI / 180) * 3).toFixed(2) + '" cy="' + (Math.sin(a * Math.PI / 180) * 3).toFixed(2) + '" r="2.4" fill="#e7a6a8"/>'; }).join("") + '<circle r="1.8" fill="#f2cc4a"/></g>';
-    if (look.face === "glasses") s += '<g fill="none" stroke="#4a3a2c" stroke-width="1.1"><circle cx="-5.5" cy="' + (hy + 1) + '" r="3.6"/><circle cx="5.5" cy="' + (hy + 1) + '" r="3.6"/><path d="M-1.9 ' + (hy + 1) + ' h3.8"/></g>';
-    if (look.ears === "phones") s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#5a6b7a" stroke-width="2.4"/><rect x="-18" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/><rect x="12.5" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/>';
+    if (has(look.face, "glasses")) s += '<g fill="none" stroke="#4a3a2c" stroke-width="1.1"><circle cx="-5.5" cy="' + (hy + 1) + '" r="3.6"/><circle cx="5.5" cy="' + (hy + 1) + '" r="3.6"/><path d="M-1.9 ' + (hy + 1) + ' h3.8"/></g>';
+    if (has(look.ears, "phones")) s += '<path d="M-15 ' + (hy - 2) + ' C-15 ' + (hy - 20) + ' 15 ' + (hy - 20) + ' 15 ' + (hy - 2) + '" fill="none" stroke="#5a6b7a" stroke-width="2.4"/><rect x="-18" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/><rect x="12.5" y="' + (hy - 4) + '" width="5.5" height="9" rx="2.5" fill="#5a6b7a"/>';
     if (look.hat === "beanie") s += '<path d="M-17.5 ' + (hy - 4) + ' C-17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 24) + ' 17.5 ' + (hy - 4) + ' Z" fill="#c8574a"/><rect x="-18.5" y="' + (hy - 7) + '" width="37" height="5" rx="2.5" fill="#a9463c"/><circle cx="0" cy="' + (hy - 19) + '" r="3.2" fill="#f3efe6"/>';
     if (look.hat === "straw") s += '<ellipse cx="0" cy="' + (hy - 8) + '" rx="23" ry="5" fill="#e6c27a"/><path d="M-11 ' + (hy - 8) + ' C-11 ' + (hy - 20) + ' 11 ' + (hy - 20) + ' 11 ' + (hy - 8) + ' Z" fill="#e6c27a"/><rect x="-11" y="' + (hy - 11) + '" width="22" height="3" fill="#c2453b"/>';
     if (look.hat === "beret") s += '<ellipse cx="2" cy="' + (hy - 13) + '" rx="19" ry="7.5" fill="#3d3a4a"/><circle cx="2" cy="' + (hy - 21) + '" r="1.6" fill="#3d3a4a"/>';
@@ -634,5 +644,5 @@
       '<g transform="scale(1.35)">' + character(look, "stand", { smile: true, petX: 24 }) + '</g>';
   }
 
-  window.KaidaScene = { flag: flag, pet: pet, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
+  window.KaidaScene = { flag: flag, pet: pet, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, has: has, toggle: toggle, STACK: STACK, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
 })();

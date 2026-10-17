@@ -6,7 +6,7 @@
 <title data-i18n-title="app.title">番茄讀書會</title>
 <meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。不用註冊，資料只存在你的手機。">
 <meta name="theme-color" content="#f2ece1">
-<script>/* 一開頁就套上配色，避免閃一下：新使用者預設深夜書房 */try{var _d=JSON.parse(localStorage.getItem("kaida-pomodoro-v1")||"null"),_p=_d?_d.pal||"kraft":"night";if(_p!=="kraft")document.documentElement.setAttribute("data-pal",_p)}catch(e){}</script>
+<script>/* 一開頁就套上配色，避免閃一下：預設牛皮紙 */try{var _d=JSON.parse(localStorage.getItem("kaida-pomodoro-v1")||"null"),_p=_d&&_d.pal||"kraft";if(_p!=="kraft")document.documentElement.setAttribute("data-pal",_p)}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="番茄讀書會">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -797,7 +797,7 @@
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.long": "100 分專注\n30 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "隨機配到一間跟你選一樣時間、還有空位的房間；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "有好友在的房間最優先，其次是人多的房間，都要跟你選一樣時間、還有空位；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -888,7 +888,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.long": "100 focus\n30 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a random room on the same timer that still has seats. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a room on the same timer that still has seats, rooms with your friends first, then the busiest ones. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -976,7 +976,7 @@
   data.wood = data.wood || 0;
   // 2026/10 一次性禮物：已經玩過的人送 30 根小木頭；之後才加入的不送
   var gift30 = false;
-  if (!data.pal) data.pal = oldPlayer ? "kraft" : "night"; // 新使用者預設深夜書房，老玩家沒選過的維持原本
+  if (!data.pal) data.pal = "kraft";
   if (!data.gift30) { data.gift30 = true; if (oldPlayer) { data.wood += 30; gift30 = true; } K.save(STORE, data); }
   // 第二次禮物：目前已經在玩的人再送 100 根（每人一次）
   var gift100 = false;
@@ -1130,11 +1130,15 @@
     Promise.all(keys.map(function (k) { return window.KaidaNet.findPublic(k); })).then(function (lists) {
       busy = false;
       if (lists.every(function (l) { return l === null; })) { K.toast(t("r.err.offline")); return; }
-      // 隨機：兩種時間的公開房一起找，人多的優先
+      // 有好友在的房間最優先（不管主題），其次人多的；隨機時兩種時間的公開房一起找
       // 選了房間主題就只配同主題的房間；隨機就全部都可以
-      var cnt = {}, codes = [], want = data.qTheme !== "rand" ? data.qTheme : "";
-      lists.forEach(function (l) { (l || []).forEach(function (c) { if (want && (l.themes || {})[c] !== want) return; cnt[c] = (l.counts && l.counts[c]) || 1; codes.push(c); }); });
-      codes.sort(function (a, b) { return cnt[b] - cnt[a]; });
+      var cnt = {}, fr = {}, codes = [], want = data.qTheme !== "rand" ? data.qTheme : "";
+      lists.forEach(function (l) { (l || []).forEach(function (c) {
+        var f = ((l.ids || {})[c] || []).filter(function (id) { return data.friends[id] && !isBot(id); }).length;
+        if (want && !f && (l.themes || {})[c] !== want) return;
+        cnt[c] = (l.counts && l.counts[c]) || 1; fr[c] = f; codes.push(c);
+      }); });
+      codes.sort(function (a, b) { return fr[b] - fr[a] || cnt[b] - cnt[a]; });
       (function next(i) {
         if (i >= codes.length) { openRoom(true, null, 0, true); return; }
         busy = true;
@@ -1951,14 +1955,15 @@
   /* ===== 角色頁 ===== */
   function itemThumb(it) {
     var look = Object.assign({}, data.look, { pet: "" });
-    if (it.parts) Object.assign(look, it.parts); else look[it.slot] = it.id;
+    if (it.parts) Object.assign(look, it.parts); else if (S.STACK.indexOf(it.slot) >= 0) { if (!S.has(look[it.slot], it.id)) look[it.slot] = S.toggle(look[it.slot], it.id); } else look[it.slot] = it.id;
     return '<svg viewBox="-36 -96 72 102" aria-hidden="true"><g>' + S.preview(look).replace(/<rect[^>]*\/><rect[^>]*\/>/, "") + '</g></svg>';
   }
   var shopCat = "top", shopPick = {}, shopTry = {};
   // 試穿：每個部位各記一件（套裝佔上衣加褲子），切分類也一直保留，可以混搭
   function untry(it) { if (it.parts) delete shopTry.set; else { delete shopTry[it.slot]; if (shopTry.set && S.item(shopTry.set).parts[it.slot]) delete shopTry.set; } }
   // 套裝：上衣加褲子一起換
-  function wearItem(L, it) { if (it.parts) Object.assign(L, it.parts); else if (it.slot === "top") L.top = it.id; else L[it.slot] = it.id; }
+  function wearItem(L, it) { if (it.parts) Object.assign(L, it.parts); else if (it.slot === "top") L.top = it.id; else if (S.STACK.indexOf(it.slot) >= 0) { if (!S.has(L[it.slot], it.id)) L[it.slot] = S.toggle(L[it.slot], it.id); } else L[it.slot] = it.id; }
+  function isOn(L, it) { return it.parts ? Object.keys(it.parts).every(function (k) { return L[k] === it.parts[k]; }) : S.STACK.indexOf(it.slot) >= 0 ? S.has(L[it.slot], it.id) : L[it.slot] === it.id; }
   function countryName(c) { try { return new Intl.DisplayNames([K.lang() === "en" ? "en" : "zh-TW"], { type: "region" }).of(c); } catch (er) { return c; } }
   var PALS = [["kraft", "#F2ECE1", "#2A2620"], ["tomato", "#F6EDE3", "#C23B22"], ["matcha", "#EDF0E4", "#3F6B44"], ["night", "#14161B", "#F0694A"], ["sea", "#E9EFF3", "#2E6696"]];
   function applyPal() {
@@ -2018,7 +2023,7 @@
     var PL = Object.assign({}, L);
     Object.keys(shopPick).forEach(function (k) { PL[k] = shopPick[k]; });
     if (shopTry.set) wearItem(PL, S.item(shopTry.set));
-    Object.keys(shopTry).forEach(function (k) { if (k !== "set") PL[k] = shopTry[k]; });
+    Object.keys(shopTry).forEach(function (k) { if (k === "set") return; if (S.STACK.indexOf(k) >= 0) { if (!S.has(PL[k], shopTry[k])) PL[k] = S.toggle(PL[k], shopTry[k]); } else PL[k] = shopTry[k]; });
     // 上面（預覽、木頭、分類）固定不動，只有下面的商品可以滑
     html += '<div class="shop-head"><div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(PL) + '</svg>' +
       '<div style="min-width:0"><div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
@@ -2030,7 +2035,7 @@
     var owned = inCat.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
     var shop = inCat.filter(function (it) { return data.owned.indexOf(it.id) < 0 && !it.setOnly; });
     function card(it, own) {
-      var on = it.parts ? Object.keys(it.parts).every(function (k) { return L[k] === it.parts[k]; }) : L[it.slot] === it.id, name = K.lang() === "en" ? it.en : it.zh;
+      var on = isOn(L, it), name = K.lang() === "en" ? it.en : it.zh;
       var btn = own ? (it.slot === "top" || it.parts ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.wearing")) + '</button>' : '<button class="btn ghost" type="button" data-wear="' + it.id + '">' + K.esc(t("c.wear")) + '</button>')
                     : '<button class="btn ' + (on ? "ghost" : "") + '" type="button" data-wear="' + it.id + '">' + K.esc(t(on ? "c.off" : "c.wear")) + '</button>')
         : (data.wood >= it.price ? '<button class="btn" type="button" data-buy="' + it.id + '">🪵 ' + K.esc(t("c.buy", { n: it.price })) + '</button>'
@@ -2094,7 +2099,7 @@
       else if (cown.indexOf(ci) < 0) return;
       L[ck] = ci; paidColor[ck] = ci; data.paidColor = paidColor; delete shopPick[ck];
     }
-    else if (ds.wear) { var it = S.item(ds.wear); untry(it); if (it.parts || it.slot === "top") wearItem(L, it); else L[it.slot] = L[it.slot] === it.id ? "" : it.id; }
+    else if (ds.wear) { var it = S.item(ds.wear); untry(it); if (it.parts || it.slot === "top") wearItem(L, it); else if (S.STACK.indexOf(it.slot) >= 0) L[it.slot] = S.toggle(L[it.slot], it.id); else L[it.slot] = L[it.slot] === it.id ? "" : it.id; }
     else if (ds.buy) {
       var bi = S.item(ds.buy);
       if (!bi || data.wood < bi.price || data.owned.indexOf(bi.id) >= 0) return;
