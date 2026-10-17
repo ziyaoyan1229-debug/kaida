@@ -509,13 +509,22 @@
   #says [data-up].shake { animation: btnshake 1.3s ease-in-out infinite; background: #fff; color: #C23B22; border-color: #fff; font-weight: 700; text-shadow: none; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
   @media (prefers-reduced-motion: reduce) { #says [data-up].shake { animation: none; } }
   /* 房間裡聊天 */
-  .rchat { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 85; width: 100%; max-width: 460px; background: var(--surface); color: var(--ink); border-radius: 16px 16px 0 0; box-shadow: 0 -8px 26px rgba(0,0,0,.22); padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; }
+  /* 聊天框放在房間畫面裡面，不超出房間 */
+  .rchat { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6; max-width: 460px; margin: 0 auto; max-height: calc(100% - 16px); box-sizing: border-box; background: var(--surface); color: var(--ink); border-radius: 14px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
   .rchat[hidden] { display: none; }
-  .rchat-head { display: flex; align-items: center; gap: 8px; }
+  .rchat-head { display: flex; align-items: center; gap: 8px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .rchat.drag .rchat-head { cursor: grabbing; }
+  .rchat-head { position: relative; padding-top: 10px; }
+  /* 上面中間的點點：可以拖著移動 */
+  .rchat-head .grip { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 34px; height: 8px; background: radial-gradient(circle, var(--muted) 1.6px, transparent 2px) 0 0 / 8.5px 4px; opacity: .7; }
+  /* 右上的悄悄話開關 */
+  .rchat-head .wh { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .rchat-head .wh .switch { transform: scale(.8); transform-origin: right center; }
+  .rchat-head .end { order: -1; margin-left: -4px; }
   .rchat-head svg { width: 34px; height: 34px; flex: none; }
   .rchat-head b { flex: 1; min-width: 0; font-size: 15px; }
   .rchat-head button { width: 34px; height: 34px; border: 0; background: none; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
-  .rchat-log { height: 26vh; min-height: 120px; max-height: 240px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .rchat-log { flex: 1 1 auto; min-height: 48px; max-height: 180px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
   .rchat-log .b { max-width: 80%; padding: 6px 10px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
   .rchat-log .b.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); }
   .rchat-log .b.me { align-self: flex-end; background: var(--ink); color: var(--paper); }
@@ -594,7 +603,7 @@
       <button type="button" class="set-btn rb-set" id="rb-set" data-i18n-aria="set.title" aria-label="設定"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><div class="rb-acts"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button></div>
     </div>
     <div class="s-body">
-    <div class="scene-wrap"><div class="k3" id="scene3d" hidden><div class="k3-load" id="k3-load" hidden><div class="kl-bg"></div><div class="kl-name" id="kl-name"></div><div class="kl-sub" id="kl-sub"></div><div class="kl-track"><div class="kl-bar"></div><div class="kl-walk"><svg viewBox="-22 -64 44 66" id="kl-me" aria-hidden="true"></svg></div></div></div></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg><button type="button" class="s-down" id="s-more" data-i18n-aria="s.more" aria-label="往下滑：音樂、成員和更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="says" id="says"></div><button type="button" class="sit-btn" id="sit-btn" hidden data-i18n="s.sit">坐下</button></div>
+    <div class="scene-wrap"><div class="rchat" id="rchat" hidden role="dialog" aria-modal="false"></div><div class="k3" id="scene3d" hidden><div class="k3-load" id="k3-load" hidden><div class="kl-bg"></div><div class="kl-name" id="kl-name"></div><div class="kl-sub" id="kl-sub"></div><div class="kl-track"><div class="kl-bar"></div><div class="kl-walk"><svg viewBox="-22 -64 44 66" id="kl-me" aria-hidden="true"></svg></div></div></div></div><svg class="scene" id="scene" viewBox="0 0 420 330" role="img" aria-label=""></svg><button type="button" class="s-down" id="s-more" data-i18n-aria="s.more" aria-label="往下滑：音樂、成員和更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button><div class="says" id="says"></div><button type="button" class="sit-btn" id="sit-btn" hidden data-i18n="s.sit">坐下</button></div>
     <div class="s-side">
     <div class="music" id="music"></div>
     <div class="says doing" id="doing"></div>
@@ -665,7 +674,6 @@
 </div>
 
 <div class="fov" id="fov" hidden role="timer" aria-live="off"><div class="fov-ph" id="fov-ph"></div><div class="fov-t" id="fov-t"></div><div class="fov-sub" id="fov-sub"></div><button type="button" class="fov-x" id="fov-x" data-i18n="fov.x">關閉專注模式</button></div>
-<div class="rchat" id="rchat" hidden role="dialog" aria-modal="false"></div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true"><div class="card" id="modal-card"></div></div>
 
 <script src="../shared/kaida-app.js"></script>
@@ -744,7 +752,7 @@
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
-      "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
+      "rc.wh": "悄悄話", "rc.tipWh": "悄悄話開著：說的話只有 {n} 看得到，不會出現在頭上", "rc.end": "結束對話", "rc.endLine": "先這樣吧，我要繼續進步了！", "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
       "help.t": "說明", "help.ok": "知道了",
       "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|專注到最後才算一顆番茄：25 分鐘拿 3 根小木頭、50 分鐘 6 根、100 分鐘 12 根。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|小木頭可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 根。|讀書紀錄和小木頭只存在這支手機的瀏覽器裡。",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
@@ -835,7 +843,7 @@
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
-      "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
+      "rc.wh": "Whisper", "rc.tipWh": "Whisper is on: only {n} sees what you say, nothing shows above your head", "rc.end": "End chat", "rc.endLine": "That's it for now, back to leveling up!", "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
       "help.t": "How it works", "help.ok": "Got it",
       "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|A pomodoro counts only if you stay to the end: 3 logs for 25 min, 6 for 50, 12 for 100.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend logs in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 logs.|Your records and logs are stored only in this browser.",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
@@ -1208,7 +1216,9 @@
 
   var mySay = null;
   /* ===== 房間裡聊天：自己的角色走到對方旁邊，說的話出現在頭上 ===== */
-  var rchat = { with: null, vis: "", visAt: 0, preUp: null, logs: {}, seen: {}, visSeen: {} };
+  var rchat = { with: null, wait: null, vis: "", visAt: 0, preUp: null, logs: {}, seen: {}, visSeen: {} };
+  // 走到對方旁邊才打開聊天框（3D 房間會通知走到了；保險起見 20 秒後也打開）
+  window.addEventListener("kaida3d-arrive", function (e) { if (rchat.wait && rchat.wait === e.detail.to) { rchat.wait = null; renderRoomChat(true); } });
   function rcMember(id) { return session ? sceneMembers().filter(function (x) { return x.id === id; })[0] || null : null; }
   function openRoomChat(id, walk) {
     if (!session) return;
@@ -1217,12 +1227,13 @@
       rchat.vis = id; rchat.visAt = Date.now();
       if (rchat.preUp == null) rchat.preUp = !!session.up;
       if (session.kind === "room" && net) net.publishMe({ vis: id, visAt: rchat.visAt });
+      if (use3d) { rchat.wait = id; setTimeout(function () { if (rchat.wait === id) { rchat.wait = null; renderRoomChat(); } }, 20000); }
       if (!session.up) setUp(true); else renderScene(true);
     }
     renderRoomChat(walk);
   }
   function closeRoomChat() {
-    rchat.with = null; document.getElementById("rchat").hidden = true;
+    rchat.with = null; rchat.wait = null; document.getElementById("rchat").hidden = true;
     if (!session || !rchat.vis) return;
     rchat.vis = ""; rchat.visAt = 0;
     if (session.kind === "room" && net) net.publishMe({ vis: "", visAt: 0 });
@@ -1231,25 +1242,50 @@
   }
   function renderRoomChat(focusIn) {
     var el = document.getElementById("rchat"), id = rchat.with;
-    if (!id || !session || current !== "session") { el.hidden = true; return; }
+    if (!id || !session || current !== "session" || rchat.wait === id) { el.hidden = true; return; }
     var m = rcMember(id); if (!m) { closeRoomChat(); return; }
     var old = document.getElementById("rc-in"), draft = old ? old.value : "", had = old && document.activeElement === old;
-    el.innerHTML = '<div class="rchat-head"><svg viewBox="-30 -74 60 62" aria-hidden="true">' + S.bust(m.look) + '</svg><b>' + K.esc(t("rc.title", { n: m.name })) + '</b><button type="button" data-rc="close" aria-label="' + K.esc(t("c.close")) + '">×</button></div>' +
-      '<div class="rchat-log" id="rc-log">' + (rchat.vis === id ? '<span class="tip">' + K.esc(t("rc.tip", { n: m.name })) + '</span>' : "") +
+    // 左上角的叉叉＝結束對話
+    el.innerHTML = '<div class="rchat-head"><button type="button" class="end" data-rc="end" aria-label="' + K.esc(t("rc.end")) + '" title="' + K.esc(t("rc.end")) + '">×</button><svg viewBox="-30 -74 60 62" aria-hidden="true">' + S.bust(m.look) + '</svg><b>' + K.esc(t("rc.title", { n: m.name })) + '</b><label class="wh">🤫 ' + K.esc(t("rc.wh")) + '<span class="switch"><input type="checkbox" id="rc-wh"' + (rchat.whisper ? " checked" : "") + '><span></span></span></label><span class="grip" aria-hidden="true"></span></div>' +
+      '<div class="rchat-log" id="rc-log">' + (rchat.vis === id ? '<span class="tip">' + K.esc(t(rchat.whisper ? "rc.tipWh" : "rc.tip", { n: m.name })) + '</span>' : "") +
       (rchat.logs[id] || []).map(function (b) { return '<div class="b ' + (b.me ? "me" : "them") + '">' + K.esc(b.text) + '</div>'; }).join("") + '</div>' +
       '<form id="rc-form"><input type="text" id="rc-in" maxlength="80" autocomplete="off" placeholder="' + K.esc(t("rc.ph")) + '"><button class="btn" type="submit">' + K.esc(t("rc.send")) + '</button></form>';
-    el.hidden = false;
+    el.hidden = false; placeChat();
     var inp = document.getElementById("rc-in"); inp.value = draft; if (focusIn || had) inp.focus();
     var log = document.getElementById("rc-log"); log.scrollTop = log.scrollHeight;
   }
-  function sendRoomChat() {
+  // 聊天框可以拖著移動，但不會超出房間畫面
+  function placeChat() {
+    var el = document.getElementById("rchat"), w = el.parentNode; if (!rchat.pos || el.hidden) return;
+    var mx = Math.max(0, w.clientWidth - el.offsetWidth), my = Math.max(0, w.clientHeight - el.offsetHeight);
+    rchat.pos.x = Math.max(0, Math.min(mx, rchat.pos.x)); rchat.pos.y = Math.max(0, Math.min(my, rchat.pos.y));
+    el.style.left = rchat.pos.x + "px"; el.style.top = rchat.pos.y + "px"; el.style.right = "auto"; el.style.bottom = "auto"; el.style.margin = "0";
+  }
+  (function () {
+    var el = document.getElementById("rchat"), d = null;
+    el.addEventListener("pointerdown", function (e) {
+      if (!e.target.closest(".rchat-head") || e.target.closest("button, label")) return;
+      var r = el.getBoundingClientRect(), w = el.parentNode.getBoundingClientRect();
+      d = { dx: e.clientX - r.left, dy: e.clientY - r.top, wx: w.left, wy: w.top };
+      rchat.pos = { x: r.left - w.left, y: r.top - w.top };
+      el.classList.add("drag"); try { el.setPointerCapture(e.pointerId); } catch (er) {}
+      e.preventDefault();
+    });
+    el.addEventListener("pointermove", function (e) { if (!d) return; rchat.pos = { x: e.clientX - d.wx - d.dx, y: e.clientY - d.wy - d.dy }; placeChat(); });
+    function up() { d = null; el.classList.remove("drag"); }
+    el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    window.addEventListener("resize", placeChat);
+  })();
+  function sendRoomChat(line) {
     var inp = document.getElementById("rc-in"), id = rchat.with; if (!inp || !id || !session) return;
-    var text = inp.value.trim().slice(0, 80); if (!text) return;
+    var text = (line || inp.value).trim().slice(0, 80); if (!text) return;
     var now = Date.now();
     (rchat.logs[id] = rchat.logs[id] || []).push({ me: true, text: text, t: now });
-    mySay = { text: text, at: now };
-    if (session.kind === "room" && net) net.publishMe({ ct: text, ctAt: now, ctTo: id });
-    inp.value = "";
+    // 悄悄話：只有對方的聊天框看得到，不會出現在頭上
+    if (!rchat.whisper) mySay = { text: text, at: now };
+    if (session.kind === "room" && net) net.publishMe({ ct: text, ctAt: now, ctTo: id, wh: !!rchat.whisper });
+    if (!line) inp.value = "";
+    if (line) { renderScene(true); return; }
     if (session.kind === "sim" && /^bot/.test(id)) setTimeout(function () { botReply(id); }, 1200 + Math.random() * 1500);
     renderRoomChat(true); renderScene(true);
   }
@@ -1257,7 +1293,7 @@
     if (!session || session.kind !== "sim") return;
     var lines = t("rc.bot").split("|"), text = lines[Math.floor(Math.random() * lines.length)], now = Date.now(), m = rcMember(id);
     (rchat.logs[id] = rchat.logs[id] || []).push({ me: false, text: text, t: now });
-    sim.says[id] = { text: text, at: now };
+    if (!rchat.whisper) sim.says[id] = { text: text, at: now };
     if (rchat.with === id) renderRoomChat(); else K.toast(t("rc.from", { n: m ? m.name : "?", m: text }));
     renderScene(true);
   }
@@ -1277,7 +1313,12 @@
       }
     });
   }
-  document.getElementById("rchat").addEventListener("click", function (e) { if (e.target.closest('[data-rc="close"]')) closeRoomChat(); });
+  document.getElementById("rchat").addEventListener("click", function (e) {
+    if (e.target.closest('[data-rc="close"]')) closeRoomChat();
+    // 結束對話：說一句再見，留一下讓對方看到，再走回去
+    if (e.target.closest('[data-rc="end"]')) { sendRoomChat(t("rc.endLine")); document.getElementById("rchat").hidden = true; var who = rchat.with; setTimeout(function () { if (rchat.with === who) closeRoomChat(); }, 1500); }
+  });
+  document.getElementById("rchat").addEventListener("change", function (e) { if (e.target.id === "rc-wh") { rchat.whisper = e.target.checked; renderRoomChat(); } });
   document.getElementById("rchat").addEventListener("submit", function (e) { e.preventDefault(); sendRoomChat(); });
 
   function say(text) {
@@ -1292,7 +1333,7 @@
     // 休息中自己按離開也算有在：剛結束的那一輪照算
     var p0 = phaseAt("cur", now, roomOrigin()); if (!p0.focus) session.ack = p0.start;
     creditUntil(now);
-    rchat.with = null; rchat.vis = ""; rchat.logs = {}; rchat.preUp = null; document.getElementById("rchat").hidden = true;
+    rchat.with = null; rchat.wait = null; rchat.vis = ""; rchat.logs = {}; rchat.preUp = null; document.getElementById("rchat").hidden = true;
     var p = phaseAt("cur", now, roomOrigin());
     if (p.focus) {
       var segStart = Math.max(p.start, session.credited, session.joinedAt);
@@ -1598,7 +1639,7 @@
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.ct && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
