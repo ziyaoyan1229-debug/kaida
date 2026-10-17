@@ -1220,7 +1220,7 @@
 
   var mySay = null;
   /* ===== 房間裡聊天：自己的角色走到對方旁邊，說的話出現在頭上 ===== */
-  var rchat = { with: null, wait: null, vis: "", visAt: 0, preUp: null, logs: {}, seen: {}, visSeen: {} };
+  var rchat = { with: null, wait: null, vis: "", visAt: 0, preUp: null, logs: {}, seen: {}, visSeen: {}, shut: {} };
   // 走到對方旁邊才打開聊天框（3D 房間會通知走到了；保險起見 20 秒後也打開）
   window.addEventListener("kaida3d-arrive", function (e) { if (rchat.wait && rchat.wait === e.detail.to) { rchat.wait = null; renderRoomChat(true); } });
   function rcMember(id) { return session ? sceneMembers().filter(function (x) { return x.id === id; })[0] || null : null; }
@@ -1237,12 +1237,18 @@
     renderRoomChat(walk);
   }
   function closeRoomChat() {
+    // 關掉之後，對方這次走過來找我時傳的話不會再自動跳出聊天框（只跳通知）
+    if (rchat.with) { var pm = session && session.kind === "room" && net ? net.fresh().filter(function (x) { return x.id === rchat.with; })[0] : null; rchat.shut[rchat.with] = pm ? pm.visAt || 0 : 0; }
     rchat.with = null; rchat.wait = null; document.getElementById("rchat").hidden = true;
     if (!session || !rchat.vis) return;
     rchat.vis = ""; rchat.visAt = 0;
     if (session.kind === "room" && net) net.publishMe({ vis: "", visAt: 0 });
     var back = rchat.preUp === false; rchat.preUp = null;
     if (back && session.up) setUp(false); else renderScene(true);
+  }
+  function closeRoomChatPanel() {
+    if (rchat.with) rchat.shut[rchat.with] = (rcMember(rchat.with) || {}).visAt || 0;
+    rchat.with = null; rchat.wait = null; document.getElementById("rchat").hidden = true;
   }
   function renderRoomChat(focusIn) {
     var el = document.getElementById("rchat"), id = rchat.with;
@@ -1309,7 +1315,8 @@
       if (m.ctTo === data.me.id && m.ct && m.ctAt > (rchat.seen[m.id] || session.joinedAt - 5000)) {
         rchat.seen[m.id] = m.ctAt;
         (rchat.logs[m.id] = rchat.logs[m.id] || []).push({ me: false, text: m.ct, t: m.ctAt });
-        if (!rchat.with && current === "session" && document.getElementById("fov").hidden) rchat.with = m.id;
+        // 只有對方走過來找我、而且我還沒關掉這次的聊天，才自動打開聊天框
+        if (!rchat.with && current === "session" && document.getElementById("fov").hidden && m.vis === data.me.id && rchat.shut[m.id] !== m.visAt) rchat.with = m.id;
         if (rchat.with === m.id) renderRoomChat(); else K.toast(t("rc.from", { n: m.name, m: m.ct }));
       }
       if (m.vis === data.me.id && m.visAt && m.visAt !== rchat.visSeen[m.id] && m.visAt > session.joinedAt - 5000) {
@@ -1320,7 +1327,11 @@
   document.getElementById("rchat").addEventListener("click", function (e) {
     if (e.target.closest('[data-rc="close"]')) closeRoomChat();
     // 結束對話：說一句再見，留一下讓對方看到，再走回去
-    if (e.target.closest('[data-rc="end"]')) { sendRoomChat(t("rc.endLine")); document.getElementById("rchat").hidden = true; var who = rchat.with; setTimeout(function () { if (rchat.with === who) closeRoomChat(); }, 1500); }
+    // 結束對話：聊天框馬上收起來，「先這樣吧…」只出現在頭上，停一下再走回去
+    if (e.target.closest('[data-rc="end"]')) {
+      var who = rchat.vis; closeRoomChatPanel(); say(t("rc.endLine"));
+      setTimeout(function () { if (!rchat.with && who && rchat.vis === who) closeRoomChat(); }, 1500);
+    }
   });
   document.getElementById("rchat").addEventListener("change", function (e) { if (e.target.id === "rc-wh") { rchat.whisper = e.target.checked; renderRoomChat(); } });
   document.getElementById("rchat").addEventListener("submit", function (e) { e.preventDefault(); sendRoomChat(); });
