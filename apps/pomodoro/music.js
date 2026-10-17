@@ -1,9 +1,9 @@
 /* 番茄讀書會：房間背景音樂（瀏覽器即時合成，不用下載音檔）
-   爵士：走路貝斯 + 七和弦鋼琴 + 刷鼓；輕音樂：溫柔的和弦鋪底 + 鈴聲旋律；白噪音：柔和的棕色噪音；柴火：隨機的劈啪聲；
+   爵士：走路貝斯 + 七和弦鋼琴 + 刷鼓；輕音樂：溫柔的和弦鋪底 + 鈴聲旋律；風吹聲：錄好的風聲循環（sounds/wind.mp3）；柴火：隨機的劈啪聲；
    雨聲：細密的雨 + 偶爾滴在窗台的水滴；Lo-fi：慢板的悶鋼琴 + 鼓 + 黑膠雜訊；森林：鳥叫；
    鋼琴：慢板的分解和弦獨奏；海浪：一波波的浪潮 + 偶爾的海鷗 */
 (function () {
-  // 兩個聲道：music（一般音樂）和 amb（白噪音／環境音），可以同時播、各自調音量
+  // 兩個聲道：music（一般音樂）和 amb（風吹聲等環境音），可以同時播、各自調音量
   var ctx = null, L = null, layers = {
     music: { name: "music", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.3, noiseSrc: null, nodes: [] },
     amb: { name: "amb", master: null, verb: null, cur: "", timer: null, nextT: 0, step: 0, vol: 0.3, noiseSrc: null, nodes: [] }
@@ -98,22 +98,6 @@
     return spb;
   }
 
-  function startNoise() {
-    var len = ctx.sampleRate * 4, buf = ctx.createBuffer(2, len, ctx.sampleRate);
-    for (var c = 0; c < 2; c++) {
-      var d = buf.getChannelData(c), last = 0;
-      for (var i = 0; i < len; i++) { var w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
-    }
-    L.noiseSrc = ctx.createBufferSource(); L.noiseSrc.buffer = buf; L.noiseSrc.loop = true;
-    var f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 900;
-    var g = ctx.createGain(); g.gain.value = 0.9;
-    // 慢慢起伏，像遠方的海浪
-    var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.08; lg.gain.value = 0.25; lfo.connect(lg); lg.connect(g.gain); lfo.start();
-    L.noiseSrc.connect(f); f.connect(g); g.connect(L.master); L.noiseSrc.start();
-    L.nodes = [lfo];
-  }
-
-  /* 柴火：隨機的劈啪聲，偶爾木頭裂開的大聲一點 */
   function crackle(t, big) {
     var s = ctx.createBufferSource(); s.buffer = noise();
     var f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = big ? 900 + Math.random() * 900 : 1800 + Math.random() * 3500; f.Q.value = big ? 0.8 : 1.5;
@@ -259,7 +243,7 @@
   function cafeBeat() { return 0.5; }
 
   /* 錄音素材：夏夜蟲鳴（使用者提供的 30 秒循環）、咖啡廳。頭尾各裁一點，接縫比較不會喀一聲 */
-  var samples = {}, SAMPLE_GAIN = { night: 1.4, cafe: 3 };
+  var samples = {}, SAMPLE_GAIN = { night: 1.4, cafe: 3, noise: 5 };
   function startSample(url) {
     var y = L, kind = y.cur;
     function go(buf) {
@@ -318,7 +302,7 @@
     stopAll(y); y.cur = kind; L = y;
     var t = ctx.currentTime;
     y.master.gain.cancelScheduledValues(t); y.master.gain.setValueAtTime(0, t); y.master.gain.linearRampToValueAtTime(y.vol, t + 1.2);
-    if (kind === "noise") startNoise();
+    if (kind === "noise") startSample("sounds/wind.mp3");  // 原本的白噪音，現在是風吹聲
     else {
       if (kind === "rain") startRain(); if (kind === "waves") startWaves(); if (kind === "cafe") startSample("sounds/cafe.mp3"); if (kind === "night") startSample("sounds/night.mp3");
       y.nextT = t + 0.1; y.step = 0; loop();
