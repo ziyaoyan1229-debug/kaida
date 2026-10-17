@@ -27,7 +27,7 @@
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
       joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0, dk: m.dk == null ? null : Math.max(0, Math.min(864e5, +m.dk || 0)), dkAt: +m.dkAt || 0, seat: m.seat >= 0 && m.seat < 12 ? Math.floor(m.seat) : -1,
-      ct: typeof m.ct === "string" ? m.ct.slice(0, 80) : "", ctAt: +m.ctAt || 0, ctTo: /^[a-z0-9]{4,16}$/i.test(m.ctTo || "") ? m.ctTo : "", vis: /^[a-z0-9]{2,16}$/i.test(m.vis || "") ? m.vis : "", visAt: +m.visAt || 0, hr: Math.max(0, Math.min(1e7, Math.floor(+m.hr || 0)))
+      ct: typeof m.ct === "string" ? m.ct.slice(0, 80) : "", ctAt: +m.ctAt || 0, ctTo: /^[a-z0-9]{4,16}$/i.test(m.ctTo || "") ? m.ctTo : "", wh: !!m.wh, vis: /^[a-z0-9]{2,16}$/i.test(m.vis || "") ? m.vis : "", visAt: +m.visAt || 0, hr: Math.max(0, Math.min(1e7, Math.floor(+m.hr || 0)))
     };
   }
 

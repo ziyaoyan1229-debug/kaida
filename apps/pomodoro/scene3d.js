@@ -2379,7 +2379,7 @@ function animChar(st, dt, now) {
     const nxt = st.path[0];
     if (!nxt) {
       if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; if (st.carry || st.sip) { st.carry = st.sip = false; st.emo = "drink"; st.emoT0 = now; if (st.m.up) st.resumeAt = now + 4000; } }
-      else if (st.after === "chat") { st.mode = "chat"; }
+      else if (st.after === "chat") { st.mode = "chat"; if (st.m.me) window.dispatchEvent(new CustomEvent("kaida3d-arrive", { detail: { to: st.visTo } })); }
       else if (st.after === "coffee") { st.mode = "coffee"; st.ry = Math.PI; st.brewT0 = now; }
       else { const sp = SPOTS[st.spot] || { ry: st.ry }; st.mode = "idle"; st.ry = sp.ry; st.waitUntil = now + 6000 + Math.random() * 8000; }
     } else {
