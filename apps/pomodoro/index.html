@@ -505,8 +505,10 @@
   /* 專注畫面打開時，後面的頁面不能捲動，也點不到設定 */
   /* 手機：專注畫面蓋住第一屏，往下滑就能看到音樂和設定 */
   .fov { position: absolute; height: 100vh; height: 100lvh; bottom: auto; }
-  .fov-dn { position: absolute; left: 50%; bottom: 22px; margin-left: -22px; width: 44px; height: 44px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.55); animation: sdown 2.4s ease-in-out infinite; }
-  .fov-dn svg { display: block; width: 22px; height: 22px; margin: auto; }
+  /* 跟房間的往下箭頭同位置、同樣子（位置由程式對齊 #s-more） */
+  .fov-dn { position: absolute; left: 50%; top: auto; bottom: 22px; margin-left: -22px; width: 44px; height: 44px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff;
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.5); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.18); animation: sdown 2.4s ease-in-out infinite; }
+  .fov-dn svg { display: block; width: 22px; height: 22px; margin: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
   @media (min-width: 640px) and (orientation: landscape), (min-width: 1000px) { .fov { position: fixed; } .fov-dn { display: none; } }
   .fov-ph { font-size: 15px; letter-spacing: .4em; opacity: .9; }
   .fov-t { font-family: var(--f-display); font-weight: 700; font-size: clamp(76px, 26vw, 220px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
@@ -1871,6 +1873,7 @@
     // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」，
     // 按了「我回來了」坐回座位就再蓋上
     var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && !session.away && current === "session" && (p.focus || (!session.up && !needAck(p)));
+    if (fon) placeFovDn();
     if (fo.hidden === fon) { fo.hidden = !fon; if (fon) window.scrollTo(0, 0); }
     if (fon) {
       fo.style.background = (THEME_SW[session.theme] || THEME_SW.home)[0] + "eb";
@@ -2908,6 +2911,12 @@
   optFocus.addEventListener("change", function () { setFocusMode(optFocus.checked); });
   document.getElementById("rb-foc").addEventListener("click", function () { setFocusMode(!data.opts.focusMode); K.toast(t("opt.focusS") + (data.opts.focusMode ? " ✓" : " ✕")); });
   document.getElementById("fov-x").addEventListener("click", function () { setFocusMode(false); });
+  function placeFovDn() {
+    var s = document.getElementById("s-more").getBoundingClientRect(), dn = document.getElementById("fov-dn");
+    if (!s.width) return; // 專注畫面貼在頁面最上面，所以用頁面座標
+    dn.style.top = Math.round(s.top + window.scrollY) + "px"; dn.style.bottom = "auto"; dn.style.left = Math.round(s.left + window.scrollX) + "px"; dn.style.marginLeft = "0";
+  }
+  window.addEventListener("resize", placeFovDn);
   document.getElementById("fov-dn").addEventListener("click", function () { document.getElementById("s-more").click(); });
   // 倒數／計時
   function renderClockOpt() { document.querySelectorAll("#opt-clock [data-clock]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.clock === "up") === !!data.opts.countUp)); }); }
