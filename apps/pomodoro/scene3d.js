@@ -543,6 +543,9 @@ let yaw = 0.64, pitch = 0.72, dragYaw = 0, dragPitch = 0, zoom = ZOOM0, zoomT = 
 const panOff = new THREE.Vector3(), panT = new THREE.Vector3();
 const target = new THREE.Vector3(1.1, 0.7, 1.2), tmpT = new THREE.Vector3();
 let camR = 16.6;
+// 進房間時鏡頭對準自己的座位（不是每個人都坐中間）
+let focusMe = true;
+const FOCUS_ZOOM = 0.66;
 
 /* ===== 一天的光線：跟著真實時間的日出日落慢慢變 ===== */
 let hourOverride = null;
@@ -1609,6 +1612,13 @@ function update(members) {
     }
   });
   Object.keys(chars).forEach((id) => { if (!ids[id]) removeChar(id); });
+  const me = list.find((m) => m.me);
+  if (focusMe && me && chars[me.id]) {
+    focusMe = false;
+    const p = seatPos(chars[me.id].seat);
+    zoomT = FOCUS_ZOOM; panT.set((p.x - target.x) * 0.65, 0, (p.z - target.z) * 0.65); // 不完全置中，避免看到房間外面 clampPan();
+    zoom = zoomT; panOff.copy(panT);
+  }
   // 書桌上的東西：誰坐哪裡就放他的活動道具
   for (let i = 0; i < 6; i++) {
     const m = list[i], act = m ? (ACTS3.indexOf(m.act) >= 0 ? m.act : "read") : "";
@@ -1932,8 +1942,8 @@ function setTheme(name) {
   Object.keys(chars).forEach((id) => removeChar(id)); chars = {}; reserved = {};
   while (scene.children.length) scene.remove(scene.children[0]);
   fireMeshes = []; bulbs = []; curtains = []; plants = []; speakers = []; notes = []; seatProps = [];
-  buildRoom(); lighting(); envNext = 0;
+  buildRoom(); lighting(); envNext = 0; focusMe = true;
   if (lastList) update(lastList);
 }
-window.KaidaScene3D = { mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; } };
+window.KaidaScene3D = { mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
