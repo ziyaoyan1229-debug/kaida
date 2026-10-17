@@ -2056,7 +2056,7 @@ function animChar(st, dt, now) {
   c.cookie.visible = pose0 === "snack" || (pose0 === "mug" && st.treat === "eat");
   const pose = pose0, sp = SPOTS[st.spot];
   let shut = false;
-  c.hips.position.y = 0.36; c.hips.position.z = 0; c.torso.rotation.x = 0; c.head.rotation.set(0, 0, 0);
+  c.hips.position.y = 0.36; c.hips.position.z = 0; c.torso.rotation.set(0, 0, 0); c.head.rotation.set(0, 0, 0);  // 每一幀都從站直開始，做完動作才不會歪
   c.legs.forEach((l) => l.rotation.set(0, 0, 0));
   c.arms.forEach((a, i) => a.rotation.set(0, 0, (i ? 1 : -1) * 0.12));
   const breathe = Math.sin(s * 2) * 0.01;
@@ -2170,7 +2170,7 @@ function animChar(st, dt, now) {
     shut = Math.sin(s * 0.3) > 0.2;
   } else if (pose === "tea" || pose === "zen") {
     // 坐在坐墊上：泡茶或打坐
-    c.hips.position.y = 0.13; c.legs.forEach((l, i) => { l.rotation.x = -1.5; l.rotation.z = pose === "zen" ? (i ? 0.4 : -0.4) : 0; });
+    c.hips.position.y = 0.17; c.legs.forEach((l, i) => { l.rotation.x = -1.45; l.rotation.z = pose === "zen" ? (i ? 0.4 : -0.4) : 0; });
     if (pose === "zen") { c.arms.forEach((a, i) => { a.rotation.x = -0.55; a.rotation.z = (i ? -1 : 1) * 0.5; }); c.torso.position.y = Math.sin(s * 0.8) * 0.015; shut = true; }
     else { c.head.rotation.x = 0.3; c.arms[0].rotation.x = -1.0; c.arms[0].rotation.z = 0.3; c.arms[1].rotation.x = -1.1 + Math.sin(s * 14) * 0.06; c.arms[1].rotation.z = -0.2 + Math.sin(s * 14) * 0.12; }
   } else if (pose === "gaze") {
