@@ -2973,6 +2973,8 @@
     // 用沒有跳動位移的位置（offsetTop），專注畫面貼在頁面最上面，所以換成頁面座標
     var w = op.getBoundingClientRect();
     dn.style.top = (w.top + window.scrollY + op.clientTop + m.offsetTop) + "px"; dn.style.bottom = "auto"; dn.style.left = (w.left + window.scrollX + op.clientLeft + m.offsetLeft) + "px"; dn.style.marginLeft = "0";
+    // 專注畫面只蓋到房間畫面底部，下面「往上」的箭頭和音樂不會被蓋住（寬螢幕是整頁固定，不用調）
+    var fo = document.getElementById("fov"); fo.style.height = getComputedStyle(fo).position === "absolute" ? (w.bottom + window.scrollY) + "px" : "";
   }
   window.addEventListener("resize", placeFovDn);
   document.getElementById("fov-dn").addEventListener("click", function () { document.getElementById("s-more").click(); });
