@@ -22,7 +22,7 @@
     if (!m || typeof m !== "object") return null;
     var look = m.look && typeof m.look === "object" ? m.look : {};
     var L = {};
-    ["g", "top", "legs", "style", "hat", "face", "neck", "ears", "back", "pet"].forEach(function (k) { if (typeof look[k] === "string") L[k] = look[k].slice(0, 16); });
+    ["g", "top", "legs", "style", "hat", "face", "neck", "ears", "back", "pet"].forEach(function (k) { if (typeof look[k] === "string") L[k] = look[k].slice(0, 40); });
     L.skin = Math.max(0, Math.min(7, +look.skin || 0)); L.hair = Math.max(0, Math.min(12, +look.hair || 0));
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
@@ -120,7 +120,13 @@
     this.members[this.meId] = cleanMember(this.meId, this.me);
     this.client.publish(mine, JSON.stringify(this.me), { retain: true, qos: 1 });
     // 公開房間：順便更新大廳裡的人數，讓「直接開始」的人配得到
-    if (this.lobby) this.client.publish(this.lobby, JSON.stringify({ n: this.fresh().length, ts: Date.now(), th: this.meta && this.meta.theme }), { retain: true, qos: 1 });
+    if (this.lobby) this.client.publish(this.lobby, JSON.stringify(this.lobbyMsg()), { retain: true, qos: 1 });
+  };
+
+  // 大廳資訊：人數、主題、房裡的人（讓「直接開始」先配到有好友的房間）
+  Room.prototype.lobbyMsg = function (without) {
+    var ids = this.fresh().map(function (m) { return m.id; }).filter(function (id) { return id !== without; });
+    return { n: ids.length, ts: Date.now(), th: this.meta && this.meta.theme, ids: ids.slice(0, MAX) };
   };
 
   Room.prototype.leave = function () {
@@ -129,7 +135,7 @@
     if (c) {
       try {
         var self = this, alone = !this.fresh().some(function (m) { return m.id !== self.meId; });
-        if (c.connected && this.lobby) c.publish(this.lobby, alone ? "" : JSON.stringify({ n: this.fresh().length - 1, ts: Date.now(), th: this.meta && this.meta.theme }), { retain: true, qos: 1 });
+        if (c.connected && this.lobby) c.publish(this.lobby, alone ? "" : JSON.stringify(this.lobbyMsg(this.meId)), { retain: true, qos: 1 });
         if (c.connected && this.code && this.meId) c.publish(PREFIX + this.code + "/m/" + this.meId, "", { retain: true, qos: 1 }, function () { c.end(true); });
         else c.end(true);
       } catch (e) {}
@@ -141,7 +147,7 @@
   function findPublic(mode) {
     if (!window.mqtt) return Promise.resolve(null);
     return new Promise(function (resolve) {
-      var found = {}, themes = {}, c, done = false;
+      var found = {}, themes = {}, ids = {}, c, done = false;
       function finish(r) { if (done) return; done = true; try { c && c.end(true); } catch (e) {} resolve(r); }
       try { c = window.mqtt.connect(BROKER, { clientId: "kl_" + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 9000, reconnectPeriod: 0 }); }
       catch (e) { finish(null); return; }
@@ -149,7 +155,7 @@
       var base = PREFIX + "lobby/" + mode + "/";
       c.on("message", function (topic, payload) {
         var m = parse(payload), code = topic.slice(base.length);
-        if (/^\d{4}$/.test(code) && m && m.n > 0 && m.n < MAX && Date.now() - (+m.ts || 0) < 90 * 1000) { found[code] = m.n; themes[code] = m.th || ""; } else delete found[code];
+        if (/^\d{4}$/.test(code) && m && m.n > 0 && m.n < MAX && Date.now() - (+m.ts || 0) < 90 * 1000) { found[code] = m.n; themes[code] = m.th || ""; ids[code] = Array.isArray(m.ids) ? m.ids.map(String) : []; } else delete found[code];
       });
       c.on("connect", function () {
         c.subscribe(base + "+", { qos: 1 }, function (err) {
@@ -157,7 +163,7 @@
           setTimeout(function () {
             clearTimeout(timer);
             var list = Object.keys(found).sort(function (a, b) { return found[b] - found[a] || Math.random() - 0.5; });
-            list.counts = found; list.themes = themes;
+            list.counts = found; list.themes = themes; list.ids = ids;
             finish(list);
           }, 1500);
         });
