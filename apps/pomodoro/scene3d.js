@@ -1588,13 +1588,14 @@ function pickSpot(id) {
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
-function tagText(m) { return m.ft ? m.name + "  " + m.ft : m.name; }
+function tagText(m) { return m.name; }
 function addChar(m, seat) {
   const c = makeChar(m.look);
   scene.add(c.root);
   if (c.cat) scene.add(c.cat);
   c.root.userData.cid = m.id;
-  const tag = document.createElement("div"); tag.className = "k3-tag" + (m.me ? " me" : ""); tag.textContent = tagText(m);
+  const tag = document.createElement("div"); tag.className = "k3-tag" + (m.me ? " me" : "");
+  tag.nm = document.createElement("span"); tag.nm.textContent = tagText(m); tag.ft = document.createElement("span"); tag.ft.className = "k3-ft"; tag.append(tag.nm, tag.ft);
   tag.addEventListener("click", () => window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id: st.m.id } })));
   const bub = document.createElement("div"); bub.className = "k3-bubble"; bub.hidden = true;
   overlay.appendChild(tag); overlay.appendChild(bub);
@@ -1637,7 +1638,7 @@ function update(members) {
     if (st && st.lookKey !== lk) { const keep = { pos: st.pos.clone(), ry: st.ry, mode: st.mode, spot: st.spot }; removeChar(m.id); st = addChar(m, i); if (keep.mode !== "sit" || m.up) { st.pos.copy(keep.pos); st.ry = keep.ry; st.mode = keep.mode === "walk" ? "idle" : keep.mode; st.spot = keep.spot; if (keep.spot >= 0) reserved[keep.spot] = m.id; } }
     if (!st) st = addChar(m, i);
     const wasUp = st.m.up;
-    st.m = m; st.tag.textContent = tagText(m);
+    st.m = m; st.tag.nm.textContent = tagText(m);
     if (st.seat !== i) { st.seat = i; if (!m.up) { const p = seatPos(i); walkTo(st, p, "sit"); } }
     if (m.up && !wasUp) {
       // 起身：從椅子後面站起來，走去一個地方
@@ -1661,7 +1662,7 @@ function update(members) {
   if (focusMe && me && chars[me.id]) {
     focusMe = false;
     const p = seatPos(chars[me.id].seat);
-    zoomT = focusZoom; panT.set((p.x - target.x) * 0.65, 0, (p.z - target.z) * 0.65); // 不完全置中，避免看到房間外面 clampPan();
+    zoomT = focusZoom; panT.set((p.x - target.x) * 0.92, 0, (p.z - target.z) * 0.92); // 幾乎置中（座位隨機，角落的位子也要看得到自己）；clampPan 會擋住不讓看到房間外面 clampPan();
     zoom = zoomT; panOff.copy(panT);
   }
   // 書桌上的東西：誰坐哪裡就放他的活動道具
@@ -1996,5 +1997,7 @@ function setTheme(name) {
   buildRoom(); lighting(); envNext = 0; focusMe = true;
   if (lastList) update(lastList);
 }
-window.KaidaScene3D = { mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
+// 名牌下面的專注時間，index 每秒傳進來 { id: "00:25:13" }
+function times(map) { Object.keys(chars).forEach((id) => { const st = chars[id], v = map[id] || ""; if (st.tag.ft.textContent !== v) st.tag.ft.textContent = v; }); }
+window.KaidaScene3D = { times, mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
