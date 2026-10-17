@@ -183,37 +183,109 @@
     return s;
   }
 
+  /* 寵物：坐著、面向左，腳底在 y=0，大約 18 寬 22 高 */
+  var INK = "#2f2622";
+  function petEyes(x1, x2, y, r) {
+    r = r || 1;
+    return '<ellipse cx="' + x1 + '" cy="' + y + '" rx="' + (1.05 * r) + '" ry="' + (1.25 * r) + '" fill="' + INK + '"/><ellipse cx="' + x2 + '" cy="' + y + '" rx="' + (1.05 * r) + '" ry="' + (1.25 * r) + '" fill="' + INK + '"/>' +
+      '<circle cx="' + (x1 + .35 * r) + '" cy="' + (y - .45 * r) + '" r="' + (.4 * r) + '" fill="#fff"/><circle cx="' + (x2 + .35 * r) + '" cy="' + (y - .45 * r) + '" r="' + (.4 * r) + '" fill="#fff"/>';
+  }
+  function petBlush(x1, x2, y) {
+    return '<ellipse cx="' + x1 + '" cy="' + y + '" rx="1.3" ry=".75" fill="#f38c9a" opacity=".7"/><ellipse cx="' + x2 + '" cy="' + y + '" rx="1.3" ry=".75" fill="#f38c9a" opacity=".7"/>';
+  }
+  function whiskers(x, y) {
+    return '<g stroke="' + INK + '" stroke-width=".3" opacity=".55" stroke-linecap="round"><path d="M' + (x - 2.6) + ' ' + y + ' h-3 M' + (x - 2.6) + ' ' + (y + .8) + ' l-2.8 .9 M' + (x + 2.6) + ' ' + y + ' h3 M' + (x + 2.6) + ' ' + (y + .8) + ' l2.8 .9"/></g>';
+  }
+  // 坐姿身體：背微彎，前面兩隻小腳
+  function sitBody(c, dark, belly, paw) {
+    return '<path d="M-6.5 0 C-8.2 -3.5 -7.4 -8.6 -3.2 -10 L3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 Z" fill="' + c + '"/>' +
+      '<path d="M3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 L5.5 0 C6.6 -3.4 6 -7.4 3.6 -9.6 Z" fill="' + dark + '" opacity=".35"/>' +
+      (belly ? '<ellipse cx="-2" cy="-4.4" rx="3.3" ry="4" fill="' + belly + '"/>' : "") +
+      '<ellipse cx="-4.6" cy="-.7" rx="2" ry="1.3" fill="' + (paw || c) + '"/><ellipse cx="-.6" cy="-.7" rx="2" ry="1.3" fill="' + (paw || c) + '"/>' +
+      '<ellipse cx="6.4" cy="-1" rx="2.4" ry="1.5" fill="' + c + '"/>';
+  }
   function pet(kind, x, y) {
-    if (kind === "cat") return cat(x, y);
-    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="0" cy="0" rx="8" ry="2" fill="rgba(60,40,20,.15)"/>';
-    if (kind === "chick") {
-      g += '<ellipse cx="0" cy="-6" rx="7" ry="6.5" fill="#f2cc4a"/><path d="M-7 -5 l-3 1 3 1" fill="#e0a830"/><circle cx="-3" cy="-8" r=".9" fill="#2f2622"/><path d="M-1 -12 q1 -3 2 0" fill="none" stroke="#e0a830" stroke-width="1"/>';
+    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="1" cy="0" rx="9" ry="2" fill="rgba(60,40,20,.16)"/>';
+    if (kind === "cat") {
+      var o = "#ec9b4c", od = "#c46f2a", oc = "#fbe6cc";
+      g += '<path class="tail" d="M7 -2.5 C13 -3 14 -9 11 -13.5" fill="none" stroke="' + o + '" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 -10 l1.4 .6 M11.8 -12.6 l1.5 .2" stroke="' + od + '" stroke-width="1.1" stroke-linecap="round"/>' +
+        sitBody(o, od, oc, oc) +
+        '<path d="M3 -8.6 q1.2 1.6 .4 3.2 M5.4 -8 q1.2 1.6 .4 3.2" fill="none" stroke="' + od + '" stroke-width="1" stroke-linecap="round"/>' +
+        '<path d="M-8.4 -15 L-8 -22 L-3.8 -18.4 Z M4 -15 L3.6 -22 L-.6 -18.4 Z" fill="' + o + '" stroke="' + o + '" stroke-width=".8" stroke-linejoin="round"/>' +
+        '<path d="M-7.5 -16.6 L-7.3 -20.2 L-5.2 -18.4 Z M3.1 -16.6 L2.9 -20.2 L.8 -18.4 Z" fill="#f3a3ad"/>' +
+        '<ellipse cx="-2.2" cy="-14" rx="6.8" ry="5.8" fill="' + o + '"/>' +
+        '<path d="M-3.2 -19.4 v1.8 M-2.2 -19.7 v2.2 M-1.2 -19.4 v1.8" stroke="' + od + '" stroke-width=".7" stroke-linecap="round"/>' +
+        '<ellipse cx="-2.2" cy="-11.6" rx="3.2" ry="2.2" fill="' + oc + '"/>' +
+        petEyes(-4.6, .2, -14.4) + petBlush(-6.2, 1.8, -12.4) +
+        '<path d="M-2.8 -12.9 h1.2 l-.6 .7 Z" fill="#e9798a"/><path d="M-2.2 -12.2 v.5 M-2.2 -11.7 q-.8 .6 -1.4 .1 M-2.2 -11.7 q.8 .6 1.4 .1" fill="none" stroke="' + INK + '" stroke-width=".4" stroke-linecap="round"/>' +
+        whiskers(-2.2, -12.4);
+    } else if (kind === "chick") {
+      var y1 = "#f7d24a", y2 = "#e2ab22";
+      g += '<path d="M-3 -.2 v-1.6 M-3 -.2 l-1 .3 M-3 -.2 l1 .3 M1.5 -.2 v-1.6 M1.5 -.2 l-1 .3 M1.5 -.2 l1 .3" stroke="#e08a2a" stroke-width=".7" stroke-linecap="round"/>' +
+        '<ellipse cx="0" cy="-7.6" rx="7.6" ry="7.2" fill="' + y1 + '"/><path d="M5.4 -12.4 C8.4 -9 8.2 -4.4 5 -1.6 C6.4 -5 6.4 -9 5.4 -12.4 Z" fill="' + y2 + '" opacity=".45"/>' +
+        '<path d="M2.4 -8 q4 .6 4.6 4 q-3 .4 -4.6 -1.6 Z" fill="' + y2 + '"/>' +
+        '<path d="M-1 -14.4 q.4 -3.2 2.2 -3.4 q-.6 1.6 .4 2.4 q-1.6 0 -2.6 1 Z" fill="' + y1 + '"/>' +
+        '<ellipse cx="-3.8" cy="-11.2" rx="1.5" ry=".8" fill="#fff" opacity=".45"/>' +
+        petEyes(-4.2, -.4, -9.4, .95) + petBlush(-5.4, 1, -7.4) +
+        '<path d="M-3.6 -8.2 l-2.6 .9 l2.6 .9 Z" fill="#f08a2a"/><path d="M-3.6 -8.2 l-2.6 .9 h2.6 Z" fill="#f7a64a"/>';
     } else if (kind === "shiba") {
-      g += '<path class="tail" d="M6 -7 q7 -6 2 -10 q-3 0 -2 4" fill="#d9914a"/><ellipse cx="0" cy="-5" rx="8" ry="5.5" fill="#d9914a"/><circle cx="-4" cy="-12" r="5.8" fill="#d9914a"/><ellipse cx="-5" cy="-10" rx="3.6" ry="2.6" fill="#fff4e4"/>' +
-        '<path d="M-9 -15 l1 -6 l4 4 Z M1 -15 l-1 -6 l-4 4 Z" fill="#d9914a"/><circle cx="-6" cy="-12.5" r=".9" fill="#2f2622"/><circle cx="-2" cy="-12.5" r=".9" fill="#2f2622"/><circle cx="-4.6" cy="-10.5" r=".8" fill="#2f2622"/>';
+      var s1 = "#dc944d", s2 = "#b46a2c", sc = "#fff4e4";
+      g += '<path class="tail" d="M6.6 -6 C12 -8 13.4 -14 9.4 -15 C7.2 -15.4 6.8 -12.6 9 -12.2 C10.6 -11.6 9.6 -9 6.6 -8.6 Z" fill="' + s1 + '"/><path d="M9.4 -15 C7.2 -15.4 6.8 -12.6 9 -12.2" fill="none" stroke="' + sc + '" stroke-width="1.2" stroke-linecap="round"/>' +
+        sitBody(s1, s2, sc, sc) +
+        '<path d="M-8.8 -15.4 L-8 -22.4 L-3.6 -18.6 Z M4.4 -15.4 L3.6 -22.4 L-.8 -18.6 Z" fill="' + s1 + '" stroke="' + s1 + '" stroke-width=".8" stroke-linejoin="round"/>' +
+        '<path d="M-7.8 -17 L-7.4 -20.4 L-5.2 -18.6 Z M3.4 -17 L3 -20.4 L.8 -18.6 Z" fill="' + s2 + '" opacity=".6"/>' +
+        '<ellipse cx="-2.2" cy="-14.2" rx="7" ry="5.9" fill="' + s1 + '"/>' +
+        '<path d="M-8.6 -12.6 C-7.6 -9.2 -4.6 -8.2 -2.2 -8.4 C.2 -8.2 3.2 -9.2 4.2 -12.6 C2.6 -11.6 .6 -12.6 -2.2 -12.6 C-5 -12.6 -7 -11.6 -8.6 -12.6 Z" fill="' + sc + '"/>' +
+        '<ellipse cx="-5" cy="-17.4" rx="1.1" ry=".55" fill="' + sc + '"/><ellipse cx=".6" cy="-17.4" rx="1.1" ry=".55" fill="' + sc + '"/>' +
+        petEyes(-4.8, .4, -14.6) + petBlush(-6.6, 2.2, -12.2) +
+        '<ellipse cx="-2.2" cy="-12.4" rx="1.1" ry=".8" fill="' + INK + '"/><path d="M-2.2 -11.6 v.5 M-2.2 -11.1 q-.8 .7 -1.5 .1 M-2.2 -11.1 q.8 .7 1.5 .1" fill="none" stroke="' + INK + '" stroke-width=".4" stroke-linecap="round"/>' +
+        '<path d="M-2.8 -10.5 q.6 1.2 1.2 0 Z" fill="#f08a9a"/>';
     } else if (kind === "bunny") {
-      g += '<circle cx="7" cy="-5" r="2.4" fill="#fffdf8"/><ellipse cx="0" cy="-5" rx="7.5" ry="5.5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><circle cx="-4" cy="-11" r="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/>' +
-        '<ellipse cx="-6" cy="-19" rx="1.8" ry="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-2" cy="-19" rx="1.8" ry="5" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-6" cy="-19" rx=".8" ry="3.5" fill="#f2c4c8"/><ellipse cx="-2" cy="-19" rx=".8" ry="3.5" fill="#f2c4c8"/>' +
-        '<circle cx="-5.5" cy="-11.5" r=".9" fill="#2f2622"/><circle cx="-2.5" cy="-11.5" r=".9" fill="#2f2622"/>';
+      var w = "#fffdf8", wl = "#e8ddcc", wp = "#f4b8c0";
+      g += '<circle cx="8" cy="-3.4" r="2.6" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
+        '<path d="M-6.5 0 C-8.2 -3.5 -7.4 -8.6 -3.2 -10 L3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 Z" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
+        '<path d="M3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 L5.5 0 C6.6 -3.4 6 -7.4 3.6 -9.6 Z" fill="' + wl + '" opacity=".5"/>' +
+        '<ellipse cx="-4.6" cy="-.7" rx="2" ry="1.3" fill="' + w + '" stroke="' + wl + '" stroke-width=".4"/><ellipse cx="-.6" cy="-.7" rx="2" ry="1.3" fill="' + w + '" stroke="' + wl + '" stroke-width=".4"/>' +
+        '<g transform="rotate(-10 -5 -18)"><ellipse cx="-5.4" cy="-22.6" rx="2.2" ry="6.4" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/><ellipse cx="-5.4" cy="-22.2" rx="1" ry="4.6" fill="' + wp + '"/></g>' +
+        '<g transform="rotate(14 0 -18)"><ellipse cx=".4" cy="-22.6" rx="2.2" ry="6.4" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/><ellipse cx=".4" cy="-22.2" rx="1" ry="4.6" fill="' + wp + '"/></g>' +
+        '<ellipse cx="-2.4" cy="-13.4" rx="6.2" ry="5.4" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
+        petEyes(-4.8, -.2, -13.8) + petBlush(-6.4, 1.6, -11.8) +
+        '<path d="M-3 -12.2 h1.2 l-.6 .6 Z" fill="#e9798a"/><path d="M-2.4 -11.6 v.5 M-2.4 -11.1 q-.7 .6 -1.3 .1 M-2.4 -11.1 q.7 .6 1.3 .1" fill="none" stroke="' + INK + '" stroke-width=".4" stroke-linecap="round"/>';
     } else if (kind === "fox") {
-      g += '<path class="tail" d="M5 -5 q10 -2 9 -12 q-1 6 -9 7 Z" fill="#e07a3a"/><path d="M13 -15 q1 -2 1 -2 q-1 4 -3 4 Z" fill="#fffdf8"/><ellipse cx="0" cy="-5" rx="7.5" ry="5" fill="#e07a3a"/><circle cx="-4" cy="-11.5" r="5.4" fill="#e07a3a"/>' +
-        '<path d="M-9 -14 l0 -7 l4 4 Z M1 -14 l0 -7 l-4 4 Z" fill="#e07a3a"/><path d="M-8 -9 q4 4 8 0 q-2 2.5 -4 2.6 q-2 -.1 -4 -2.6 Z" fill="#fffdf8"/><circle cx="-6" cy="-12" r=".9" fill="#2f2622"/><circle cx="-2" cy="-12" r=".9" fill="#2f2622"/><circle cx="-4" cy="-8.8" r=".8" fill="#2f2622"/>';
+      var f1 = "#e6773a", f2 = "#b4521f", fc = "#fffdf8";
+      g += '<path class="tail" d="M6.4 -2 C13 -2 15.6 -8 13.6 -15 C12.6 -10 10 -8.6 6.4 -7.6 Z" fill="' + f1 + '"/><path d="M13.6 -15 C14.6 -13 14.6 -11.6 14 -10.4 C13 -11.6 12.6 -13 13.6 -15 Z" fill="' + fc + '"/>' +
+        sitBody(f1, f2, fc, "#3a2a24") +
+        '<path d="M-9 -15 L-8.6 -23 L-3.6 -18.6 Z M4.6 -15 L4.2 -23 L-.8 -18.6 Z" fill="' + f1 + '" stroke="' + f1 + '" stroke-width=".8" stroke-linejoin="round"/>' +
+        '<path d="M-8 -16.8 L-7.9 -20.8 L-5.2 -18.6 Z M3.6 -16.8 L3.5 -20.8 L.8 -18.6 Z" fill="#3a2a24"/>' +
+        '<ellipse cx="-2.2" cy="-14" rx="6.9" ry="5.7" fill="' + f1 + '"/>' +
+        '<path d="M-9 -13.4 C-7 -13.6 -4.4 -12.8 -2.2 -9.4 C0 -12.8 2.6 -13.6 4.6 -13.4 C3.6 -10 .4 -8.4 -2.2 -8.4 C-4.8 -8.4 -8 -10 -9 -13.4 Z" fill="' + fc + '"/>' +
+        petEyes(-4.8, .4, -14.8) + petBlush(-6.8, 2.4, -12.8) +
+        '<ellipse cx="-2.2" cy="-10.2" rx="1" ry=".75" fill="' + INK + '"/>';
     } else if (kind === "hamster") {
-      g += '<ellipse cx="0" cy="-5.5" rx="7.5" ry="6.5" fill="#e8c08a"/><ellipse cx="-1" cy="-3.5" rx="4.5" ry="3.8" fill="#fff4e4"/><circle cx="-5" cy="-11" r="2" fill="#e8c08a"/><circle cx="4" cy="-11" r="2" fill="#e8c08a"/><circle cx="-5" cy="-11" r="1" fill="#f2c4c8"/><circle cx="4" cy="-11" r="1" fill="#f2c4c8"/>' +
-        '<circle cx="-3" cy="-7" r=".9" fill="#2f2622"/><circle cx="2" cy="-7" r=".9" fill="#2f2622"/><circle cx="-.5" cy="-5.5" r=".6" fill="#c98e9a"/>';
+      var h1 = "#e9bf86", h2 = "#c99456", hc = "#fff4e4";
+      g += '<ellipse cx="0" cy="-6.8" rx="8.2" ry="7" fill="' + h1 + '"/><path d="M4.6 -12.6 C9 -10.6 9.4 -3.6 5.6 -.6 C7 -4.6 7 -9.4 4.6 -12.6 Z" fill="' + h2 + '" opacity=".4"/>' +
+        '<ellipse cx="-1" cy="-4.6" rx="5" ry="4.4" fill="' + hc + '"/>' +
+        '<circle cx="-5.4" cy="-12.6" r="2.3" fill="' + h1 + '"/><circle cx="3.6" cy="-12.6" r="2.3" fill="' + h1 + '"/><circle cx="-5.4" cy="-12.6" r="1.2" fill="#f2b4bc"/><circle cx="3.6" cy="-12.6" r="1.2" fill="#f2b4bc"/>' +
+        '<path d="M-1 -13.8 q.4 1.4 0 2.6" stroke="' + h2 + '" stroke-width=".9" stroke-linecap="round" fill="none"/>' +
+        petEyes(-3.6, 1.6, -8.6, .9) + petBlush(-5.6, 3.4, -6.6) +
+        '<path d="M-1.5 -7.1 h1 l-.5 .5 Z" fill="#c98e9a"/><path d="M-1 -6.6 v.4 M-1 -6.2 q-.6 .5 -1.1 .1 M-1 -6.2 q.6 .5 1.1 .1" fill="none" stroke="' + INK + '" stroke-width=".35" stroke-linecap="round"/>' +
+        '<ellipse cx="-3.2" cy="-3.6" rx="1.4" ry="1" fill="#f2c4c8"/><ellipse cx="1.2" cy="-3.6" rx="1.4" ry="1" fill="#f2c4c8"/>' +
+        '<ellipse cx="-1" cy="-2.6" rx="1.8" ry="1.4" fill="#8bc26b"/><path d="M-1 -4 v-1" stroke="#5a8f42" stroke-width=".6"/>';
     } else if (kind === "panda") {
-      g += '<ellipse cx="0" cy="-5" rx="8.5" ry="6" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/><ellipse cx="-5" cy="-3" rx="3" ry="3.5" fill="#2a2620"/><ellipse cx="5" cy="-3" rx="3" ry="3.5" fill="#2a2620"/><circle cx="-3" cy="-12" r="6" fill="#fffdf8" stroke="#e6dccb" stroke-width=".5"/>' +
-        '<circle cx="-8" cy="-17" r="2.4" fill="#2a2620"/><circle cx="2" cy="-17" r="2.4" fill="#2a2620"/><ellipse cx="-5.5" cy="-12" rx="1.8" ry="2.2" fill="#2a2620"/><ellipse cx="-0.5" cy="-12" rx="1.8" ry="2.2" fill="#2a2620"/><circle cx="-5.3" cy="-12.3" r=".6" fill="#fff"/><circle cx="-0.7" cy="-12.3" r=".6" fill="#fff"/>';
+      var p1 = "#fffdf8", pk = "#2a2620", pl = "#e6dccb";
+      g += '<path d="M-6.5 0 C-8.2 -3.5 -7.4 -8.6 -3.2 -10 L3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 Z" fill="' + p1 + '" stroke="' + pl + '" stroke-width=".5"/>' +
+        '<path d="M-7.6 -6.2 C-6.6 -9.4 -2 -10.4 1 -9.2 C-1 -7.6 -4.6 -6 -7.6 -6.2 Z" fill="' + pk + '"/>' +
+        '<ellipse cx="-4.6" cy="-1" rx="2.2" ry="1.6" fill="' + pk + '"/><ellipse cx="-.4" cy="-1" rx="2.2" ry="1.6" fill="' + pk + '"/><ellipse cx="6.4" cy="-1.2" rx="2.6" ry="1.8" fill="' + pk + '"/>' +
+        '<circle cx="-8.2" cy="-19.2" r="2.6" fill="' + pk + '"/><circle cx="3.6" cy="-19.2" r="2.6" fill="' + pk + '"/>' +
+        '<ellipse cx="-2.3" cy="-14" rx="7.2" ry="6.2" fill="' + p1 + '" stroke="' + pl + '" stroke-width=".5"/>' +
+        '<ellipse cx="-5.2" cy="-14.4" rx="2.1" ry="2.6" fill="' + pk + '" transform="rotate(20 -5.2 -14.4)"/><ellipse cx=".6" cy="-14.4" rx="2.1" ry="2.6" fill="' + pk + '" transform="rotate(-20 .6 -14.4)"/>' +
+        '<circle cx="-4.9" cy="-14.8" r=".75" fill="#fff"/><circle cx=".9" cy="-14.8" r=".75" fill="#fff"/>' + petBlush(-7, 2.4, -11.6) +
+        '<ellipse cx="-2.3" cy="-11.8" rx="1" ry=".7" fill="' + pk + '"/><path d="M-2.3 -11.1 v.4 M-2.3 -10.7 q-.7 .6 -1.3 .1 M-2.3 -10.7 q.7 .6 1.3 .1" fill="none" stroke="' + pk + '" stroke-width=".4" stroke-linecap="round"/>' +
+        '<path d="M5 -8 l2.6 -5.6" stroke="#7fb05a" stroke-width="1.1" stroke-linecap="round"/><path d="M7.6 -13.6 q2 -.4 2.4 -2 q-2 .2 -2.4 2 Z M6.8 -12 q-2 -.6 -2.6 -2 q2 0 2.6 2 Z" fill="#8bc26b"/>';
     }
     return g + '</g>';
   }
-  function cat(x, y) {
-    return '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="0" cy="0" rx="8" ry="2" fill="rgba(60,40,20,.15)"/>' +
-      '<path class="tail" d="M6 -4 q8 -2 6 -11" fill="none" stroke="#e3a35b" stroke-width="2.4" stroke-linecap="round"/>' +
-      '<ellipse cx="0" cy="-5" rx="7.5" ry="5.5" fill="#e3a35b"/><circle cx="-4" cy="-12" r="5.5" fill="#e3a35b"/>' +
-      '<path d="M-8.5 -14 l1 -6 l3.5 3.5 Z M0.5 -14 l-1 -6 l-3.5 3.5 Z" fill="#e3a35b"/>' +
-      '<circle cx="-6" cy="-12.5" r=".9" fill="#2f2622"/><circle cx="-2" cy="-12.5" r=".9" fill="#2f2622"/></g>';
-  }
+  function cat(x, y) { return pet("cat", x, y); }
 
   /* ===== 書桌與活動道具 ===== */
   function desk(act, active) {
@@ -452,5 +524,5 @@
       '<g transform="scale(1.35)">' + character(look, "stand", { smile: true, petX: 24 }) + '</g>';
   }
 
-  window.KaidaScene = { flag: flag, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
+  window.KaidaScene = { flag: flag, pet: pet, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
 })();
