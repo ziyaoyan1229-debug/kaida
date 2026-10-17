@@ -119,7 +119,7 @@ function glowTexture() {
 
 /* ===== 房間配置 ===== */
 // 六個座位散在房間各處：x, z 是人坐的位置，ry 是面向（0 = 面向鏡頭那一側）
-const SEATS = [
+const BASE_SEATS = [
   { x: 0.9, z: 0.6, ry: -0.35, booth: "plants" },  // 房間中間（綠植隔開）
   { x: 3.6, z: 3.7, ry: -0.6, booth: "board" },     // 前面右邊（有隔板）
   { x: 5.0, z: 0.1, ry: 1.3, booth: "board" },      // 右邊靠牆角（有隔板）
@@ -128,20 +128,21 @@ const SEATS = [
   { x: 0.2, z: -2.72, ry: Math.PI }              // 窗邊書桌（面向窗外）
 ];
 const DESK_D = 0.58;
-SEATS.forEach((s) => { s.dx = s.x + Math.sin(s.ry) * DESK_D; s.dz = s.z + Math.cos(s.ry) * DESK_D; });
-const SPOTS = [
-  { x: -3.85, z: -1.6, ry: -Math.PI / 2, pose: "warm" },              // 火爐前
-  { x: -2.95, z: 1.45, ry: -Math.PI / 2, pose: "sofa", seat: 0.5 },   // 沙發看電視
-  { x: -2.95, z: 2.35, ry: -Math.PI / 2, pose: "sofa", seat: 0.5 },
-  { x: 2.55, z: -2.95, ry: Math.PI, pose: "mug" },                    // 飲料吧
-  { x: 4.3, z: -3.05, ry: Math.PI, pose: "snack" },                   // 零食櫃
-  { x: -2.95, z: -3.05, ry: Math.PI, pose: "book" },                  // 書櫃
-  { x: -3.45, z: -2.45, ry: -2.3, pose: "pet" },                      // 摸貓窩裡的貓
-  { x: 6.0, z: 2.4, ry: -1.0, pose: "sofa", seat: 0.3 },             // 懶骨頭
-  { x: -3.0, z: -0.85, ry: -2.09, pose: "sofa", seat: 0.48 },         // 單人沙發烤火
-  { x: -3.25, z: 3.75, ry: Math.PI, pose: "sofa", seat: 0.48 },       // 雙人沙發
-  { x: -2.45, z: 3.75, ry: Math.PI, pose: "sofa", seat: 0.48 },
-  { x: -4.05, z: 0.45, ry: -Math.PI / 2, pose: "music" },             // 換唱片
+const SEATS = [], SPOTS = [], OBST = [];
+// m = 屬於哪一組家具（主題把那組藏起來時，這個點也一起拿掉）
+const BASE_SPOTS = [
+  { x: -3.85, z: -1.6, ry: -Math.PI / 2, pose: "warm", m: "fire" },              // 火爐前
+  { x: -2.95, z: 1.45, ry: -Math.PI / 2, pose: "sofa", seat: 0.5, m: "sofa" },   // 沙發看電視
+  { x: -2.95, z: 2.35, ry: -Math.PI / 2, pose: "sofa", seat: 0.5, m: "sofa" },
+  { x: 2.55, z: -2.95, ry: Math.PI, pose: "mug", m: "bar" },                    // 飲料吧
+  { x: 4.3, z: -3.05, ry: Math.PI, pose: "snack", m: "snack" },                   // 零食櫃
+  { x: -2.95, z: -3.05, ry: Math.PI, pose: "book", m: "books" },                  // 書櫃
+  { x: -3.45, z: -2.45, ry: -2.3, pose: "pet", m: "cat" },                      // 摸貓窩裡的貓
+  { x: 6.0, z: 2.4, ry: -1.0, pose: "sofa", seat: 0.3, m: "bean" },             // 懶骨頭
+  { x: -3.0, z: -0.85, ry: -2.09, pose: "sofa", seat: 0.48, m: "arm" },         // 單人沙發烤火
+  { x: -3.25, z: 3.75, ry: Math.PI, pose: "sofa", seat: 0.48, m: "love" },       // 雙人沙發
+  { x: -2.45, z: 3.75, ry: Math.PI, pose: "sofa", seat: 0.48, m: "love" },
+  { x: -4.05, z: 0.45, ry: -Math.PI / 2, pose: "music", m: "tv" },             // 換唱片
   { x: -1.1, z: -3.05, ry: Math.PI, pose: "stand" },                  // 看窗外
   { x: 1.9, z: -0.9, ry: -0.4, pose: "stretch" },
   { x: 5.6, z: 5.2, ry: -0.3, pose: "stand" },
@@ -151,36 +152,55 @@ const SPOTS = [
 ];
 // 走路用格子（0.25 一格）
 const GRID = { x0: -5, z0: -4, cell: 0.25, cols: 50, rows: 44 };
-const OBST = [
-  [-5, -2.7, -4.15, -0.5],     // 火爐 x1,z1,x2,z2
-  [-5, 0.7, -4.45, 3.1],       // 電視櫃與音響
-  [-4.05, 1.45, -3.45, 2.35],  // 茶几
-  [-3.25, 0.8, -2.25, 3.0],    // 沙發
-  [-3.75, -4, -2.2, -3.5],     // 書櫃
-  [1.7, -4, 3.45, -3.35],      // 飲料吧
-  [1.95, -3.25, 2.25, -2.95], [2.85, -3.25, 3.15, -2.95], // 吧台椅
-  [3.65, -4, 4.95, -3.45],     // 零食櫃
-  [-4.1, -3.05, -3.6, -2.55],  // 貓窩
+const BASE_OBST = [
+  [-5, -2.7, -4.15, -0.5, "fire"],     // 火爐 x1,z1,x2,z2
+  [-5, 0.7, -4.45, 3.1, "tv"],       // 電視櫃與音響
+  [-4.05, 1.45, -3.45, 2.35, "sofa"],  // 茶几
+  [-3.25, 0.8, -2.25, 3.0, "sofa"],    // 沙發
+  [-3.75, -4, -2.2, -3.5, "books"],     // 書櫃
+  [1.7, -4, 3.45, -3.35, "bar"],      // 飲料吧
+  [1.95, -3.25, 2.25, -2.95, "bar"], [2.85, -3.25, 3.15, -2.95, "bar"], // 吧台椅
+  [3.65, -4, 4.95, -3.45, "snack"],     // 零食櫃
+  [-4.1, -3.05, -3.6, -2.55, "cat"],  // 貓窩
   [6.75, 5.45, 7.4, 6.2],       // 盆栽
   [-5, -4, -4.3, -3.3],        // 角落盆栽
   [-4.95, 3.35, -4.15, 4.15],  // 龜背芋
   [4.35, -2.65, 4.85, -2.15],  // 小盆栽
   [6.6, -3.95, 7.4, -3.1],     // 右後盆栽
   [1.95, 5.65, 2.45, 6.15],    // 前面盆栽
-  [4.85, 2.95, 6.35, 4.25],    // 小圓咖啡桌
-  [6.3, -2.35, 6.9, -1.65],    // 黑板
-  [-2.75, 0.4, -2.45, 0.7],    // 落地燈
-  [5.85, 2.15, 6.3, 2.65],     // 懶骨頭
-  [-3.4, -1.3, -2.6, -0.4],    // 單人沙發
-  [-3.75, 3.3, -1.95, 4.3]     // 雙人沙發
+  [4.85, 2.95, 6.35, 4.25, "cafeT"],    // 小圓咖啡桌
+  [6.3, -2.35, 6.9, -1.65, "board"],    // 黑板
+  [-2.75, 0.4, -2.45, 0.7, "lamp"],    // 落地燈
+  [5.85, 2.15, 6.3, 2.65, "bean"],     // 懶骨頭
+  [-3.4, -1.3, -2.6, -0.4, "arm"],    // 單人沙發
+  [-3.75, 3.3, -1.95, 4.3, "love"]     // 雙人沙發
 ];
-SEATS.forEach((s) => {
-  const c = Math.abs(Math.cos(s.ry)), sn = Math.abs(Math.sin(s.ry));
-  const hx = c * 0.56 + sn * 0.32, hz = sn * 0.56 + c * 0.32;
-  OBST.push([s.dx - hx, s.dz - hz, s.dx + hx, s.dz + hz]);
-  OBST.push([s.x - 0.26, s.z - 0.26, s.x + 0.26, s.z + 0.26]);
-  if (s.booth === "plants") { const px = s.dx + Math.sin(s.ry) * 0.55, pz = s.dz + Math.cos(s.ry) * 0.55, ex = c * 0.66 + sn * 0.15, ez = sn * 0.66 + c * 0.15; OBST.push([px - ex, pz - ez, px + ex, pz + ez]); }
-});
+// 依主題重算這間房的座位、休息點和障礙物（家裡用原本的配置）
+function applyLayout() {
+  const L = LAYOUTS[THEME] || {}, hide = L.hide || [], mv = L.move || {};
+  const off = (m) => mv[m] || [0, 0];
+  SEATS.length = 0; OBST.length = 0; SPOTS.length = 0;
+  (L.seats || BASE_SEATS).forEach((s0) => { const s = Object.assign({}, s0); s.dx = s.x + Math.sin(s.ry) * DESK_D; s.dz = s.z + Math.cos(s.ry) * DESK_D; SEATS.push(s); });
+  BASE_OBST.forEach((o) => { if (hide.indexOf(o[4]) >= 0) return; const d = off(o[4]); OBST.push([o[0] + d[0], o[1] + d[1], o[2] + d[0], o[3] + d[1]]); });
+  (L.obst || []).forEach((o) => OBST.push(o));
+  SEATS.forEach((s) => {
+    const c = Math.abs(Math.cos(s.ry)), sn = Math.abs(Math.sin(s.ry));
+    const hx = c * 0.56 + sn * 0.32, hz = sn * 0.56 + c * 0.32;
+    OBST.push([s.dx - hx, s.dz - hz, s.dx + hx, s.dz + hz]);
+    OBST.push([s.x - 0.26, s.z - 0.26, s.x + 0.26, s.z + 0.26]);
+    const booth = L.allBooth || T().allBooth ? "board" : s.booth;
+    if (booth === "plants") { const px = s.dx + Math.sin(s.ry) * 0.55, pz = s.dz + Math.cos(s.ry) * 0.55, ex = c * 0.66 + sn * 0.15, ez = sn * 0.66 + c * 0.15; OBST.push([px - ex, pz - ez, px + ex, pz + ez]); }
+  });
+  // 沒有綁家具的站立點，被桌子或新家具壓到就不要
+  const inObst = (x, z) => OBST.some((o) => x > o[0] - 0.12 && x < o[2] + 0.12 && z > o[1] - 0.12 && z < o[3] + 0.12);
+  BASE_SPOTS.forEach((s) => {
+    if (s.m && hide.indexOf(s.m) >= 0) return;
+    if (!s.m && LAYOUTS[THEME] && inObst(s.x, s.z)) return;
+    const d = off(s.m), o = Object.assign({}, s, { x: s.x + d[0], z: s.z + d[1] }); if (L.poses && L.poses[s.m]) o.pose = L.poses[s.m]; SPOTS.push(o);
+  });
+  (L.spots || []).forEach((s) => { if (s.in || !inObst(s.x, s.z)) SPOTS.push(s); });
+  buildGrid();
+}
 
 let blocked = null;
 const COFFEE_SPOT = { x: 2.2, z: -2.75 }, BREW_MS = 5500;
@@ -1132,6 +1152,287 @@ function lodgeDecor() {
   const warm = new THREE.PointLight(0xffb070, 0.9, 8, 1.5); warm.position.set(1.0, 2.3, 1.6); scene.add(warm);
 }
 
+/* ===== 各主題的房間配置 =====
+   家裡用原本的擺設；其他主題各自決定：座位怎麼排、哪些家具不要、多放哪些專屬家具、休息時能去哪裡做什麼 */
+function xg(x, z, ry) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry || 0; scene.add(g); return g; }
+// 圓咖啡桌＋兩張椅子（椅子位置跟 cafeChairs 一樣）
+const CAFE_CH = [[-0.6, 0.4], [0.55, -0.45]];
+function cafeChairs(x, z) { return CAFE_CH.map(([a, b]) => ({ x: x + a, z: z + b, ry: Math.atan2(-a, -b), pose: "sitmug", seat: 0.45, in: true })); }
+function xCafeTable(x, z, top, seat) {
+  const g = xg(x, z);
+  cyl(0.36, 0.36, 0.04, top || "#b07a4f", 0, 0.72, 0, g, 24); cyl(0.03, 0.03, 0.7, "#2a2620", 0, 0.36, 0, g, 8); cyl(0.2, 0.22, 0.03, "#2a2620", 0, 0.015, 0, g, 16);
+  cyl(0.045, 0.04, 0.08, "#f8f4ec", -0.1, 0.78, 0.08, g, 12); sph(0.06, "#c98f52", 0.12, 0.76, -0.05, g, 10, 8).scale.y = 0.5;
+  CAFE_CH.forEach(([a, b]) => { const c = new THREE.Group(); c.position.set(a, 0, b); c.rotation.y = Math.atan2(-a, -b); g.add(c); cyl(0.2, 0.2, 0.04, seat || "#c26f5e", 0, 0.45, 0, c, 16); box(0.36, 0.34, 0.03, "#2a2620", 0, 0.66, -0.18, c); [[-0.14, -0.14], [0.14, -0.14], [-0.14, 0.14], [0.14, 0.14]].forEach(([p, q]) => cyl(0.015, 0.015, 0.45, "#2a2620", p, 0.225, q, c, 6)); });
+}
+function xArmchair(x, z, ry, c1, c2) { const a = makeSofa(0.85, c1, c2); a.position.set(x, 0, z); a.rotation.y = ry; scene.add(a); return a; }
+// 一座兩面都放書的書架（前面朝 +z）
+function xShelf(x, z, ry, w, wood) {
+  const g = xg(x, z, ry), wd = wood || "#5a3424", cols = ["#7a2a2a", "#2f5a7a", "#c9a45a", "#3f6a4a", "#8a5a8a", "#d98c4a", "#e8d3b0"];
+  box(w, 2.2, 0.42, wd, 0, 1.1, 0, g).castShadow = true; box(w + 0.06, 0.06, 0.46, wd, 0, 2.22, 0, g);
+  [0.12, 0.66, 1.2, 1.74].forEach((y, r) => [-1, 1].forEach((sd) => { let px = -w / 2 + 0.08; for (let k = 0; px < w / 2 - 0.12; k++) { const bw = 0.06 + ((k + r) % 3) * 0.025, bh = 0.3 + ((k * 3 + r) % 4) * 0.04; box(bw, bh, 0.06, cols[(k * 2 + r + (sd > 0 ? 0 : 3)) % cols.length], px + bw / 2, y + bh / 2 + 0.02, sd * 0.2, g); px += bw + 0.012; } }));
+  return g;
+}
+function xMat(x, z, ry, col, bells) {
+  const g = xg(x, z, ry);
+  box(0.64, 0.015, 1.5, col, 0, 0.008, 0, g).castShadow = false;
+  const roll = cyl(0.06, 0.06, 0.64, col, 0, 0.06, -0.8, g, 12); roll.rotation.z = Math.PI / 2;
+  if (bells) [-0.42, 0.42].forEach((dx) => { const b = new THREE.Group(); b.position.set(dx, 0.05, 0.75); g.add(b); const h = cyl(0.015, 0.015, 0.22, "#5a5f6b", 0, 0, 0, b, 6); h.rotation.x = Math.PI / 2; [-0.11, 0.11].forEach((q) => { const w = cyl(0.05, 0.05, 0.04, bells, 0, 0, q, b, 12); w.rotation.x = Math.PI / 2; }); });
+  return g;
+}
+function xBench(x, z, ry, len, col) {
+  const g = xg(x, z, ry);
+  box(len, 0.06, 0.42, col || "#a06a42", 0, 0.44, 0, g); box(len, 0.32, 0.05, col || "#a06a42", 0, 0.7, -0.19, g);
+  [-1, 1].forEach((sd) => box(0.06, 0.44, 0.38, "#3a3e44", sd * (len / 2 - 0.08), 0.22, 0, g));
+  return g;
+}
+function xLockers(x, z, ry, n) {
+  const g = xg(x, z, ry), cols = ["#5d7fa8", "#7c8ea0", "#8fa0b2"];
+  for (let i = 0; i < n; i++) {
+    const lx = (i - (n - 1) / 2) * 0.5;
+    box(0.48, 1.3, 0.45, cols[i % 3], lx, 0.65, 0, g);
+    [0.35, 1.0].forEach((y) => { for (let k = 0; k < 3; k++) box(0.3, 0.015, 0.01, "#4a525c", lx, y + k * 0.05, 0.226, g); });
+    box(0.03, 0.12, 0.02, "#d8dde2", lx + 0.17, 0.75, 0.23, g);
+  }
+  return g;
+}
+function xCooler(x, z, ry) {
+  const g = xg(x, z, ry);
+  box(0.4, 1.0, 0.4, "#e8ecef", 0, 0.5, 0, g); box(0.3, 0.12, 0.02, "#5d7fa8", 0, 0.75, 0.205, g);
+  const jug = cyl(0.15, 0.15, 0.42, new THREE.MeshStandardMaterial({ color: 0x9ad0f0, transparent: true, opacity: 0.6, roughness: 0.1 }), 0, 1.22, 0, g, 16); jug.castShadow = false;
+  [-0.07, 0.07].forEach((dx, i) => box(0.04, 0.05, 0.04, i ? "#3a78c8" : "#e8473a", dx, 0.62, 0.21, g));
+  return g;
+}
+// 太空艙中間的控制台：一根柱子頂著發亮的全像地球
+function xConsole(x, z) {
+  const g = xg(x, z);
+  cyl(0.5, 0.62, 0.8, "#9aa4b0", 0, 0.4, 0, g, 24); cyl(0.55, 0.55, 0.05, "#3e4654", 0, 0.82, 0, g, 24);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.02, 6, 40), new THREE.MeshBasicMaterial({ color: 0x4ad8ff })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.85; g.add(ring);
+  const holo = sph(0.24, new THREE.MeshBasicMaterial({ color: 0x4ad8ff, transparent: true, opacity: 0.35, wireframe: true }), 0, 1.3, 0, g, 14, 10); holo.castShadow = false; plants.push(holo);
+  const pl = new THREE.PointLight(0x4ad8ff, 0.8, 3.5, 1.6); pl.position.set(x, 1.4, z); scene.add(pl);
+  return g;
+}
+function xTreadmill(x, z, ry) {
+  const g = xg(x, z, ry);
+  box(0.62, 0.12, 1.4, "#3e4654", 0, 0.06, 0, g); box(0.5, 0.02, 1.3, "#1a1e26", 0, 0.13, 0, g);
+  [-1, 1].forEach((sd) => { const p = box(0.05, 1.0, 0.05, "#9aa4b0", sd * 0.28, 0.6, 0.62, g); p.rotation.x = -0.15; });
+  box(0.62, 0.05, 0.05, "#9aa4b0", 0, 1.08, 0.7, g);
+  box(0.4, 0.22, 0.05, "#3e4654", 0, 1.18, 0.72, g); box(0.34, 0.14, 0.01, new THREE.MeshBasicMaterial({ color: 0x7cffb2 }), 0, 1.18, 0.69, g);
+  return g;
+}
+function xPodium(x, z, ry) {
+  const g = xg(x, z, ry);
+  box(1.2, 0.76, 0.6, "#a8835a", 0, 0.38, 0, g); box(1.26, 0.05, 0.66, "#7a5a3e", 0, 0.78, 0, g);
+  box(0.36, 0.06, 0.26, "#c2453b", -0.3, 0.84, 0, g); box(0.3, 0.05, 0.22, "#5d7fa8", -0.28, 0.89, 0.02, g);
+  cyl(0.06, 0.05, 0.12, "#f3efe6", 0.35, 0.86, -0.1, g, 12); [0, 0.04, 0.08].forEach((d, i) => box(0.02, 0.1, 0.02, ["#f3efe6", "#ffe08a", "#ffd0d6"][i], 0.33 + d * 0.3, 0.96, -0.1 + d * 0.2, g));
+  return g;
+}
+// 便利商店的貨架（沿著自己的 x 方向，兩面都有商品）
+function xGondola(x, z, ry, len) {
+  const g = xg(x, z, ry), goods = ["#e8473a", "#3a8ad8", "#f6c445", "#43b07e", "#f08a3c", "#e86aa0", "#ffffff", "#8a5a38"];
+  box(len, 1.35, 0.12, "#dfe4e9", 0, 0.675, 0, g); box(len, 0.1, 0.62, "#c4cad0", 0, 0.05, 0, g);
+  [0.42, 0.82, 1.22].forEach((y, r) => [-1, 1].forEach((sd) => {
+    box(len, 0.025, 0.26, "#c4cad0", 0, y - 0.13, sd * 0.18, g);
+    for (let k = 0; k < Math.floor(len / 0.17); k++) box(0.13, 0.14 + ((k + r) % 3) * 0.04, 0.16, goods[(k * 3 + r + (sd > 0 ? 1 : 4)) % goods.length], -len / 2 + 0.1 + k * 0.17, y - 0.04, sd * 0.2, g);
+  }));
+  box(len, 0.16, 0.02, "#2f9a6a", 0, 1.43, 0.065, g); box(len, 0.16, 0.02, "#f08a3c", 0, 1.43, -0.065, g);
+  return g;
+}
+// 和室的矮桌和坐墊
+function xChabudai(x, z) {
+  const g = xg(x, z);
+  cyl(0.62, 0.62, 0.05, "#6a4a30", 0, 0.32, 0, g, 28); cyl(0.5, 0.5, 0.3, "#4a3426", 0, 0.15, 0, g, 4).rotation.y = Math.PI / 4;
+  cyl(0.06, 0.05, 0.08, "#f4ecd8", 0.15, 0.38, 0.1, g, 12); cyl(0.06, 0.05, 0.08, "#f4ecd8", -0.2, 0.38, -0.12, g, 12);
+  const pot = sph(0.1, "#3a5a4a", 0, 0.42, 0, g, 12, 10); pot.scale.y = 0.8;
+  return g;
+}
+function xCushion(x, z, col) { box(0.5, 0.07, 0.5, col || "#7a3a4a", x, 0.035, z, scene).rotation.y = 0.05; }
+function xBonsai(x, z) {
+  const g = xg(x, z);
+  box(0.5, 0.4, 0.5, "#3a2618", 0, 0.2, 0, g); box(0.42, 0.1, 0.3, "#5a6a7a", 0, 0.45, 0, g);
+  const tr = cyl(0.03, 0.05, 0.4, "#5a3a26", 0.03, 0.68, 0, g, 6); tr.rotation.z = 0.35;
+  [[-0.08, 0.86, 0, 0.16], [0.12, 0.8, 0.05, 0.12], [-0.18, 0.74, -0.04, 0.1]].forEach(([a, b, c, r]) => { const l = sph(r, "#4a7a3e", a, b, c, g, 10, 8); l.scale.y = 0.55; });
+  plants.push(g); return g;
+}
+function xLounger(x, z, ry, col) {
+  const g = xg(x, z, ry);
+  box(0.6, 0.05, 1.1, col || "#f3efe6", 0, 0.28, 0.2, g); const bk = box(0.6, 0.05, 0.7, col || "#f3efe6", 0, 0.5, -0.52, g); bk.rotation.x = 0.85;
+  [[-0.27, 0.65], [0.27, 0.65], [-0.27, -0.2], [0.27, -0.2]].forEach(([a, b]) => box(0.04, 0.28, 0.04, "#a07a50", a, 0.14, b, g));
+  box(0.5, 0.06, 0.3, "#f2a65a", 0, 0.66, -0.62, g).rotation.x = 0.85;
+  return g;
+}
+function xUmbrella(x, z, col) {
+  const g = xg(x, z);
+  cyl(0.025, 0.025, 2.2, "#f3efe6", 0, 1.1, 0, g, 6); cyl(0.18, 0.2, 0.06, "#c9c3b8", 0, 0.03, 0, g, 12);
+  const top = new THREE.Mesh(new THREE.ConeGeometry(1.0, 0.4, 10), mat(col || "#e8473a")); top.position.y = 2.25; top.castShadow = true; g.add(top);
+  return g;
+}
+function xTelescope(x, z, ry) {
+  const g = xg(x, z, ry);
+  [0, 2.1, 4.2].forEach((a) => { const l = cyl(0.015, 0.015, 1.1, "#2a2620", Math.sin(a) * 0.18, 0.52, Math.cos(a) * 0.18, g, 6); l.rotation.set(Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3); });
+  const tb = new THREE.Group(); tb.position.y = 1.08; tb.rotation.x = -0.75; g.add(tb);
+  cyl(0.07, 0.06, 0.9, "#f3efe6", 0, 0.2, 0, tb, 14); cyl(0.08, 0.08, 0.06, "#2a2620", 0, 0.66, 0, tb, 14); cyl(0.025, 0.025, 0.12, "#2a2620", 0, -0.28, 0, tb, 8);
+  return g;
+}
+
+const R90 = Math.PI / 2, PI = Math.PI;
+const LAYOUTS = {
+  // 咖啡廳：拿掉電視、沙發和火爐，換成好幾張小圓桌
+  cafe: {
+    hide: ["tv", "sofa", "arm", "bean", "lamp", "fire"],
+    seats: [
+      { x: -1.5, z: -1.2, ry: 0.5 }, { x: 0.9, z: 0.7, ry: -0.35, booth: "plants" }, { x: 3.3, z: 0.0, ry: -0.9 },
+      { x: -1.4, z: 2.4, ry: 0.25, booth: "plants" }, { x: 2.0, z: 3.0, ry: -0.5 }, { x: 0.2, z: -2.72, ry: PI }
+    ],
+    obst: [[-4.35, -0.35, -2.85, 1.15], [-4.15, 1.75, -2.65, 3.25]],
+    spots: [...cafeChairs(-3.6, 0.4), ...cafeChairs(-3.4, 2.5), ...cafeChairs(5.6, 3.6)],
+    build() { xCafeTable(-3.6, 0.4, "#6e4a34", "#3f5f4a"); xCafeTable(-3.4, 2.5, "#6e4a34", "#3f5f4a"); }
+  },
+  // 圖書館：一張長長的閱覽桌（兩排對坐），旁邊是書架和看書的單人沙發
+  library: {
+    hide: ["tv", "sofa", "bean", "cafeT", "board", "cat"],
+    poses: { arm: "sitbook", love: "sitbook" },
+    seats: [
+      { x: -1.9, z: 1.0, ry: 0 }, { x: -0.7, z: 1.0, ry: 0 }, { x: 0.5, z: 1.0, ry: 0 },
+      { x: -1.9, z: 2.78, ry: PI }, { x: -0.7, z: 2.78, ry: PI }, { x: 0.5, z: 2.78, ry: PI }
+    ],
+    obst: [[3.4, 0.15, 5.0, 0.65], [3.4, 2.15, 5.0, 2.65], [5.6, -1.0, 6.5, -0.1], [5.8, 1.2, 6.7, 2.1]],
+    spots: [
+      { x: 4.2, z: 1.1, ry: PI, pose: "book" }, { x: 4.2, z: 3.1, ry: PI, pose: "book" }, { x: 4.2, z: -0.3, ry: 0, pose: "book" },
+      { x: 6.05, z: -0.55, ry: -0.6, pose: "sitbook", seat: 0.48, in: true }, { x: 6.25, z: 1.65, ry: -1.2, pose: "sitbook", seat: 0.48, in: true },
+      { x: -2.2, z: -3.1, ry: PI, pose: "book" }
+    ],
+    build() { xShelf(4.2, 0.4, 0, 1.6); xShelf(4.2, 2.4, 0, 1.6); xArmchair(6.05, -0.55, -0.6, "#7a2a2a", "#8e3a34"); xArmchair(6.25, 1.65, -1.2, "#2f4a3c", "#3f5f4a"); }
+  },
+  // 自習室：整齊的隔板座位，左邊是置物櫃和伸展區
+  study: {
+    hide: ["fire", "tv", "sofa", "arm", "love", "bean", "cafeT", "board", "cat", "lamp"],
+    seats: [
+      { x: -0.6, z: -0.2, ry: 0 }, { x: 1.0, z: -0.2, ry: 0 }, { x: 2.6, z: -0.2, ry: 0 },
+      { x: -0.6, z: 2.2, ry: 0 }, { x: 1.0, z: 2.2, ry: 0 }, { x: 2.6, z: 2.2, ry: 0 }
+    ],
+    obst: [[-4.75, 0.7, -4.25, 3.8], [5.35, -3.65, 5.85, -3.15], [3.75, 4.15, 5.25, 4.65], [-3.55, -2.3, -2.85, -0.7], [-2.35, -2.3, -1.65, -0.7]],
+    spots: [
+      { x: -3.2, z: -1.4, ry: 0.5, pose: "yoga", in: true }, { x: -2.0, z: -1.4, ry: 0.6, pose: "exercise", in: true },
+      { x: 5.6, z: -2.85, ry: PI, pose: "mug" }, { x: 4.15, z: 4.4, ry: 0, pose: "sofa", seat: 0.45, in: true }, { x: 4.85, z: 4.4, ry: 0, pose: "sofa", seat: 0.45, in: true },
+      { x: 5.4, z: 1.2, ry: -0.6, pose: "squat" }, { x: -3.8, z: 4.6, ry: 0.4, pose: "stretch" }
+    ],
+    build() { xLockers(-4.5, 2.25, R90, 6); xCooler(5.6, -3.4, 0); xBench(4.5, 4.4, 0, 1.6, "#7c8ea0"); xMat(-3.2, -1.5, 0, "#7c8ea0"); xMat(-2.0, -1.5, 0, "#d98c4a", "#3e4654"); }
+  },
+  // 太空艙：六個座位圍著中間的控制台，旁邊有跑步機和無重力區
+  space: {
+    hide: ["tv", "sofa", "arm", "love", "lamp", "bean", "cafeT", "board", "cat", "books"],
+    seats: [0, 1, 2, 3, 4, 5].map((i) => { const a = PI / 6 + i * PI / 3; return { x: 1.3 + Math.sin(a) * 1.35, z: 1.5 + Math.cos(a) * 1.35, ry: a }; }),
+    obst: [[0.75, 0.95, 1.85, 2.05], [-4.3, 1.1, -2.9, 1.8], [-4.3, 2.2, -2.9, 2.9]],
+    spots: [
+      { x: -3.6, z: 1.45, ry: -R90, pose: "run", in: true }, { x: -3.6, z: 2.55, ry: -R90, pose: "run", in: true },
+      { x: 5.4, z: -0.6, ry: -0.8, pose: "float" }, { x: 5.8, z: 3.6, ry: -0.6, pose: "float" }, { x: 3.4, z: 5.0, ry: 0.3, pose: "float" },
+      { x: 0.6, z: -3.0, ry: PI, pose: "gaze" }, { x: -3.6, z: -0.2, ry: -2.2, pose: "stretch" }
+    ],
+    build() { xConsole(1.3, 1.5); xTreadmill(-3.6, 1.45, -R90); xTreadmill(-3.6, 2.55, -R90); }
+  },
+  // 教室：三排兩列的課桌都朝著黑板，前面有講台，後面是體育角
+  school: {
+    hide: ["fire", "tv", "sofa", "arm", "love", "bean", "cafeT", "lamp", "cat"],
+    seats: [
+      { x: -1.4, z: 1.1, ry: -R90 }, { x: 0.2, z: 1.1, ry: -R90 }, { x: 1.8, z: 1.1, ry: -R90 },
+      { x: -1.4, z: 2.9, ry: -R90 }, { x: 0.2, z: 2.9, ry: -R90 }, { x: 1.8, z: 2.9, ry: -R90 }
+    ],
+    obst: [[-4.1, 1.35, -3.3, 2.65]],
+    spots: [
+      { x: -4.25, z: 0.9, ry: -R90, pose: "chalk" }, { x: -4.25, z: 3.0, ry: -R90, pose: "chalk" },
+      { x: 5.0, z: 0.8, ry: -0.7, pose: "exercise" }, { x: 5.8, z: 2.6, ry: -0.9, pose: "squat" }, { x: 4.4, z: 4.6, ry: -0.5, pose: "exercise" }
+    ],
+    build() { xPodium(-3.7, 2.0, R90); xMat(5.6, 1.6, -0.8, "#3f6fa0"); }
+  },
+  // 便利商店：窗邊的內用吧台、兩排貨架，還有幾張小桌
+  konbini: {
+    hide: ["fire", "tv", "sofa", "arm", "love", "bean", "lamp", "board", "cat", "books", "cafeT"],
+    seats: [
+      { x: -1.1, z: -2.66, ry: PI }, { x: 0.0, z: -2.66, ry: PI }, { x: 1.1, z: -2.66, ry: PI },
+      { x: 2.8, z: 1.2, ry: -0.4 }, { x: 4.6, z: 2.6, ry: -0.7 }, { x: 1.2, z: 3.4, ry: 0.1 }
+    ],
+    obst: [[-2.2, -4, -0.98, -3.6], [-3.7, 0.25, -3.1, 2.95], [-2.2, 0.25, -1.6, 2.95]],
+    spots: [
+      { x: -2.65, z: 0.9, ry: -R90, pose: "snack" }, { x: -2.65, z: 2.3, ry: R90, pose: "book" },
+      { x: -1.05, z: 1.6, ry: -R90, pose: "snack" }, { x: -4.2, z: 1.6, ry: R90, pose: "book" }
+    ],
+    build() { xGondola(-3.4, 1.6, R90, 2.6); xGondola(-1.9, 1.6, R90, 2.6); }
+  },
+  // 和室：書桌靠著牆和窗，中間是喝茶的矮桌，角落有打坐的坐墊和盆景
+  washitsu: {
+    hide: ["fire", "tv", "sofa", "arm", "love", "bean", "cafeT", "board", "lamp", "books", "snack"],
+    seats: [
+      { x: -1.5, z: -2.72, ry: PI }, { x: 0.2, z: -2.72, ry: PI },
+      { x: -3.9, z: -0.8, ry: -R90 }, { x: -3.9, z: 0.9, ry: -R90 }, { x: -3.9, z: 2.6, ry: -R90 },
+      { x: 5.0, z: 0.6, ry: R90 }
+    ],
+    obst: [[0.75, 0.95, 2.05, 2.25], [6.15, 1.75, 6.65, 2.25]],
+    spots: [
+      { x: 1.4, z: 0.75, ry: 0, pose: "tea", in: true }, { x: 1.4, z: 2.45, ry: PI, pose: "tea", in: true }, { x: 0.55, z: 1.6, ry: R90, pose: "tea", in: true }, { x: 2.25, z: 1.6, ry: -R90, pose: "tea", in: true },
+      { x: 4.6, z: 3.6, ry: 0.6, pose: "zen" }, { x: 5.8, z: 4.4, ry: 0.6, pose: "zen" }, { x: 6.4, z: 2.6, ry: PI, pose: "gaze" }
+    ],
+    build() { xChabudai(1.4, 1.6); [[1.4, 0.75], [1.4, 2.45], [0.55, 1.6], [2.25, 1.6]].forEach(([x, z]) => xCushion(x, z, "#7a3a4a")); xCushion(4.6, 3.6, "#3f5a4a"); xCushion(5.8, 4.4, "#3f5a4a"); xBonsai(6.4, 2.0); }
+  },
+  // 森林木屋：留著火爐和沙發，書桌斜斜散開，有瑜伽墊和戶外伸展
+  cabin: {
+    hide: ["tv", "sofa", "bean", "cafeT", "board", "lamp"],
+    poses: { arm: "sitmug", love: "sitmug" },
+    seats: [
+      { x: 0.2, z: -2.72, ry: PI }, { x: -1.0, z: 0.2, ry: -0.8 }, { x: 1.0, z: 1.4, ry: -0.2, booth: "plants" },
+      { x: 3.2, z: 0.0, ry: 0.6 }, { x: 4.8, z: 1.9, ry: -1.0 }, { x: 2.4, z: 3.7, ry: 0.3 }
+    ],
+    obst: [[-3.95, 0.85, -3.3, 2.35]],
+    spots: [
+      { x: -3.6, z: 1.5, ry: 0.6, pose: "yoga", in: true }, { x: -3.6, z: 2.6, ry: 0.6, pose: "squat" },
+      { x: 6.2, z: 4.6, ry: -0.6, pose: "exercise" }, { x: -3.85, z: -2.2, ry: -R90, pose: "warm" }
+    ],
+    build() { xMat(-3.6, 1.6, 0, "#3f6a3a"); }
+  },
+  // 海邊露台：書桌面向大海，旁邊有躺椅、陽傘和跳舞的空地
+  beach: {
+    hide: ["fire", "tv", "sofa", "arm", "love", "lamp", "cat", "books", "board"],
+    seats: [
+      { x: -1.6, z: -1.2, ry: 0.78 }, { x: 0.2, z: -1.8, ry: 0.78 }, { x: 2.2, z: -1.6, ry: 0.78 },
+      { x: -1.0, z: 1.4, ry: 0.78 }, { x: 1.0, z: 0.8, ry: 0.78 }, { x: 3.0, z: 0.6, ry: 0.78 }
+    ],
+    obst: [[-4.1, -1.9, -3.1, -0.5], [-4.1, 0.0, -3.1, 1.4], [-4.1, 1.9, -3.1, 3.3]],
+    spots: [
+      { x: -3.6, z: -1.2, ry: 0.9, pose: "lounge", in: true }, { x: -3.6, z: 0.7, ry: 0.9, pose: "lounge", in: true }, { x: -3.6, z: 2.6, ry: 0.9, pose: "lounge", in: true },
+      { x: -2.2, z: 4.4, ry: 0.8, pose: "yoga" }, { x: 3.4, z: 4.4, ry: 0.4, pose: "dance" }, { x: 1.6, z: 4.8, ry: 0.2, pose: "dance" }, { x: 4.6, z: 1.6, ry: 0.8, pose: "exercise" }
+    ],
+    build() { [[-3.6, -1.2, "#7ac4c4"], [-3.6, 0.7, "#f2a65a"], [-3.6, 2.6, "#7ac4c4"]].forEach(([x, z, c]) => xLounger(x, z, 0.9, c)); xUmbrella(-4.3, -0.25, "#e8473a"); xUmbrella(-4.3, 1.65, "#3a8ab0"); xMat(-2.2, 4.4, 0.8, "#f2a65a"); }
+  },
+  // 頂樓天台：座位沿著邊散開，有望遠鏡看星星和運動區
+  rooftop: {
+    hide: ["tv", "sofa", "books", "cat", "lamp", "board", "arm"],
+    seats: [
+      { x: -3.4, z: 0.6, ry: 0.7 }, { x: -1.6, z: 1.8, ry: 0.4, booth: "plants" }, { x: 0.6, z: 0.4, ry: -0.2 },
+      { x: 1.2, z: 2.8, ry: -0.5 }, { x: 3.4, z: 1.4, ry: -0.9 }, { x: 0.2, z: -2.72, ry: PI }
+    ],
+    obst: [[5.15, -1.95, 5.65, -1.45], [1.75, 4.95, 3.45, 5.45]],
+    spots: [
+      { x: 5.4, z: -1.15, ry: PI, pose: "gaze" }, { x: 4.4, z: 4.0, ry: -0.4, pose: "exercise" }, { x: 6.2, z: 4.0, ry: -0.8, pose: "squat" },
+      { x: 2.2, z: 5.2, ry: 0, pose: "sofa", seat: 0.45, in: true }, { x: 3.0, z: 5.2, ry: 0, pose: "sofa", seat: 0.45, in: true }, { x: -1.2, z: 4.8, ry: 0.4, pose: "dance" }
+    ],
+    build() { xTelescope(5.4, -1.7, 0); xBench(2.6, 5.2, 0, 1.6, "#b08a5a"); xMat(5.3, 4.6, -0.6, "#c94a6a", "#3a3e44"); }
+  },
+  // 雪山小屋：兩排書桌對著大窗看雪，沙發改成喝熱可可，門邊有長椅
+  lodge: {
+    hide: ["tv", "sofa", "bean", "cafeT", "board", "lamp"],
+    poses: { love: "sitmug", arm: "sitmug" },
+    seats: [
+      { x: -1.4, z: -1.2, ry: PI }, { x: 0.2, z: -1.2, ry: PI }, { x: 1.8, z: -1.2, ry: PI },
+      { x: -0.6, z: 1.4, ry: PI }, { x: 1.0, z: 1.4, ry: PI }, { x: 2.6, z: 1.4, ry: PI }
+    ],
+    obst: [[4.6, 2.9, 6.2, 3.9]],
+    spots: [
+      { x: 5.11, z: 3.2, ry: -0.6, pose: "sitmug", seat: 0.45, in: true }, { x: 5.69, z: 3.6, ry: -0.6, pose: "sitmug", seat: 0.45, in: true },
+      { x: -3.85, z: -0.2, ry: -R90, pose: "warm" }, { x: 5.0, z: 0.6, ry: -0.7, pose: "squat" }, { x: -3.4, z: 1.8, ry: -R90, pose: "stretch" }
+    ],
+    build() { xBench(5.4, 3.4, -0.6, 1.6, "#8a5a3a"); }
+  }
+};
+
 /* ===== 房間外面的景色 =====
    房間像一個放在戶外的模型：外面鋪一大片地面，再依主題擺樹、房子、海或星星，縮小時看得到 */
 const OUT = { home: "garden", school: "garden", cafe: "street", library: "street", study: "street", konbini: "street", rooftop: "city", washitsu: "zen", cabin: "forest", lodge: "snow", beach: "beach", space: "space" };
@@ -1261,6 +1562,12 @@ function buildOutside() {
 let snowPts = null, seaMesh = null;
 function glowBulbRet(x, y, z, col, s) { glowBulb(x, y, z, col || 0xffd27a, s || 0.8); return bulbs[bulbs.length - 1]; }
 
+let MODS = {};
+function grab(name, n0) {
+  const g = MODS[name] || (MODS[name] = new THREE.Group());
+  scene.children.slice(n0).forEach((k) => g.add(k));
+  scene.add(g);
+}
 function buildRoom() {
   const TH = T(); REMAP = TH.remap || null;
   let floorTex, wallTex;
@@ -1298,6 +1605,8 @@ function buildRoom() {
   beam = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 3.6), new THREE.MeshBasicMaterial({ color: 0xffe2b0, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
   beam.position.set(0.5, 1.2, -2.6); beam.rotation.x = -0.95; scene.add(beam);
 
+  // 家具分組：主題房間可以把某一組藏起來或移位置
+  MODS = {}; let n0 = scene.children.length;
   // 火爐（左牆）
   const fp = new THREE.Group(); fp.position.set(-4.75, 0, -1.6); scene.add(fp);
   const stone = mat("#b4a08c");
@@ -1323,6 +1632,7 @@ function buildRoom() {
   pendulum = new THREE.Group(); pendulum.position.set(0, -0.28, 0.02); clk.add(pendulum);
   box(0.025, 0.4, 0.02, "#c99a3e", 0, -0.2, 0, pendulum); cyl(0.07, 0.07, 0.02, "#e8b93a", 0, -0.42, 0, pendulum).rotation.x = Math.PI / 2;
 
+  grab("fire", n0); n0 = scene.children.length;
   // 書櫃（背牆左）
   const bs = new THREE.Group(); bs.position.set(-2.95, 0, -3.78); scene.add(bs);
   box(0.06, 2.4, 0.42, "#8a5a38", -0.67, 1.2, 0, bs); box(0.06, 2.4, 0.42, "#8a5a38", 0.67, 1.2, 0, bs); box(1.4, 2.4, 0.04, "#7a4a2a", 0, 1.2, -0.19, bs); box(1.28, 2.28, 0.02, "#e9d6b4", 0, 1.2, -0.165, bs);
@@ -1341,6 +1651,7 @@ function buildRoom() {
   box(1.28, 0.05, 0.36, "#7a4a2a", 0, 2.28, 0.02, bs);
   sph(0.14, "#9cbf7a", -0.4, 2.55, 0, bs); cyl(0.1, 0.08, 0.16, "#f3efe6", -0.4, 2.4, 0, bs);
 
+  grab("books", n0); n0 = scene.children.length;
   // 咖啡吧台
   const ct = new THREE.Group(); ct.position.set(2.55, 0, -3.68); scene.add(ct);
   box(1.7, 0.95, 0.62, "#a06a42", 0, 0.475, 0, ct); box(1.8, 0.07, 0.7, "#7a4a2a", 0, 0.98, 0, ct);
@@ -1352,6 +1663,7 @@ function buildRoom() {
   cyl(0.07, 0.07, 0.22, "#f8f4ec", 0.25, 1.13, 0, ct); cyl(0.075, 0.075, 0.05, "#c98f6a", 0.25, 1.26, 0, ct);
   [[0.45, "#e7a6a8"], [0.6, "#7fa6c9"]].forEach(([x, c]) => { cyl(0.06, 0.05, 0.12, c, x, 1.07, 0.1, ct); });
 
+  grab("bar", n0); n0 = scene.children.length;
   // 零食櫃
   const sn = new THREE.Group(); sn.position.set(4.3, 0, -3.72); scene.add(sn);
   box(0.06, 2.0, 0.5, "#8a5a38", -0.57, 1.0, 0, sn); box(0.06, 2.0, 0.5, "#8a5a38", 0.57, 1.0, 0, sn); box(1.2, 0.06, 0.5, "#8a5a38", 0, 1.97, 0, sn); box(1.2, 2.0, 0.04, "#7a4a2a", 0, 1.0, -0.23, sn); box(1.08, 1.88, 0.02, "#f3e3c6", 0, 1.0, -0.2, sn);
@@ -1361,6 +1673,7 @@ function buildRoom() {
   [-0.3, 0.05, 0.35].forEach((x, i) => { const b = box(0.24, 0.18, 0.24, ["#e0b04f", "#e7a6a8", "#8fae7a"][i], x, 0.18, 0.05, sn); b.rotation.y = i * 0.2; });
   box(0.9, 0.25, 0.3, "#f8f4ec", 0, 1.88, 0.05, sn);
 
+  grab("snack", n0); n0 = scene.children.length;
   // 電視櫃、小電視、音響（左牆）
   const tvc = new THREE.Group(); tvc.position.set(-4.72, 0, 1.9); scene.add(tvc);
   box(0.5, 0.5, 1.5, "#9a6640", 0, 0.25, 0, tvc); box(0.52, 0.04, 1.54, "#7a4a2a", 0, 0.51, 0, tvc);
@@ -1395,6 +1708,7 @@ function buildRoom() {
     const n = new THREE.Sprite(new THREE.SpriteMaterial({ map: noteTex, color: [0xc2453b, 0x5d7fa8, 0xe0b04f, 0x7b9c68][i], transparent: true, depthWrite: false }));
     n.scale.setScalar(0.22); n.userData = { ph: i / 4 }; scene.add(n); notes.push(n);
   }
+  grab("tv", n0); n0 = scene.children.length;
   const tb = new THREE.Group(); tb.position.set(-3.75, 0, 1.9); scene.add(tb);
   cyl(0.38, 0.38, 0.05, "#b07a4f", 0, 0.36, 0, tb, 24).scale.set(0.8, 1, 1.25);
   cyl(0.05, 0.08, 0.34, "#8a5a38", 0, 0.17, 0, tb, 10);
@@ -1408,16 +1722,20 @@ function buildRoom() {
   box(0.16, 0.36, 0.36, "#f3e3c6", -0.2, 0.72, -0.6, sf).rotation.x = 0.2;
   box(0.16, 0.32, 0.32, "#8fae7a", -0.2, 0.7, 0.75, sf).rotation.x = -0.2;
   box(0.5, 0.03, 0.6, "#e0b04f", -0.38, 0.95, 0.1, sf).rotation.y = 0.2;   // 披在椅背的毯子
+  grab("sofa", n0); n0 = scene.children.length;
   // 單人沙發（面向火爐）和前面的小雙人沙發
   const arm1 = makeSofa(0.85, "#8fae7a", "#9cbf7a"); arm1.position.set(-3.0, 0, -0.85); arm1.rotation.y = -2.09; scene.add(arm1);
   box(0.3, 0.03, 0.4, "#e7a6a8", 0.1, 0.62, -0.1, arm1).rotation.y = 0.3;
+  grab("arm", n0); n0 = scene.children.length;
   const love = makeSofa(1.5, "#d9a77e", "#e8c9a0"); love.position.set(-2.85, 0, 3.8); love.rotation.y = Math.PI; scene.add(love);
   box(0.32, 0.3, 0.14, "#c2453b", -0.5, 0.7, -0.2, love).rotation.x = -0.2;
+  grab("love", n0); n0 = scene.children.length;
   // 落地燈（沙發旁）
   const fl = new THREE.Group(); fl.position.set(-2.6, 0, 0.55); scene.add(fl);
   cyl(0.16, 0.18, 0.04, "#5a3a22", 0, 0.02, 0, fl, 16); cyl(0.018, 0.018, 1.55, "#5a3a22", 0, 0.8, 0, fl, 6);
   const fsh = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.24, 0.28, 20, 1, true), mat("#f3e3c6", { side: THREE.DoubleSide, emissive: 0xffc070, emissiveIntensity: 0.35 })); fsh.position.y = 1.62; fl.add(fsh);
   floorLight = new THREE.PointLight(0xffc98a, 1.4, 4, 1.6); floorLight.position.set(-2.6, 1.5, 0.55); scene.add(floorLight);
+  grab("lamp", n0); n0 = scene.children.length;
   // 貓窩和一隻睡覺的貓
   const cb = new THREE.Group(); cb.position.set(-3.85, 0, -2.8); scene.add(cb);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.08, 10, 24), mat("#d9a77e")); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; cb.add(ring);
@@ -1427,8 +1745,10 @@ function buildRoom() {
   sph(0.09, "#8a8580", 0.12, 0.1, 0.06, houseCat);
   [0.07, 0.17].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.06, 4), mat("#8a8580")); e.position.set(x, 0.18, 0.06); houseCat.add(e); });
   const ctail = cap(0.022, 0.2, "#8a8580", houseCat); ctail.position.set(-0.08, 0.05, 0.13); ctail.rotation.set(Math.PI / 2, 0, 1.2);
+  grab("cat", n0); n0 = scene.children.length;
   const bb = sph(0.42, "#e0b04f", 6.05, 0.22, 2.4, scene, 20, 14); bb.scale.set(1, 0.55, 1);
   const bb2 = sph(0.3, "#e0b04f", 6.27, 0.42, 2.28, scene, 16, 12); bb2.scale.set(1, 0.9, 0.6); bb2.rotation.y = -1.0;
+  grab("bean", n0); n0 = scene.children.length;
   [2.1, 3.0].forEach((x) => { cyl(0.17, 0.17, 0.06, "#c26f5e", x, 0.68, -3.1, scene, 16); cyl(0.03, 0.03, 0.66, "#5a3a22", x, 0.33, -3.1, scene, 6); cyl(0.15, 0.15, 0.02, "#5a3a22", x, 0.01, -3.1, scene, 12); });
   // 飲料吧：冰箱門、茶壺、果汁桶、菜單板
   box(0.5, 0.7, 0.02, new THREE.MeshStandardMaterial({ color: 0xdfeef0, transparent: true, opacity: 0.6, roughness: 0.15 }), 3.0, 0.45, -3.36, scene);
@@ -1451,6 +1771,7 @@ function buildRoom() {
   cyl(0.18, 0.18, 0.02, "#f3efe6", 2.85, 1.02, -3.5, scene, 18);
   [[2.8, -3.47, "#e7a6a8"], [2.92, -3.53, "#c98f52"]].forEach(([x, z, c]) => cyl(0.045, 0.045, 0.05, c, x, 1.05, z, scene, 12));
   for (let k = 0; k < 3; k++) for (let j = 0; j <= k; j++) cyl(0.035, 0.03, 0.06, "#f8f4ec", 2.2 + j * 0.08 - k * 0.04, 1.03 + (2 - k) * 0.06, -3.82, scene, 10);
+  grab("bar", n0); n0 = scene.children.length;
   const bd = new THREE.Group(); bd.position.set(6.6, 0, -2.0); bd.rotation.y = -0.7; scene.add(bd);
   [-1, 1].forEach((sd) => { const leg = box(0.04, 1.0, 0.04, "#7a4a2a", 0, 0.5, sd * 0.18, bd); leg.rotation.x = sd * 0.18; });
   box(0.03, 0.6, 0.45, "#2f3a34", 0, 0.75, 0, bd); box(0.035, 0.64, 0.49, "#8a5a38", -0.003, 0.75, 0, bd);
@@ -1460,12 +1781,14 @@ function buildRoom() {
   cg.strokeStyle = "#e7a6a8"; cg.beginPath(); cg.moveTo(24, 44); cg.lineTo(104, 44); cg.stroke(); cg.fillStyle = "#ffe08a"; cg.fillText("今天也加油", 64, 154);
   const ctex = new THREE.CanvasTexture(chalkC); ctex.colorSpace = THREE.SRGBColorSpace;
   const cface = new THREE.Mesh(new THREE.PlaneGeometry(0.43, 0.58), new THREE.MeshBasicMaterial({ map: ctex })); cface.rotation.y = Math.PI / 2; cface.position.set(0.018, 0.75, 0); bd.add(cface);
+  grab("board", n0); n0 = scene.children.length;
   // 小圓咖啡桌與兩張椅子
   const cafe = new THREE.Group(); cafe.position.set(5.6, 0, 3.6); scene.add(cafe);
   cyl(0.36, 0.36, 0.04, "#b07a4f", 0, 0.72, 0, cafe, 24); cyl(0.03, 0.03, 0.7, "#2a2620", 0, 0.36, 0, cafe, 8); cyl(0.2, 0.22, 0.03, "#2a2620", 0, 0.015, 0, cafe, 16);
   cyl(0.045, 0.04, 0.08, "#f8f4ec", 0.1, 0.78, 0.05, cafe, 12); cyl(0.06, 0.06, 0.006, "#f8f4ec", 0.1, 0.742, 0.05, cafe, 14);
   sph(0.06, "#c98f52", -0.12, 0.76, -0.05, cafe, 10, 8).scale.y = 0.5;
   [[-0.6, 0.4], [0.55, -0.45]].forEach(([x, z]) => { const st2 = new THREE.Group(); st2.position.set(x, 0, z); st2.rotation.y = Math.atan2(-x, -z); cafe.add(st2); cyl(0.2, 0.2, 0.04, "#c26f5e", 0, 0.45, 0, st2, 16); box(0.36, 0.34, 0.03, "#2a2620", 0, 0.66, -0.18, st2); [[-0.14, -0.14], [0.14, -0.14], [-0.14, 0.14], [0.14, 0.14]].forEach(([a, b]) => cyl(0.015, 0.015, 0.45, "#2a2620", a, 0.225, b, st2, 6)); });
+  grab("cafeT", n0);
 
   [[1.62, -3.72, 2.35], [-4.72, -3.0, 2.4], [3.9, -3.72, 2.55]].forEach(([x, z, y]) => {
     const hp = new THREE.Group(); hp.position.set(x, 3.15, z); scene.add(hp);
@@ -1479,6 +1802,9 @@ function buildRoom() {
   rug.visible = TH.rug !== null;
   rug.rotation.x = -Math.PI / 2; rug.position.set(0.3, 0.005, 1.1); rug.scale.set(1.35, 0.8, 1); rug.receiveShadow = true; scene.add(rug);
   const rug2 = new THREE.Mesh(new THREE.CircleGeometry(0.9, 32), mat("#d9a77e")); rug2.rotation.x = -Math.PI / 2; rug2.position.set(-3.6, 0.006, -1.6); rug2.scale.set(0.8, 1.2, 1); rug2.receiveShadow = true; scene.add(rug2);
+  const LY = LAYOUTS[THEME] || {}, LH = LY.hide || [];
+  Object.keys(MODS).forEach((k) => { MODS[k].visible = LH.indexOf(k) < 0; const d = (LY.move || {})[k]; if (d) MODS[k].position.set(d[0], 0, d[1]); });
+  rug2.visible = LH.indexOf("fire") < 0;
 
   [[7.05, 5.8, 1.0], [-4.65, -3.65, 0.8], [-4.55, 3.75, 1.15], [4.6, -2.4, 0.6], [7.0, -3.5, 1.1], [2.2, 5.9, 0.7]].forEach(([x, z, s]) => {
     const p = new THREE.Group(); p.position.set(x, 0, z); p.scale.setScalar(s); scene.add(p);
@@ -1552,9 +1878,11 @@ function buildRoom() {
   embers = makeParticles(40, 0xffa040, 0.06, () => new THREE.Vector3(-4.25 + Math.random() * 0.15, 0.3 + Math.random() * 0.6, -1.6 + (Math.random() - 0.5) * 0.6));
   dust = makeParticles(70, 0xfff1d0, 0.035, () => new THREE.Vector3(-0.8 + Math.random() * 2.4, 0.2 + Math.random() * 2.4, -3.6 + Math.random() * 2.6));
   steam = makeParticles(14, 0xffffff, 0.1, () => new THREE.Vector3(2.2 + (Math.random() - 0.5) * 0.06, 1.62, -3.6));
+  embers.pts.visible = LH.indexOf("fire") < 0; steam.pts.visible = LH.indexOf("bar") < 0;
   if (TH.fire) { fireMeshes.forEach((f, i) => f.material.color.setHex(TH.fire[i % 3])); fireLight.color.setHex(TH.fire[0]); embers.pts.material.color.setHex(TH.fire[1]); }
   if (TH.decor) TH.decor();
   REMAP = null;
+  if (LY.build) LY.build();
   snowPts = null; seaMesh = null; buildOutside();
 }
 function makeParticles(n, color, size, spawn) {
@@ -1586,6 +1914,14 @@ function pickSpot(id) {
   Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; });
   reserved[i] = id;
   return i;
+}
+const SIT_POSES = ["sofa", "pet", "sitmug", "sitbook"];
+// 找一個做某些動作的空位置（運動、吃點心…），沒有就回 -1
+function pickSpotPose(id, poses) {
+  const ok = SPOTS.map((s, i) => i).filter((i) => poses.indexOf(SPOTS[i].pose) >= 0 && (!reserved[i] || reserved[i] === id));
+  if (!ok.length) return -1;
+  const i = ok[Math.floor(Math.random() * ok.length)];
+  releaseSpot(id); reserved[i] = id; return i;
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
@@ -1659,6 +1995,11 @@ function update(members) {
       if (m.emo === "coffee" && st.mode !== "walk" && st.mode !== "coffee") { st.emo = null; releaseSpot(m.id); st.spot = -1; walkTo(st, COFFEE_SPOT, "coffee"); }
       // 「我先喝口水」：不在座位上就先走回座位再喝
       else if (m.emo === "drink" && st.mode !== "sit" && st.mode !== "coffee") { st.emo = null; st.sip = true; releaseSpot(m.id); st.spot = -1; walkTo(st, seatPos(st.seat), "sit"); }
+      // 「運動一下吧」「肚子好餓」：休息中就走去這間房能運動／吃東西的地方
+      else if ((m.emo === "exercise" || m.emo === "hungry") && m.up && st.mode !== "coffee") {
+        const si = pickSpotPose(m.id, m.emo === "exercise" ? ["exercise", "squat", "yoga", "run"] : ["snack", "mug", "sitmug"]);
+        if (si >= 0) { st.emo = null; st.spot = si; walkTo(st, SPOTS[si], "idle"); }
+      }
     }
   });
   Object.keys(chars).forEach((id) => { if (!ids[id]) removeChar(id); });
@@ -1710,10 +2051,11 @@ function animChar(st, dt, now) {
   const pose0 = st.mode === "walk" ? "walk" : st.mode === "sit" ? "sit" : st.mode === "coffee" ? "brew" : (SPOTS[st.spot] ? SPOTS[st.spot].pose : "stand");
   const brewK = st.mode === "coffee" ? (now - st.brewT0) / BREW_MS : 0;
   if (st.carry && st.mode === "idle") st.carry = false;
-  c.book.visible = pose0 === "book";
-  c.cup.visible = (pose0 === "mug" && st.treat !== "eat") || (pose0 === "brew" && brewK > 0.55) || (pose0 === "walk" && !!st.carry);
+  c.book.visible = pose0 === "book" || pose0 === "sitbook";
+  c.cup.visible = (pose0 === "mug" && st.treat !== "eat") || pose0 === "sitmug" || (pose0 === "brew" && brewK > 0.55) || (pose0 === "walk" && !!st.carry);
   c.cookie.visible = pose0 === "snack" || (pose0 === "mug" && st.treat === "eat");
-  const pose = pose0;
+  const pose = pose0, sp = SPOTS[st.spot];
+  let shut = false;
   c.hips.position.y = 0.36; c.hips.position.z = 0; c.torso.rotation.x = 0; c.head.rotation.set(0, 0, 0);
   c.legs.forEach((l) => l.rotation.set(0, 0, 0));
   c.arms.forEach((a, i) => a.rotation.set(0, 0, (i ? 1 : -1) * 0.12));
@@ -1779,6 +2121,73 @@ function animChar(st, dt, now) {
     c.torso.rotation.z = Math.sin(s * 0.4) * 0.12 * k;
   } else if (pose === "warm") {
     c.arms.forEach((a, i) => { a.rotation.x = -1.4; a.rotation.z = (i ? -1 : 1) * 0.35 + Math.sin(s * 3 + i) * 0.06; });
+  } else if (pose === "sitmug" || pose === "sitbook") {
+    // 坐著喝熱飲或看書
+    c.hips.position.y = (sp && sp.seat) || 0.45; c.legs.forEach((l) => { l.rotation.x = -1.45; });
+    if (pose === "sitmug") {
+      const cyc = s % 4.5, up = cyc < 1.3 ? Math.sin(cyc / 1.3 * Math.PI) : 0;
+      c.arms[1].rotation.x = -0.9 - up * 1.4; c.arms[1].rotation.z = -0.15 - up * 0.45; c.arms[0].rotation.x = -0.5;
+      c.head.rotation.x = -up * 0.25; c.head.rotation.y = up ? 0 : Math.sin(s * 0.4) * 0.3;
+    } else {
+      c.arms.forEach((a, i) => { a.rotation.x = -1.2; a.rotation.z = (i ? -1 : 1) * 0.55; });
+      c.head.rotation.x = 0.38; const ph = (s % 3.6) / 0.7;
+      c.book.userData.page.rotation.z = ph < 1 ? Math.PI * (1 - Math.cos(ph * Math.PI)) / 2 : 0;
+    }
+  } else if (pose === "exercise") {
+    // 開合跳
+    const k = Math.abs(Math.sin(s * 4.5));
+    c.arms[0].rotation.z = -(0.15 + k * 2.1); c.arms[1].rotation.z = 0.15 + k * 2.1; c.arms.forEach((a) => { a.rotation.x = -0.3 * k; });
+    c.legs[0].rotation.z = -k * 0.3; c.legs[1].rotation.z = k * 0.3;
+    c.hips.position.y = 0.36 + Math.abs(Math.cos(s * 4.5)) * 0.07;
+  } else if (pose === "squat") {
+    // 深蹲：屁股往後坐，手往前平舉
+    const k = (1 - Math.cos(s * 2.6)) / 2, a = k * 1.1;
+    c.legs.forEach((l) => { l.rotation.x = -a; });
+    c.hips.position.y = 0.36 * Math.cos(a) + 0.01; c.hips.position.z = -Math.sin(a) * 0.3;
+    c.torso.rotation.x = k * 0.45; c.arms.forEach((a2, i) => { a2.rotation.x = -1.5 * k; a2.rotation.z = (i ? 1 : -1) * 0.1; });
+  } else if (pose === "yoga") {
+    // 樹式：單腳站、雙手舉高，眼睛閉著
+    const sw = Math.sin(s * 0.9) * 0.04;
+    c.legs[1].rotation.z = 0.9; c.legs[1].rotation.x = -0.45;
+    c.arms.forEach((a, i) => { a.rotation.x = -1.35; a.rotation.z = (i ? -1 : 1) * 0.55; }); c.torso.rotation.z = sw; shut = true; // 雙手合十
+  } else if (pose === "run") {
+    // 跑步機
+    const w = Math.sin(s * 12) * 0.75;
+    c.legs[0].rotation.x = w; c.legs[1].rotation.x = -w;
+    c.arms[0].rotation.x = -0.6 - w * 0.6; c.arms[1].rotation.x = -0.6 + w * 0.6;
+    c.hips.position.y = 0.36 + Math.abs(Math.cos(s * 12)) * 0.06; c.torso.rotation.x = 0.12;
+  } else if (pose === "float") {
+    // 無重力：飄在半空慢慢轉
+    c.hips.position.y = 0.8 + Math.sin(s * 1.3) * 0.12;
+    c.legs[0].rotation.x = -0.5 + Math.sin(s * 0.9) * 0.2; c.legs[1].rotation.x = -0.2 - Math.sin(s * 0.9) * 0.2;
+    c.arms[0].rotation.z = -(1.0 + Math.sin(s * 1.1) * 0.3); c.arms[1].rotation.z = 1.0 + Math.cos(s * 1.1) * 0.3;
+    c.torso.rotation.x = -0.15 + Math.sin(s * 0.7) * 0.1; c.torso.rotation.z = Math.sin(s * 0.5) * 0.15;
+  } else if (pose === "lounge") {
+    // 躺椅：往後躺，雙手枕在頭後面
+    c.hips.position.y = 0.34; c.hips.position.z = -0.15; c.torso.rotation.x = -0.75; c.head.rotation.x = 0.35;
+    c.legs.forEach((l) => { l.rotation.x = -1.35; });
+    c.arms.forEach((a, i) => { a.rotation.x = -2.7; a.rotation.z = (i ? -1 : 1) * 0.8; });
+    shut = Math.sin(s * 0.3) > 0.2;
+  } else if (pose === "tea" || pose === "zen") {
+    // 坐在坐墊上：泡茶或打坐
+    c.hips.position.y = 0.13; c.legs.forEach((l, i) => { l.rotation.x = -1.5; l.rotation.z = pose === "zen" ? (i ? 0.4 : -0.4) : 0; });
+    if (pose === "zen") { c.arms.forEach((a, i) => { a.rotation.x = -0.55; a.rotation.z = (i ? -1 : 1) * 0.5; }); c.torso.position.y = Math.sin(s * 0.8) * 0.015; shut = true; }
+    else { c.head.rotation.x = 0.3; c.arms[0].rotation.x = -1.0; c.arms[0].rotation.z = 0.3; c.arms[1].rotation.x = -1.1 + Math.sin(s * 14) * 0.06; c.arms[1].rotation.z = -0.2 + Math.sin(s * 14) * 0.12; }
+  } else if (pose === "gaze") {
+    // 湊近望遠鏡（或窗）看外面
+    c.torso.rotation.x = 0.25; c.head.rotation.x = 0.05;
+    c.arms.forEach((a, i) => { a.rotation.x = -1.7; a.rotation.z = (i ? -1 : 1) * 0.35; });
+    c.head.rotation.y = Math.sin(s * 0.3) * 0.1;
+  } else if (pose === "chalk") {
+    // 在黑板上寫字
+    c.arms[1].rotation.x = -2.3 + Math.sin(s * 6) * 0.1; c.arms[1].rotation.z = -0.1 + Math.sin(s * 2.5) * 0.3;
+    c.arms[0].rotation.x = -0.9; c.head.rotation.x = -0.1; c.head.rotation.y = Math.sin(s * 2.5) * 0.12;
+  } else if (pose === "dance") {
+    const w = Math.sin(s * 5);
+    c.arms[0].rotation.z = -(1.3 + w * 0.8); c.arms[1].rotation.z = 1.3 - w * 0.8;
+    c.torso.rotation.z = w * 0.15; c.head.rotation.z = -w * 0.1;
+    c.hips.position.y = 0.36 + Math.abs(Math.sin(s * 10)) * 0.04;
+    c.legs[0].rotation.x = Math.max(0, w) * -0.4; c.legs[1].rotation.x = Math.max(0, -w) * -0.4;
   } else {
     c.head.rotation.y = Math.sin(s * 0.5) * 0.5;
     c.arms.forEach((a, i) => { a.rotation.z = (i ? 1 : -1) * (0.12 + Math.sin(s * 1.2) * 0.04); });
@@ -1798,9 +2207,15 @@ function animChar(st, dt, now) {
     else if (e === "think") { mix(L.rotation, "x", -2.7); mix(R.rotation, "x", -2.7); mix(L.rotation, "z", 0.75); mix(R.rotation, "z", -0.75); c.head.rotation.y = Math.sin(s * 9) * 0.25 * f; }
     else if (e === "thumb") { mix(R.rotation, "x", -1.5); mix(R.rotation, "z", -0.1); c.head.rotation.z = 0.12 * f; }
     else if (e === "bow") { c.torso.rotation.x += 0.55 * f * Math.max(0, Math.sin(emoK * Math.PI * 2)); mix(L.rotation, "z", -0.05); mix(R.rotation, "z", 0.05); }
+    else if (e === "exercise") { const k = Math.abs(Math.sin(s * 5)); mix(L.rotation, "x", 0); mix(R.rotation, "x", 0); mix(L.rotation, "z", -(0.2 + k * 2.0)); mix(R.rotation, "z", 0.2 + k * 2.0); if (pose !== "sit") c.hips.position.y += Math.abs(Math.cos(s * 5)) * 0.06 * f; }
+    else if (e === "stretch") { mix(L.rotation, "x", -0.35); mix(R.rotation, "x", -0.35); mix(L.rotation, "z", -2.3); mix(R.rotation, "z", 2.3); c.torso.rotation.z += Math.sin(s * 1.6) * 0.12 * f; c.head.rotation.x -= 0.15 * f; shut = shut || f > 0.5; }
+    else if (e === "clap") { const k = (Math.sin(s * 14) + 1) / 2; mix(L.rotation, "x", -1.35); mix(R.rotation, "x", -1.35); mix(L.rotation, "z", 0.05 + k * 0.45); mix(R.rotation, "z", -0.05 - k * 0.45); }
+    else if (e === "dance") { const w = Math.sin(s * 5); mix(L.rotation, "x", 0); mix(R.rotation, "x", 0); mix(L.rotation, "z", -(1.3 + w * 0.8)); mix(R.rotation, "z", 1.3 - w * 0.8); c.torso.rotation.z += w * 0.15 * f; c.head.rotation.z = -w * 0.1 * f; }
+    else if (e === "hungry") { mix(R.rotation, "x", -0.55); mix(R.rotation, "z", 0.55); mix(L.rotation, "x", -0.45); mix(L.rotation, "z", -0.45); c.head.rotation.z = 0.2 * f; c.head.rotation.x += 0.15 * f; c.torso.rotation.x += 0.12 * f; }
+    else if (e === "breathe") { const k = (1 - Math.cos(emoK * Math.PI * 2)) / 2; mix(L.rotation, "x", 0); mix(R.rotation, "x", 0); mix(L.rotation, "z", -(0.2 + k * 2.0)); mix(R.rotation, "z", 0.2 + k * 2.0); c.head.rotation.x -= 0.15 * k * f; shut = shut || f > 0.5; }
   }
   const blink = (s % 4.3) < 0.12 ? 0.15 : 1;
-  if (!(emoK < 1 && st.emo === "yawn")) c.eyes.forEach((e) => { e.scale.y = 1.25 * blink; });
+  if (!(emoK < 1 && st.emo === "yawn")) c.eyes.forEach((e) => { e.scale.y = shut ? 0.15 : 1.25 * blink; });
   // 小貓跟著
   if (c.cat) {
     // 坐著時待在椅子旁邊偏後面，不要鑽到桌腳裡；走路時跟在旁邊
@@ -1891,8 +2306,8 @@ function frame() {
   // 名牌與對話泡泡
   const w = container.clientWidth, h = container.clientHeight;
   Object.values(chars).forEach((st) => {
-    const sp0 = st.mode === "idle" && SPOTS[st.spot], sitting = st.mode === "sit" || (sp0 && (sp0.pose === "sofa" || sp0.pose === "pet"));
-    tmpV.set(st.pos.x, sitting ? 1.62 : 1.72, st.pos.z).project(camera);
+    const sp0 = st.mode === "idle" && SPOTS[st.spot], sp0p = sp0 && sp0.pose, sitting = st.mode === "sit" || SIT_POSES.indexOf(sp0p) >= 0;
+    tmpV.set(st.pos.x, sp0p === "float" ? 2.15 : sp0p === "tea" || sp0p === "zen" || sp0p === "lounge" ? 1.32 : sitting ? 1.62 : 1.72, st.pos.z).project(camera);
     const x = (tmpV.x * 0.5 + 0.5) * w, y = (-tmpV.y * 0.5 + 0.5) * h;
     st.tag.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px) translate(-50%,-100%)";
     st.bub.style.transform = "translate(" + x.toFixed(1) + "px," + (y - 22).toFixed(1) + "px) translate(-50%,-100%)";
@@ -1933,7 +2348,7 @@ function mount(el) {
   overlay = document.createElement("div"); overlay.className = "k3-overlay"; el.appendChild(overlay);
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-  buildGrid(); buildRoom(); lighting();
+  applyLayout(); buildRoom(); lighting();
   clock = new THREE.Clock();
   if (window.ResizeObserver) new ResizeObserver(resize).observe(el); else window.addEventListener("resize", resize);
   resize();
@@ -2004,7 +2419,7 @@ function setTheme(name) {
   Object.keys(chars).forEach((id) => removeChar(id)); chars = {}; reserved = {};
   while (scene.children.length) scene.remove(scene.children[0]);
   fireMeshes = []; bulbs = []; curtains = []; plants = []; speakers = []; notes = []; seatProps = [];
-  buildRoom(); lighting(); envNext = 0; focusMe = true;
+  applyLayout(); buildRoom(); lighting(); envNext = 0; focusMe = true;
   if (lastList) update(lastList);
 }
 // 名牌下面的專注時間，index 每秒傳進來 { id: "00:25:13" }
