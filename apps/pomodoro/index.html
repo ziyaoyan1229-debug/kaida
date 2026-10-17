@@ -156,6 +156,15 @@
   .k3.wait::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 3px solid rgba(138, 90, 56, .25); border-top-color: #b4532a; animation: k3spin .8s linear infinite; }
   @keyframes k3spin { to { transform: rotate(360deg); } }
   .k3.wait .k3-hint { display: none; }
+  /* 按「開始」到進房間之間：三個點點輪流亮起（像在想事情） */
+  .hop { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--paper); transition: opacity .35s ease; }
+  .hop.out { opacity: 0; pointer-events: none; }
+  .hop .dots { display: flex; gap: 10px; }
+  .hop .dots i { width: 12px; height: 12px; border-radius: 50%; background: #D6361F; animation: hopdot 1.2s ease-in-out infinite; }
+  .hop .dots i:nth-child(2) { animation-delay: .16s; } .hop .dots i:nth-child(3) { animation-delay: .32s; }
+  .hop .hop-t { font-size: 13px; color: var(--muted); letter-spacing: .08em; }
+  @keyframes hopdot { 0%, 60%, 100% { transform: scale(.7); opacity: .3; } 30% { transform: scale(1.1) translateY(-4px); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .hop .dots i { animation-duration: 2.4s; } }
   /* 進房間的載入畫面：模糊的房間 + 你的角色沿著進度條走進去，走到底畫面變清楚 */
   .k3-load { position: absolute; inset: 0; z-index: 3; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; padding-bottom: 22%; color: #FFF6EC; text-align: center; transition: opacity .6s ease .35s; }
   .k3-load .kl-bg { position: absolute; inset: -20px; background: #5a3a2a center/cover no-repeat; filter: blur(9px) saturate(.75) brightness(.85); transform: scale(1.06); transition: filter .9s ease .3s, transform .9s ease .3s; }
@@ -175,14 +184,14 @@
   .k3.wait.loading::after { display: none; }
   /* 快速對話放在房間畫面底下，手機往下滑才是音樂、成員等設定 */
   /* 圓形透明玻璃對話框：「休息一下」固定在左邊，其他的慢慢往左跑、也能手動滑 */
-  .scene-wrap .says { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; margin: 0; padding: 30px 0 12px 12px; gap: 8px; overflow: visible; align-items: center; background: linear-gradient(180deg, rgba(20,12,8,0), rgba(20,12,8,.28)); pointer-events: none; }
+  .scene-wrap .says { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; margin: 0; padding: 30px 0 64px 12px; gap: 8px; overflow: visible; align-items: center; background: linear-gradient(180deg, rgba(20,12,8,0), rgba(20,12,8,.28)); pointer-events: none; }
   .scene-wrap .says > * { pointer-events: auto; }
   .scene-wrap .says button { border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.5); color: #fff; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,.35);
     -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.18); }
   .scene-wrap .says button.up { background: rgba(255,255,255,.88); color: #2B1E18; text-shadow: none; border-color: rgba(255,255,255,.9); }
   .says-run { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; display: flex; gap: 8px; padding: 4px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
   .says-run::-webkit-scrollbar { display: none; }
-  .s-down { position: absolute; left: 50%; bottom: 66px; z-index: 2; width: 44px; height: 44px; margin-left: -22px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff;
+  .s-down { position: absolute; left: 50%; bottom: 12px; z-index: 3; width: 44px; height: 44px; margin-left: -22px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff;
     background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.5); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.18); animation: sdown 2.4s ease-in-out infinite; }
   .s-down svg { display: block; width: 22px; height: 22px; margin: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
   .s-down:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
@@ -471,6 +480,7 @@
 </style>
 </head>
 <body>
+<div class="hop" id="hop" hidden role="status" aria-live="polite"><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="hop-t" data-i18n="hop.t">準備房間中</div></div>
 <div class="wrap">
 <div class="sheet" id="settings" hidden><div class="sheet-bg" data-close-set></div><div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="set-title">
   <div class="sheet-head"><h2 id="set-title" data-i18n="set.title">設定</h2><button type="button" class="sheet-x" data-close-set data-i18n-aria="set.close" aria-label="關閉">×</button></div>
@@ -620,7 +630,7 @@
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
       "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
       "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
-      "opt.sound": "換段時響一聲、震動", "set.title": "設定", "set.close": "關閉", "set.lang": "語言 Language", "set.reload": "重新整理（拿到最新版本）", "set.sound": "聲音與提醒", "set.room": "房間", "opt.view": "房間視角", "opt.viewL": "大", "opt.viewM": "中", "opt.viewS": "小", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
+      "opt.sound": "換段時響一聲、震動", "set.title": "設定", "hop.t": "準備房間中", "set.close": "關閉", "set.lang": "語言 Language", "set.reload": "重新整理（拿到最新版本）", "set.sound": "聲音與提醒", "set.room": "房間", "opt.view": "房間視角", "opt.viewL": "大", "opt.viewM": "中", "opt.viewS": "小", "opt.wake": "讀書時保持螢幕亮著", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
       "toast.done": "完成一顆番茄！休息 {m} 分鐘", "toast.focus": "休息結束，開始專注",
       "toast.away": "你離開太久了，已經自動結束讀書房，之前的專注時間都有記下來",
@@ -704,7 +714,7 @@
       "s.notesave": "Save note", "s.notesaved": "Saved",
       "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
       "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
-      "opt.sound": "Chime and vibrate between phases", "set.title": "Settings", "set.close": "Close", "set.lang": "語言 Language", "set.reload": "Reload (get the latest version)", "set.sound": "Sound and reminders", "set.room": "Room", "opt.view": "Room view", "opt.viewL": "Close", "opt.viewM": "Medium", "opt.viewS": "Wide", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
+      "opt.sound": "Chime and vibrate between phases", "set.title": "Settings", "hop.t": "Getting your room ready", "set.close": "Close", "set.lang": "語言 Language", "set.reload": "Reload (get the latest version)", "set.sound": "Sound and reminders", "set.room": "Room", "opt.view": "Room view", "opt.viewL": "Close", "opt.viewM": "Medium", "opt.viewS": "Wide", "opt.wake": "Keep screen on while studying", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
       "toast.done": "Pomodoro done! Take {m} minutes off", "toast.focus": "Break's over, time to focus",
       "toast.away": "You were away a long time, so the room was closed. Your focus time was saved.",
@@ -1021,6 +1031,20 @@
     document.getElementById("scene").style.display = "none";
     wait3dT = setTimeout(fallback2d, 15000);
   })();
+  // 主頁按「開始」→ 三個點點的過場，進房間（至少 0.9 秒）後淡出；出錯或跳到別頁就直接收掉
+  var hopOn = false, hopT0 = 0, hopTm = 0;
+  function startHop() {
+    var el = document.getElementById("hop"); clearTimeout(hopTm);
+    hopOn = true; hopT0 = Date.now(); el.classList.remove("out"); el.hidden = false;
+    hopTm = setTimeout(function () { endHop(true); }, 15000);
+  }
+  function endHop(now) {
+    var el = document.getElementById("hop"); if (!hopOn) return;
+    hopOn = false; clearTimeout(hopTm);
+    hopTm = setTimeout(function () { el.classList.add("out"); hopTm = setTimeout(function () { el.hidden = true; el.classList.remove("out"); }, 380); }, now ? 0 : Math.max(0, 900 - (Date.now() - hopT0)));
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".a4-go")) startHop(); }, true);
+  (function () { var toast = K.toast; K.toast = function (msg) { if (hopOn && msg !== t("r.matching")) endHop(true); return toast.apply(this, arguments); }; })();
   // 進房間的載入畫面（提案 B）：3D 好了而且至少放 1.4 秒才進房間
   var loadT0 = 0, loadTm = 0;
   function showLoad() {
@@ -1148,6 +1172,7 @@
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session && !session.away) v = "session";
     if (v === "session" && current !== "session") { window.scrollTo(0, 0); showLoad(); }
+    if (hopOn) { if (v === "session") endHop(); else if (v !== "rooms") endHop(true); }
     if (current === "char" && v !== "char") dropTrialColors();
     current = v;
     document.body.classList.toggle("in-room", v === "session");
