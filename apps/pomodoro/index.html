@@ -495,6 +495,43 @@
   .tcard .sw.rnd { display: grid; place-items: center; background: var(--sunk); font-family: var(--f-display); font-size: 34px; color: var(--muted); }
   .pick-select { border-radius: 0; }
   .btn { border-radius: 0; }
+  /* 專注模式：主題顏色蓋住整個房間，只透一點點，中間大字顯示時間 */
+  .fov { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #fff; text-align: center; padding: 24px; text-shadow: 0 2px 10px rgba(0,0,0,.25); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  .fov[hidden] { display: none; }
+  .fov-ph { font-size: 15px; letter-spacing: .4em; opacity: .9; }
+  .fov-t { font-family: var(--f-display); font-weight: 700; font-size: clamp(76px, 26vw, 220px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .fov-sub { font-size: 14px; opacity: .85; }
+  .fov-x { margin-top: 26px; border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.14); color: #fff; border-radius: 999px; padding: 10px 20px; font: inherit; font-size: 14px; cursor: pointer; }
+  .rb-foc[aria-pressed="true"] { background: var(--rb-ink); color: var(--rb-bg, #fff); }
+  .rb-btn { width: 34px; height: 34px; }
+  /* 休息時「休息一下」會晃動，要按下去這一輪才算 */
+  @keyframes btnshake { 0%, 44%, 100% { transform: none; } 6% { transform: translateX(-3px) rotate(-5deg); } 14% { transform: translateX(3px) rotate(5deg); } 22% { transform: translateX(-3px) rotate(-4deg); } 30% { transform: translateX(2px) rotate(3deg); } 38% { transform: translateX(-1px) rotate(-1deg); } }
+  #says [data-up].shake { animation: btnshake 1.3s ease-in-out infinite; background: #fff; color: #C23B22; border-color: #fff; font-weight: 700; text-shadow: none; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+  @media (prefers-reduced-motion: reduce) { #says [data-up].shake { animation: none; } }
+  /* 房間裡聊天 */
+  .rchat { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 85; width: 100%; max-width: 460px; background: var(--surface); color: var(--ink); border-radius: 16px 16px 0 0; box-shadow: 0 -8px 26px rgba(0,0,0,.22); padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; }
+  .rchat[hidden] { display: none; }
+  .rchat-head { display: flex; align-items: center; gap: 8px; }
+  .rchat-head svg { width: 34px; height: 34px; flex: none; }
+  .rchat-head b { flex: 1; min-width: 0; font-size: 15px; }
+  .rchat-head button { width: 34px; height: 34px; border: 0; background: none; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
+  .rchat-log { height: 26vh; min-height: 120px; max-height: 240px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .rchat-log .b { max-width: 80%; padding: 6px 10px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+  .rchat-log .b.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); }
+  .rchat-log .b.me { align-self: flex-end; background: var(--ink); color: var(--paper); }
+  .rchat-log .tip { align-self: center; font-size: 12px; color: var(--muted); }
+  .rchat form { display: flex; gap: 6px; }
+  .rchat input { flex: 1; min-width: 0; font-size: 16px; }
+  /* 個人設定：名字下的 ID */
+  .idrow { display: flex; align-items: center; gap: 8px; width: 100%; margin: 6px 0 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+  .idrow .k { color: var(--muted); }
+  .idrow b { flex: 1; min-width: 0; }
+  .idrow .cp { flex: none; width: 34px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .shop-top { display: flex; align-items: center; gap: 14px; }
+  .shop-top svg { width: 110px; height: 106px; flex: none; }
+  .shop .it .sw-big { display: block; width: 64px; height: 64px; border-radius: 50%; margin: 10px auto 8px; border: 1px solid var(--line); }
+  .help-list { margin: 8px 0 14px; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.55; text-align: left; }
+  .idrow .cp svg { width: 17px !important; height: 17px !important; flex: none; }
 </style>
 </head>
 <body>
@@ -503,6 +540,8 @@
 <div class="sheet" id="settings" hidden><div class="sheet-bg" data-close-set></div><div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="set-title">
   <div class="sheet-head"><h2 id="set-title" data-i18n="set.title">設定</h2><button type="button" class="sheet-x" data-close-set data-i18n-aria="set.close" aria-label="關閉">×</button></div>
   <div class="opts">
+      <div class="opt"><span data-i18n="opt.focus">專注模式（專注時全螢幕只顯示時間）</span><label class="switch"><input type="checkbox" id="opt-focus"><span></span></label></div>
+      <div class="opt"><span data-i18n="opt.clock">時間顯示</span><span class="vseg" role="group" id="opt-clock"><button type="button" data-clock="down" data-i18n="opt.down">倒數</button><button type="button" data-clock="up" data-i18n="opt.up">計時</button></span></div>
       <div class="opt"><span data-i18n="set.lang">語言 Language</span><span id="set-lang-slot"></span></div>
       <div class="opt"><span data-i18n="set.reload">重新整理（拿到最新版本）</span><button type="button" class="reload-btn" id="reload-btn" data-i18n-aria="app.reload" aria-label="重新整理"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></div>
       <h3 data-i18n="c.pal">介面配色</h3>
@@ -514,18 +553,21 @@
       <div class="opt" id="row-notify"><span data-i18n="opt.notify">換段時跳出通知（電腦瀏覽器較穩）</span><label class="switch"><input type="checkbox" id="opt-notify"><span></span></label></div>
       <h3 data-i18n="set.room">房間</h3>
       <div class="opt" id="row-view"><span data-i18n="opt.view">房間視角</span><span class="vseg" role="group" id="opt-view"><button type="button" data-view="l" data-i18n="opt.viewL">大</button><button type="button" data-view="m" data-i18n="opt.viewM">中</button><button type="button" data-view="s" data-i18n="opt.viewS">小</button></span></div>
+      <div class="opt" id="row-layout"><span data-i18n="opt.layout">房間佈置</span><span class="vseg" role="group" id="opt-layout"><button type="button" data-layout="theme" data-i18n="opt.layTheme">主題版</button><button type="button" data-layout="classic" data-i18n="opt.layClassic">經典版</button></span></div>
       <div class="opt-hint" data-i18n="s.drag">拖曳轉視角 · 兩指縮放、轉動、移動</div>
   </div>
 </div></div>
 
 
   <div class="hero"><button type="button" class="me-chip" id="tab-char" aria-selected="false"></button><h1 data-i18n="app.title">番茄讀書會</h1>
+    <button type="button" class="set-btn" id="help-btn" data-help data-i18n-aria="help.t" aria-label="說明"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
     <button type="button" class="set-btn" id="set-btn" data-i18n-aria="set.title" aria-label="設定"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button type="button" class="wood-pill" id="wood-pill"></button></div>
 
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-rooms" aria-selected="true" data-i18n="tab.rooms">讀書房</button>
     <button role="tab" id="tab-friends" aria-selected="false" data-i18n="tab.friends">好友</button>
     <button role="tab" id="tab-team" aria-selected="false" data-i18n="tab.team">團隊</button>
+    <button role="tab" id="tab-shop" aria-selected="false" data-i18n="tab.shop">商店</button>
     <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">我的</button>
   </nav>
 
@@ -547,6 +589,8 @@
       </svg>
       <div class="rb-main"><div class="rb-top"><b id="rb-phase"></b><span id="rb-time">25:00</span></div><div class="rb-track"><div class="rb-fill" id="rb-fill"></div></div>
         <div class="rb-room"><span id="s-label"></span><span class="code" id="s-code"></span><span class="net" id="s-net"></span></div></div>
+      <button type="button" class="set-btn rb-set rb-btn" data-help data-i18n-aria="help.t" aria-label="說明"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
+      <button type="button" class="set-btn rb-set rb-btn rb-foc" id="rb-foc" aria-pressed="false" data-i18n-aria="opt.focusS" aria-label="專注模式"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></button>
       <button type="button" class="set-btn rb-set" id="rb-set" data-i18n-aria="set.title" aria-label="設定"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><div class="rb-acts"><button class="btn ghost exit" id="s-exit" type="button" data-i18n="s.exit">暫離</button><button class="btn ghost" id="s-invite" type="button" data-i18n="s.invite">邀請朋友</button></div>
     </div>
     <div class="s-body">
@@ -585,6 +629,8 @@
 
   <section id="view-char" hidden></section>
 
+  <section id="view-shop" hidden></section>
+
   <section id="view-friends" hidden></section>
 
   <section id="view-team" hidden></section>
@@ -618,6 +664,8 @@
   </footer>
 </div>
 
+<div class="fov" id="fov" hidden role="timer" aria-live="off"><div class="fov-ph" id="fov-ph"></div><div class="fov-t" id="fov-t"></div><div class="fov-sub" id="fov-sub"></div><button type="button" class="fov-x" id="fov-x" data-i18n="fov.x">關閉專注模式</button></div>
+<div class="rchat" id="rchat" hidden role="dialog" aria-modal="false"></div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true"><div class="card" id="modal-card"></div></div>
 
 <script src="../shared/kaida-app.js"></script>
@@ -692,6 +740,13 @@
       "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
+      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
+      "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
+      "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
+      "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
+      "help.t": "說明", "help.ok": "知道了",
+      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|專注到最後才算一顆番茄：25 分鐘拿 3 根小木頭、50 分鐘 6 根、100 分鐘 12 根。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|小木頭可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 根。|讀書紀錄和小木頭只存在這支手機的瀏覽器裡。",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
       "q.next": "換一句",
       "f.avNote": "頭像就是你的角色，到個人設定換造型", "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
@@ -776,6 +831,13 @@
       "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
+      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
+      "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
+      "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
+      "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
+      "help.t": "How it works", "help.ok": "Got it",
+      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|A pomodoro counts only if you stay to the end: 3 logs for 25 min, 6 for 50, 12 for 100.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend logs in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 logs.|Your records and logs are stored only in this browser.",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
       "q.next": "Another",
       "f.avNote": "Your avatar is your character. Change the look in Profile.", "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
@@ -901,8 +963,8 @@
 
   // 把 session.credited 到 upTo 之間已經結束的專注段記進紀錄
   function creditUntil(upTo) {
-    if (!session) return { finished: 0 };
-    var r = ROOMS.cur, finished = 0, guard = 0;
+    if (!session) return { finished: 0, lost: 0 };
+    var r = ROOMS.cur, finished = 0, lost = 0, guard = 0;
     var c = session.credited;
     while (guard++ < 500) {
       var p = phaseAt("cur", c, roomOrigin());
@@ -911,6 +973,11 @@
       if (fEnd > upTo) break;
       var segStart = Math.max(fStart, c, session.joinedAt);
       var ms = fEnd - segStart;
+      // 休息時要按「休息一下」，剛結束的那一輪才算（防止掛著刷分）；休息還沒結束就先等著
+      if (ms > 0 && session.ack !== fEnd) {
+        if (upTo < fEnd + r.brk * MIN) break;
+        c = fEnd; lost++; continue;
+      }
       if (ms > 0) {
         var full = segStart <= fStart + 1000;
         addFocus(fEnd, ms, full);
@@ -919,14 +986,14 @@
       c = fEnd;
     }
     session.credited = c;
-    return { finished: finished };
+    return { finished: finished, lost: lost };
   }
 
   /* ===== 房間：真人（net）、模擬、自己 ===== */
   var net = window.KaidaNet ? new window.KaidaNet.Room() : null;
   var netStatus = "online";
   if (net) {
-    net.onChange = function () { if (current === "session") renderScene(true); };
+    net.onChange = function () { checkRoomChat(); if (current === "session") renderScene(true); };
     net.onStatus = function (st) { netStatus = st; if (current === "session") renderNet(); };
   }
   function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: data.act, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
@@ -1031,6 +1098,14 @@
     }
   };
 
+  // 休息時按了「休息一下」（或「我回來了」）：剛結束的那一輪記下來
+  function ackBreak() {
+    if (!session) return;
+    var now = Date.now(), p = phaseAt("cur", now, roomOrigin());
+    if (p.focus || session.credited >= p.start || session.ack === p.start) return;
+    session.ack = p.start; creditUntil(now); persist();
+  }
+  function needAck(p) { return !!session && !p.focus && session.credited < p.start && session.ack !== p.start; }
   // 休息一下：角色起身在房間走動；我回來了：走回座位
   function setUp(up) {
     if (!session) return;
@@ -1117,6 +1192,7 @@
     var el = document.getElementById("scene3d");
     el.hidden = false;
     if (session && window.KaidaScene3D.setTheme) window.KaidaScene3D.setTheme(session.theme || "home");
+    applyClassic();
     var ok = false;
     try { ok = window.KaidaScene3D.mount(el); } catch (e) { ok = false; }
     if (!ok) { wait3d = true; fallback2d(); return; }
@@ -1131,6 +1207,79 @@
   window.addEventListener("kaida3d-fail", fallback2d);
 
   var mySay = null;
+  /* ===== 房間裡聊天：自己的角色走到對方旁邊，說的話出現在頭上 ===== */
+  var rchat = { with: null, vis: "", visAt: 0, preUp: null, logs: {}, seen: {}, visSeen: {} };
+  function rcMember(id) { return session ? sceneMembers().filter(function (x) { return x.id === id; })[0] || null : null; }
+  function openRoomChat(id, walk) {
+    if (!session) return;
+    rchat.with = id;
+    if (walk) {
+      rchat.vis = id; rchat.visAt = Date.now();
+      if (rchat.preUp == null) rchat.preUp = !!session.up;
+      if (session.kind === "room" && net) net.publishMe({ vis: id, visAt: rchat.visAt });
+      if (!session.up) setUp(true); else renderScene(true);
+    }
+    renderRoomChat(walk);
+  }
+  function closeRoomChat() {
+    rchat.with = null; document.getElementById("rchat").hidden = true;
+    if (!session || !rchat.vis) return;
+    rchat.vis = ""; rchat.visAt = 0;
+    if (session.kind === "room" && net) net.publishMe({ vis: "", visAt: 0 });
+    var back = rchat.preUp === false; rchat.preUp = null;
+    if (back && session.up) setUp(false); else renderScene(true);
+  }
+  function renderRoomChat(focusIn) {
+    var el = document.getElementById("rchat"), id = rchat.with;
+    if (!id || !session || current !== "session") { el.hidden = true; return; }
+    var m = rcMember(id); if (!m) { closeRoomChat(); return; }
+    var old = document.getElementById("rc-in"), draft = old ? old.value : "", had = old && document.activeElement === old;
+    el.innerHTML = '<div class="rchat-head"><svg viewBox="-30 -74 60 62" aria-hidden="true">' + S.bust(m.look) + '</svg><b>' + K.esc(t("rc.title", { n: m.name })) + '</b><button type="button" data-rc="close" aria-label="' + K.esc(t("c.close")) + '">×</button></div>' +
+      '<div class="rchat-log" id="rc-log">' + (rchat.vis === id ? '<span class="tip">' + K.esc(t("rc.tip", { n: m.name })) + '</span>' : "") +
+      (rchat.logs[id] || []).map(function (b) { return '<div class="b ' + (b.me ? "me" : "them") + '">' + K.esc(b.text) + '</div>'; }).join("") + '</div>' +
+      '<form id="rc-form"><input type="text" id="rc-in" maxlength="80" autocomplete="off" placeholder="' + K.esc(t("rc.ph")) + '"><button class="btn" type="submit">' + K.esc(t("rc.send")) + '</button></form>';
+    el.hidden = false;
+    var inp = document.getElementById("rc-in"); inp.value = draft; if (focusIn || had) inp.focus();
+    var log = document.getElementById("rc-log"); log.scrollTop = log.scrollHeight;
+  }
+  function sendRoomChat() {
+    var inp = document.getElementById("rc-in"), id = rchat.with; if (!inp || !id || !session) return;
+    var text = inp.value.trim().slice(0, 80); if (!text) return;
+    var now = Date.now();
+    (rchat.logs[id] = rchat.logs[id] || []).push({ me: true, text: text, t: now });
+    mySay = { text: text, at: now };
+    if (session.kind === "room" && net) net.publishMe({ ct: text, ctAt: now, ctTo: id });
+    inp.value = "";
+    if (session.kind === "sim" && /^bot/.test(id)) setTimeout(function () { botReply(id); }, 1200 + Math.random() * 1500);
+    renderRoomChat(true); renderScene(true);
+  }
+  function botReply(id) {
+    if (!session || session.kind !== "sim") return;
+    var lines = t("rc.bot").split("|"), text = lines[Math.floor(Math.random() * lines.length)], now = Date.now(), m = rcMember(id);
+    (rchat.logs[id] = rchat.logs[id] || []).push({ me: false, text: text, t: now });
+    sim.says[id] = { text: text, at: now };
+    if (rchat.with === id) renderRoomChat(); else K.toast(t("rc.from", { n: m ? m.name : "?", m: text }));
+    renderScene(true);
+  }
+  // 別人傳給我的話、走過來找我
+  function checkRoomChat() {
+    if (!session || session.kind !== "room" || !net) return;
+    net.fresh().forEach(function (m) {
+      if (m.id === data.me.id) return;
+      if (m.ctTo === data.me.id && m.ct && m.ctAt > (rchat.seen[m.id] || session.joinedAt - 5000)) {
+        rchat.seen[m.id] = m.ctAt;
+        (rchat.logs[m.id] = rchat.logs[m.id] || []).push({ me: false, text: m.ct, t: m.ctAt });
+        if (!rchat.with && current === "session" && document.getElementById("fov").hidden) rchat.with = m.id;
+        if (rchat.with === m.id) renderRoomChat(); else K.toast(t("rc.from", { n: m.name, m: m.ct }));
+      }
+      if (m.vis === data.me.id && m.visAt && m.visAt !== rchat.visSeen[m.id] && m.visAt > session.joinedAt - 5000) {
+        rchat.visSeen[m.id] = m.visAt; K.toast(t("rc.came", { n: m.name }));
+      }
+    });
+  }
+  document.getElementById("rchat").addEventListener("click", function (e) { if (e.target.closest('[data-rc="close"]')) closeRoomChat(); });
+  document.getElementById("rchat").addEventListener("submit", function (e) { e.preventDefault(); sendRoomChat(); });
+
   function say(text) {
     mySay = { text: text, at: Date.now() };
     if (session && session.kind === "room" && net) net.publishMe({ say: text, sayAt: mySay.at, emo: emoOf(text) });
@@ -1140,7 +1289,10 @@
   function leave(silent) {
     if (!session) return;
     var now = Date.now();
+    // 休息中自己按離開也算有在：剛結束的那一輪照算
+    var p0 = phaseAt("cur", now, roomOrigin()); if (!p0.focus) session.ack = p0.start;
     creditUntil(now);
+    rchat.with = null; rchat.vis = ""; rchat.logs = {}; rchat.preUp = null; document.getElementById("rchat").hidden = true;
     var p = phaseAt("cur", now, roomOrigin());
     if (p.focus) {
       var segStart = Math.max(p.start, session.credited, session.joinedAt);
@@ -1169,6 +1321,7 @@
         return;
       }
       var res = creditUntil(now);
+      if (res.lost) K.toast(t("s.ackLost"));
       var p = phaseAt("cur", now, roomOrigin());
       var r = ROOMS.cur;
       if (p.focus !== session.wasFocus) {
@@ -1179,7 +1332,7 @@
           if (data.opts.notify) K.notify(t("n.focusTitle"), t("n.focusBody", { room: roomName(), m: r.focus }));
         } else {
           if (data.opts.sound && !data.opts.mute) K.chime("end");
-          if (!res.finished) K.toast(t(Object.keys(data.friends).length ? "toast.doneShare" : "toast.done", { m: r.brk }));
+          if (session.credited < p.start) K.toast(t("s.ackNeed")); else if (!res.finished) K.toast(t(Object.keys(data.friends).length ? "toast.doneShare" : "toast.done", { m: r.brk }));
           qi++; renderQuotes();
           if (data.opts.notify) K.notify(t("n.breakTitle"), t("n.breakBody", { m: r.brk }));
         }
@@ -1203,11 +1356,14 @@
     current = v;
     document.body.classList.toggle("in-room", v === "session");
     applyRoomBar();
-    ["rooms", "session", "me", "friends", "char", "team"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
+    if (v !== "session") { document.getElementById("rchat").hidden = true; document.getElementById("fov").hidden = true; }
+    ["rooms", "session", "me", "friends", "char", "team", "shop"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
     document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
     document.getElementById("tab-char").setAttribute("aria-selected", v === "char");
     document.getElementById("tab-friends").setAttribute("aria-selected", v === "friends");
     document.getElementById("tab-team").setAttribute("aria-selected", v === "team");
+    document.getElementById("tab-shop").setAttribute("aria-selected", v === "shop");
+    if (v === "shop") renderShop();
     renderChip();
     if (v === "team") { teamSync(); renderTeam(); }
     document.getElementById("tab-me").setAttribute("aria-selected", v === "me");
@@ -1216,7 +1372,7 @@
     if (v === "char") renderChar();
     renderQuotes();
     if (v === "rooms") renderRooms();
-    if (v === "session") { renderSession(Date.now()); renderScene(true); renderNet(); }
+    if (v === "session") { renderSession(Date.now()); renderScene(true); renderNet(); if (rchat.with) renderRoomChat(); }
     renderTasks();
   }
 
@@ -1437,12 +1593,12 @@
   }
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: data.look, act: data.act, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, up: !!m.up, bubble: m.ct && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
@@ -1604,19 +1760,31 @@
     if (!session) return;
     applyRoomBar();
     p = p || phaseAt("cur", now, roomOrigin());
-    var left = p.end - now;
+    var left = p.end - now, shown = data.opts.countUp ? fmt(Math.max(0, now - p.start - 999)) : fmt(left);
     var ring = document.getElementById("ring");
     ring.classList.toggle("break", !p.focus);
     document.getElementById("ring-bar").setAttribute("stroke-dashoffset", String(CIRC * (1 - left / p.len)));
-    document.getElementById("ring-time").textContent = fmt(left);
+    document.getElementById("ring-time").textContent = shown;
     document.getElementById("ring-phase").textContent = t(p.focus ? "ph.focus" : "ph.break");
-    ring.setAttribute("aria-label", t(p.focus ? "ph.focus" : "ph.break") + " " + fmt(left));
+    ring.setAttribute("aria-label", t(p.focus ? "ph.focus" : "ph.break") + " " + shown);
     document.getElementById("s-next").textContent = p.focus ? t("s.nextBreak", { time: clock(p.end) }) : t("s.nextFocus", { time: clock(p.end) });
     document.getElementById("mid-join").hidden = !(p.focus && session.midJoin);
     document.getElementById("break-box").hidden = p.focus;
-    document.title = fmt(left) + " · " + t(p.focus ? "ph.focus" : "ph.break");
+    document.title = shown + " · " + t(p.focus ? "ph.focus" : "ph.break");
     document.getElementById("rb-phase").textContent = t(p.focus ? "ph.focus" : "ph.break");
-    document.getElementById("rb-time").textContent = fmt(left);
+    document.getElementById("rb-time").textContent = shown;
+    var ub = document.querySelector("#says [data-up]"); if (ub) ub.classList.toggle("shake", needAck(p));
+    document.getElementById("rb-foc").setAttribute("aria-pressed", String(!!data.opts.focusMode));
+    // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」
+    var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && p.focus && !session.away && current === "session";
+    if (fo.hidden === fon) fo.hidden = !fon;
+    if (fon) {
+      fo.style.background = (THEME_SW[session.theme] || THEME_SW.home)[0] + "eb";
+      document.getElementById("fov-ph").textContent = t("ph.focus");
+      document.getElementById("fov-t").textContent = shown;
+      var de = new Date(p.end);
+      document.getElementById("fov-sub").textContent = data.opts.countUp ? t("fov.subUp", { r: roomName(), m: ROOMS.cur.focus }) : t("fov.sub", { r: roomName(), t: String(de.getHours()).padStart(2, "0") + ":" + String(de.getMinutes()).padStart(2, "0") });
+    }
     var fill = document.getElementById("rb-fill");
     fill.style.width = (Math.max(0, Math.min(1, 1 - left / p.len)) * 100).toFixed(2) + "%";
     fill.classList.toggle("break", !p.focus);
@@ -1654,6 +1822,8 @@
     return ((data.ownSkin.indexOf(data.look.skin) < 0) + (data.ownHair.indexOf(data.look.hair) < 0)) * COLOR_PRICE;
   }
   function dropTrialColors() {
+    // 改了名字沒按儲存（或小木頭不夠）就換回原本的名字
+    if (data.me.named && data.paidName != null && data.me.name !== data.paidName) { data.me.name = data.paidName; persist(); syncMe(); renderChip(); }
     if (!colorCost()) return;
     data.look.skin = paidColor.skin; data.look.hair = paidColor.hair; persist(); syncMe(); renderChip();
   }
@@ -1663,6 +1833,9 @@
     if (!data.me.name) html += '<div class="card welcome"><h3>' + K.esc(t("c.firstH")) + '</h3><p class="small muted" style="margin:0">' + K.esc(t("c.firstP")) + '</p></div>';
     html += '<div class="card"><div class="char-top"><svg class="bust-svg" viewBox="-30 -74 60 62" aria-hidden="true">' + S.bust(L) + '</svg>' +
       '<div style="flex:1;min-width:0"><label class="field"><span>' + K.esc(t("c.name")) + '</span><input type="text" id="c-name" maxlength="16" value="' + K.esc(data.me.name) + '" placeholder="' + K.esc(t("f.nameph")) + '"></label>' +
+      (data.me.named ? '<p class="small muted" style="margin:-4px 0 0">' + K.esc(t("c.renameP")) + '</p>' : "") +
+      (charShowId ? '<div class="idrow"><span class="k">ID</span><b class="mono">' + K.esc(data.me.id) + '</b><button type="button" class="cp" data-copy="' + K.esc(data.me.id) + '" aria-label="' + K.esc(t("f.copy")) + '"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></svg></button></div>'
+                  : '<button type="button" class="idrow" data-act="show-id"><span class="k">' + K.esc(t("c.idShow")) + '</span><b></b><span aria-hidden="true">›</span></button>') +
       '<div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
       '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("c.woodP")) + '</p></div>';
     html += '<div class="card"><label class="field"><span>' + K.esc(t("c.country")) + '</span><select id="c-flag" class="pick-select">' +
@@ -1670,10 +1843,20 @@
       FLAGS.map(function (c) { return '<option value="' + c + '"' + (data.me.flag === c ? " selected" : "") + '>' + S.flag(c) + " " + K.esc(countryName(c)) + '</option>'; }).join("") + '</select></label>' +
       '<span class="small muted">' + K.esc(t("c.gender")) + '</span><div class="seg">' +
       ["girl", "boy"].map(function (g) { return '<button type="button" data-g="' + g + '" aria-pressed="' + (L.g === g) + '">' + K.esc(t("c." + g)) + '</button>'; }).join("") + '</div>' +
-      '<span class="small muted">' + K.esc(t("c.skin")) + '</span><div class="swatches">' + S.SKINS.map(function (c, i) { return '<button type="button" data-skin="' + i + '" aria-pressed="' + (L.skin === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.skin")) + ' ' + (i + 1) + '">' + colorTag(data.ownSkin, i) + '</button>'; }).join("") + '</div>' +
-      '<span class="small muted">' + K.esc(t("c.hair")) + '</span><div class="swatches">' + S.HAIRS.map(function (c, i) { return '<button type="button" data-hair="' + i + '" aria-pressed="' + (L.hair === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.hair")) + ' ' + (i + 1) + '">' + colorTag(data.ownHair, i) + '</button>'; }).join("") + '</div>' +
+      (data.me.named ? "" : '<span class="small muted">' + K.esc(t("c.skin")) + '</span><div class="swatches">' + S.SKINS.map(function (c, i) { return '<button type="button" data-skin="' + i + '" aria-pressed="' + (L.skin === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.skin")) + ' ' + (i + 1) + '">' + colorTag(data.ownSkin, i) + '</button>'; }).join("") + '</div>' +
+      '<span class="small muted">' + K.esc(t("c.hair")) + '</span><div class="swatches">' + S.HAIRS.map(function (c, i) { return '<button type="button" data-hair="' + i + '" aria-pressed="' + (L.hair === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.hair")) + ' ' + (i + 1) + '">' + colorTag(data.ownHair, i) + '</button>'; }).join("") + '</div>') +
       '<button class="btn block" type="button" data-act="save-char">' + K.esc(t("c.save")) + '</button></div>';
-    var cat = S.CATS.filter(function (c) { return c.id === shopCat; })[0] || S.CATS[0];
+    if (data.me.named) html += '<button class="btn ghost block" type="button" data-act="go-shop" style="margin-bottom:16px">' + K.esc(t("c.toShop")) + '</button>';
+    el.innerHTML = html;
+  }
+  /* ===== 商店：衣服配件、膚色、髮色 ===== */
+  function renderShop() {
+    var el = document.getElementById("view-shop"), L = data.look, html = "";
+    html += '<div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(L) + '</svg>' +
+      '<div style="min-width:0"><div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
+      '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("c.woodP")) + '</p></div></div></div>';
+    var CATS2 = [{ id: "skin", slots: [] }, { id: "hair", slots: [] }].concat(S.CATS);
+    var cat = CATS2.filter(function (c) { return c.id === shopCat; })[0] || S.CATS[0];
     var inCat = S.ITEMS.filter(function (it) { return cat.slots.indexOf(it.slot) >= 0; });
     var owned = inCat.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
     var shop = inCat.filter(function (it) { return data.owned.indexOf(it.id) < 0; });
@@ -1685,9 +1868,20 @@
                                  : '<button class="btn ghost" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
       return '<div class="it' + (on ? " on" : "") + '">' + itemThumb(it) + '<b>' + K.esc(name) + '</b><span class="small muted">' + K.esc(t("slot." + it.slot)) + '</span>' + btn + '</div>';
     }
-    html += '<div class="cats" role="tablist">' + S.CATS.map(function (c) {
+    html += '<div class="cats" role="tablist">' + CATS2.map(function (c) {
       return '<button type="button" role="tab" data-cat="' + c.id + '" aria-selected="' + (c.id === cat.id) + '">' + K.esc(t("cat." + c.id)) + '</button>';
     }).join("") + '</div>';
+    if (cat.id === "skin" || cat.id === "hair") {
+      var ck = cat.id, cown = ck === "skin" ? data.ownSkin : data.ownHair;
+      html += '<div class="shop" style="margin-top:12px">' + (ck === "skin" ? S.SKINS : S.HAIRS).map(function (c, i) {
+        var on = L[ck] === i, has = cown.indexOf(i) >= 0;
+        var btn = has ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.colorOn")) + '</button>' : '<button class="btn ghost" type="button" data-usecol="' + ck + ':' + i + '">' + K.esc(t("c.use")) + '</button>')
+          : data.wood >= COLOR_PRICE ? '<button class="btn" type="button" data-buycol="' + ck + ':' + i + '">🪵 ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
+          : '<button class="btn ghost" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>';
+        return '<div class="it' + (on ? " on" : "") + '"><span class="sw-big" style="background:' + c + '"></span><b>' + K.esc(t("cat." + ck)) + ' ' + (i + 1) + '</b>' + btn + '</div>';
+      }).join("") + '</div>';
+      el.innerHTML = html; return;
+    }
     html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
     html += '<h2>' + K.esc(t("c.shop")) + '</h2>' + (shop.length ? '<div class="shop">' + shop.map(function (it) { return card(it, false); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneHere")) + '</p>');
     el.innerHTML = html;
@@ -1699,12 +1893,15 @@
     if (e.target.id !== "c-flag") return;
     data.me.flag = e.target.value; persist(); syncMe();
   });
-  document.getElementById("view-char").addEventListener("click", function (e) {
+  var charShowId = false;
+  function rerenderLook() { var y = window.scrollY; if (current === "shop") renderShop(); else renderChar(); window.scrollTo(0, y); }
+  function onLookClick(e) {
     var b = e.target.closest("button"); if (!b) return;
     var ds = b.dataset, L = data.look;
     function keepName() { var i = document.getElementById("c-name"); if (i && i.value.trim()) data.me.name = i.value.trim().slice(0, 16); }
     keepName();
-    if (ds.cat) { shopCat = ds.cat; renderChar(); var cs = document.querySelector(".cats"); if (cs) cs.scrollIntoView({ block: "start" }); return; }
+    if (ds.act === "go-shop") { show("shop"); window.scrollTo(0, 0); return; }
+    if (ds.cat) { shopCat = ds.cat; rerenderLook(); var cs = document.querySelector(".cats"); if (cs) cs.scrollIntoView({ block: "start" }); return; }
     if (ds.g) L.g = ds.g;
     else if (ds.skin != null || ds.hair != null) {
       // 建好角色後，換沒買過的膚色／髮色要小木頭；買過的可以隨時換回來
@@ -1715,6 +1912,13 @@
       L[key] = v;
     }
     else if (ds.actpick) data.act = ds.actpick;
+    else if (ds.act === "show-id") { charShowId = true; rerenderLook(); return; }
+    else if (ds.buycol || ds.usecol) {
+      var pr = (ds.buycol || ds.usecol).split(":"), ck = pr[0], ci = +pr[1], cown = ck === "skin" ? data.ownSkin : data.ownHair;
+      if (ds.buycol) { if (data.wood < COLOR_PRICE || cown.indexOf(ci) >= 0) return; data.wood -= COLOR_PRICE; cown.push(ci); updateWood(); K.toast(t("c.boughtCol")); }
+      else if (cown.indexOf(ci) < 0) return;
+      L[ck] = ci; paidColor[ck] = ci; data.paidColor = paidColor;
+    }
     else if (ds.wear) { var it = S.item(ds.wear); if (it.slot === "top") L.top = it.id; else L[it.slot] = L[it.slot] === it.id ? "" : it.id; }
     else if (ds.buy) {
       var bi = S.item(ds.buy);
@@ -1726,7 +1930,8 @@
     } else if (ds.flag) { data.me.flag = ds.flag;
     } else if (ds.act === "save-char") {
       if (!data.me.name) { K.toast(t("f.needName")); document.getElementById("c-name").focus(); return; }
-      var cost = colorCost();
+      var renamed = data.me.named && data.paidName != null && data.me.name !== data.paidName;
+      var cost = colorCost() + (renamed ? RENAME_PRICE : 0);
       if (cost) {
         if (data.wood < cost) { K.toast(t("c.needWood", { n: cost })); return; }
         data.wood -= cost; updateWood(); K.toast(t("c.boughtColor", { n: cost }));
@@ -1734,13 +1939,14 @@
         if (data.ownHair.indexOf(L.hair) < 0) data.ownHair.push(L.hair);
       }
       paidColor = data.paidColor = { skin: L.skin, hair: L.hair };
-      data.me.named = true;
+      data.me.named = true; data.paidName = data.me.name;
       persist(); syncMe(); if (!cost) K.toast(t("c.saved"));
       show("rooms"); window.scrollTo(0, 0); return;
     } else return;
-    persist(); syncMe();
-    var y = window.scrollY; renderChar(); window.scrollTo(0, y);
-  });
+    persist(); syncMe(); rerenderLook();
+  }
+  document.getElementById("view-char").addEventListener("click", onLookClick);
+  document.getElementById("view-shop").addEventListener("click", onLookClick);
 
   function streak() {
     var n = 0, d = new Date();
@@ -1860,7 +2066,8 @@
   var AVATARS = ["🍅", "📚", "✏️", "🎧", "☕", "🌱", "🌙", "🐱", "🐶", "🦊", "🐼", "🐧", "🦉", "🐢", "🚀", "🔥"];
   data.me = data.me || { id: Math.random().toString(36).slice(2, 10), name: "", avatar: "🍅" };
   data.reqIn = data.reqIn || {}; data.reqOut = data.reqOut || {};
-  var COLOR_PRICE = 2;
+  var COLOR_PRICE = 2, RENAME_PRICE = 5;
+  if (data.me.named && data.paidName == null) data.paidName = data.me.name;
   if (data.me.name) data.me.named = true;
   var pc0 = data.paidColor || {};
   var paidColor = {
@@ -2231,7 +2438,7 @@
       row("p.hours", K.esc(hrs(m.hr || 0))) +
       row("p.country", cn ? (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(cn) : "—") +
       '<div class="pc-row"><span>ID</span><b><span class="mono">' + K.esc(m.id) + '</span> <button class="linkbtn" type="button" data-copy="' + K.esc(m.id) + '">' + K.esc(t("f.copy")) + '</button></b></div>' +
-      (m.me ? "" : '<div class="btn-row" style="justify-content:center;margin-top:10px">' + (data.friends[m.id] ? '<button class="btn ghost" type="button" data-pchat="' + K.esc(m.id) + '">' + K.esc(t("c.chat")) + '</button>'
+      (m.me ? "" : '<div class="btn-row" style="justify-content:center;margin-top:10px">' + '<button class="btn" type="button" data-rchat="' + K.esc(m.id) + '">💬 ' + K.esc(t("c.chat")) + '</button>' + (data.friends[m.id] || /^bot/.test(m.id) ? ""
         : data.reqOut[m.id] ? '<span class="small muted">' + K.esc(t("f.reqWait")) + '</span>' : '<button class="btn" type="button" data-padd="' + K.esc(m.id) + '">' + K.esc(t("f.sendReq")) + '</button>') + '</div>');
     document.getElementById("modal").hidden = false;
   });
@@ -2239,6 +2446,7 @@
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.padd) { addFriendFromRoom(b.dataset.padd); this.hidden = true; }
     if (b.dataset.pchat) { this.hidden = true; show("friends"); openChat(b.dataset.pchat); }
+    if (b.dataset.rchat) { this.hidden = true; openRoomChat(b.dataset.rchat, true); }
   });
   document.getElementById("s-members").addEventListener("click", function (e) {
     var b = e.target.closest("[data-addf]"); if (b) addFriendFromRoom(b.dataset.addf);
@@ -2544,7 +2752,7 @@
     window.scrollTo({ top: top, behavior: "smooth" });
   });
   document.getElementById("says").addEventListener("click", function (e) {
-    if (e.target.closest("[data-up]")) { setUp(!session.up); return; }
+    if (e.target.closest("[data-up]")) { ackBreak(); setUp(!session.up); return; }
     var b = e.target.closest("[data-say]"); if (b) say(b.dataset.say);
   });
   // 暫離：人還在房間裡，角色起身離開座位走動；跳回房間才走回座位
@@ -2571,6 +2779,7 @@
   });
   document.getElementById("tab-rooms").addEventListener("click", function () { show("rooms"); });
   document.getElementById("tab-friends").addEventListener("click", function () { show("friends"); });
+  document.getElementById("tab-shop").addEventListener("click", function () { show("shop"); });
   document.getElementById("tab-team").addEventListener("click", function () { show("team"); });
   document.getElementById("tab-me").addEventListener("click", function () { if (session) creditUntil(Date.now()); show("me"); });
   document.getElementById("note-save").addEventListener("click", function () {
@@ -2590,12 +2799,41 @@
   // 房間視角：大＝拉近、中、小＝看整個房間
   var VIEW_ZOOM = { l: 0.5, m: 0.66, s: 0.86 };
   function renderView() { document.querySelectorAll("#opt-view [data-view]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.view === (data.opts.view || "m")); }); }
+  function applyClassic() { if (window.KaidaScene3D && window.KaidaScene3D.setClassic) window.KaidaScene3D.setClassic(data.opts.layout === "classic"); }
   function applyView() { if (use3d && window.KaidaScene3D.view) window.KaidaScene3D.view(VIEW_ZOOM[data.opts.view] || VIEW_ZOOM.m); }
   document.getElementById("opt-view").addEventListener("click", function (e) {
     var b = e.target.closest("[data-view]"); if (!b) return;
     data.opts.view = b.dataset.view; persist(); renderView(); applyView();
   });
   renderView();
+  // 專注模式（設定裡和房間計時列旁邊的按鈕是同一個開關）
+  var optFocus = document.getElementById("opt-focus"); optFocus.checked = !!data.opts.focusMode;
+  function setFocusMode(on) { data.opts.focusMode = !!on; optFocus.checked = !!on; persist(); if (session && current === "session") renderSession(Date.now()); }
+  optFocus.addEventListener("change", function () { setFocusMode(optFocus.checked); });
+  document.getElementById("rb-foc").addEventListener("click", function () { setFocusMode(!data.opts.focusMode); K.toast(t("opt.focusS") + (data.opts.focusMode ? " ✓" : " ✕")); });
+  document.getElementById("fov-x").addEventListener("click", function () { setFocusMode(false); });
+  // 倒數／計時
+  function renderClockOpt() { document.querySelectorAll("#opt-clock [data-clock]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.clock === "up") === !!data.opts.countUp)); }); }
+  document.getElementById("opt-clock").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-clock]"); if (!b) return;
+    data.opts.countUp = b.dataset.clock === "up"; persist(); renderClockOpt(); if (session && current === "session") renderSession(Date.now());
+  });
+  renderClockOpt();
+  // 房間佈置：主題版（每間不一樣）／經典版（以前全部一樣的擺法）
+  function renderLayoutOpt() { document.querySelectorAll("#opt-layout [data-layout]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.layout === (data.opts.layout === "classic" ? "classic" : "theme"))); }); }
+  document.getElementById("opt-layout").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-layout]"); if (!b) return;
+    data.opts.layout = b.dataset.layout; persist(); renderLayoutOpt(); applyClassic();
+  });
+  renderLayoutOpt();
+  // 說明
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("[data-help]")) return;
+    var card = document.getElementById("modal-card"); card.className = "card";
+    card.innerHTML = '<h2 style="margin-top:0">' + K.esc(t("help.t")) + '</h2><ol class="help-list">' + t("help.body").split("|").map(function (x) { return '<li>' + K.esc(x) + '</li>'; }).join("") + '</ol>' +
+      '<button class="btn block" type="button" data-act="close-modal">' + K.esc(t("help.ok")) + '</button>';
+    document.getElementById("modal").hidden = false;
+  });
   var optSound = document.getElementById("opt-sound"), optWake = document.getElementById("opt-wake"), optNotify = document.getElementById("opt-notify");
   optSound.checked = data.opts.sound; optWake.checked = data.opts.wake; optNotify.checked = data.opts.notify && "Notification" in window && Notification.permission === "granted";
   var optMute = document.getElementById("opt-mute"); optMute.checked = !!data.opts.mute;
@@ -2611,7 +2849,7 @@
       if (perm !== "granted") K.toast(t("opt.notifydenied"));
     });
   });
-  ["opt-mute", "opt-sound", "opt-wake", "opt-notify"].forEach(function (id) {
+  ["opt-focus", "opt-mute", "opt-sound", "opt-wake", "opt-notify"].forEach(function (id) {
     var inp = document.getElementById(id);
     inp.setAttribute("aria-label", inp.closest(".opt").querySelector("span").textContent);
   });
