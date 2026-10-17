@@ -502,8 +502,11 @@
   .fov { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #fff; text-align: center; padding: 24px; text-shadow: 0 2px 10px rgba(0,0,0,.25); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .fov[hidden] { display: none; }
   /* 專注畫面打開時，後面的頁面不能捲動，也點不到設定 */
-  .fov { height: 100vh; height: 100lvh; bottom: auto; touch-action: none; overscroll-behavior: contain; }
-  html.fov-on, html.fov-on body { overflow: hidden; height: 100%; overscroll-behavior: none; }
+  /* 手機：專注畫面蓋住第一屏，往下滑就能看到音樂和設定 */
+  .fov { position: absolute; height: 100vh; height: 100lvh; bottom: auto; }
+  .fov-dn { position: absolute; left: 50%; bottom: 22px; margin-left: -22px; width: 44px; height: 44px; border-radius: 50%; padding: 0; cursor: pointer; color: #fff; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.55); animation: sdown 2.4s ease-in-out infinite; }
+  .fov-dn svg { display: block; width: 22px; height: 22px; margin: auto; }
+  @media (min-width: 640px) and (orientation: landscape), (min-width: 1000px) { .fov { position: fixed; } .fov-dn { display: none; } }
   .fov-ph { font-size: 15px; letter-spacing: .4em; opacity: .9; }
   .fov-t { font-family: var(--f-display); font-weight: 700; font-size: clamp(76px, 26vw, 220px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .fov-sub { font-size: 14px; opacity: .85; }
@@ -686,7 +689,7 @@
   </footer>
 </div>
 
-<div class="fov" id="fov" hidden role="timer" aria-live="off"><div class="fov-ph" id="fov-ph"></div><div class="fov-t" id="fov-t"></div><div class="fov-sub" id="fov-sub"></div><button type="button" class="fov-x" id="fov-x" data-i18n="fov.x">關閉專注模式</button></div>
+<div class="fov" id="fov" hidden role="timer" aria-live="off"><div class="fov-ph" id="fov-ph"></div><div class="fov-t" id="fov-t"></div><div class="fov-sub" id="fov-sub"></div><button type="button" class="fov-x" id="fov-x" data-i18n="fov.x">關閉專注模式</button><button type="button" class="fov-dn" id="fov-dn" data-i18n-aria="s.more" aria-label="往下滑：音樂、成員和更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button></div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true"><div class="card" id="modal-card"></div></div>
 
 <script src="../shared/kaida-app.js"></script>
@@ -1435,7 +1438,7 @@
     current = v;
     document.body.classList.toggle("in-room", v === "session");
     applyRoomBar();
-    if (v !== "session") { document.getElementById("rchat").hidden = true; document.getElementById("fov").hidden = true; document.documentElement.classList.remove("fov-on"); }
+    if (v !== "session") { document.getElementById("rchat").hidden = true; document.getElementById("fov").hidden = true; }
     ["rooms", "session", "me", "friends", "char", "team", "shop"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
     document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
     document.getElementById("tab-char").setAttribute("aria-selected", v === "char");
@@ -1857,7 +1860,7 @@
     // 專注模式：專注段用房間主題顏色蓋住整個畫面（只透一點點），大字顯示時間；休息時打開房間讓人按「休息一下」，
     // 按了「我回來了」坐回座位就再蓋上
     var fo = document.getElementById("fov"), fon = !!data.opts.focusMode && !session.away && current === "session" && (p.focus || (!session.up && !needAck(p)));
-    if (fo.hidden === fon) { fo.hidden = !fon; document.documentElement.classList.toggle("fov-on", fon); if (fon) window.scrollTo(0, 0); }
+    if (fo.hidden === fon) { fo.hidden = !fon; if (fon) window.scrollTo(0, 0); }
     if (fon) {
       fo.style.background = (THEME_SW[session.theme] || THEME_SW.home)[0] + "eb";
       document.getElementById("fov-ph").textContent = t(p.focus ? "ph.focus" : "ph.break");
@@ -2894,6 +2897,7 @@
   optFocus.addEventListener("change", function () { setFocusMode(optFocus.checked); });
   document.getElementById("rb-foc").addEventListener("click", function () { setFocusMode(!data.opts.focusMode); K.toast(t("opt.focusS") + (data.opts.focusMode ? " ✓" : " ✕")); });
   document.getElementById("fov-x").addEventListener("click", function () { setFocusMode(false); });
+  document.getElementById("fov-dn").addEventListener("click", function () { document.getElementById("s-more").click(); });
   // 倒數／計時
   function renderClockOpt() { document.querySelectorAll("#opt-clock [data-clock]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.clock === "up") === !!data.opts.countUp)); }); }
   document.getElementById("opt-clock").addEventListener("click", function (e) {
