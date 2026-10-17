@@ -24,6 +24,7 @@
   :root[data-pal="sea"] { --paper: #E9EFF3; --surface: #F8FBFC; --sunk: #DCE5EC; --ink: #1C2733; --muted: #536170; --line: #CCD8E2; --accent: #2E6696; --accent-ink: #FFFFFF; --signal: #2E6696; --accent-text: #2E6696; }
   .pals { display: flex; flex-wrap: wrap; gap: 10px; }
   .pals button { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 56px; padding: 6px 4px; border: 0; background: none; color: var(--ink); font-size: 12px; cursor: pointer; }
+  .set-pals { justify-content: space-between; gap: 4px; margin: 2px 0 6px; }
   .pals .dot2 { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line); }
   .pals button[aria-pressed="true"] .dot2 { border: 3px solid var(--ink); }
   :root { --f-body: "Twemoji Country Flags", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
@@ -500,6 +501,8 @@
   <div class="opts">
       <div class="opt"><span data-i18n="set.lang">語言 Language</span><span id="set-lang-slot"></span></div>
       <div class="opt"><span data-i18n="set.reload">重新整理（拿到最新版本）</span><button type="button" class="reload-btn" id="reload-btn" data-i18n-aria="app.reload" aria-label="重新整理"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></div>
+      <h3 data-i18n="c.pal">介面配色</h3>
+      <div class="pals set-pals" id="set-pals"></div>
       <h3 data-i18n="set.sound">聲音與提醒</h3>
       <div class="opt"><span data-i18n="opt.mute">全部靜音</span><label class="switch"><input type="checkbox" id="opt-mute"><span></span></label></div>
       <div class="opt"><span data-i18n="opt.sound">換段時響一聲、震動</span><label class="switch"><input type="checkbox" id="opt-sound" checked aria-labelledby=""><span></span></label></div>
@@ -1286,13 +1289,15 @@
     };
     var act = pick(Object.keys(ACTS_R));
     var pets = by("pet"), pet = chance(.6) ? pick(pets) : "";
+    var petSide = R(2) ? 1 : -1;
     readerSvg = '<svg viewBox="-56 -76 112 82" aria-hidden="true">' +
       '<ellipse cx="0" cy="2" rx="50" ry="3.5" fill="rgba(60,40,20,.14)"/>' +
-      '<g transform="translate(0 2)">' + S.bust(look, true, pet) + '</g>' +
+      '<g transform="translate(0 2)">' + S.bust(look, true) + '</g>' +
       // 書桌（擋住腿），桌上一本翻頁的書
       '<rect x="-40" y="-17" width="80" height="4" rx="1.5" fill="' + wood[0] + '"/><rect x="-38" y="-13" width="76" height="14" fill="' + wood[1] + '"/><rect x="-36" y="-11" width="72" height="2" fill="rgba(0,0,0,.08)"/>' +
       ACTS_R[act] +
       L[pick(Object.keys(L))] + Rt[pick(Object.keys(Rt))] +
+      (pet ? '<g transform="translate(' + (petSide * 50) + ' 2) scale(' + (pet === "chick" || pet === "hamster" ? ".62" : ".8") + ')">' + S.pet(pet, 0, 0) + '</g>' : "") +
       '<g class="zz" fill="var(--muted)" font-size="7" font-family="var(--f-mono)"><text x="14" y="-62">…</text></g>' +
       '</svg>';
     return readerSvg;
@@ -1627,6 +1632,17 @@
     var mc = document.querySelector('meta[name="theme-color"]'); if (mc) mc.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#f2ece1");
   }
   applyPal();
+  // 介面配色放在設定裡
+  function renderSetPals() {
+    var el = document.getElementById("set-pals"); if (!el) return;
+    el.innerHTML = PALS.map(function (pl) {
+      return '<button type="button" data-pal="' + pl[0] + '" aria-pressed="' + (data.pal === pl[0]) + '"><span class="dot2" style="background:linear-gradient(135deg,' + pl[1] + ' 0 55%,' + pl[2] + ' 55% 100%)"></span>' + K.esc(t("pal." + pl[0])) + '</button>';
+    }).join("");
+  }
+  document.getElementById("set-pals").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-pal]"); if (!b) return;
+    data.pal = b.dataset.pal; applyPal(); persist(); renderSetPals();
+  });
   // 已付費（或建角色時免費選）的膚色、髮色；試穿中的新顏色不算
   function colorCost() {
     if (!data.me.named) return 0;
@@ -1652,9 +1668,6 @@
       '<span class="small muted">' + K.esc(t("c.skin")) + '</span><div class="swatches">' + S.SKINS.map(function (c, i) { return '<button type="button" data-skin="' + i + '" aria-pressed="' + (L.skin === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.skin")) + ' ' + (i + 1) + '">' + colorTag(data.ownSkin, i) + '</button>'; }).join("") + '</div>' +
       '<span class="small muted">' + K.esc(t("c.hair")) + '</span><div class="swatches">' + S.HAIRS.map(function (c, i) { return '<button type="button" data-hair="' + i + '" aria-pressed="' + (L.hair === i) + '" style="background:' + c + '" aria-label="' + K.esc(t("c.hair")) + ' ' + (i + 1) + '">' + colorTag(data.ownHair, i) + '</button>'; }).join("") + '</div>' +
       '<button class="btn block" type="button" data-act="save-char">' + K.esc(t("c.save")) + '</button></div>';
-    html += '<div class="card"><span class="small muted">' + K.esc(t("c.pal")) + '</span><div class="pals">' + PALS.map(function (pl) {
-      return '<button type="button" data-pal="' + pl[0] + '" aria-pressed="' + (data.pal === pl[0]) + '"><span class="dot2" style="background:linear-gradient(135deg,' + pl[1] + ' 0 55%,' + pl[2] + ' 55% 100%)"></span>' + K.esc(t("pal." + pl[0])) + '</button>';
-    }).join("") + '</div></div>';
     var cat = S.CATS.filter(function (c) { return c.id === shopCat; })[0] || S.CATS[0];
     var inCat = S.ITEMS.filter(function (it) { return cat.slots.indexOf(it.slot) >= 0; });
     var owned = inCat.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
@@ -1898,7 +1911,9 @@
   function renderChip() {
     var el = document.getElementById("tab-char");
     // 左上角的 logo 就是個人設定：番茄背景 + 自己的角色
-    el.innerHTML = '<svg viewBox="-22 -67 44 44" aria-hidden="true">' + S.bust(data.look, true) + '</svg>';
+    // 有寵物就坐在頭上，畫面往上留一點空間
+    var pet = data.look && data.look.pet;
+    el.innerHTML = '<svg viewBox="' + (pet ? "-26 -78 52 52" : "-22 -67 44 44") + '" aria-hidden="true">' + S.bust(data.look, true, pet || "") + '</svg>';
     el.setAttribute("aria-label", t("chip.set"));
     updateWood();
   }
@@ -2588,7 +2603,7 @@
   // 設定：小木頭左邊和房間計時列各有一個齒輪
   (function () {
     var sh = document.getElementById("settings"), from = null;
-    function open() { from = document.activeElement; sh.hidden = false; sh.querySelector(".sheet-x").focus(); }
+    function open() { from = document.activeElement; renderSetPals(); sh.hidden = false; sh.querySelector(".sheet-x").focus(); }
     function close() { sh.hidden = true; if (from && from.focus) from.focus(); }
     document.getElementById("set-btn").addEventListener("click", open);
     document.getElementById("rb-set").addEventListener("click", open);
