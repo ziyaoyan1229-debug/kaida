@@ -1185,13 +1185,18 @@
   // 兩道：左邊一般音樂（kind / vol），右邊白噪音、環境音（amb / ambVol），可以同時開
   var MU_KINDS = ["", "jazz", "light", "lofi", "piano", "bossa", "musicbox"], AMB_KINDS = ["", "noise", "fire", "rain", "forest", "waves"];
   function music() {
-    if (!data.music) data.music = { kind: "light", vol: 0.6 };
+    if (!data.music) data.music = { kind: "light", vol: 0.3 };
     if (!data.music.def) { data.music.def = 1; if (!data.music.kind) data.music.kind = "light"; } // 預設輕音樂
     if (!data.music.two) { // 舊資料：以前只有一道，選的是環境音就搬到右邊
       data.music.two = 1;
       if (AMB_KINDS.indexOf(data.music.kind) > 0) { data.music.amb = data.music.kind; data.music.kind = ""; }
       if (data.music.amb == null) data.music.amb = "";
-      if (data.music.ambVol == null) data.music.ambVol = 0.5;
+      if (data.music.ambVol == null) data.music.ambVol = 0.25;
+    }
+    if (!data.music.quiet) { // 預設音量調小：還停在舊預設值的人一起降
+      data.music.quiet = 1;
+      if (data.music.vol === 0.6) data.music.vol = 0.3;
+      if (data.music.ambVol === 0.5) data.music.ambVol = 0.25;
     }
     return data.music;
   }
