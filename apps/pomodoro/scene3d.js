@@ -396,7 +396,7 @@ function makeChar(look) {
 /* ===== 寵物 ===== */
 function makePet(kind) {
   const g = new THREE.Group();
-  const col = { cat: "#e3a35b", shiba: "#d9914a", bunny: "#fffdf8", chick: "#f2cc4a", panda: "#fffdf8", fox: "#e07a3a", hamster: "#e8c08a" }[kind] || "#e3a35b";
+  const col = { cat: "#e3a35b", shiba: "#d9914a", bunny: "#fffdf8", chick: "#f2cc4a", panda: "#fffdf8", fox: "#e07a3a", hamster: "#e8c08a", blackcat: "#3c3842", calico: "#fffaf2", corgi: "#ec9a4e", poodle: "#c98a5a" }[kind] || "#e3a35b";
   let tail;
   if (kind === "chick") {
     const b = sph(0.14, col, 0, 0.14, 0, g); b.scale.set(1, 0.95, 1.05);
@@ -413,7 +413,10 @@ function makePet(kind) {
     else { [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, kind === "fox" ? 0.1 : 0.07, 4), mat(col)); e.position.set(x, 0.35, 0.14); g.add(e); }); }
     if (kind === "fox") { const m2 = sph(0.055, "#fffdf8", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.9); }
     if (kind === "shiba") { const m2 = sph(0.06, "#fff4e4", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.8); }
-    if (kind !== "panda") [-0.04, 0.04].forEach((x) => sph(0.015, "#2f2622", x, 0.26, 0.23, g, 6, 6));
+    if (kind === "corgi") { const m2 = sph(0.06, "#fffaf2", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.8); const ch = sph(0.08, "#fffaf2", 0, 0.12, 0.09, g, 8, 6); ch.scale.set(1, 1, 0.8); }
+    if (kind === "calico") { sph(0.05, "#ee9a4a", -0.05, 0.31, 0.13, g, 8, 6); sph(0.045, "#3a3036", 0.05, 0.31, 0.13, g, 8, 6); sph(0.07, "#ee9a4a", 0.06, 0.18, -0.04, g, 8, 6); }
+    if (kind === "poodle") { [[0, 0.34, 0.12, 0.06], [-0.09, 0.22, 0.12, 0.05], [0.09, 0.22, 0.12, 0.05], [0, 0.16, -0.1, 0.07]].forEach((p) => sph(p[3], "#a46a3c", p[0], p[1], p[2], g, 8, 6)); }
+    if (kind !== "panda") [-0.04, 0.04].forEach((x) => sph(0.015, kind === "blackcat" ? "#e2b63a" : "#2f2622", x, 0.26, 0.23, g, 6, 6));
     if (kind === "bunny") { tail = sph(0.05, "#fffdf8", 0, 0.14, -0.17, g, 8, 6); }
     else if (kind === "shiba") { tail = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.022, 6, 12, Math.PI * 1.5), mat(col)); tail.position.set(0, 0.24, -0.15); tail.rotation.y = Math.PI / 2; g.add(tail); }
     else if (kind === "panda") { tail = sph(0.03, "#fffdf8", 0, 0.14, -0.16, g, 6, 6); }

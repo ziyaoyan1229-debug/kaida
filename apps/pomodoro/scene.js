@@ -48,7 +48,10 @@
     { id: "chick", slot: "pet", price: 8, zh: "小雞", en: "Chick", color: "#f2cc4a" },
     { id: "shiba", slot: "pet", price: 12, zh: "柴犬", en: "Shiba", color: "#d9914a" },
     { id: "bunny", slot: "pet", price: 12, zh: "小白兔", en: "Bunny", color: "#f8f4ec" },
-    { id: "panda", slot: "pet", price: 18, zh: "熊貓寶寶", en: "Baby panda", color: "#f8f4ec" },
+    { id: "blackcat", slot: "pet", price: 10, zh: "小黑貓", en: "Black cat", color: "#3c3842" },
+    { id: "calico", slot: "pet", price: 12, zh: "三花貓", en: "Calico cat", color: "#ee9a4a" },
+    { id: "corgi", slot: "pet", price: 14, zh: "柯基", en: "Corgi", color: "#ec9a4e" },
+    { id: "poodle", slot: "pet", price: 14, zh: "貴賓狗", en: "Poodle", color: "#c98a5a" },
     { id: "denim", slot: "top", price: 6, zh: "牛仔外套", en: "Denim jacket", color: "#5d7fa8", zip: "#e8d6a8" },
     { id: "turtle", slot: "top", price: 6, zh: "黑色高領", en: "Black turtleneck", color: "#3a3640", roll: "#2a2630" },
     { id: "twins", slot: "style", price: 5, zh: "雙馬尾", en: "Pigtails" },
@@ -183,105 +186,185 @@
     return s;
   }
 
-  /* 寵物：坐著、面向左，腳底在 y=0，大約 18 寬 22 高 */
+  /* 寵物：坐著、面向左，腳底在 y=0，大約 18 寬 22 高。
+     每一塊都是「暗色底 + 亮色往左上偏一點」做出立體感，再加深色細描邊 */
   var INK = "#2f2622";
-  function petEyes(x1, x2, y, r) {
-    r = r || 1;
-    return '<ellipse cx="' + x1 + '" cy="' + y + '" rx="' + (1.05 * r) + '" ry="' + (1.25 * r) + '" fill="' + INK + '"/><ellipse cx="' + x2 + '" cy="' + y + '" rx="' + (1.05 * r) + '" ry="' + (1.25 * r) + '" fill="' + INK + '"/>' +
-      '<circle cx="' + (x1 + .35 * r) + '" cy="' + (y - .45 * r) + '" r="' + (.4 * r) + '" fill="#fff"/><circle cx="' + (x2 + .35 * r) + '" cy="' + (y - .45 * r) + '" r="' + (.4 * r) + '" fill="#fff"/>';
+  function petEyes(x1, x2, y, r, iris) {
+    r = r || 1; iris = iris || "#5a3a2a";
+    function one(x) {
+      return '<ellipse cx="' + x + '" cy="' + y + '" rx="' + (1.25 * r) + '" ry="' + (1.5 * r) + '" fill="' + INK + '"/>' +
+        '<ellipse cx="' + x + '" cy="' + (y + .5 * r) + '" rx="' + (.95 * r) + '" ry="' + (.75 * r) + '" fill="' + iris + '"/>' +
+        '<circle cx="' + (x + .45 * r) + '" cy="' + (y - .55 * r) + '" r="' + (.5 * r) + '" fill="#fff"/><circle cx="' + (x - .4 * r) + '" cy="' + (y + .6 * r) + '" r="' + (.22 * r) + '" fill="#fff" opacity=".85"/>';
+    }
+    return one(x1) + one(x2);
   }
   function petBlush(x1, x2, y) {
-    return '<ellipse cx="' + x1 + '" cy="' + y + '" rx="1.3" ry=".75" fill="#f38c9a" opacity=".7"/><ellipse cx="' + x2 + '" cy="' + y + '" rx="1.3" ry=".75" fill="#f38c9a" opacity=".7"/>';
+    return '<ellipse cx="' + x1 + '" cy="' + y + '" rx="1.4" ry=".8" fill="#f38c9a" opacity=".6"/><ellipse cx="' + x2 + '" cy="' + y + '" rx="1.4" ry=".8" fill="#f38c9a" opacity=".6"/>';
   }
   function whiskers(x, y) {
-    return '<g stroke="' + INK + '" stroke-width=".3" opacity=".55" stroke-linecap="round"><path d="M' + (x - 2.6) + ' ' + y + ' h-3 M' + (x - 2.6) + ' ' + (y + .8) + ' l-2.8 .9 M' + (x + 2.6) + ' ' + y + ' h3 M' + (x + 2.6) + ' ' + (y + .8) + ' l2.8 .9"/></g>';
+    return '<g stroke="' + INK + '" stroke-width=".28" opacity=".5" stroke-linecap="round" fill="none"><path d="M' + (x - 2.8) + ' ' + y + ' q-1.6 -.4 -3.2 -.2 M' + (x - 2.8) + ' ' + (y + .8) + ' q-1.6 .3 -3 1.1 M' + (x + 2.8) + ' ' + y + ' q1.6 -.4 3.2 -.2 M' + (x + 2.8) + ' ' + (y + .8) + ' q1.6 .3 3 1.1"/></g>';
   }
-  // 坐姿身體：背微彎，前面兩隻小腳
-  function sitBody(c, dark, belly, paw) {
-    return '<path d="M-6.5 0 C-8.2 -3.5 -7.4 -8.6 -3.2 -10 L3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 Z" fill="' + c + '"/>' +
-      '<path d="M3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 L5.5 0 C6.6 -3.4 6 -7.4 3.6 -9.6 Z" fill="' + dark + '" opacity=".35"/>' +
-      (belly ? '<ellipse cx="-2" cy="-4.4" rx="3.3" ry="4" fill="' + belly + '"/>' : "") +
-      '<ellipse cx="-4.6" cy="-.7" rx="2" ry="1.3" fill="' + (paw || c) + '"/><ellipse cx="-.6" cy="-.7" rx="2" ry="1.3" fill="' + (paw || c) + '"/>' +
-      '<ellipse cx="6.4" cy="-1" rx="2.4" ry="1.5" fill="' + c + '"/>';
+  function snout(x, y, nose) {
+    return '<path d="M' + (x - .7) + ' ' + y + ' h1.4 q.1 .6 -.7 .9 q-.8 -.3 -.7 -.9 Z" fill="' + (nose || "#e9798a") + '"/><path d="M' + x + ' ' + (y + .9) + ' v.45 M' + x + ' ' + (y + 1.35) + ' q-.8 .7 -1.5 .1 M' + x + ' ' + (y + 1.35) + ' q.8 .7 1.5 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/>';
+  }
+  // 毛茸茸的頭：兩頰各有兩撮毛
+  function fluffPath(cx, cy, rx, ry) {
+    return 'M' + cx + ' ' + (cy - ry) + ' C' + (cx + rx * .62) + ' ' + (cy - ry) + ' ' + (cx + rx) + ' ' + (cy - ry * .55) + ' ' + (cx + rx) + ' ' + (cy - ry * .05) +
+      ' L' + (cx + rx + 1.3) + ' ' + (cy + ry * .28) + ' L' + (cx + rx - .3) + ' ' + (cy + ry * .38) + ' L' + (cx + rx + .9) + ' ' + (cy + ry * .66) + ' L' + (cx + rx * .62) + ' ' + (cy + ry * .78) +
+      ' C' + (cx + rx * .35) + ' ' + (cy + ry * 1.02) + ' ' + (cx - rx * .35) + ' ' + (cy + ry * 1.02) + ' ' + (cx - rx * .62) + ' ' + (cy + ry * .78) +
+      ' L' + (cx - rx - .9) + ' ' + (cy + ry * .66) + ' L' + (cx - rx + .3) + ' ' + (cy + ry * .38) + ' L' + (cx - rx - 1.3) + ' ' + (cy + ry * .28) + ' L' + (cx - rx) + ' ' + (cy - ry * .05) +
+      ' C' + (cx - rx) + ' ' + (cy - ry * .55) + ' ' + (cx - rx * .62) + ' ' + (cy - ry) + ' ' + cx + ' ' + (cy - ry) + ' Z';
+  }
+  function lit(d, base, shade, line, extra) {
+    // 暗色整塊 + 亮色往左上縮一點 + 描邊
+    return '<path d="' + d + '" fill="' + shade + '" stroke="' + line + '" stroke-width=".55" stroke-linejoin="round"' + (extra || "") + '/>' +
+      '<path d="' + d + '" fill="' + base + '" transform="translate(-.7 -.6) scale(.95)" style="transform-box:fill-box;transform-origin:30% 30%"/>';
+  }
+  function shine(cx, cy, rx, ry) {
+    return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="#fff" opacity=".35" transform="rotate(-25 ' + cx + ' ' + cy + ')"/>';
+  }
+  var BODY = "M-6.5 0 C-8.4 -3.6 -7.6 -8.8 -3.2 -10.2 L3.6 -9.8 C8.2 -8.8 9.4 -3.6 8.2 0 Z";
+  function sitBody(c, sh, line, belly, paw) {
+    return lit(BODY, c, sh, line) +
+      (belly ? '<path d="M-5 -1 C-6 -4.4 -4.6 -8 -2 -8.4 C.6 -8 1.6 -4.4 1 -1 Z" fill="' + belly + '"/><path d="M-3.4 -6 l.5 .6 l.5 -.6 M-2.6 -4.4 l.5 .6 l.5 -.6" fill="none" stroke="' + sh + '" stroke-width=".3" opacity=".6"/>' : "") +
+      '<ellipse cx="6.4" cy="-1.1" rx="2.6" ry="1.6" fill="' + c + '" stroke="' + line + '" stroke-width=".5"/>' +
+      paws(paw || c, line);
+  }
+  function paws(c, line) {
+    var s = '';
+    [-4.6, -.6].forEach(function (x) {
+      s += '<ellipse cx="' + x + '" cy="-.8" rx="2.1" ry="1.35" fill="' + c + '" stroke="' + line + '" stroke-width=".45"/><path d="M' + (x - .6) + ' -.2 v-.7 M' + (x + .6) + ' -.2 v-.7" stroke="' + line + '" stroke-width=".3" stroke-linecap="round"/>';
+    });
+    return s;
+  }
+  function ears(c, inner, line, tall) {
+    var h = tall || 7;
+    return '<path d="M-8.8 -15.2 L-8.3 ' + (-15.2 - h) + ' L-3.6 -18.8 Z M4.4 -15.2 L3.9 ' + (-15.2 - h) + ' L-.8 -18.8 Z" fill="' + c + '" stroke="' + line + '" stroke-width=".55" stroke-linejoin="round"/>' +
+      '<path d="M-7.8 -16.6 L-7.5 ' + (-16.6 - h + 2.6) + ' L-5 -18.6 Z M3.4 -16.6 L3.1 ' + (-16.6 - h + 2.6) + ' L.6 -18.6 Z" fill="' + inner + '"/>' +
+      '<path d="M-7 -17.4 l.5 -1.6 M-6.4 -17.2 l.7 -1.2 M2.6 -17.4 l-.5 -1.6 M2 -17.2 l-.7 -1.2" stroke="#fff" stroke-width=".3" opacity=".8" stroke-linecap="round"/>';
+  }
+  function catPet(o, os, ol, oc, iris, stripes, calico) {
+    var spot = function (d, c) { return '<path d="' + d + '" fill="' + c + '"/>'; };
+    var g = '<path class="tail" d="M7.4 -2.4 C13.6 -2.8 14.6 -9.4 11.2 -14" fill="none" stroke="' + ol + '" stroke-width="3.4" stroke-linecap="round"/><path class="tail" d="M7.4 -2.4 C13.6 -2.8 14.6 -9.4 11.2 -14" fill="none" stroke="' + (calico ? "#3a3036" : o) + '" stroke-width="2.4" stroke-linecap="round"/>' +
+      sitBody(o, os, ol, oc === o ? null : oc, oc);
+    if (stripes) g += '<path d="M3 -8.8 q1.4 1.8 .5 3.6 M5.6 -8.2 q1.4 1.8 .5 3.6 M7.4 -6.6 q.8 1.2 .3 2.4" fill="none" stroke="' + os + '" stroke-width="1" stroke-linecap="round"/>';
+    if (calico) g += spot("M2.6 -9.4 C5.8 -9.6 7.6 -7.2 7 -4.6 C5 -5.6 3 -6.6 2.6 -9.4 Z", "#ee9a4a") + spot("M4.2 -3.2 C6 -4.4 8.4 -3.6 8.4 -1.4 C6.8 -1 5 -1.6 4.2 -3.2 Z", "#3a3036");
+    g += ears(o, calico ? "#f6aab4" : (o === "#3c3842" ? "#6a5a66" : "#f6aab4"), ol) + lit(fluffPath(-2.2, -14, 6.9, 5.9), o, os, ol);
+    if (calico) g += spot("M-9 -16.4 C-8.6 -19.6 -5.4 -20.2 -3.8 -18.6 C-4.6 -16.4 -6.6 -15 -9 -16.4 Z", "#ee9a4a") + spot("M4.6 -16.2 C4.2 -19.2 1.6 -20 -.2 -18.8 C.4 -16.8 2.4 -15.4 4.6 -16.2 Z", "#3a3036") +
+      '<path d="M-8.8 -15.2 L-8.3 -22.2 L-3.6 -18.8 Z" fill="#ee9a4a" stroke="' + ol + '" stroke-width=".55" stroke-linejoin="round"/><path d="M-7.8 -16.6 L-7.5 -19.6 L-5 -18.6 Z" fill="#f6aab4"/>' +
+      '<path d="M4.4 -15.2 L3.9 -22.2 L-.8 -18.8 Z" fill="#3a3036" stroke="' + ol + '" stroke-width=".55" stroke-linejoin="round"/><path d="M3.4 -16.6 L3.1 -19.6 L.6 -18.6 Z" fill="#8a6a72"/>';
+    if (stripes) g += '<path d="M-3.4 -19.6 q.2 1.2 0 2.2 M-2.2 -19.9 v2.6 M-1 -19.6 q-.2 1.2 0 2.2" stroke="' + os + '" stroke-width=".75" stroke-linecap="round" fill="none"/>' +
+      '<path d="M-8.4 -13.4 l1.6 .3 M-8.6 -12.4 l1.6 0 M4 -13.4 l-1.6 .3 M4.2 -12.4 l-1.6 0" stroke="' + os + '" stroke-width=".55" stroke-linecap="round"/>';
+    g += shine(-5, -17, 2.2, 1) +
+      '<path d="M-5.6 -11.4 C-5.4 -13.2 -3.8 -13 -2.2 -12.4 C-.6 -13 1 -13.2 1.2 -11.4 C.8 -9.6 -.6 -9.2 -2.2 -9.6 C-3.8 -9.2 -5.2 -9.6 -5.6 -11.4 Z" fill="' + (oc === o ? "#fff" : oc) + '" opacity="' + (oc === o ? ".5" : "1") + '"/>' +
+      petEyes(-4.8, .4, -14.6, 1, iris) + petBlush(-6.6, 2.2, -12.2) + snout(-2.2, -12.6) + whiskers(-2.2, -11.8);
+    if (o === "#3c3842") g = g.replace(/stroke="#2f2622" stroke-width=".28" opacity=".5"/, 'stroke="#d8d0c8" stroke-width=".28" opacity=".7"');
+    return g;
+  }
+  // 柯基：大立耳、白色鼻樑、短腿、屁股小尾巴
+  function corgiPet() {
+    var c1 = "#ec9a4e", cs = "#c87432", cl = "#8a4c1c", cw = "#fffaf2";
+    return '<ellipse cx="8.4" cy="-4.6" rx="1.8" ry="1.4" fill="' + c1 + '" stroke="' + cl + '" stroke-width=".5"/>' +
+      sitBody(c1, cs, cl, cw, cw) +
+      '<path d="M-10 -15 L-9.6 -24.8 L-3.4 -18.8 Z M5.6 -15 L5.2 -24.8 L-1 -18.8 Z" fill="' + c1 + '" stroke="' + cl + '" stroke-width=".55" stroke-linejoin="round"/>' +
+      '<path d="M-8.8 -16.6 L-8.6 -22.4 L-5 -18.8 Z M4.4 -16.6 L4.2 -22.4 L.6 -18.8 Z" fill="#f6c0a8"/><path d="M-7.8 -17.6 l.5 -2 M3.4 -17.6 l-.5 -2" stroke="#fff" stroke-width=".3" opacity=".8"/>' +
+      lit(fluffPath(-2.2, -14, 7.2, 5.9), c1, cs, cl) + shine(-5.2, -17.4, 2.2, .9) +
+      '<path d="M-2.2 -20 C-1.2 -17.6 -.8 -15.4 -.4 -13.6 C1.6 -13.4 3.6 -12.4 4.4 -11 C3 -8.6 .4 -8 -2.2 -8 C-4.8 -8 -7.4 -8.6 -8.8 -11 C-8 -12.4 -6 -13.4 -4 -13.6 C-3.6 -15.4 -3.2 -17.6 -2.2 -20 Z" fill="' + cw + '"/>' +
+      petEyes(-5, .6, -14.6, .95, "#4a2a1a") + petBlush(-7, 2.6, -12) +
+      '<ellipse cx="-2.2" cy="-11.9" rx="1.2" ry=".85" fill="' + INK + '"/><circle cx="-2.5" cy="-12.2" r=".3" fill="#fff" opacity=".8"/>' +
+      '<path d="M-2.2 -11.1 v.5 M-2.2 -10.6 q-.9 .8 -1.6 .1 M-2.2 -10.6 q.9 .8 1.6 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/><path d="M-2.9 -10 q.7 1.4 1.4 0 Z" fill="#f08a9a"/>';
+  }
+  // 貴賓：坐姿跟大家一樣，頭頂一球毛、垂耳捲捲、腳和尾巴是小毛球
+  function poodlePet() {
+    var p1 = "#d39466", ps = "#ad6e40", pl = "#6e4222", pm = "#ecc49e";
+    function puff(cx, cy, r) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + ps + '" stroke="' + pl + '" stroke-width=".45"/><circle cx="' + (cx - r * .2) + '" cy="' + (cy - r * .2) + '" r="' + (r * .74) + '" fill="' + p1 + '"/>'; }
+    function curls(pts) { return '<g fill="none" stroke="' + ps + '" stroke-width=".45" stroke-linecap="round">' + pts.map(function (p) { return '<path d="M' + p[0] + ' ' + p[1] + ' a.9 .9 0 1 1 1.4 .6"/>'; }).join("") + '</g>'; }
+    var g = puff(9.6, -6.6, 2.3) + '<path d="M7.4 -3 Q8.8 -4.4 9.2 -5" stroke="' + pl + '" stroke-width=".9" fill="none"/>' +
+      sitBody(p1, ps, pl, null, p1) + curls([[1, -8], [4, -7.4], [5.6, -4.6], [2.6, -4.4], [-1.6, -5.6], [-4.6, -6.4], [6, -1.6]]) +
+      puff(-4.6, -.9, 1.9) + puff(-.6, -.9, 1.9) +
+      lit(fluffPath(-2.2, -13.8, 6.4, 5.6), p1, ps, pl) + curls([[-5.4, -17.4], [-1.6, -18], [1.4, -16.6]]) +
+      puff(-5.4, -19.4, 2.5) + puff(-2.2, -20.8, 2.8) + puff(1, -19.4, 2.5) + puff(-2.2, -18.4, 2.2);
+    [-9.4, 5].forEach(function (x) {
+      g += lit("M" + x + " -16.4 C" + (x - 2.6) + " -16 " + (x - 2.8) + " -9.6 " + x + " -8.6 C" + (x + 2.8) + " -9.6 " + (x + 2.6) + " -16 " + x + " -16.4 Z", p1, ps, pl) +
+        curls([[x - 1.2, -14.4], [x - .6, -11.4]]);
+    });
+    g += '<path d="M-6.2 -11.6 C-6.2 -14 1.8 -14 1.8 -11.6 C1.8 -9 -6.2 -9 -6.2 -11.6 Z" fill="' + pm + '"/>' +
+      petEyes(-4.8, .4, -14.4, .9, "#3a2a1a") + petBlush(-6.4, 2, -12.4) +
+      '<ellipse cx="-2.2" cy="-12.2" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-12.5" r=".3" fill="#fff" opacity=".8"/>' +
+      '<path d="M-2.2 -11.4 v.45 M-2.2 -10.95 q-.8 .7 -1.4 .1 M-2.2 -10.95 q.8 .7 1.4 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/>' +
+      '<path d="M-4.4 -22.4 l2.2 1.1 l-2.2 1.1 Z M0 -22.4 l-2.2 1.1 l2.2 1.1 Z" fill="#f08a9a" stroke="#c05a6a" stroke-width=".3"/><circle cx="-2.2" cy="-21.3" r=".55" fill="#c05a6a"/>';
+    return g;
+  }
+  // 小雞：圓身體 + 圓頭，頭頂三根毛、小翅膀、尖嘴
+  function chickPet() {
+    var y1 = "#ffd84e", ys = "#eab42a", yl = "#b88414";
+    return '<path d="M-3 -.3 v-1.8 M-3 -.3 l-1.1 .4 M-3 -.3 l1.1 .4 M1.6 -.3 v-1.8 M1.6 -.3 l-1.1 .4 M1.6 -.3 l1.1 .4" stroke="#e08a2a" stroke-width=".75" stroke-linecap="round"/>' +
+      '<path d="M6.6 -6.6 l2.6 -1.6 l-.6 1.8 l1.6 .2 l-2.6 1.6 Z" fill="' + ys + '" stroke="' + yl + '" stroke-width=".4" stroke-linejoin="round"/>' +
+      lit("M0 -10.6 C4.6 -10.6 7.4 -7.6 7.2 -4.6 C7 -1.6 4.2 -.9 0 -.9 C-4.2 -.9 -7 -1.6 -7.2 -4.6 C-7.4 -7.6 -4.6 -10.6 0 -10.6 Z", y1, ys, yl) +
+      '<path d="M-3.4 -2.2 C-4.6 -4.6 -3.6 -7.4 -.6 -7.6 C2 -7.4 2.6 -4.6 1.6 -2.2 Z" fill="#fff4b8" opacity=".8"/>' +
+      '<path d="M1.6 -7.6 C4.8 -7.8 6.6 -5.4 6 -3 C4.2 -3.4 2.2 -4.8 1.6 -7.6 Z" fill="' + ys + '" stroke="' + yl + '" stroke-width=".4"/><path d="M3 -6.4 l1.6 2 M4.2 -6.8 l1.4 2.2" stroke="' + yl + '" stroke-width=".3" opacity=".7"/>' +
+      lit(fluffPath(-1.6, -13.6, 5.6, 4.8), y1, ys, yl) + shine(-3.8, -16, 1.9, .8) +
+      '<path d="M-2.4 -18.2 C-2.8 -20.6 -1.6 -21.8 -.4 -21.6 C-1.2 -20.6 -1 -19.4 -1.2 -18.4 Z M-1.2 -18.4 C-.4 -20.4 1.4 -20.8 2.2 -20 C1 -19.6 .2 -19 -.4 -18.2 Z M-2.6 -18.2 C-3.6 -19.8 -5 -19.8 -5.6 -19 C-4.4 -18.8 -3.6 -18.4 -3 -17.8 Z" fill="' + y1 + '" stroke="' + yl + '" stroke-width=".35" stroke-linejoin="round"/>' +
+      petEyes(-4, .6, -14, .9, "#3a2a20") + petBlush(-5.6, 2.2, -12) +
+      '<path d="M-1.6 -13 L-3.4 -12.2 L-1.6 -11.4 L.2 -12.2 Z" fill="#f59a3a" stroke="#c0601a" stroke-width=".35" stroke-linejoin="round"/><path d="M-3.4 -12.2 H.2" stroke="#c0601a" stroke-width=".3"/>';
+  }
+  // 倉鼠：坐姿，圓耳朵、白肚子，兩手抱著葵花子
+  function hamsterPet() {
+    var h1 = "#eec28a", hs = "#cc9a5a", hl = "#9a6a30", hc = "#fff6e8";
+    return '<ellipse cx="7.6" cy="-1.6" rx="1.2" ry=".9" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".4"/>' +
+      lit("M-7 0 C-8.8 -3.6 -8 -8.4 -3.4 -9.6 L3.4 -9.4 C8.2 -8.4 9.2 -3.6 8 0 Z", h1, hs, hl) +
+      '<path d="M-5.2 -.8 C-6.4 -4.4 -4.8 -8 -1.8 -8.2 C1.2 -8 2.4 -4.4 1.4 -.8 Z" fill="' + hc + '"/>' +
+      '<ellipse cx="-4.6" cy="-.6" rx="1.7" ry=".95" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx=".4" cy="-.6" rx="1.7" ry=".95" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>' +
+      '<circle cx="-7.4" cy="-17.6" r="2.4" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".5"/><circle cx="3" cy="-17.6" r="2.4" fill="' + h1 + '" stroke="' + hl + '" stroke-width=".5"/><circle cx="-7.4" cy="-17.6" r="1.3" fill="#f4b4bc"/><circle cx="3" cy="-17.6" r="1.3" fill="#f4b4bc"/>' +
+      lit(fluffPath(-2.2, -13, 7, 5.4), h1, hs, hl) + shine(-5, -16, 2.2, .9) +
+      '<path d="M-2.2 -18.2 q.5 1.6 0 3" stroke="' + hs + '" stroke-width="1" stroke-linecap="round" fill="none"/>' +
+      '<path d="M-9 -11.6 C-8.6 -9 -5.6 -7.6 -2.2 -7.8 C1.2 -7.6 4.2 -9 4.6 -11.6 C2.4 -10.8 .4 -11.6 -2.2 -11.6 C-4.8 -11.6 -6.8 -10.8 -9 -11.6 Z" fill="' + hc + '"/>' +
+      petEyes(-4.9, .5, -13.6, .9, "#3a2a20") + petBlush(-7.2, 2.8, -11) + snout(-2.2, -11.8, "#d98e9a") +
+      '<path d="M-2.2 -6.8 C-.6 -6.6 .2 -4.8 -.4 -3.4 C-1 -2.4 -3.4 -2.4 -4 -3.4 C-4.6 -4.8 -3.8 -6.6 -2.2 -6.8 Z" fill="#5a4a3e" stroke="#2f2622" stroke-width=".3"/><path d="M-2.2 -6.4 v3.6 M-3.2 -5.8 q-.2 1.4 .2 2.4 M-1.2 -5.8 q.2 1.4 -.2 2.4" stroke="#f2ead8" stroke-width=".35" fill="none"/>' +
+      '<ellipse cx="-4.4" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx="0" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>';
   }
   function pet(kind, x, y) {
-    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="1" cy="0" rx="9" ry="2" fill="rgba(60,40,20,.16)"/>';
-    if (kind === "cat") {
-      var o = "#ec9b4c", od = "#c46f2a", oc = "#fbe6cc";
-      g += '<path class="tail" d="M7 -2.5 C13 -3 14 -9 11 -13.5" fill="none" stroke="' + o + '" stroke-width="2.6" stroke-linecap="round"/><path d="M12.6 -10 l1.4 .6 M11.8 -12.6 l1.5 .2" stroke="' + od + '" stroke-width="1.1" stroke-linecap="round"/>' +
-        sitBody(o, od, oc, oc) +
-        '<path d="M3 -8.6 q1.2 1.6 .4 3.2 M5.4 -8 q1.2 1.6 .4 3.2" fill="none" stroke="' + od + '" stroke-width="1" stroke-linecap="round"/>' +
-        '<path d="M-8.4 -15 L-8 -22 L-3.8 -18.4 Z M4 -15 L3.6 -22 L-.6 -18.4 Z" fill="' + o + '" stroke="' + o + '" stroke-width=".8" stroke-linejoin="round"/>' +
-        '<path d="M-7.5 -16.6 L-7.3 -20.2 L-5.2 -18.4 Z M3.1 -16.6 L2.9 -20.2 L.8 -18.4 Z" fill="#f3a3ad"/>' +
-        '<ellipse cx="-2.2" cy="-14" rx="6.8" ry="5.8" fill="' + o + '"/>' +
-        '<path d="M-3.2 -19.4 v1.8 M-2.2 -19.7 v2.2 M-1.2 -19.4 v1.8" stroke="' + od + '" stroke-width=".7" stroke-linecap="round"/>' +
-        '<ellipse cx="-2.2" cy="-11.6" rx="3.2" ry="2.2" fill="' + oc + '"/>' +
-        petEyes(-4.6, .2, -14.4) + petBlush(-6.2, 1.8, -12.4) +
-        '<path d="M-2.8 -12.9 h1.2 l-.6 .7 Z" fill="#e9798a"/><path d="M-2.2 -12.2 v.5 M-2.2 -11.7 q-.8 .6 -1.4 .1 M-2.2 -11.7 q.8 .6 1.4 .1" fill="none" stroke="' + INK + '" stroke-width=".4" stroke-linecap="round"/>' +
-        whiskers(-2.2, -12.4);
-    } else if (kind === "chick") {
-      var y1 = "#f7d24a", y2 = "#e2ab22";
-      g += '<path d="M-3 -.2 v-1.6 M-3 -.2 l-1 .3 M-3 -.2 l1 .3 M1.5 -.2 v-1.6 M1.5 -.2 l-1 .3 M1.5 -.2 l1 .3" stroke="#e08a2a" stroke-width=".7" stroke-linecap="round"/>' +
-        '<ellipse cx="0" cy="-7.6" rx="7.6" ry="7.2" fill="' + y1 + '"/><path d="M5.4 -12.4 C8.4 -9 8.2 -4.4 5 -1.6 C6.4 -5 6.4 -9 5.4 -12.4 Z" fill="' + y2 + '" opacity=".45"/>' +
-        '<path d="M2.4 -8 q4 .6 4.6 4 q-3 .4 -4.6 -1.6 Z" fill="' + y2 + '"/>' +
-        '<path d="M-1 -14.4 q.4 -3.2 2.2 -3.4 q-.6 1.6 .4 2.4 q-1.6 0 -2.6 1 Z" fill="' + y1 + '"/>' +
-        '<ellipse cx="-3.8" cy="-11.2" rx="1.5" ry=".8" fill="#fff" opacity=".45"/>' +
-        petEyes(-4.2, -.4, -9.4, .95) + petBlush(-5.4, 1, -7.4) +
-        '<path d="M-3.6 -8.2 l-2.6 .9 l2.6 .9 Z" fill="#f08a2a"/><path d="M-3.6 -8.2 l-2.6 .9 h2.6 Z" fill="#f7a64a"/>';
-    } else if (kind === "shiba") {
-      var s1 = "#dc944d", s2 = "#b46a2c", sc = "#fff4e4";
-      g += '<path class="tail" d="M6.6 -6 C12 -8 13.4 -14 9.4 -15 C7.2 -15.4 6.8 -12.6 9 -12.2 C10.6 -11.6 9.6 -9 6.6 -8.6 Z" fill="' + s1 + '"/><path d="M9.4 -15 C7.2 -15.4 6.8 -12.6 9 -12.2" fill="none" stroke="' + sc + '" stroke-width="1.2" stroke-linecap="round"/>' +
-        sitBody(s1, s2, sc, sc) +
-        '<path d="M-8.8 -15.4 L-8 -22.4 L-3.6 -18.6 Z M4.4 -15.4 L3.6 -22.4 L-.8 -18.6 Z" fill="' + s1 + '" stroke="' + s1 + '" stroke-width=".8" stroke-linejoin="round"/>' +
-        '<path d="M-7.8 -17 L-7.4 -20.4 L-5.2 -18.6 Z M3.4 -17 L3 -20.4 L.8 -18.6 Z" fill="' + s2 + '" opacity=".6"/>' +
-        '<ellipse cx="-2.2" cy="-14.2" rx="7" ry="5.9" fill="' + s1 + '"/>' +
-        '<path d="M-8.6 -12.6 C-7.6 -9.2 -4.6 -8.2 -2.2 -8.4 C.2 -8.2 3.2 -9.2 4.2 -12.6 C2.6 -11.6 .6 -12.6 -2.2 -12.6 C-5 -12.6 -7 -11.6 -8.6 -12.6 Z" fill="' + sc + '"/>' +
-        '<ellipse cx="-5" cy="-17.4" rx="1.1" ry=".55" fill="' + sc + '"/><ellipse cx=".6" cy="-17.4" rx="1.1" ry=".55" fill="' + sc + '"/>' +
-        petEyes(-4.8, .4, -14.6) + petBlush(-6.6, 2.2, -12.2) +
-        '<ellipse cx="-2.2" cy="-12.4" rx="1.1" ry=".8" fill="' + INK + '"/><path d="M-2.2 -11.6 v.5 M-2.2 -11.1 q-.8 .7 -1.5 .1 M-2.2 -11.1 q.8 .7 1.5 .1" fill="none" stroke="' + INK + '" stroke-width=".4" stroke-linecap="round"/>' +
-        '<path d="M-2.8 -10.5 q.6 1.2 1.2 0 Z" fill="#f08a9a"/>';
+    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="1" cy="0" rx="' + (kind === "chick" || kind === "hamster" ? 6.6 : 9.5) + '" ry="' + (kind === "chick" || kind === "hamster" ? 1.6 : 2.1) + '" fill="rgba(60,40,20,.18)"/>';
+    if (kind === "cat") g += catPet("#f0a052", "#d07a32", "#9a5420", "#fff1de", "#7a8a3a", true);
+    else if (kind === "blackcat") g += catPet("#3c3842", "#26232b", "#141218", "#5a5560", "#e2b63a", false);
+    else if (kind === "calico") g += catPet("#fffaf2", "#e6dccc", "#a89a86", "#fffaf2", "#6a8a3a", false, true);
+    else if (kind === "corgi") g += corgiPet();
+    else if (kind === "poodle") g += poodlePet();
+    // 小雞和倉鼠比貓狗小一號
+    else if (kind === "chick") g += '<g transform="scale(.72)">' + chickPet() + '</g>';
+    else if (kind === "hamster") g += '<g transform="scale(.75)">' + hamsterPet() + '</g>';
+    if (kind === "shiba") {
+      var s1 = "#e09a52", ss = "#bc7234", sl = "#8a4c1c", sc = "#fff6e8";
+      g += '<path class="tail" d="M6.6 -6 C12.4 -8 14 -14.6 9.4 -15.6 C6.8 -16 6.4 -12.6 9 -12.2 C10.8 -11.6 9.8 -9 6.6 -8.6 Z" fill="' + s1 + '" stroke="' + sl + '" stroke-width=".55" stroke-linejoin="round"/><path d="M9.4 -15.2 C7.6 -15.4 7.2 -13 9.2 -12.6" fill="none" stroke="' + sc + '" stroke-width="1.3" stroke-linecap="round"/>' +
+        sitBody(s1, ss, sl, sc, sc) +
+        ears(s1, "#f2c9a0", sl, 6.6) + lit(fluffPath(-2.2, -14.2, 7.1, 6), s1, ss, sl) +
+        shine(-5, -17.4, 2.2, .9) +
+        '<path d="M-9.2 -12.8 C-8 -9 -4.8 -8 -2.2 -8.2 C.4 -8 3.6 -9 4.8 -12.8 C3 -11.6 .8 -12.8 -2.2 -12.8 C-5.2 -12.8 -7.4 -11.6 -9.2 -12.8 Z" fill="' + sc + '"/>' +
+        '<ellipse cx="-5.2" cy="-17.6" rx="1.2" ry=".6" fill="' + sc + '"/><ellipse cx=".8" cy="-17.6" rx="1.2" ry=".6" fill="' + sc + '"/>' +
+        petEyes(-4.9, .5, -14.8, .95, "#4a2a1a") + petBlush(-6.8, 2.4, -12.2) +
+        '<ellipse cx="-2.2" cy="-12.3" rx="1.2" ry=".85" fill="' + INK + '"/><circle cx="-2.5" cy="-12.6" r=".3" fill="#fff" opacity=".8"/>' +
+        '<path d="M-2.2 -11.5 v.5 M-2.2 -11 q-.9 .8 -1.6 .1 M-2.2 -11 q.9 .8 1.6 .1" fill="none" stroke="' + INK + '" stroke-width=".38" stroke-linecap="round"/><path d="M-2.9 -10.4 q.7 1.4 1.4 0 Z" fill="#f08a9a"/>' +
+        '<path d="M-3.4 -4.2 q1.2 .9 2.4 0" fill="none" stroke="#e05a4a" stroke-width=".9"/><circle cx="-2.2" cy="-3.6" r=".6" fill="#f2c94c"/>';
     } else if (kind === "bunny") {
-      var w = "#fffdf8", wl = "#e8ddcc", wp = "#f4b8c0";
-      g += '<circle cx="8" cy="-3.4" r="2.6" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
-        '<path d="M-6.5 0 C-8.2 -3.5 -7.4 -8.6 -3.2 -10 L3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 Z" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
-        '<path d="M3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 L5.5 0 C6.6 -3.4 6 -7.4 3.6 -9.6 Z" fill="' + wl + '" opacity=".5"/>' +
-        '<ellipse cx="-4.6" cy="-.7" rx="2" ry="1.3" fill="' + w + '" stroke="' + wl + '" stroke-width=".4"/><ellipse cx="-.6" cy="-.7" rx="2" ry="1.3" fill="' + w + '" stroke="' + wl + '" stroke-width=".4"/>' +
-        '<g transform="rotate(-10 -5 -18)"><ellipse cx="-5.4" cy="-22.6" rx="2.2" ry="6.4" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/><ellipse cx="-5.4" cy="-22.2" rx="1" ry="4.6" fill="' + wp + '"/></g>' +
-        '<g transform="rotate(14 0 -18)"><ellipse cx=".4" cy="-22.6" rx="2.2" ry="6.4" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/><ellipse cx=".4" cy="-22.2" rx="1" ry="4.6" fill="' + wp + '"/></g>' +
-        '<ellipse cx="-2.4" cy="-13.4" rx="6.2" ry="5.4" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
-        petEyes(-4.8, -.2, -13.8) + petBlush(-6.4, 1.6, -11.8) +
-        '<path d="M-3 -12.2 h1.2 l-.6 .6 Z" fill="#e9798a"/><path d="M-2.4 -11.6 v.5 M-2.4 -11.1 q-.7 .6 -1.3 .1 M-2.4 -11.1 q.7 .6 1.3 .1" fill="none" stroke="' + INK + '" stroke-width=".4" stroke-linecap="round"/>';
+      var w = "#fffdf8", ws = "#e9e0d2", wl = "#bfb3a2", wp = "#f6b6c0";
+      g += '<circle cx="8.2" cy="-3.4" r="2.7" fill="' + w + '" stroke="' + wl + '" stroke-width=".5"/>' +
+        lit(BODY, w, ws, wl) + paws(w, wl) +
+        '<g transform="rotate(-12 -5 -18)">' + lit("M-5.4 -16.6 C-7.8 -18 -8 -26 -5.4 -29.4 C-2.8 -26 -3 -18 -5.4 -16.6 Z", w, ws, wl) + '<path d="M-5.4 -18.4 C-6.6 -19.6 -6.6 -25 -5.4 -27.2 C-4.2 -25 -4.2 -19.6 -5.4 -18.4 Z" fill="' + wp + '"/></g>' +
+        '<g transform="rotate(16 0 -18)">' + lit("M.4 -16.6 C-2 -18 -2.2 -26 .4 -29.4 C3 -26 2.8 -18 .4 -16.6 Z", w, ws, wl) + '<path d="M.4 -18.4 C-.8 -19.6 -.8 -25 .4 -27.2 C1.6 -25 1.6 -19.6 .4 -18.4 Z" fill="' + wp + '"/></g>' +
+        lit(fluffPath(-2.4, -13.6, 6.4, 5.4), w, ws, wl) +
+        petEyes(-4.9, .1, -14, 1, "#8a3a4a") + petBlush(-6.6, 1.8, -11.8) + snout(-2.4, -12.4, "#f08a9a") +
+        '<path d="M-3.2 -10.6 h1.6 v1 h-1.6 Z" fill="#fff" stroke="' + wl + '" stroke-width=".25"/>';
     } else if (kind === "fox") {
-      var f1 = "#e6773a", f2 = "#b4521f", fc = "#fffdf8";
-      g += '<path class="tail" d="M6.4 -2 C13 -2 15.6 -8 13.6 -15 C12.6 -10 10 -8.6 6.4 -7.6 Z" fill="' + f1 + '"/><path d="M13.6 -15 C14.6 -13 14.6 -11.6 14 -10.4 C13 -11.6 12.6 -13 13.6 -15 Z" fill="' + fc + '"/>' +
-        sitBody(f1, f2, fc, "#3a2a24") +
-        '<path d="M-9 -15 L-8.6 -23 L-3.6 -18.6 Z M4.6 -15 L4.2 -23 L-.8 -18.6 Z" fill="' + f1 + '" stroke="' + f1 + '" stroke-width=".8" stroke-linejoin="round"/>' +
-        '<path d="M-8 -16.8 L-7.9 -20.8 L-5.2 -18.6 Z M3.6 -16.8 L3.5 -20.8 L.8 -18.6 Z" fill="#3a2a24"/>' +
-        '<ellipse cx="-2.2" cy="-14" rx="6.9" ry="5.7" fill="' + f1 + '"/>' +
-        '<path d="M-9 -13.4 C-7 -13.6 -4.4 -12.8 -2.2 -9.4 C0 -12.8 2.6 -13.6 4.6 -13.4 C3.6 -10 .4 -8.4 -2.2 -8.4 C-4.8 -8.4 -8 -10 -9 -13.4 Z" fill="' + fc + '"/>' +
-        petEyes(-4.8, .4, -14.8) + petBlush(-6.8, 2.4, -12.8) +
-        '<ellipse cx="-2.2" cy="-10.2" rx="1" ry=".75" fill="' + INK + '"/>';
-    } else if (kind === "hamster") {
-      var h1 = "#e9bf86", h2 = "#c99456", hc = "#fff4e4";
-      g += '<ellipse cx="0" cy="-6.8" rx="8.2" ry="7" fill="' + h1 + '"/><path d="M4.6 -12.6 C9 -10.6 9.4 -3.6 5.6 -.6 C7 -4.6 7 -9.4 4.6 -12.6 Z" fill="' + h2 + '" opacity=".4"/>' +
-        '<ellipse cx="-1" cy="-4.6" rx="5" ry="4.4" fill="' + hc + '"/>' +
-        '<circle cx="-5.4" cy="-12.6" r="2.3" fill="' + h1 + '"/><circle cx="3.6" cy="-12.6" r="2.3" fill="' + h1 + '"/><circle cx="-5.4" cy="-12.6" r="1.2" fill="#f2b4bc"/><circle cx="3.6" cy="-12.6" r="1.2" fill="#f2b4bc"/>' +
-        '<path d="M-1 -13.8 q.4 1.4 0 2.6" stroke="' + h2 + '" stroke-width=".9" stroke-linecap="round" fill="none"/>' +
-        petEyes(-3.6, 1.6, -8.6, .9) + petBlush(-5.6, 3.4, -6.6) +
-        '<path d="M-1.5 -7.1 h1 l-.5 .5 Z" fill="#c98e9a"/><path d="M-1 -6.6 v.4 M-1 -6.2 q-.6 .5 -1.1 .1 M-1 -6.2 q.6 .5 1.1 .1" fill="none" stroke="' + INK + '" stroke-width=".35" stroke-linecap="round"/>' +
-        '<ellipse cx="-3.2" cy="-3.6" rx="1.4" ry="1" fill="#f2c4c8"/><ellipse cx="1.2" cy="-3.6" rx="1.4" ry="1" fill="#f2c4c8"/>' +
-        '<ellipse cx="-1" cy="-2.6" rx="1.8" ry="1.4" fill="#8bc26b"/><path d="M-1 -4 v-1" stroke="#5a8f42" stroke-width=".6"/>';
-    } else if (kind === "panda") {
-      var p1 = "#fffdf8", pk = "#2a2620", pl = "#e6dccb";
-      g += '<path d="M-6.5 0 C-8.2 -3.5 -7.4 -8.6 -3.2 -10 L3.6 -9.6 C8 -8.6 9.2 -3.6 8 0 Z" fill="' + p1 + '" stroke="' + pl + '" stroke-width=".5"/>' +
-        '<path d="M-7.6 -6.2 C-6.6 -9.4 -2 -10.4 1 -9.2 C-1 -7.6 -4.6 -6 -7.6 -6.2 Z" fill="' + pk + '"/>' +
-        '<ellipse cx="-4.6" cy="-1" rx="2.2" ry="1.6" fill="' + pk + '"/><ellipse cx="-.4" cy="-1" rx="2.2" ry="1.6" fill="' + pk + '"/><ellipse cx="6.4" cy="-1.2" rx="2.6" ry="1.8" fill="' + pk + '"/>' +
-        '<circle cx="-8.2" cy="-19.2" r="2.6" fill="' + pk + '"/><circle cx="3.6" cy="-19.2" r="2.6" fill="' + pk + '"/>' +
-        '<ellipse cx="-2.3" cy="-14" rx="7.2" ry="6.2" fill="' + p1 + '" stroke="' + pl + '" stroke-width=".5"/>' +
-        '<ellipse cx="-5.2" cy="-14.4" rx="2.1" ry="2.6" fill="' + pk + '" transform="rotate(20 -5.2 -14.4)"/><ellipse cx=".6" cy="-14.4" rx="2.1" ry="2.6" fill="' + pk + '" transform="rotate(-20 .6 -14.4)"/>' +
-        '<circle cx="-4.9" cy="-14.8" r=".75" fill="#fff"/><circle cx=".9" cy="-14.8" r=".75" fill="#fff"/>' + petBlush(-7, 2.4, -11.6) +
-        '<ellipse cx="-2.3" cy="-11.8" rx="1" ry=".7" fill="' + pk + '"/><path d="M-2.3 -11.1 v.4 M-2.3 -10.7 q-.7 .6 -1.3 .1 M-2.3 -10.7 q.7 .6 1.3 .1" fill="none" stroke="' + pk + '" stroke-width=".4" stroke-linecap="round"/>' +
-        '<path d="M5 -8 l2.6 -5.6" stroke="#7fb05a" stroke-width="1.1" stroke-linecap="round"/><path d="M7.6 -13.6 q2 -.4 2.4 -2 q-2 .2 -2.4 2 Z M6.8 -12 q-2 -.6 -2.6 -2 q2 0 2.6 2 Z" fill="#8bc26b"/>';
+      var f1 = "#ee7c3a", fs = "#c45a20", fl = "#8a3a12", fc = "#fffdf8";
+      g += '<path class="tail" d="M6.4 -1.8 C13.6 -1.8 16.2 -8.4 13.8 -16 C12.8 -10.6 10 -8.8 6.4 -7.8 Z" fill="' + f1 + '" stroke="' + fl + '" stroke-width=".55" stroke-linejoin="round"/>' +
+        '<path d="M13.8 -16 C15 -13.8 15 -12 14.3 -10.6 C13 -11.6 12.6 -13.6 13.8 -16 Z" fill="' + fc + '"/><path d="M9 -5 q2.4 -1.4 3.4 -4" fill="none" stroke="' + fs + '" stroke-width=".5" opacity=".7"/>' +
+        sitBody(f1, fs, fl, fc, "#3a2a24") +
+        '<path d="M-9 -15 L-8.6 -23.4 L-3.6 -18.6 Z M4.6 -15 L4.2 -23.4 L-.8 -18.6 Z" fill="' + f1 + '" stroke="' + fl + '" stroke-width=".55" stroke-linejoin="round"/>' +
+        '<path d="M-8 -16.8 L-7.9 -21 L-5.2 -18.6 Z M3.6 -16.8 L3.5 -21 L.8 -18.6 Z" fill="#3a2a24"/><path d="M-7.2 -17.6 l.4 -1.6 M2.8 -17.6 l-.4 -1.6" stroke="#fff" stroke-width=".3" opacity=".7"/>' +
+        lit(fluffPath(-2.2, -14, 7, 5.8), f1, fs, fl) + shine(-5, -17.4, 2.2, .9) +
+        '<path d="M-9.4 -13 C-7.2 -13.4 -4.4 -12.6 -2.2 -9.2 C0 -12.6 2.8 -13.4 5 -13 C4 -9.6 .6 -8 -2.2 -8 C-5 -8 -8.4 -9.6 -9.4 -13 Z" fill="' + fc + '"/>' +
+        petEyes(-4.9, .5, -14.9, .95, "#c87a2a") + petBlush(-7, 2.6, -12.6) +
+        '<ellipse cx="-2.2" cy="-9.8" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-10.1" r=".3" fill="#fff" opacity=".8"/>';
     }
     return g + '</g>';
   }
