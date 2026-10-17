@@ -716,6 +716,9 @@
   data.ownSkin = data.ownSkin || [data.look.skin || 0]; data.ownHair = data.ownHair || [data.look.hair || 0];
   data.owned = data.owned || ["tee-blue", "tee-pink"];
   data.wood = data.wood || 0;
+  // 熊貓下架：買過的退回 18 根小木頭
+  if (data.owned.indexOf("panda") >= 0) { data.owned.splice(data.owned.indexOf("panda"), 1); data.wood += 18; }
+  if (data.look.pet === "panda") data.look.pet = "";
   data.act = data.act || "read";
   data.mode = MODES[data.mode] || data.mode === "custom" || data.mode === "rand" ? data.mode : "std";
   // 「隨機」：每次開始時從 25/5、50/10 抽一個
