@@ -825,12 +825,10 @@
     // 進房間時依場景放對應的音樂（關掉音樂的人就不放）；之後在房間裡換的照樣算數
     if (window.KaidaMusic) {
       if (music().kind) playMusic(SCENE_MUSIC[session.theme] || music().kind);
-      if (music().amb) playAmb(SCENE_AMB[session.theme] || music().amb);
+      if (music().amb) playAmb(music().amb); // 環境音不跟場景換，預設關閉，開了就放自己選的
     }
   }
   var SCENE_MUSIC = { home: "light", cafe: "jazz", library: "piano", study: "lofi", space: "musicbox", school: "light", konbini: "lofi", washitsu: "piano", cabin: "light", beach: "bossa", rooftop: "bossa", lodge: "jazz" };
-  // 有開環境音的人，進房間換成場景的環境音
-  var SCENE_AMB = { cafe: "rain", library: "noise", washitsu: "forest", cabin: "fire", beach: "waves", lodge: "fire", rooftop: "forest" };
 
   var busy = false;
   // 直接開始：先找同時間、有空位的公開房間，一間一間試；都沒有就自己開一間公開的
