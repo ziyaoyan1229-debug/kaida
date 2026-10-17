@@ -387,6 +387,8 @@
   .shop .it b { display: block; font-size: 14px; font-weight: 600; }
   .shop .it .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; margin-top: 6px; width: 100%; }
   .shop .it.on { border: 2px solid var(--signal); }
+  .shop .it { cursor: pointer; }
+  .shop .it.try { border: 2px dashed var(--ink); background: var(--surface); }
   @media (max-width: 639px), (max-width: 999px) and (orientation: portrait) {
     body.in-room .scene-wrap { margin-bottom: 0; }
     body.in-room .k3 { aspect-ratio: auto; height: calc(100vh - var(--rb-h, 72px)); height: calc(100dvh - var(--rb-h, 72px)); max-height: none; min-height: 320px; }
@@ -504,6 +506,14 @@
   .tcard .sw.rnd { display: grid; place-items: center; background: var(--sunk); font-family: var(--f-display); font-size: 34px; color: var(--muted); }
   .pick-select { border-radius: 0; }
   .btn { border-radius: 0; }
+  /* 全部按鍵：玻璃感（半透明、模糊背景、上緣一道亮光） */
+  .btn, .start-btn { border-radius: 14px; background: color-mix(in srgb, var(--ink) 80%, transparent); color: var(--paper); border: 1px solid color-mix(in srgb, #fff 28%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 14px rgba(0,0,0,.12); }
+  .btn.ghost, .btn.danger { background: color-mix(in srgb, var(--surface) 50%, transparent); border-color: color-mix(in srgb, var(--ink) 16%, transparent); box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 2px 10px rgba(0,0,0,.06); }
+  .rail button, .music button, .cats button, .presets button, .vseg { border-radius: 999px; background: color-mix(in srgb, var(--surface) 45%, transparent); border-color: color-mix(in srgb, var(--ink) 16%, transparent);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 2px 8px rgba(0,0,0,.05); }
+  .cats button[aria-selected="true"], .vseg button[aria-pressed="true"] { background: color-mix(in srgb, var(--ink) 82%, transparent); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+  .rail .mcard, .rail .tcard { border-radius: 12px; }
   /* 專注模式：主題顏色蓋住整個房間，只透一點點，中間大字顯示時間 */
   .fov { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #fff; text-align: center; padding: 24px; text-shadow: 0 2px 10px rgba(0,0,0,.25); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .fov[hidden] { display: none; }
@@ -784,14 +794,14 @@
       "c.woodP": "完成一顆番茄（專注到最後）就拿小木頭：25 分鐘 3 根、50 分鐘 6 根、100 分鐘 12 根、快速測試 1 根。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "gift.30": "🎁 謝謝你一直來讀書！送你 30 根小木頭", "c.use": "換上", "c.boughtCol": "買了新顏色！",
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
       "rc.wh": "悄悄話", "rc.tipWh": "悄悄話開著：說的話只有 {n} 看得到，不會出現在頭上", "rc.end": "結束對話", "rc.endLine": "先這樣吧，我要繼續進步了！", "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
       "help.t": "說明", "help.ok": "知道了",
       "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|專注到最後才算一顆番茄：25 分鐘拿 3 根小木頭、50 分鐘 6 根、100 分鐘 12 根。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|小木頭可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 根。|讀書紀錄和小木頭只存在這支手機的瀏覽器裡。",
-      "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
+      "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "slot.legs": "褲子", "slot.set": "套裝", "cat.legs": "褲子", "cat.set": "套裝", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
       "q.next": "換一句",
       "f.avNote": "頭像就是你的角色，到個人設定換造型", "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
       "f.nameph": "例如：小番茄", "f.save": "儲存", "f.edit": "改暱稱",
@@ -875,14 +885,14 @@
       "c.woodP": "Finish a pomodoro (stay to the end) to earn logs: 3 for 25 min, 6 for 50 min, 12 for 100 min, 1 for a quick test. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "gift.30": "🎁 Thanks for studying with us! Here are 30 logs", "c.use": "Use", "c.boughtCol": "New color bought!",
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
       "rc.wh": "Whisper", "rc.tipWh": "Whisper is on: only {n} sees what you say, nothing shows above your head", "rc.end": "End chat", "rc.endLine": "That's it for now, back to leveling up!", "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
       "help.t": "How it works", "help.ok": "Got it",
       "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|A pomodoro counts only if you stay to the end: 3 logs for 25 min, 6 for 50, 12 for 100.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend logs in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 logs.|Your records and logs are stored only in this browser.",
-      "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
+      "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "slot.legs": "Bottoms", "slot.set": "Set", "cat.legs": "Bottoms", "cat.set": "Sets", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
       "q.next": "Another",
       "f.avNote": "Your avatar is your character. Change the look in Profile.", "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
       "f.nameph": "e.g. Tomato", "f.save": "Save", "f.edit": "Edit nickname",
@@ -933,7 +943,7 @@
   var MAX_AWAY = 3 * 60 * MIN; // 超過 3 小時沒回來就自動結束
 
   var STORE = "kaida-pomodoro-v1";
-  var data = K.load(STORE, null) || {};
+  var data = K.load(STORE, null), oldPlayer = !!data; data = data || {};
   data.days = data.days || {};
   data.notes = data.notes || [];
   data.tasks = data.tasks || {};
@@ -942,6 +952,9 @@
   data.ownSkin = data.ownSkin || [data.look.skin || 0]; data.ownHair = data.ownHair || [data.look.hair || 0];
   data.owned = data.owned || ["tee-blue", "tee-pink"];
   data.wood = data.wood || 0;
+  // 2026/10 一次性禮物：已經玩過的人送 30 根小木頭；之後才加入的不送
+  var gift30 = false;
+  if (!data.gift30) { data.gift30 = true; if (oldPlayer) { data.wood += 30; gift30 = true; } K.save(STORE, data); }
   // 熊貓下架：買過的退回 18 根小木頭
   if (data.owned.indexOf("panda") >= 0) { data.owned.splice(data.owned.indexOf("panda"), 1); data.wood += 18; }
   if (data.look.pet === "panda") data.look.pet = "";
@@ -1907,10 +1920,12 @@
   /* ===== 角色頁 ===== */
   function itemThumb(it) {
     var look = Object.assign({}, data.look, { pet: "" });
-    look[it.slot] = it.id;
+    if (it.parts) Object.assign(look, it.parts); else look[it.slot] = it.id;
     return '<svg viewBox="-36 -96 72 102" aria-hidden="true"><g>' + S.preview(look).replace(/<rect[^>]*\/><rect[^>]*\/>/, "") + '</g></svg>';
   }
-  var shopCat = "top", shopPick = {};
+  var shopCat = "top", shopPick = {}, shopTry = "";
+  // 套裝：上衣加褲子一起換
+  function wearItem(L, it) { if (it.parts) Object.assign(L, it.parts); else if (it.slot === "top") L.top = it.id; else L[it.slot] = it.id; }
   function countryName(c) { try { return new Intl.DisplayNames([K.lang() === "en" ? "en" : "zh-TW"], { type: "region" }).of(c); } catch (er) { return c; } }
   var PALS = [["kraft", "#F2ECE1", "#2A2620"], ["tomato", "#F6EDE3", "#C23B22"], ["matcha", "#EDF0E4", "#3F6B44"], ["night", "#14161B", "#F0694A"], ["sea", "#E9EFF3", "#2E6696"]];
   function applyPal() {
@@ -1968,6 +1983,8 @@
     var el = document.getElementById("view-shop"), L = data.look, html = "";
     var colTab = shopCat === "skin" || shopCat === "hair", pick = colTab && shopPick[shopCat] != null ? shopPick[shopCat] : null;
     var PL = pick != null ? Object.assign({}, L, (function () { var o = {}; o[shopCat] = pick; return o; })()) : L;
+    // 點下面的造型，先在上面的角色身上試穿看看
+    var tri = !colTab && shopTry ? S.item(shopTry) : null; if (tri) { PL = Object.assign({}, PL); wearItem(PL, tri); }
     // 上面（預覽、木頭、分類）固定不動，只有下面的商品可以滑
     html += '<div class="shop-head"><div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(PL) + '</svg>' +
       '<div style="min-width:0"><div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
@@ -1976,14 +1993,14 @@
     var cat = CATS2.filter(function (c) { return c.id === shopCat; })[0] || S.CATS[0];
     var inCat = S.ITEMS.filter(function (it) { return cat.slots.indexOf(it.slot) >= 0; });
     var owned = inCat.filter(function (it) { return data.owned.indexOf(it.id) >= 0; });
-    var shop = inCat.filter(function (it) { return data.owned.indexOf(it.id) < 0; });
+    var shop = inCat.filter(function (it) { return data.owned.indexOf(it.id) < 0 && !it.setOnly; });
     function card(it, own) {
-      var on = L[it.slot] === it.id, name = K.lang() === "en" ? it.en : it.zh;
-      var btn = own ? (it.slot === "top" ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.wearing")) + '</button>' : '<button class="btn ghost" type="button" data-wear="' + it.id + '">' + K.esc(t("c.wear")) + '</button>')
+      var on = it.parts ? Object.keys(it.parts).every(function (k) { return L[k] === it.parts[k]; }) : L[it.slot] === it.id, name = K.lang() === "en" ? it.en : it.zh;
+      var btn = own ? (it.slot === "top" || it.parts ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.wearing")) + '</button>' : '<button class="btn ghost" type="button" data-wear="' + it.id + '">' + K.esc(t("c.wear")) + '</button>')
                     : '<button class="btn ' + (on ? "ghost" : "") + '" type="button" data-wear="' + it.id + '">' + K.esc(t(on ? "c.off" : "c.wear")) + '</button>')
         : (data.wood >= it.price ? '<button class="btn" type="button" data-buy="' + it.id + '">🪵 ' + K.esc(t("c.buy", { n: it.price })) + '</button>'
                                  : '<button class="btn ghost" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
-      return '<div class="it' + (on ? " on" : "") + '">' + itemThumb(it) + '<b>' + K.esc(name) + '</b><span class="small muted">' + K.esc(t("slot." + it.slot)) + '</span>' + btn + '</div>';
+      return '<div class="it' + (on ? " on" : "") + (shopTry === it.id ? " try" : "") + '" data-try="' + it.id + '">' + itemThumb(it) + '<b>' + K.esc(name) + '</b><span class="small muted">' + K.esc(t("slot." + it.slot)) + '</span>' + btn + '</div>';
     }
     html += '<div class="cats" role="tablist">' + CATS2.map(function (c) {
       return '<button type="button" role="tab" data-cat="' + c.id + '" aria-selected="' + (c.id === cat.id) + '">' + K.esc(t("cat." + c.id)) + '</button>';
@@ -2015,13 +2032,15 @@
   var charShowId = false;
   function rerenderLook() { var y = window.scrollY; if (current === "shop") renderShop(); else renderChar(); window.scrollTo(0, y); }
   function onLookClick(e) {
+    var tc = e.target.closest("[data-try]");
+    if (tc && !e.target.closest("button")) { shopTry = shopTry === tc.dataset.try ? "" : tc.dataset.try; rerenderLook(); return; }
     var b = e.target.closest("button"); if (!b) return;
     var ds = b.dataset, L = data.look;
     function keepName() { var i = document.getElementById("c-name"); if (i && i.value.trim()) data.me.name = i.value.trim().slice(0, 16); }
     keepName();
     if (ds.act === "go-shop") { show("shop"); window.scrollTo(0, 0); return; }
     if (ds.pickcol) { var pc = ds.pickcol.split(":"); shopPick[pc[0]] = +pc[1]; rerenderLook(); return; }
-    if (ds.cat) { shopCat = ds.cat; shopPick = {}; rerenderLook(); var vs = document.getElementById("view-shop"); if (current === "shop" && vs.getBoundingClientRect().top < 0) vs.scrollIntoView({ block: "start" }); return; }
+    if (ds.cat) { shopCat = ds.cat; shopPick = {}; shopTry = ""; rerenderLook(); var vs = document.getElementById("view-shop"); if (current === "shop" && vs.getBoundingClientRect().top < 0) vs.scrollIntoView({ block: "start" }); return; }
     if (ds.g) L.g = ds.g;
     else if (ds.skin != null || ds.hair != null) {
       // 建好角色後，換沒買過的膚色／髮色要小木頭；買過的可以隨時換回來
@@ -2039,12 +2058,13 @@
       else if (cown.indexOf(ci) < 0) return;
       L[ck] = ci; paidColor[ck] = ci; data.paidColor = paidColor; delete shopPick[ck];
     }
-    else if (ds.wear) { var it = S.item(ds.wear); if (it.slot === "top") L.top = it.id; else L[it.slot] = L[it.slot] === it.id ? "" : it.id; }
+    else if (ds.wear) { var it = S.item(ds.wear); shopTry = ""; if (it.parts || it.slot === "top") wearItem(L, it); else L[it.slot] = L[it.slot] === it.id ? "" : it.id; }
     else if (ds.buy) {
       var bi = S.item(ds.buy);
       if (!bi || data.wood < bi.price || data.owned.indexOf(bi.id) >= 0) return;
-      data.wood -= bi.price; data.owned.push(bi.id); updateWood();
-      if (bi.slot === "top") L.top = bi.id; else L[bi.slot] = bi.id;
+      data.wood -= bi.price; data.owned.push(bi.id); updateWood(); shopTry = "";
+      if (bi.parts) Object.keys(bi.parts).forEach(function (k) { if (data.owned.indexOf(bi.parts[k]) < 0) data.owned.push(bi.parts[k]); });
+      wearItem(L, bi);
       K.toast(t("c.bought", { n: K.lang() === "en" ? bi.en : bi.zh }));
     } else if (ds.pal) { data.pal = ds.pal; applyPal();
     } else if (ds.flag) { data.me.flag = ds.flag;
@@ -3024,6 +3044,7 @@
   startSocial(); updateBadge();
   tick();
   setInterval(tick, 1000);
+  if (gift30) setTimeout(function () { updateWood(); K.toast(t("gift.30")); }, 1200);
 })();
 </script>
 </body>
