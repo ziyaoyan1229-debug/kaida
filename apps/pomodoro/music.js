@@ -245,6 +245,57 @@
     return spb;
   }
 
+  /* 民謠吉他：G Em C D，指彈 Travis 撥法，拇指交替低音 */
+  var FG = [[43, 50, [59, 62, 67]], [40, 47, [55, 59, 64]], [36, 43, [55, 60, 64]], [38, 45, [54, 57, 62]]];
+  function folkBeat(t, beat) {
+    var spb = 60 / 88 / 2, bar = Math.floor(beat / 8) % FG.length, b = beat % 8, ch = FG[bar], sw = b % 2 ? 0.02 : 0;
+    if (b % 2 === 0) nylon(b % 4 === 0 ? ch[0] : ch[1], t, spb * 3, 0.07);
+    else nylon(ch[2][[0, 1, 2, 1][(b - 1) / 2]], t + sw, spb * 2.5, 0.045);
+    if (b === 0 && Math.random() < 0.5) nylon(ch[2][2] + 12, t + spb * 0.5, spb * 4, 0.03);
+    return spb;
+  }
+
+  /* 咖啡廳：低低的人聲 + 偶爾杯子碰撞 */
+  function startCafe() {
+    bed(0.05, "bandpass", 420, 1.2, 0.5, 0.31, 0.12);   // 遠處的聊天聲
+    bed(0.05, "bandpass", 900, 1.6, 0.18, 0.23, 0.08);
+    bed(0.02, "lowpass", 260, 0.7, 0.25, 0.05, 0.06);   // 空間裡的低頻
+  }
+  function clink(t, pan) {
+    var f = 2600 + Math.random() * 1800;
+    [1, 2.76, 5.4].forEach(function (k, i) {
+      var o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.value = f * k;
+      g.gain.setValueAtTime(0.025 / (i + 1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4 / (i + 1));
+      o.connect(g);
+      if (ctx.createStereoPanner) { var pn = ctx.createStereoPanner(); pn.pan.value = pan; g.connect(pn); out(pn, true); } else out(g, true);
+      o.start(t); o.stop(t + 0.45);
+    });
+  }
+  function cafeBeat(t) {
+    var spb = 0.5, p = Math.random() * 1.4 - 0.7;
+    if (Math.random() < 0.06) { clink(t + Math.random() * spb, p); if (Math.random() < 0.4) clink(t + 0.12 + Math.random() * 0.1, p); }
+    return spb;
+  }
+
+  /* 夏夜：蟋蟀一串串地叫，底下有微風 */
+  function startNight() { bed(0.02, "lowpass", 380, 0.7, 0.22, 0.06, 0.1); }
+  function chirp(t, f, pan, v) {
+    for (var i = 0; i < 3; i++) {
+      var o = ctx.createOscillator(), g = ctx.createGain(), s = t + i * 0.045;
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, s); g.gain.linearRampToValueAtTime(v, s + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.03);
+      o.connect(g);
+      if (ctx.createStereoPanner) { var pn = ctx.createStereoPanner(); pn.pan.value = pan; g.connect(pn); out(pn, true); } else out(g, true);
+      o.start(s); o.stop(s + 0.04);
+    }
+  }
+  var CRK = [[4300, -0.6, 0.012], [4700, 0.5, 0.009], [3900, 0.1, 0.006]];
+  function nightBeat(t, beat) {
+    var spb = 0.32;
+    CRK.forEach(function (c, i) { if ((beat + i) % (3 + i) === 0 && Math.random() < 0.85) chirp(t + i * 0.07, c[0], c[1], c[2]); });
+    return spb;
+  }
+
   /* 海浪 */
   function startWaves() {
     bed(0.02, "lowpass", 700, 0.7, 0.35, 0.09, 0.28);   // 一波波湧上來的浪
@@ -262,7 +313,8 @@
       var d = cur === "jazz" ? jazzBeat(nextT, step) : cur === "fire" ? fireBeat(nextT) : cur === "rain" ? rainBeat(nextT) :
         cur === "lofi" ? lofiBeat(nextT, step) : cur === "forest" ? forestBeat(nextT) :
         cur === "piano" ? pianoBeat(nextT, step) : cur === "waves" ? wavesBeat(nextT) :
-        cur === "bossa" ? bossaBeat(nextT, step) : cur === "musicbox" ? musicboxBeat(nextT, step) : lightBeat(nextT, step);
+        cur === "bossa" ? bossaBeat(nextT, step) : cur === "musicbox" ? musicboxBeat(nextT, step) :
+        cur === "folk" ? folkBeat(nextT, step) : cur === "cafe" ? cafeBeat(nextT) : cur === "night" ? nightBeat(nextT, step) : lightBeat(nextT, step);
       L.nextT += d; L.step++;
     }
   }
@@ -272,7 +324,7 @@
     if (y.noiseSrc) { try { y.noiseSrc.stop(); } catch (e) {} y.noiseSrc = null; }
     y.nodes.forEach(function (n) { try { n.stop(); } catch (e) {} }); y.nodes = [];
   }
-  var AMB = { noise: 1, fire: 1, rain: 1, forest: 1, waves: 1 };
+  var AMB = { noise: 1, fire: 1, rain: 1, forest: 1, waves: 1, cafe: 1, night: 1 };
   function layerOf(kind, layer) { return layers[layer || (AMB[kind] ? "amb" : "music")] || layers.music; }
 
   function play(kind, layer) {
@@ -286,7 +338,7 @@
     y.master.gain.cancelScheduledValues(t); y.master.gain.setValueAtTime(0, t); y.master.gain.linearRampToValueAtTime(y.vol, t + 1.2);
     if (kind === "noise") startNoise();
     else {
-      if (kind === "rain") startRain(); if (kind === "waves") startWaves();
+      if (kind === "rain") startRain(); if (kind === "waves") startWaves(); if (kind === "cafe") startCafe(); if (kind === "night") startNight();
       y.nextT = t + 0.1; y.step = 0; loop();
       y.timer = setInterval(function () { L = y; loop(); }, 100);
     }
