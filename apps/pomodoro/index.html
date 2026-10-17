@@ -510,7 +510,7 @@
   @media (prefers-reduced-motion: reduce) { #says [data-up].shake { animation: none; } }
   /* 房間裡聊天 */
   /* 聊天框放在房間畫面裡面，不超出房間 */
-  .rchat { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6; max-width: 460px; margin: 0 auto; max-height: calc(100% - 16px); box-sizing: border-box; background: var(--surface); color: var(--ink); border-radius: 14px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .rchat { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 6; max-width: 460px; margin: 0 auto; max-height: calc(100% - 16px); box-sizing: border-box; background: var(--surface); color: var(--ink); border-radius: 14px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
   .rchat[hidden] { display: none; }
   .rchat-head { display: flex; align-items: center; gap: 8px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
   .rchat.drag .rchat-head { cursor: grabbing; }
@@ -524,7 +524,7 @@
   .rchat-head svg { width: 34px; height: 34px; flex: none; }
   .rchat-head b { flex: 1; min-width: 0; font-size: 15px; }
   .rchat-head button { width: 34px; height: 34px; border: 0; background: none; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
-  .rchat-log { flex: 1 1 auto; min-height: 48px; max-height: 180px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .rchat-log { flex: none; height: 116px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
   .rchat-log .b { max-width: 80%; padding: 6px 10px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
   .rchat-log .b.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); }
   .rchat-log .b.me { align-self: flex-end; background: var(--ink); color: var(--paper); }
