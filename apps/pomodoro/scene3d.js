@@ -6,7 +6,8 @@ const ACTS3 = ["read", "novel", "homework", "research", "report", "code", "pc", 
 const WRITE_ACTS = ["homework", "draw", "report", "vocab", "journal", "calligraphy", "craft"];
 const SKINS = ["#f6d7bd", "#e9b994", "#c98e64", "#fbe6d4", "#d9a27a", "#a8704a", "#8a5532", "#5e3a24"];
 const HAIRS = ["#3b2a20", "#7a4a2a", "#c58b4c", "#2c2c34", "#151515", "#e6c27a", "#b0302a", "#9a9aa0", "#f2efe8", "#e88aa8", "#5a7ad0", "#7a5ad0", "#4a8a6a"];
-const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f", cardigan: "#e6d3b3", plaid: "#c8574a", sport: "#3f6f6a", overalls: "#f3efe6", denim: "#5d7fa8", turtle: "#3a3640" };
+const TOPS = { "tee-blue": "#7fa6c9", "tee-pink": "#e7a6a8", stripe: "#f3efe6", hoodie: "#8fae7a", sweater: "#e0b04f", cardigan: "#e6d3b3", plaid: "#c8574a", sport: "#3f6f6a", overalls: "#f3efe6", denim: "#5d7fa8", turtle: "#3a3640", suit: "#2f3445", pjtop: "#b9c9e6" };
+const PANTS = { jeans: { c: "#4f6f9a" }, khaki: { c: "#c9b48a" }, blackp: { c: "#2f2d33" }, shorts: { c: "#e6d3b3", short: true }, skirt: { c: "#c8574a", skirt: true }, suitp: { c: "#2f3445" }, trackp: { c: "#3f6f6a" }, pjp: { c: "#b9c9e6" } };
 
 /* ===== 小工具 ===== */
 const mats = {};
@@ -297,10 +298,12 @@ function makeChar(look) {
   const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0x3a2a1a, transparent: true, opacity: 0.18, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.01; root.add(shadow);
   const hips = new THREE.Group(); hips.position.y = 0.36; root.add(hips);
-  const legs = [];
+  const legs = [], pants = PANTS[look.legs], pcol = pants ? pants.c : "#5b5f7a";
+  if (pants && pants.skirt) cyl(0.18, 0.25, 0.17, pcol, 0, -0.05, 0, hips, 16);
   [-0.085, 0.085].forEach((x) => {
     const p = new THREE.Group(); p.position.set(x, 0, 0); hips.add(p);
-    const l = cap(0.07, 0.17, "#5b5f7a", p); l.position.y = -0.17;
+    const l = cap(0.07, 0.17, pants && (pants.short || pants.skirt) ? skin : pcol, p); l.position.y = -0.17;
+    if (pants && pants.short) cyl(0.08, 0.08, 0.13, pcol, 0, -0.07, 0, p);
     const shoe = sph(0.085, "#4a3a30", 0, -0.33, 0.03, p); shoe.scale.set(1, 0.6, 1.3);
     legs.push(p);
   });
@@ -309,6 +312,7 @@ function makeChar(look) {
   if (look.top === "stripe") [0.12, 0.2, 0.28].forEach((y) => { const s = cyl(0.172, 0.172, 0.035, "#5d7fa8", 0, y, 0, torso); s.scale.z = 0.85; });
   if (look.top === "hoodie") { const hd = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.045, 8, 20), mat("#7a9a66")); hd.rotation.x = Math.PI / 2; hd.position.set(0, 0.4, -0.04); torso.add(hd); }
   if (look.top === "sweater") { const hm = cyl(0.175, 0.175, 0.05, "#c99a3e", 0, 0.06, 0, torso); hm.scale.z = 0.85; }
+  if (look.top === "suit") { box(0.09, 0.3, 0.02, "#f8f4ec", 0, 0.2, 0.15, torso); box(0.03, 0.16, 0.022, "#8a3a32", 0, 0.24, 0.16, torso); }
   if (look.top === "cardigan") { box(0.1, 0.3, 0.02, "#f8f4ec", 0, 0.2, 0.15, torso); [0.26, 0.18].forEach((y) => sph(0.012, "#a08a6a", -0.06, y, 0.155, torso, 6, 4)); }
   if (look.top === "plaid") { [0.1, 0.2, 0.3].forEach((y) => { const b2 = cyl(0.173, 0.173, 0.018, "#8a3a32", 0, y, 0, torso); b2.scale.z = 0.85; }); [-0.07, 0, 0.07].forEach((x) => box(0.016, 0.34, 0.02, "#8a3a32", x, 0.2, 0.142, torso)); }
   if (look.top === "sport") { box(0.012, 0.32, 0.02, "#f3efe6", 0, 0.2, 0.145, torso); }

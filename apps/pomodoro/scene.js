@@ -61,11 +61,28 @@
     { id: "tie", slot: "neck", price: 4, zh: "領帶", en: "Necktie", color: "#3a5a8a" },
     { id: "cape", slot: "back", price: 10, zh: "紅披風", en: "Red cape", color: "#b0302a" },
     { id: "fox", slot: "pet", price: 14, zh: "小狐狸", en: "Little fox", color: "#e07a3a" },
-    { id: "hamster", slot: "pet", price: 8, zh: "倉鼠", en: "Hamster", color: "#e8c08a" }
+    { id: "hamster", slot: "pet", price: 8, zh: "倉鼠", en: "Hamster", color: "#e8c08a" },
+    // 褲子（沒穿的時候是預設的深藍灰長褲）
+    { id: "jeans", slot: "legs", price: 4, zh: "牛仔褲", en: "Jeans", color: "#4f6f9a" },
+    { id: "khaki", slot: "legs", price: 4, zh: "卡其褲", en: "Khakis", color: "#c9b48a" },
+    { id: "blackp", slot: "legs", price: 4, zh: "黑長褲", en: "Black trousers", color: "#2f2d33" },
+    { id: "shorts", slot: "legs", price: 3, zh: "短褲", en: "Shorts", color: "#e6d3b3", short: true },
+    { id: "skirt", slot: "legs", price: 5, zh: "百褶裙", en: "Pleated skirt", color: "#c8574a", skirt: true },
+    // 套裝裡的單品（只能買套裝拿到）
+    { id: "suit", slot: "top", price: 0, setOnly: true, zh: "西裝外套", en: "Suit jacket", color: "#2f3445", open: "#f8f4ec" },
+    { id: "suitp", slot: "legs", price: 0, setOnly: true, zh: "西裝褲", en: "Suit trousers", color: "#2f3445" },
+    { id: "trackp", slot: "legs", price: 0, setOnly: true, zh: "運動褲", en: "Track pants", color: "#3f6f6a" },
+    { id: "pjtop", slot: "top", price: 0, setOnly: true, zh: "睡衣上衣", en: "Pajama top", color: "#b9c9e6" },
+    { id: "pjp", slot: "legs", price: 0, setOnly: true, zh: "睡衣褲", en: "Pajama pants", color: "#b9c9e6" },
+    // 套裝：一次換上衣加褲子，比分開買便宜
+    { id: "set-suit", slot: "set", price: 12, zh: "西裝套裝", en: "Suit set", parts: { top: "suit", legs: "suitp" } },
+    { id: "set-track", slot: "set", price: 9, zh: "運動套裝", en: "Tracksuit", parts: { top: "sport", legs: "trackp" } },
+    { id: "set-pj", slot: "set", price: 8, zh: "睡衣套裝", en: "Pajama set", parts: { top: "pjtop", legs: "pjp" } },
+    { id: "set-denim", slot: "set", price: 9, zh: "牛仔套裝", en: "Denim set", parts: { top: "denim", legs: "jeans" } }
   ];
   // 商店分類
   var CATS = [
-    { id: "top", slots: ["top"] }, { id: "style", slots: ["style"] }, { id: "hat", slots: ["hat"] },
+    { id: "top", slots: ["top"] }, { id: "legs", slots: ["legs"] }, { id: "set", slots: ["set"] }, { id: "style", slots: ["style"] }, { id: "hat", slots: ["hat"] },
     { id: "acc", slots: ["face", "neck", "ears", "back"] }, { id: "pet", slots: ["pet"] }
   ];
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
@@ -75,7 +92,7 @@
   var BASE = { read: "read", novel: "read", research: "read", homework: "homework", report: "homework", vocab: "homework", journal: "homework", code: "pc", pc: "pc", lesson: "pc", draw: "draw", calligraphy: "draw", music: "music", piano: "piano", sing: "read", craft: "draw" };
 
   /* 預設角色 */
-  function defaultLook() { return { g: "girl", skin: 0, hair: 0, top: "tee-blue", style: "", hat: "", face: "", neck: "", ears: "", back: "", pet: "" }; }
+  function defaultLook() { return { g: "girl", skin: 0, hair: 0, top: "tee-blue", legs: "", style: "", hat: "", face: "", neck: "", ears: "", back: "", pet: "" }; }
 
   /* ===== 角色 ===== */
   // 以腳底中心為原點，大約 60 高。pose: desk / stand / sofa / mug / snack
@@ -90,7 +107,10 @@
     var s = '<g class="ch' + (opt.focus ? " focus" : "") + '">';
     s += '<ellipse cx="0" cy="0" rx="15" ry="3.5" fill="rgba(60,40,20,.18)"/>';
     if (pose !== "desk" && pose !== "sofa") {
-      s += '<rect x="-8" y="-12" width="6.5" height="12" rx="3" fill="#5b5f7a"/><rect x="1.5" y="-12" width="6.5" height="12" rx="3" fill="#5b5f7a"/>';
+      var pants = item(look.legs), pc = pants ? pants.color : "#5b5f7a", lc = pants && (pants.short || pants.skirt) ? skin : pc;
+      s += '<rect x="-8" y="-12" width="6.5" height="12" rx="3" fill="' + lc + '"/><rect x="1.5" y="-12" width="6.5" height="12" rx="3" fill="' + lc + '"/>';
+      if (pants && pants.short) s += '<rect x="-8.4" y="-13" width="7.3" height="6.5" rx="2" fill="' + pc + '"/><rect x="1.1" y="-13" width="7.3" height="6.5" rx="2" fill="' + pc + '"/>';
+      if (pants && pants.skirt) s += '<path d="M-9.5 -15 L-12.5 -5.5 Q0 -3.5 12.5 -5.5 L9.5 -15 Z" fill="' + pc + '"/><path d="M-4 -14 L-5 -5 M0 -14 L0 -4.6 M4 -14 L5 -5" stroke="rgba(0,0,0,.18)" stroke-width=".8"/>';
       s += '<ellipse cx="-4.8" cy="-0.5" rx="4.5" ry="2.4" fill="#4a3a30"/><ellipse cx="4.8" cy="-0.5" rx="4.5" ry="2.4" fill="#4a3a30"/>';
     }
     var style = look.style || "";
