@@ -545,7 +545,7 @@ const target = new THREE.Vector3(1.1, 0.7, 1.2), tmpT = new THREE.Vector3();
 let camR = 16.6;
 // 進房間時鏡頭對準自己的座位（不是每個人都坐中間）
 let focusMe = true;
-const FOCUS_ZOOM = 0.66;
+let focusZoom = 0.66;
 
 /* ===== 一天的光線：跟著真實時間的日出日落慢慢變 ===== */
 let hourOverride = null;
@@ -1616,7 +1616,7 @@ function update(members) {
   if (focusMe && me && chars[me.id]) {
     focusMe = false;
     const p = seatPos(chars[me.id].seat);
-    zoomT = FOCUS_ZOOM; panT.set((p.x - target.x) * 0.65, 0, (p.z - target.z) * 0.65); // 不完全置中，避免看到房間外面 clampPan();
+    zoomT = focusZoom; panT.set((p.x - target.x) * 0.65, 0, (p.z - target.z) * 0.65); // 不完全置中，避免看到房間外面 clampPan();
     zoom = zoomT; panOff.copy(panT);
   }
   // 書桌上的東西：誰坐哪裡就放他的活動道具
@@ -1749,7 +1749,9 @@ function animChar(st, dt, now) {
   if (!(emoK < 1 && st.emo === "yawn")) c.eyes.forEach((e) => { e.scale.y = 1.25 * blink; });
   // 小貓跟著
   if (c.cat) {
-    const off = tmpV.set(0.45, 0, 0.25).applyAxisAngle(new THREE.Vector3(0, 1, 0), st.ry);
+    // 坐著時待在椅子旁邊偏後面，不要鑽到桌腳裡；走路時跟在旁邊
+    const sitting = st.mode === "sit";
+    const off = tmpV.set(sitting ? 0.6 : 0.45, 0, sitting ? -0.32 : 0.1).applyAxisAngle(new THREE.Vector3(0, 1, 0), st.ry);
     const tx = st.pos.x + off.x, tz = st.pos.z + off.z;
     c.cat.position.x += (tx - c.cat.position.x) * Math.min(1, dt * 2.5);
     c.cat.position.z += (tz - c.cat.position.z) * Math.min(1, dt * 2.5);
@@ -1945,5 +1947,5 @@ function setTheme(name) {
   buildRoom(); lighting(); envNext = 0; focusMe = true;
   if (lastList) update(lastList);
 }
-window.KaidaScene3D = { mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); } };
+window.KaidaScene3D = { mount, update, findPath, setTheme, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
