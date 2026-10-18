@@ -267,6 +267,16 @@
       loaded.sort(function (a, b) { return (b.count || 0) - (a.count || 0); });
       return { center: center, bounds: bounds, stalls: loaded.concat(pending) };
     }
+    // 只用資料檔畫出攤位位置，不向 Google 查詢；店名等使用者要看時才載入
+    function previewFromDb(m) {
+      var entry = dbEntry(m);
+      if (!entry || entry.stalls.length < 3) return null;
+      var center = { lat: entry.center[0], lng: entry.center[1] };
+      return { center: center, bounds: box(center, 650), preview: true, stalls: entry.stalls.map(function (row) {
+        return { id: row[0], name: "", lat: row[1], lng: row[2], rating: null, count: 0, type: "", address: "", url: "", photos: [], thumb: "", pending: true,
+          place: new Place({ id: row[0], requestedLanguage: opts.lang() === "en" ? "en" : "zh-TW" }) };
+      }) };
+    }
     // 補齊還沒載入店名的攤位
     function resolveStall(s) {
       if (!s.pending) return Promise.resolve(s);
@@ -389,6 +399,15 @@
         if (!cache[key]) cache[key] = loadArea(m).catch(function (e) { delete cache[key]; throw e; });
         var area = await cache[key];
         if (my !== token) return area.stalls; // 使用者已經切到別的夜市
+        curArea = area;
+        draw(area);
+        return area.stalls;
+      },
+      // 有資料檔就先畫攤位位置（不花 Google 查詢）；沒有資料檔回傳 null
+      previewArea: function (m) {
+        clearArea();
+        var area = previewFromDb(m);
+        if (!area) return null;
         curArea = area;
         draw(area);
         return area.stalls;
