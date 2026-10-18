@@ -55,7 +55,8 @@
       medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "六項評分都要選。",
       fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fGoldReview: "開拓者要審核通過才會頒發。", fNeedLoc: "新點位要在地圖上標出位置，才能拿開拓者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
       medalRule: "開拓者（金）：第一個發掘新點位的人，要標位置、拍照＋評分，審核通過才算。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
-      devShort: "評分", radarNotes: "看心得 ▾", radarDefault: "還沒有網友評分，先顯示開發者給的預設分數。", radarFrom: function (n) { return n + " 位網友評分的平均。"; }, visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
+      devShort: "評分", simBtn: "🎲 隨機模擬", simClear: "清除模擬資料", simTag: "模擬", simCleared: "已清除模擬資料",
+      simDone: function (n) { return "已產生 " + n + " 篇模擬投稿，只存在這支手機，不會送出。"; }, radarNotes: "看心得 ▾", radarDefault: "還沒有網友評分，先顯示開發者給的預設分數。", radarFrom: function (n) { return n + " 位網友評分的平均。"; }, visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
       fSaved: "還沒連上投稿資料庫，先存在這支手機。連線後會自動送出。", fSyncing: function (n) { return "正在送出先前存的 " + n + " 篇投稿…"; },
       mineMedals: "我的勳章", seasonPts: function (n) { return "本季積分 " + n + " 分"; }, rankBtn: "🏆 本季排行榜",
       rankTitle: function (y, q) { return y + " 年第 " + q + " 季排行榜"; }, rankPrize: "本季的第一名可以和開發者去逛夜市🤗",
@@ -115,7 +116,8 @@
       medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all six scores.",
       fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fGoldReview: "Pioneer is awarded once the post is approved.", fNeedLoc: "Mark the new spot on the map to earn Pioneer.", fWillGet: function (m) { return "This post earns: " + m; },
       medalRule: "Pioneer (gold): first to discover a new spot, with its location, a photo and scores. Counts once approved. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
-      devShort: "Score", radarNotes: "notes ▾", radarDefault: "No visitor ratings yet, so these are the developer's default scores.", radarFrom: function (n) { return "Average of " + n + (n === 1 ? " visitor rating." : " visitor ratings."); }, visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
+      devShort: "Score", simBtn: "🎲 Simulate", simClear: "Clear simulation", simTag: "simulated", simCleared: "Simulation cleared",
+      simDone: function (n) { return n + " simulated posts created on this phone only. Nothing is sent."; }, radarNotes: "notes ▾", radarDefault: "No visitor ratings yet, so these are the developer's default scores.", radarFrom: function (n) { return "Average of " + n + (n === 1 ? " visitor rating." : " visitor ratings."); }, visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
       fSaved: "Not connected yet, so it's saved on this phone. It will be sent once we're online.", fSyncing: function (n) { return "Sending " + n + " saved posts…"; },
       mineMedals: "My medals", seasonPts: function (n) { return "This season: " + n + " pts"; }, rankBtn: "🏆 Season leaderboard",
       rankTitle: function (y, q) { return y + " Q" + q + " leaderboard"; }, rankPrize: "This season's No. 1 gets to explore a night market with the developer 🤗",
@@ -261,7 +263,9 @@
     try { localStorage.setItem("nm-pending", JSON.stringify(pending)); return true; } catch (e) { return false; }
   }
   function remoteComm(mid) {
-    return (window.NMCommunity && NMCommunity.enabled() ? NMCommunity.load(mid) : Promise.resolve([])).then(function (list) { return (list || []).concat(localFor(mid)); });
+    return (window.NMCommunity && NMCommunity.enabled() ? NMCommunity.load(mid) : Promise.resolve([])).then(function (list) {
+      return (list || []).concat(localFor(mid), sim.filter(function (c) { return c.market === mid; }));
+    });
   }
   function flushPending() {
     if (!pending.length || !window.NMCommunity || !NMCommunity.enabled()) return;
@@ -319,7 +323,7 @@
     var md = medals(items, newStall, hadLoc);
     return '<details class="pick-comm-wrap"><summary>' + esc(t("commTitle")) + " · " + esc(t("commCount")(items.length)) + '</summary><ul class="pick-comm">' + items.map(function (c) {
       var photos = (c.photos || []).filter(function (u) { return PHOTO_RE.test(u); });
-      return '<li' + (c.local ? ' class="local"' : "") + ">" + (c.local ? '<span class="local-tag">' + esc(t("localTag")) + "</span> " : "") + (scored(c) ? '<b class="score">' + score(c).toFixed(1) + "</b> " : c.rating ? stars(c.rating) + " " : "") + medalHtml(md[c.id]) + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
+      return '<li' + (c.local ? ' class="local"' : "") + ">" + (c.local ? '<span class="local-tag">' + esc(t("localTag")) + "</span> " : c.sim ? '<span class="local-tag">' + esc(t("simTag")) + "</span> " : "") + (scored(c) ? '<b class="score">' + score(c).toFixed(1) + "</b> " : c.rating ? stars(c.rating) + " " : "") + medalHtml(md[c.id]) + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
         (scored(c) ? radarSvg([c], true) : "") +
         (c.review ? '<p class="comm-text">' + esc(c.review) + "</p>" : "") +
         (photos.length ? '<div class="comm-photos">' + photos.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="" loading="lazy"></a>'; }).join("") + "</div>" : "") +
@@ -1160,7 +1164,8 @@
   function loadMyMedals() {
     // 我的勳章：找出這支手機的投稿（含還沒送出的），載入那些夜市的投稿，照同樣規則算勳章
     NMCommunity.mine(deviceId()).then(function (rows) {
-      rows = rows.concat(pending);
+      var me = deviceId();
+      rows = rows.concat(pending, sim.filter(function (c) { return c.device === me; }));
       return medalMap(rows).then(function (md) {
         var got = [], cur = seasonOf(new Date().toISOString()), pts = 0;
         rows.forEach(function (r) {
@@ -1196,6 +1201,49 @@
       return md;
     });
   }
+  // 隨機模擬：在這支手機產生假的投稿（留言、評分、勳章、排行榜），只用來看效果，不會送出
+  var sim = load("nm-sim", []);
+  var SIM_NICK = ["夜市小隊長", "鹹酥雞獵人", "珍奶星人", "臭豆腐派", "蚵仔煎控", "胡椒餅仔", "大腸包小腸", "滷味王", "地瓜球球", "雞排妹", "烤玉米", "豆花阿伯", "車輪餅", "愛玉冰", "麻辣鴨血", "肉圓弟", "割包仔", "米糕姐", "生煎包", "炸雞翅"];
+  var SIM_TXT = ["排隊十分鐘，值得！", "老闆很親切，還多送一點。", "香味遠遠就聞到了。", "份量大，CP 值很高。", "味道普通，但氣氛很好。", "第二次來了，一樣好吃。", "有點鹹，搭飲料剛好。", "拍照很好看，朋友都說讚。", "夜市必吃，推薦給大家。", "現點現做，熱騰騰。", "", ""];
+  var SIM_NEW = ["阿嬤古早味粉粿", "炭烤杏鮑菇", "日式章魚燒", "手工芋圓", "蔥抓餅", "烤雞屁股", "檸檬愛玉", "麻油雞麵線"];
+  var SIM_PHOTO = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90"><rect width="120" height="90" fill="#3a2a4d"/><text x="60" y="60" font-size="44" text-anchor="middle">🍢</text></svg>');
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function pickOne(a) { return a[rnd(a.length)]; }
+  function makeSim() {
+    var idx = window.NM_CURATED_INDEX, me = deviceId();
+    var mids = MARKETS.filter(function (m) { return idx && idx.markets[m.id]; }).map(function (m) { return m.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 25);
+    // 120 個假帳號（排行榜最多顯示 100 名），加上自己
+    var users = [];
+    for (var i = 0; i < 120; i++) users.push({ nick: SIM_NICK[i % SIM_NICK.length] + (i >= SIM_NICK.length ? Math.floor(i / SIM_NICK.length) + 1 : ""), dev: "sim-" + i });
+    users.push({ nick: load("nm-nick", "") || t("rankMe"), dev: me });
+    var start = Date.parse(new Date().getUTCFullYear() + "-" + String(Math.floor(new Date().getUTCMonth() / 3) * 3 + 1).padStart(2, "0") + "-01T00:00:00+08:00"), span = Date.now() - start;
+    return Promise.all(mids.map(function (mid) { return loadPicks(byId(mid)); })).then(function () {
+      var out = [], n = 0;
+      mids.forEach(function (mid) {
+        var m = byId(mid), picks = picksOf(m);
+        for (var k = 10 + rnd(20); k > 0; k--) {
+          var u = pickOne(users), fresh = !picks.length || Math.random() < 0.15;
+          var base = 5 + rnd(5), c = {
+            id: "sim-" + (n++), sim: true, market: mid, created_at: new Date(start + Math.random() * span).toISOString(),
+            stall: fresh ? pickOne(SIM_NEW) : pickOne(picks).zh, nickname: u.nick, device: u.dev, review: pickOne(SIM_TXT) || null,
+            photos: Math.random() < 0.6 ? [SIM_PHOTO] : [], lat: fresh || Math.random() < 0.2 ? m.lat + (Math.random() - 0.5) * 0.003 : null
+          };
+          c.lng = c.lat != null ? m.lng + (Math.random() - 0.5) * 0.003 : null;
+          SCORE_KEYS.forEach(function (key) { c[key] = Math.max(0, Math.min(10, base + rnd(4) - 1)); });
+          out.push(c);
+        }
+      });
+      return out;
+    });
+  }
+  function setSim(list) {
+    sim = list;
+    try { localStorage.setItem("nm-sim", JSON.stringify(sim)); } catch (e) { /* 存不下就只留在這次 */ }
+    Object.keys(comm).forEach(function (k) { delete comm[k]; });
+    if (state.selected && byId(state.selected) && !$("detail").hidden) loadComm(byId(state.selected));
+    $("simBtn").textContent = t(sim.length ? "simClear" : "simBtn");
+    openRank();
+  }
   function openRank() {
     var now = new Date().toISOString(), cur = seasonOf(now), me = deviceId();
     $("rankTitle").textContent = t("rankTitle")(cur.slice(0, 4), cur.slice(5));
@@ -1206,6 +1254,7 @@
     openSheet("rank");
     (NMCommunity.enabled() ? NMCommunity.all() : Promise.resolve([])).then(function (rows) {
       // 全部投稿都要拿來排勳章順序，但只加總本季的積分
+      rows = rows.concat(sim);
       var all = rows.concat(pending);
       return medalMap(all).then(function (md) {
         var by = {};
@@ -1216,7 +1265,7 @@
           u.pts += POINTS[k]; u[k]++; u.nick = r.nickname || u.nick;
         });
         var list = Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return b.pts - a.pts || b.gold - a.gold || b.silver - a.silver; });
-        $("rankList").innerHTML = list.length ? list.slice(0, 30).map(function (u, i) {
+        $("rankList").innerHTML = list.length ? list.slice(0, 100).map(function (u, i) {
           return '<li class="' + (u.me ? "me" : "") + '"><span class="rk">' + (i + 1) + '</span><b>' + esc(u.nick || "?") + (u.me ? " <small>(" + esc(t("rankMe")) + ")</small>" : "") + "</b>" +
             '<span class="rm">' + (u.gold ? "🥇" + u.gold + " " : "") + (u.silver ? "🥈" + u.silver + " " : "") + (u.bronze ? "🥉" + u.bronze : "") + "</span><span class=\"rp\">" + esc(t("rankPts")(u.pts)) + "</span></li>";
         }).join("") : '<li class="empty">' + esc(t("rankEmpty")) + "</li>";
@@ -1224,6 +1273,13 @@
     });
   }
   $("trophyBtn").onclick = function () { if (window.NMCommunity) openRank(); };
+  $("simBtn").textContent = t(sim.length ? "simClear" : "simBtn");
+  $("simBtn").onclick = function () {
+    if (sim.length) { setSim([]); toast(t("simCleared")); return; }
+    this.disabled = true;
+    var b = this;
+    makeSim().then(function (list) { setSim(list); toast(t("simDone")(list.length)); }).then(function () { b.disabled = false; });
+  };
   $("mineBtn").onclick = openMine;
   $("mine").addEventListener("click", function (e) {
     // 星星、愛心：點一下取消收藏
