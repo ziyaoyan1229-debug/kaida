@@ -222,6 +222,11 @@ body .map-wrap.night .stall-pin { box-shadow: 0 0 8px rgba(255, 61, 139, .75); }
   animation: up .2s ease-out;
 }
 :root[data-skin="cyber"] .sheet-card { border-top: 1px solid var(--signal); }
+/* 手機：夜市詳細只佔下半部，上面的地圖照樣看得到、可以操作 */
+@media (max-width: 859px) {
+  #detail { background: none; pointer-events: none; }
+  #detail .sheet-card { pointer-events: auto; max-height: 50vh; max-height: 50dvh; box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, .45); }
+}
 @media (min-width: 860px) { .sheet { align-items: center; } .sheet-card { border-radius: 12px; } }
 @keyframes up { from { transform: translateY(30px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .sheet-card { animation: none; } .nm-pin svg { transition: none; } }

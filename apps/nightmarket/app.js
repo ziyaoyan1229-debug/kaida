@@ -570,6 +570,7 @@
     fillFavBtn(id);
     if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
     render();
+    if (mapH() < 120) setMapH(0.45);
     openSheet("detail");
     if (view.supportsStalls && stallFor === id && stalls.length && FREE_STALLS) renderStalls();
     else if (view.supportsStalls && stallFor === id && stalls.length) {
