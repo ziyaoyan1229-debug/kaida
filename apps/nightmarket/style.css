@@ -96,7 +96,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .brand-text strong, .brand-text small { overflow: hidden; text-overflow: ellipsis; }
 .pill b { font-family: var(--f-mono); font-weight: 500; color: var(--accent-text); }
 .icon-btn { width: 34px; padding: 0; justify-content: center; font-family: var(--f-mono); font-size: 12px; }
-.skin-dot { width: 14px; height: 14px; border-radius: 50%; background: linear-gradient(135deg, #2a2620 50%, #22e8ff 50%); }
+#skinBtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#skinBtn .ic-moon, :root[data-skin="cyber"] #skinBtn .ic-sun { display: none; }
+:root[data-skin="cyber"] #skinBtn .ic-moon { display: block; }
 
 /* 版面：手機上下、桌機左右 */
 .layout { flex: 1; display: flex; flex-direction: column-reverse; min-height: 0; }
@@ -117,6 +119,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .search input { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 16px; outline: none; }
 .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
 .chips::-webkit-scrollbar { display: none; }
+.region-chips { display: flex; flex-direction: column; gap: 6px; }
+.chips.sub .chip { font-size: 12px; padding: 4px 10px; }
 .chip, .toggle {
   flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
   padding: 5px 12px; font-size: 13px; white-space: nowrap;
@@ -176,7 +180,7 @@ mark { background: color-mix(in srgb, var(--signal) 28%, transparent); color: in
 .map-wrap.night .nm-pin .pin-name { color: var(--nm-bulb); border-color: rgba(255, 77, 46, .5); box-shadow: 0 0 8px rgba(255, 77, 46, .45); }
 .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(59, 130, 246, .25); }
 .locate {
-  position: absolute; right: 10px; bottom: 26px; z-index: 450; width: 40px; height: 40px; border-radius: var(--r);
+  position: absolute; right: 10px; top: 10px; z-index: 450; width: 40px; height: 40px; border-radius: var(--r);
   border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; box-shadow: var(--shadow);
 }
 .locate svg { width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 2; }
@@ -221,7 +225,7 @@ body .map-wrap.night .stall-pin { box-shadow: 0 0 8px rgba(255, 61, 139, .75); }
 .sheet h3 { margin: 16px 0 8px; font-size: 14px; color: var(--muted); font-weight: 500; }
 .d-meta { margin: 0; font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; color: var(--accent-text); }
 .d-status { margin: 0 0 8px; }
-.d-note { margin: 0; }
+.d-note { margin: 14px 0 0; }
 .foods { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .foods li { padding: 4px 10px; background: var(--sunk); border-radius: var(--r); font-size: 13.5px; }
 .facts { margin: 16px 0 0; display: grid; gap: 8px; }
