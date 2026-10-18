@@ -1,5 +1,5 @@
 # 每月 2 號、16 號早上（台北時間 06:00）更新夜市店家資料檔 apps/nightmarket/stall-db.js
-# 132 個夜市每次約 1300 次查詢，一個月兩次可留在 Google 每月免費額度內，也不會超過 30 天的保存期限
+# 已對到的推薦攤位用 Place Details（Essentials）更新座標，沒對到的每月初才用文字搜尋重找；這樣查詢次數留在 Google 每月免費額度內，也不會超過 30 天的保存期限
 # 需要 repo secret NM_PLACES_KEY（只開 Places API (New) 的伺服器用金鑰）；沒設定就跳過
 name: Night market stall data
 
