@@ -194,6 +194,11 @@
       return '<li class="pick' + (hit(p) ? " hit" : "") + '">' + ph + '<div class="pick-body"><h4>' + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + "</h4>" +
         (foods.length ? '<ul class="foods">' + foods.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         '<p class="pick-sum">' + esc(en ? (p.summaryEn || p.summaryZh) : p.summaryZh) + "</p>" +
+        // 網友原文只引用一兩句（合理引用），一定附上出處
+        (p.quotes || []).filter(function (q) { return q.text && p.sources && p.sources[q.src]; }).slice(0, 2).map(function (q) {
+          var sx = p.sources[q.src];
+          return '<blockquote class="pick-q">「' + esc(q.text) + '」<cite><a href="' + esc(sx.url) + '" target="_blank" rel="noopener">' + esc(sx.title || t("picksSrc")) + "</a></cite></blockquote>";
+        }).join("") +
         (meta ? '<p class="pick-meta">' + esc(meta) + "</p>" : "") +
         '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p></div></li>";
     }).join("");
