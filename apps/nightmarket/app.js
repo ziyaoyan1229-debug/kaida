@@ -55,7 +55,7 @@
       medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "六項評分都要選。",
       fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fGoldReview: "開拓者要審核通過才會頒發。", fNeedLoc: "新點位要在地圖上標出位置，才能拿開拓者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
       medalRule: "開拓者（金）：第一個發掘新點位的人，要標位置、拍照＋評分，審核通過才算。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
-      devShort: "評分", radarDefault: "還沒有網友評分，先顯示開發者給的預設分數。", radarFrom: function (n) { return n + " 位網友評分的平均。"; }, visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
+      devShort: "評分", radarNotes: "看心得 ▾", radarDefault: "還沒有網友評分，先顯示開發者給的預設分數。", radarFrom: function (n) { return n + " 位網友評分的平均。"; }, visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
       fSaved: "還沒連上投稿資料庫，先存在這支手機。連線後會自動送出。", fSyncing: function (n) { return "正在送出先前存的 " + n + " 篇投稿…"; },
       mineMedals: "我的勳章", seasonPts: function (n) { return "本季積分 " + n + " 分"; }, rankBtn: "🏆 本季排行榜",
       rankTitle: function (y, q) { return y + " 年第 " + q + " 季排行榜"; }, rankPrize: "本季的第一名可以和開發者去逛夜市🤗",
@@ -115,7 +115,7 @@
       medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all six scores.",
       fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fGoldReview: "Pioneer is awarded once the post is approved.", fNeedLoc: "Mark the new spot on the map to earn Pioneer.", fWillGet: function (m) { return "This post earns: " + m; },
       medalRule: "Pioneer (gold): first to discover a new spot, with its location, a photo and scores. Counts once approved. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
-      devShort: "Score", radarDefault: "No visitor ratings yet, so these are the developer's default scores.", radarFrom: function (n) { return "Average of " + n + (n === 1 ? " visitor rating." : " visitor ratings."); }, visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
+      devShort: "Score", radarNotes: "notes ▾", radarDefault: "No visitor ratings yet, so these are the developer's default scores.", radarFrom: function (n) { return "Average of " + n + (n === 1 ? " visitor rating." : " visitor ratings."); }, visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
       fSaved: "Not connected yet, so it's saved on this phone. It will be sent once we're online.", fSyncing: function (n) { return "Sending " + n + " saved posts…"; },
       mineMedals: "My medals", seasonPts: function (n) { return "This season: " + n + " pts"; }, rankBtn: "🏆 Season leaderboard",
       rankTitle: function (y, q) { return y + " Q" + q + " leaderboard"; }, rankPrize: "This season's No. 1 gets to explore a night market with the developer 🤗",
@@ -376,7 +376,8 @@
     }).join("");
     return '<div class="radar' + (small ? " small" : "") + '"><svg viewBox="0 0 220 184" role="img" aria-label="' + esc(t("devShort")) + '">' + grid + axes +
       '<polygon class="rv" points="' + poly(function (i) { return R * vals[i] / 10; }) + '"/>' + labels +
-      '<text class="rt" x="' + cx + '" y="' + (cy + 9) + '" text-anchor="middle">' + total.toFixed(total % 1 ? 1 : 0) + "</text></svg>" +
+      '<text class="rt" x="' + cx + '" y="' + (cy + (small ? 9 : 4)) + '" text-anchor="middle">' + total.toFixed(total % 1 ? 1 : 0) + "</text>" +
+      (small ? "" : '<text class="rs" x="' + cx + '" y="' + (cy + 18) + '" text-anchor="middle">' + esc(t("radarNotes")) + '</text><circle class="rhit" data-notes cx="' + cx + '" cy="' + cy + '" r="26"/>') + "</svg>" +
       (small ? "" : '<p class="fine">' + esc(rs.length ? t("radarFrom")(rs.length) : t("radarDefault")) + "</p>") + "</div>";
   }
   function visitBtn(zh) { return window.NMCommunity ? '<button class="btn visit-btn" type="button" data-visit="' + esc(zh) + '">' + esc(t("visitBtn")) + "</button>" : ""; }
@@ -1120,6 +1121,12 @@
   // 點推薦攤位卡片（不是點連結）：地圖上跳出那家店的圖標
   $("dPicks").addEventListener("click", function (e) {
     if (e.target.closest("a")) return;
+    // 點雷達圖中間的分數：打開這家店的饕客心得
+    if (e.target.closest("[data-notes]")) {
+      var d = e.target.closest("li.pick").querySelector(".pick-comm-wrap");
+      if (d) { d.open = true; d.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      return;
+    }
     var vb = e.target.closest("[data-visit]");
     if (vb) { openSubmit(vb.getAttribute("data-visit")); return; }
     var lb = e.target.closest("[data-like]");
