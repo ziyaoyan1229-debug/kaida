@@ -81,6 +81,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
 .brand-text strong { font-family: var(--f-display); font-weight: var(--h-weight); font-size: 17px; letter-spacing: .02em; white-space: nowrap; }
 .brand-text small { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.brand-btn { display: flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: inherit; text-align: left; min-width: 0; }
+.brand-btn .caret { font-size: 11px; color: var(--muted); }
+.mine-list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
+.mine-list button { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); }
+.mine-list small { color: var(--muted); font-size: 12px; }
+.mine-list .empty { color: var(--muted); font-size: 13px; }
 .brand-text small a { color: var(--muted); text-decoration: none; }
 .brand-text small a:hover { color: var(--accent-text); text-decoration: underline; }
 .top-actions { display: flex; align-items: center; gap: 6px; flex: none; }
@@ -354,7 +360,13 @@ body.has-stalls .osm-credit { display: none; }
 .pick-ph img { display: block; width: 100%; height: 160px; object-fit: cover; background: var(--sunk); }
 .pick-ph figcaption { position: absolute; right: 6px; bottom: 6px; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,.55); }
 .pick-ph figcaption a { color: #fff; text-decoration: none; }
-.pick-body { padding: 10px 12px; }
+.pick-body { padding: 10px 12px; position: relative; }
+.pick:not(.community) h4 { padding-right: 40px; }
+.like-btn { position: absolute; top: 4px; right: 4px; width: 40px; height: 40px; border: 0; background: none; font-size: 24px; line-height: 1; color: var(--muted); }
+.like-btn[aria-pressed="true"] { color: #e0245e; }
+.map-wrap.night ~ * .like-btn[aria-pressed="true"], :root[data-skin="cyber"] .like-btn[aria-pressed="true"] { color: var(--lantern); }
+.like-btn.pop { animation: like-pop .35s ease-out; }
+@keyframes like-pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 .pick h4 { margin: 0 0 6px; font-size: 16px; line-height: 1.35; }
 .pick h4 small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
 .pick .foods { margin-bottom: 6px; }

@@ -36,7 +36,7 @@
     <img class="mark mark-beige" src="icons/icon.svg" alt="" width="34" height="34">
     <img class="mark mark-cyber" src="icons/icon-cyber.svg" alt="" width="34" height="34">
     <span class="brand-text">
-      <strong data-i18n="title">台灣夜市地圖</strong>
+      <button class="brand-btn" id="mineBtn" type="button" aria-haspopup="dialog"><strong data-i18n="title">台灣夜市地圖</strong><span class="caret" aria-hidden="true">▾</span></button>
       <small><a href="../../" data-i18n="byKaida">開達 Kaida 封測作品</a></small>
     </span>
   </div>
@@ -179,6 +179,19 @@
 </div>
 
 <!-- 封測任務 -->
+<!-- 我的收藏：想去的夜市和喜愛的店家 -->
+<div class="sheet" id="mine" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <div class="sheet-card">
+    <button class="close" type="button" data-close aria-label="關閉">×</button>
+    <h2 id="mTitle" data-i18n="mineTitle">我的收藏</h2>
+    <h3 data-i18n="mineFavs">想去的夜市</h3>
+    <ul class="mine-list" id="mineFavs"></ul>
+    <h3 data-i18n="mineLikes">喜愛的店家</h3>
+    <ul class="mine-list" id="mineLikes"></ul>
+    <p class="fine" data-i18n="mineNote">收藏只存在這支手機的瀏覽器裡。</p>
+  </div>
+</div>
+
 <div class="sheet" id="tasks" role="dialog" aria-modal="true" aria-labelledby="tTitle" hidden>
   <div class="sheet-card">
     <button class="close" type="button" data-close aria-label="關閉">×</button>
