@@ -497,3 +497,5 @@ button.dev-score { border: 0; cursor: pointer; }
 .pick-comm-wrap[open] > summary::after { content: " ▴"; }
 .pick-comm-wrap .pick-comm { border-top: 0; margin-top: 0; }
 .comm-text { margin: 2px 0 4px; }
+.radar .rs { font: 600 9px system-ui, sans-serif; fill: var(--muted); }
+.radar .rhit { fill: transparent; cursor: pointer; }
