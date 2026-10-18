@@ -27,6 +27,17 @@ window.NM_CITIES = [
   { key: "penghu", zh: "澎湖", en: "Penghu" }
 ];
 
+// 首頁的大區分類：先選大區，地圖放大到那一區，再選細部縣市
+window.NM_REGIONS = [
+  { key: "north", zh: "北北基", en: "Taipei area", cities: ["keelung", "taipei", "newtaipei"] },
+  { key: "tzm", zh: "桃竹苗", en: "Taoyuan–Hsinchu–Miaoli", cities: ["taoyuan", "hsinchu", "miaoli"] },
+  { key: "central", zh: "中彰投", en: "Taichung–Changhua–Nantou", cities: ["taichung", "changhua", "nantou"] },
+  { key: "yjn", zh: "雲嘉南", en: "Yunlin–Chiayi–Tainan", cities: ["yunlin", "chiayi", "tainan"] },
+  { key: "gp", zh: "高屏", en: "Kaohsiung–Pingtung", cities: ["kaohsiung", "pingtung"] },
+  { key: "east", zh: "宜花東", en: "East coast", cities: ["yilan", "hualien", "taitung"] },
+  { key: "islands", zh: "離島", en: "Islands", cities: ["penghu"] }
+];
+
 window.NM_MARKETS = [
   {
     id: "miaokou", city: "keelung", lat: 25.1283, lng: 121.7434, days: null, hours: "11:00–24:00",

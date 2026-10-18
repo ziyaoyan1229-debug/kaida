@@ -37,7 +37,7 @@
       stallsError: "暫時載入不了店家，稍後再試。", seeMap: function (n) { return "在地圖上看 " + n + " 家店"; },
       back: "‹ 回夜市", ratings: function (n) { return n + " 則評分"; }, noRating: "還沒有評分", reviewsTitle: "饕客評論",
       reviewsLoading: "載入評論中…", noReviews: "這家店還沒有評論。", reviewsError: "暫時載入不了評論。",
-      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。", night: "夜市夜景",
+      allReviews: "在 Google 地圖看全部評論", photoBy: "照片：", prevPhoto: "上一張", nextPhoto: "下一張", reviewsFrom: "照片、評論與店家資料來自 Google 地圖，開達不會修改或保存。", night: "夜市夜景", toDay: "切換成白天模式", toNight: "切換成夜晚模式", regions: "地區", cities: "縣市", wholeRegion: "全區",
       stallQPh: "在這個夜市找店家（例如：臭豆腐）", stallFound: function (n, q) { return "「" + q + "」找到 " + n + " 家"; },
       stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…",
       stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; },
@@ -87,7 +87,7 @@
       stallsError: "Couldn't load places right now. Try again later.", seeMap: function (n) { return "See " + n + " places on the map"; },
       back: "‹ Back to market", ratings: function (n) { return n + " ratings"; }, noRating: "No ratings yet", reviewsTitle: "Reviews",
       reviewsLoading: "Loading reviews…", noReviews: "No reviews yet.", reviewsError: "Couldn't load reviews right now.",
-      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.", night: "Night",
+      allReviews: "See all reviews on Google Maps", photoBy: "Photo:", reviewsFrom: "Photos, reviews and place info come from Google Maps. Kaida doesn't edit or store them.", night: "Night", toDay: "Switch to day mode", toNight: "Switch to night mode", regions: "Regions", cities: "Cities", wholeRegion: "Whole region",
       stallQPh: "Search this market (e.g. stinky tofu)", stallFound: function (n, q) { return n + " found for “" + q + "”"; },
       stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…",
       stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; },
@@ -117,7 +117,7 @@
   var lang = "zh";
   try { lang = localStorage.getItem("kaida-lang") === "en" ? "en" : "zh"; } catch (e) { /* 預設中文 */ }
   var state = {
-    q: "", city: "all", today: false, near: false, favOnly: false,
+    q: "", region: "all", city: "all", today: false, near: false, favOnly: false,
     favs: load("nm-favs", []), tasks: load("nm-tasks", {}), me: null, selected: null
   };
   var t = function (k) { return T[lang][k]; };
@@ -189,9 +189,23 @@
   }
 
   /* ---------- 網友推薦攤位（自己整理的資料，不用 Google） ---------- */
-  function picksOf(m) {
-    var c = window.NM_CURATED;
-    return (c && c.markets && c.markets[m.id] && c.markets[m.id].stalls) || [];
+  // 每個夜市的攤位放在 curated/<id>.json，點開夜市才下載；搜尋用 curated-index.js 的關鍵字
+  var picksCache = {}, picksLoading = {};
+  function picksOf(m) { return picksCache[m.id] || []; }
+  function loadPicks(m) {
+    if (picksCache[m.id] || picksLoading[m.id]) return;
+    var idx = window.NM_CURATED_INDEX;
+    if (!idx || !idx.markets || !idx.markets[m.id]) { picksCache[m.id] = []; return; }
+    picksLoading[m.id] = true;
+    fetch("curated/" + m.id + ".json?v=" + encodeURIComponent(idx.updated || "")).then(function (r) { return r.ok ? r.json() : { stalls: [] }; })
+      .catch(function () { return null; })
+      .then(function (d) {
+        picksLoading[m.id] = false;
+        if (!d) return;
+        picksCache[m.id] = d.stalls || [];
+        if (state.selected === m.id && !$("detail").hidden) renderPicks(m);
+        if (stallFor === m.id && stallMode === "free" && stalls.length && view.showPicks) view.showPicks(pickPins(m));
+      });
   }
   // 網友投稿（審核通過的），依夜市存
   var comm = {};
@@ -316,7 +330,7 @@
   function matches(m, q) {
     if (!q) return true;
     var hay = [m.zh, m.en, cityName(m.city), CITIES.filter(function (c) { return c.key === m.city; }).map(function (c) { return c.zh + " " + c.en; }).join(" ")]
-      .concat(m.foodsZh, m.foodsEn, picksOf(m).map(function (p) { return [p.zh, p.en].concat(p.foods || [], p.foodsEn || []).join(" "); })).join(" ").toLowerCase();
+      .concat(m.foodsZh, m.foodsEn, (window.NM_CURATED_INDEX && NM_CURATED_INDEX.markets[m.id]) || "").join(" ").toLowerCase();
     return q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
   }
   function foodHit(m, q) {
@@ -326,6 +340,7 @@
   function visible() {
     var q = state.q.trim();
     var list = MARKETS.filter(function (m) {
+      if (state.region !== "all" && regionOf(m.city) !== state.region) return false;
       if (state.city !== "all" && m.city !== state.city) return false;
       if (state.favOnly && state.favs.indexOf(m.id) < 0) return false;
       if (state.today && status(m).today !== true) return false;
@@ -390,20 +405,30 @@
   }
   function fitTo(list) {
     var pts = list.map(function (m) { return [m.lat, m.lng]; });
-    if (state.me && state.near && state.city === "all") pts.push([state.me.lat, state.me.lng]);
+    if (state.me && state.near && state.region === "all") pts.push([state.me.lat, state.me.lng]);
     view.clearArea(); stalls = [];
     view.fit(pts, 15);
   }
 
   /* ---------- 清單 ---------- */
+  var REGIONS = window.NM_REGIONS || [];
+  function regionOf(city) { var r = REGIONS.filter(function (x) { return x.cities.indexOf(city) >= 0; })[0]; return r ? r.key : ""; }
+  function chip(attr, key, label, n, on) {
+    return '<button class="chip" type="button" ' + attr + '="' + key + '" aria-pressed="' + on + '">' + esc(label) + "<small>" + n + "</small></button>";
+  }
   function renderChips() {
     var counts = {};
     MARKETS.forEach(function (m) { counts[m.city] = (counts[m.city] || 0) + 1; });
-    var html = '<button class="chip" type="button" data-city="all" aria-pressed="' + (state.city === "all") + '">' + t("all") + "<small>" + MARKETS.length + "</small></button>";
-    CITIES.forEach(function (c) {
-      if (!counts[c.key]) return;
-      html += '<button class="chip" type="button" data-city="' + c.key + '" aria-pressed="' + (state.city === c.key) + '">' + c[lang] + "<small>" + counts[c.key] + "</small></button>";
-    });
+    function sum(r) { return r.cities.reduce(function (a, c) { return a + (counts[c] || 0); }, 0); }
+    var html = '<div class="chips" role="group" aria-label="' + esc(t("regions")) + '">' + chip("data-region", "all", t("all"), MARKETS.length, state.region === "all");
+    REGIONS.forEach(function (r) { if (sum(r)) html += chip("data-region", r.key, r[lang], sum(r), state.region === r.key); });
+    html += "</div>";
+    var r = REGIONS.filter(function (x) { return x.key === state.region; })[0];
+    if (r && r.cities.length > 1) {
+      html += '<div class="chips sub" role="group" aria-label="' + esc(t("cities")) + '">' + chip("data-city", "all", t("wholeRegion"), sum(r), state.city === "all");
+      CITIES.forEach(function (c) { if (r.cities.indexOf(c.key) >= 0 && counts[c.key]) html += chip("data-city", c.key, c[lang], counts[c.key], state.city === c.key); });
+      html += "</div>";
+    }
     $("cityChips").innerHTML = html;
   }
 
@@ -442,7 +467,7 @@
   }
 
   function clearFilters() {
-    state.q = ""; state.city = "all"; state.today = false; state.favOnly = false;
+    state.q = ""; state.region = "all"; state.city = "all"; state.today = false; state.favOnly = false;
     $("q").value = "";
     setPressed("todayBtn", false); setPressed("favBtn", false);
     renderChips(); render({ fit: true });
@@ -491,6 +516,7 @@
     $("dStatus").innerHTML = '<span class="badge ' + st.cls + '">' + esc(st.text) + "</span>";
     $("dNote").textContent = lang === "zh" ? m.noteZh : m.noteEn;
     renderPicks(m);
+    loadPicks(m);
     loadComm(m);
     $("dFoods").innerHTML = foods(m).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("");
     $("dDays").textContent = daysText(m);
@@ -526,6 +552,7 @@
   function showArea(m) {
     if (!mapReady || !view.supportsStalls) return;
     stallFor = m.id; stalls = [];
+    loadPicks(m);
     stallQ = carryQuery(m); $("dStallQ").value = stallQ; stallHits = {};
     if (FREE_STALLS) {
       stallMode = "free"; stallQ = ""; $("dStallQ").value = "";
@@ -789,15 +816,12 @@
     renderChips(); renderTasks(); render();
     if (state.selected && !$("detail").hidden) openDetail(state.selected);
   }
-  // 地圖夜晚模式：記住使用者的選擇；沒選過就看台北時間，傍晚 5 點到清晨 5 點自動開
-  var night = (function () {
-    try { var v = localStorage.getItem("nm-night"); if (v === "1" || v === "0") return v === "1"; } catch (e) { /* 忽略 */ }
-    var h = Math.floor(taipeiNow().min / 60);
-    return h >= 17 || h < 5;
-  })();
+  // 白天／夜晚模式：夜晚用深色介面加夜市夜景地圖（index.html 開頭已依記住的選擇或台北時間先設好）
+  var night = document.documentElement.getAttribute("data-skin") === "cyber";
   function applyNight() {
     document.querySelector(".map-wrap").classList.toggle("night", night);
-    $("nightBtn").setAttribute("aria-pressed", night ? "true" : "false");
+    $("skinBtn").setAttribute("aria-pressed", night ? "true" : "false");
+    $("skinBtn").title = t(night ? "toDay" : "toNight");
     if (view.setNight) view.setNight(night);
   }
   function applySkin(skin) {
@@ -815,8 +839,9 @@
     qTimer = setTimeout(function () { state.q = e.target.value; render({ fit: true }); }, 120);
   });
   $("cityChips").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-city]"); if (!b) return;
-    state.city = b.getAttribute("data-city");
+    var b = e.target.closest("[data-region],[data-city]"); if (!b) return;
+    if (b.hasAttribute("data-region")) { state.region = b.getAttribute("data-region"); state.city = "all"; }
+    else state.city = b.getAttribute("data-city");
     renderChips(); render({ fit: true });
   });
   $("todayBtn").onclick = function () { state.today = !state.today; setPressed("todayBtn", state.today); render({ fit: true }); };
@@ -992,15 +1017,11 @@
     try { localStorage.setItem("kaida-lang", lang); } catch (e) { /* 忽略 */ }
     applyLang();
   };
-  $("nightBtn").onclick = function () {
-    night = !night;
-    try { localStorage.setItem("nm-night", night ? "1" : "0"); } catch (e) { /* 忽略 */ }
-    applyNight();
-  };
   $("skinBtn").onclick = function () {
-    var next = document.documentElement.getAttribute("data-skin") === "cyber" ? "beige" : "cyber";
-    applySkin(next);
-    try { localStorage.setItem("kaida-skin", next); } catch (e) { /* 忽略 */ }
+    night = !night;
+    applySkin(night ? "cyber" : "beige");
+    applyNight();
+    try { localStorage.setItem("nm-theme", night ? "night" : "day"); } catch (e) { /* 忽略 */ }
   };
 
   window.addEventListener("hashchange", function () {

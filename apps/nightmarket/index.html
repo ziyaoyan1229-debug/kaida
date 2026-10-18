@@ -19,7 +19,13 @@
 <script>
   // 沒有結尾斜線時補上，相對路徑的資源才找得到
   if (!/\/$|\.html$/.test(location.pathname)) location.replace(location.pathname + "/" + location.search + location.hash);
-  try { if (localStorage.getItem("kaida-skin") === "cyber") document.documentElement.setAttribute("data-skin", "cyber"); } catch (e) {}
+  // 白天／夜晚模式：記住使用者的選擇；沒選過就看台北時間，傍晚 5 點到清晨 5 點用夜晚模式
+  (function () {
+    var th = null;
+    try { th = localStorage.getItem("nm-theme"); } catch (e) {}
+    if (th !== "day" && th !== "night") { var h = (new Date().getUTCHours() + 8) % 24; th = h >= 17 || h < 5 ? "night" : "day"; }
+    if (th === "night") document.documentElement.setAttribute("data-skin", "cyber");
+  })();
 </script>
 </head>
 <body>
@@ -36,7 +42,7 @@
     <button class="pill" id="tasksBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span class="pill-label" data-i18n="tasksBtn">封測任務</span> <b id="taskCount">0/4</b></button>
     <button class="icon-btn" id="reloadBtn" type="button" aria-label="重新整理" title="重新整理"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
     <button class="icon-btn" id="langBtn" type="button" aria-label="切換語言">EN</button>
-    <button class="icon-btn" id="skinBtn" type="button" aria-label="切換風格"><span class="skin-dot"></span></button>
+    <button class="icon-btn" id="skinBtn" type="button" aria-label="切換白天／夜晚模式"><svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
   </div>
 </header>
 
@@ -47,7 +53,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
         <input id="q" type="search" autocomplete="off" data-i18n-ph="searchPh" placeholder="搜尋夜市、城市或小吃（例如：蚵仔煎）">
       </label>
-      <div class="chips" id="cityChips" role="group" aria-label="縣市"></div>
+      <div class="region-chips" id="cityChips"></div>
       <div class="toggles">
         <button class="toggle" id="todayBtn" type="button" aria-pressed="false" data-i18n="today">今天有開</button>
         <button class="toggle" id="nearBtn" type="button" aria-pressed="false" data-i18n="near">離我最近</button>
@@ -64,9 +70,6 @@
   </section>
   <section class="map-wrap" aria-label="地圖">
     <div id="map"></div>
-    <button class="night-btn" id="nightBtn" type="button" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span data-i18n="night">夜市夜景</span>
-    </button>
     <div class="pick-banner" id="pickBanner" hidden>
       <span data-i18n="pickHint">點一下地圖上攤位的位置</span>
       <button class="btn ghost" id="pickCancel" type="button" data-i18n="cancel">取消</button>
@@ -84,7 +87,23 @@
     <p class="d-meta" id="dMeta"></p>
     <h2 id="dName"></h2>
     <p class="d-status" id="dStatus"></p>
+    <dl class="facts">
+      <div><dt data-i18n="openDays">營業日</dt><dd id="dDays"></dd></div>
+      <div><dt data-i18n="hours">時間（約）</dt><dd id="dHours"></dd></div>
+      <div><dt data-i18n="transit">交通</dt><dd id="dTransit"></dd></div>
+      <div id="dDistRow" hidden><dt data-i18n="distance">距離</dt><dd id="dDist"></dd></div>
+    </dl>
+    <div class="d-actions">
+      <a class="btn primary" id="dNav" target="_blank" rel="noopener" data-i18n="navigate">Google 地圖導航</a>
+      <a class="btn" id="dNavApple" target="_blank" rel="noopener" data-i18n="navigateApple">Apple 地圖導航</a>
+      <button class="btn" id="dFav" type="button"></button>
+      <button class="btn ghost" id="dShare" type="button" data-i18n="share">分享</button>
+      <button class="btn ghost" id="dReport" type="button" data-i18n="report">回報資料錯誤</button>
+    </div>
+    <h3 data-i18n="mustEat">必吃小吃</h3>
+    <ul class="foods" id="dFoods"></ul>
     <p class="d-note" id="dNote"></p>
+    <p class="d-warn" data-i18n="warn">營業時間與攤位常有變動，請以現場為準。</p>
     <div id="dPicksWrap" hidden>
       <h3 data-i18n="picksTitle">網友推薦攤位</h3>
       <ol class="picks" id="dPicks"></ol>
@@ -100,22 +119,6 @@
       <p class="stall-hint" id="dStallHint" aria-live="polite"></p>
       <button class="btn primary see-map" id="dSeeMap" type="button" hidden></button>
       <ol class="stalls" id="dStalls"></ol>
-    </div>
-    <h3 data-i18n="mustEat">必吃小吃</h3>
-    <ul class="foods" id="dFoods"></ul>
-    <dl class="facts">
-      <div><dt data-i18n="openDays">營業日</dt><dd id="dDays"></dd></div>
-      <div><dt data-i18n="hours">時間（約）</dt><dd id="dHours"></dd></div>
-      <div><dt data-i18n="transit">交通</dt><dd id="dTransit"></dd></div>
-      <div id="dDistRow" hidden><dt data-i18n="distance">距離</dt><dd id="dDist"></dd></div>
-    </dl>
-    <p class="d-warn" data-i18n="warn">營業時間與攤位常有變動，請以現場為準。</p>
-    <div class="d-actions">
-      <a class="btn primary" id="dNav" target="_blank" rel="noopener" data-i18n="navigate">Google 地圖導航</a>
-      <a class="btn" id="dNavApple" target="_blank" rel="noopener" data-i18n="navigateApple">Apple 地圖導航</a>
-      <button class="btn" id="dFav" type="button"></button>
-      <button class="btn ghost" id="dShare" type="button" data-i18n="share">分享</button>
-      <button class="btn ghost" id="dReport" type="button" data-i18n="report">回報資料錯誤</button>
     </div>
   </div>
 </div>
@@ -197,7 +200,7 @@
 <script src="taiwan-counties.js"></script>
 <script src="map-leaflet.js"></script>
 <script src="stall-db.js"></script>
-<script src="curated.js"></script>
+<script src="curated-index.js"></script>
 <script src="community-api.js"></script>
 <script src="map-google.js"></script>
 <script src="data.js"></script>
