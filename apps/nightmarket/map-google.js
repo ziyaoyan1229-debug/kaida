@@ -440,9 +440,24 @@
           var el = div("pick-pin" + (p.kind ? " " + p.kind : ""), "<b>" + p.no + "</b><span>" + p.name.replace(/[&<>"]/g, "") + "</span>");
           var mk = new HtmlMarker({ map: map, position: { lat: p.lat, lng: p.lng }, content: el, title: p.name, center: true, zIndex: 800 - p.no });
           onClick(mk, function () { opts.onPickClick(p.key); });
+          mk.key = String(p.key); mk.z = 800 - p.no;
           pickMarkers.push(mk);
         });
         stallMarkers.forEach(function (s) { if (ids[s.id]) s.marker.setMap(null); });
+      },
+      // 點推薦攤位卡片：地圖移到那家店，圖標放大跳一下；沒有位置就回傳 false
+      highlightPick: function (key) {
+        var hit = null;
+        pickMarkers.forEach(function (mk) {
+          var on = mk.key === String(key);
+          mk.content.classList.toggle("on", on);
+          mk.setZ(on ? 2000 : mk.z);
+          if (on) hit = mk;
+        });
+        if (!hit) return false;
+        map.panTo(hit._pos);
+        if (map.getZoom() < 17) map.setZoom(17);
+        return true;
       },
       // 投稿時在地圖上點位置（點到圖釘不算，要點空白處）
       pickPoint: function (cb) {

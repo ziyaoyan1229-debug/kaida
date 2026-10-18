@@ -981,6 +981,15 @@
     if (view.pickPoint) view.pickPoint(null);
     $("submit").hidden = false;
   }
+  // 點推薦攤位卡片（不是點連結）：地圖上跳出那家店的圖標
+  $("dPicks").addEventListener("click", function (e) {
+    if (e.target.closest("a")) return;
+    var li = e.target.closest("li.pick"); if (!li || !view.highlightPick) return;
+    if (view.highlightPick(li.id.replace("pick-", ""))) {
+      [].forEach.call(document.querySelectorAll("#dPicks li.pick.on"), function (x) { x.classList.remove("on"); });
+      li.classList.add("on");
+    }
+  });
   $("dContrib").onclick = openSubmit;
   $("fPick").onclick = function () {
     var m = byId(formFor);
