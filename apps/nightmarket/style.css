@@ -29,30 +29,28 @@
   color-scheme: light;
 }
 :root[data-skin="cyber"] {
-  --paper: #07080d;
-  --surface: #0c1018;
-  --sunk: #131a27;
-  --ink: #e8f1ff;
-  --muted: #7f8ca8;
-  --line: #1e2840;
-  --accent: #22e8ff;
-  --accent-ink: #03141a;
-  --signal: #22e8ff;
-  --accent-text: #22e8ff;
-  --lantern: #ff3ea5;
-  --open: #7cffb2;
-  --closed: #ff5470;
-  --focus: #ff3ea5;
-  --pin: #22e8ff;
-  --pin-ink: #03141a;
-  --pin-off: #2a3754;
-  --shadow: 0 0 0 1px rgba(34, 232, 255, .1), 0 20px 50px -30px rgba(255, 62, 165, .5);
-  --glow: 0 0 14px rgba(34, 232, 255, .5);
-  --grid: linear-gradient(rgba(34, 232, 255, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 232, 255, .05) 1px, transparent 1px);
-  --r: 0px;
-  --tiles: invert(1) hue-rotate(185deg) brightness(.8) contrast(.9) saturate(.6);
-  --f-display: "Chakra Petch", "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
-  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  /* 夜晚模式：台灣夜市的燈籠紅、燈泡黃、霓虹粉，底色是夜空的深紫 */
+  --paper: #0d0a1c;
+  --surface: #1c1433;
+  --sunk: #161029;
+  --ink: #ffeccc;
+  --muted: #b3a3c9;
+  --line: #3b2a58;
+  --accent: #ff4d2e;
+  --accent-ink: #fff4dc;
+  --signal: #ff4d2e;
+  --accent-text: #ffd25e;
+  --lantern: #ff3d8b;
+  --open: #9dffb0;
+  --closed: #ff6b6b;
+  --focus: #ffd25e;
+  --pin: #ff4d2e;
+  --pin-ink: #ffd25e;
+  --pin-off: #4a3c63;
+  --shadow: 0 0 0 1px rgba(255, 77, 46, .25), 0 20px 50px -30px rgba(255, 61, 139, .5);
+  --glow: 0 0 14px rgba(255, 77, 46, .55);
+  --grid: radial-gradient(rgba(255, 210, 94, .07) 1px, transparent 1.5px);
+  --tiles: invert(1) hue-rotate(200deg) brightness(.8) saturate(.7) sepia(.25);
   color-scheme: dark;
 }
 
@@ -77,9 +75,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .mark { border-radius: 8px; flex: none; }
-:root[data-skin="cyber"] .mark { border-radius: 0; filter: drop-shadow(0 0 6px rgba(34, 232, 255, .45)); }
-.mark-cyber, :root[data-skin="cyber"] .mark-beige { display: none; }
-:root[data-skin="cyber"] .mark-cyber { display: block; }
+.mark-cyber { display: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
 .brand-text strong { font-family: var(--f-display); font-weight: var(--h-weight); font-size: 17px; letter-spacing: .02em; white-space: nowrap; }
 .brand-text small { font-size: 12px; color: var(--muted); white-space: nowrap; }
@@ -90,7 +86,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border: 1px solid var(--line); background: var(--paper); border-radius: 999px; height: 34px;
   padding: 0 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;
 }
-:root[data-skin="cyber"] .pill, :root[data-skin="cyber"] .icon-btn { border-radius: 0; }
 .pill svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media (max-width: 480px) { .pill-label { display: none; } .pill { padding: 0 10px; } }
 .brand-text strong, .brand-text small { overflow: hidden; text-overflow: ellipsis; }
@@ -105,6 +100,17 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .map-wrap { position: relative; height: 50vh; min-height: 300px; border-bottom: 1px solid var(--line); flex: none; }
 #map { position: absolute; inset: 0; background: var(--sunk); }
 .panel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+/* 手機：地圖和清單各自捲動，拉清單上方的把手可以把清單拉高（地圖收起來）或拉低 */
+.panel-handle { display: none; }
+@media (max-width: 859px) {
+  body { height: 100vh; height: 100dvh; overflow: hidden; }
+  .map-wrap { height: var(--map-h, 45vh); min-height: 0; transition: height .25s ease; }
+  .map-wrap.dragging { transition: none; }
+  .panel { overflow-y: auto; overscroll-behavior: contain; }
+  .controls { padding-top: 0; }
+  .panel-handle { display: flex; justify-content: center; align-items: center; width: 100%; height: 22px; margin: 0 0 -4px; padding: 0; border: 0; background: none; touch-action: none; }
+  .panel-handle span { width: 44px; height: 5px; border-radius: 3px; background: var(--line); }
+}
 @media (min-width: 860px) {
   body { height: 100vh; overflow: hidden; }
   .layout { flex-direction: row; }
@@ -125,7 +131,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
   flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
   padding: 5px 12px; font-size: 13px; white-space: nowrap;
 }
-:root[data-skin="cyber"] .chip, :root[data-skin="cyber"] .toggle { border-radius: 0; }
 .chip[aria-pressed="true"], .toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: var(--glow); }
 .chip small { opacity: .65; font-family: var(--f-mono); margin-left: 3px; }
 .toggles { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -161,7 +166,7 @@ mark { background: color-mix(in srgb, var(--signal) 28%, transparent); color: in
 .leaflet-tile-pane { filter: var(--tiles); }
 .leaflet-container { font-family: var(--f-body); background: var(--sunk); }
 .leaflet-control-attribution { font-size: 10px; }
-:root[data-skin="cyber"] .leaflet-control-attribution { background: rgba(7, 8, 13, .8) !important; color: var(--muted); }
+:root[data-skin="cyber"] .leaflet-control-attribution { background: rgba(13, 10, 28, .8) !important; color: var(--muted); }
 :root[data-skin="cyber"] .leaflet-bar a { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .nm-pin { width: 30px; height: 38px; }
 .nm-pin svg { width: 30px; height: 38px; display: block; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .3)); transition: transform .15s; transform-origin: 50% 100%; }
@@ -170,7 +175,7 @@ mark { background: color-mix(in srgb, var(--signal) 28%, transparent); color: in
 .nm-pin.off .b { fill: var(--pin-off); }
 .nm-pin.sel svg { transform: scale(1.35); }
 .nm-pin.sel .b { fill: var(--lantern); }
-:root[data-skin="cyber"] .nm-pin svg { filter: drop-shadow(0 0 5px rgba(34, 232, 255, .6)); }
+:root[data-skin="cyber"] .nm-pin svg { filter: drop-shadow(0 0 5px rgba(255, 90, 50, .7)); }
 .nm-pin { position: relative; }
 .nm-pin .pin-name {
   display: none; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 2px; white-space: nowrap; pointer-events: none;
@@ -210,13 +215,13 @@ body .map-wrap.night .stall-pin { box-shadow: 0 0 8px rgba(255, 61, 139, .75); }
 
 /* 底部面板 */
 .sheet { position: fixed; inset: 0; z-index: 1000; background: rgba(20, 17, 13, .45); display: flex; align-items: flex-end; justify-content: center; }
-:root[data-skin="cyber"] .sheet { background: rgba(3, 5, 10, .7); }
+:root[data-skin="cyber"] .sheet { background: rgba(8, 5, 20, .7); }
 .sheet-card {
   position: relative; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; background: var(--surface);
   border-radius: 16px 16px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--shadow);
   animation: up .2s ease-out;
 }
-:root[data-skin="cyber"] .sheet-card { border-radius: 0; border-top: 1px solid var(--signal); }
+:root[data-skin="cyber"] .sheet-card { border-top: 1px solid var(--signal); }
 @media (min-width: 860px) { .sheet { align-items: center; } .sheet-card { border-radius: 12px; } }
 @keyframes up { from { transform: translateY(30px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .sheet-card { animation: none; } .nm-pin svg { transition: none; } }
@@ -330,7 +335,7 @@ body.has-stalls .osm-credit { display: none; }
 }
 .county-label.small { font-size: 10.5px; opacity: .85; }
 .leaflet-marker-icon .county-label { transform: translate(-50%, -50%); }
-:root[data-skin="cyber"] .county-label { text-shadow: 0 0 6px rgba(34, 232, 255, .6), 0 0 2px #000; }
+:root[data-skin="cyber"] .county-label { text-shadow: 0 0 6px rgba(255, 90, 50, .7), 0 0 2px #000; }
 #map.is-leaflet { background: var(--sunk); }
 .map-wrap:not(.night) .leaflet-tile-pane { filter: none; }
 
@@ -392,3 +397,11 @@ body.has-stalls .osm-credit { display: none; }
 .comm-photos img { width: 84px; height: 84px; object-fit: cover; border-radius: var(--r); background: var(--sunk); flex: none; }
 .pick.community .pick-badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--sunk); color: var(--muted); margin-left: 6px; vertical-align: 3px; }
 .pick-pin.community b { background: #2f8f5b; }
+
+/* 全台視角：夜市圖標收成各區的數字泡泡，放大後才顯示每個夜市 */
+.nm-bubble { display: none; flex-direction: column; align-items: center; justify-content: center; min-width: 44px; padding: 4px 8px; border-radius: 999px; background: var(--pin); color: var(--pin-ink); border: 2px solid var(--surface); box-shadow: var(--shadow); cursor: pointer; white-space: nowrap; }
+.nm-bubble b { font: 700 14px/1 var(--f-mono); }
+.nm-bubble span { font-size: 10px; margin-top: 2px; }
+#map.far.has-bubbles .nm-bubble { display: flex; }
+#map.far.has-bubbles .gm-pin, #map.far.has-bubbles .nm-icon { display: none; }
+.map-wrap.night .nm-bubble { box-shadow: 0 0 12px rgba(255, 77, 46, .6); }

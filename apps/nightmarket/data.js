@@ -27,15 +27,15 @@ window.NM_CITIES = [
   { key: "penghu", zh: "澎湖", en: "Penghu" }
 ];
 
-// 首頁的大區分類：先選大區，地圖放大到那一區，再選細部縣市
+// 首頁的大區分類：先選大區，地圖放大到那一區，再選細部縣市；at 是全台視角時數字泡泡的位置（錯開避免重疊）
 window.NM_REGIONS = [
-  { key: "north", zh: "北北基", en: "Taipei area", cities: ["keelung", "taipei", "newtaipei"] },
-  { key: "tzm", zh: "桃竹苗", en: "Taoyuan–Hsinchu–Miaoli", cities: ["taoyuan", "hsinchu", "miaoli"] },
-  { key: "central", zh: "中彰投", en: "Taichung–Changhua–Nantou", cities: ["taichung", "changhua", "nantou"] },
-  { key: "yjn", zh: "雲嘉南", en: "Yunlin–Chiayi–Tainan", cities: ["yunlin", "chiayi", "tainan"] },
-  { key: "gp", zh: "高屏", en: "Kaohsiung–Pingtung", cities: ["kaohsiung", "pingtung"] },
-  { key: "east", zh: "宜花東", en: "East coast", cities: ["yilan", "hualien", "taitung"] },
-  { key: "islands", zh: "離島", en: "Islands", cities: ["penghu"] }
+  { key: "north", at: [25.35, 121.8], zh: "北北基", en: "Taipei area", cities: ["keelung", "taipei", "newtaipei"] },
+  { key: "tzm", at: [24.95, 120.3], zh: "桃竹苗", en: "Taoyuan–Hsinchu–Miaoli", cities: ["taoyuan", "hsinchu", "miaoli"] },
+  { key: "central", at: [24.2, 119.65], zh: "中彰投", en: "Taichung–Changhua–Nantou", cities: ["taichung", "changhua", "nantou"] },
+  { key: "yjn", at: [23.25, 119.75], zh: "雲嘉南", en: "Yunlin–Chiayi–Tainan", cities: ["yunlin", "chiayi", "tainan"] },
+  { key: "gp", at: [22.4, 120.0], zh: "高屏", en: "Kaohsiung–Pingtung", cities: ["kaohsiung", "pingtung"] },
+  { key: "east", at: [23.85, 122.0], zh: "宜花東", en: "East coast", cities: ["yilan", "hualien", "taitung"] },
+  { key: "islands", at: [23.45, 118.95], zh: "離島", en: "Islands", cities: ["penghu"] }
 ];
 
 window.NM_MARKETS = [

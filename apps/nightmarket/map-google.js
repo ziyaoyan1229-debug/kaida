@@ -121,6 +121,7 @@
     // 只看台灣（本島與澎湖）
     var TAIWAN = { north: 25.75, south: 21.55, west: 119.1, east: 122.45 };
     var DETAIL_ZOOM = 12;
+    var FAR_ZOOM = 9; // 縮到這裡以下，夜市圖標改成各區的數字泡泡
     var NAME_ZOOM = 10; // 放大到這裡以上，夜市圖標旁顯示名稱 // 放大到這裡以上才顯示街道，縣市底色變淡
     function palette() {
       var cs = getComputedStyle(document.documentElement);
@@ -199,11 +200,13 @@
       });
       map.addListener("zoom_changed", function () {
         el.classList.toggle("show-names", map.getZoom() >= NAME_ZOOM);
+        el.classList.toggle("far", map.getZoom() < FAR_ZOOM);
         map.data.setStyle(countyStyle); updateCountyLabels();
       });
     }
     makeMap();
     el.classList.add("is-google");
+    el.classList.toggle("far", map.getZoom() < FAR_ZOOM);
 
     function onClick(mk, fn) { mk.addEventListener("gmp-click", fn); }
     function div(cls, html) { var d = document.createElement("div"); d.className = cls; d.innerHTML = html; return d; }
@@ -347,8 +350,19 @@
       map.fitBounds(bb, 40);
     }
 
+    var bubbleMarkers = [];
     return {
       supportsStalls: true,
+      // 全台視角的大區泡泡：點了交給 app 切到那一區
+      setBubbles: function (list) {
+        bubbleMarkers.forEach(function (b) { b.setMap(null); });
+        bubbleMarkers = list.map(function (b) {
+          var mk = new HtmlMarker({ map: map, position: { lat: b.lat, lng: b.lng }, content: div("nm-bubble", "<b>" + b.n + "</b><span>" + b.label + "</span>"), title: b.label, center: true, zIndex: 500 });
+          onClick(mk, function () { opts.onRegionClick(b.key); });
+          return mk;
+        });
+        el.classList.toggle("has-bubbles", list.length > 0);
+      },
       syncMarkets: function (all, visibleIds, selectedId, isOff) {
         all.forEach(function (m) {
           var mk = marketMarkers[m.id];
