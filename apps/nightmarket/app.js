@@ -10,7 +10,7 @@
       title: "台灣夜市地圖", byKaida: "開達 Kaida 封測作品", tasksBtn: "封測任務",
       searchPh: "搜尋夜市、城市或小吃（例如：蚵仔煎）", all: "全部", today: "今天有開", near: "離我最近", favs: "想去清單",
       mustEat: "必吃小吃", openDays: "營業日", hours: "時間（約）", transit: "交通", distance: "距離",
-      warn: "營業時間與攤位常有變動，請以現場為準。", navigate: "Google 地圖導航", share: "分享", report: "回報資料錯誤",
+      warn: "營業時間與攤位常有變動，請以現場為準。", navigate: "Google 地圖導航", navigateApple: "Apple 地圖導航", share: "分享", report: "回報資料錯誤",
       favAdd: "☆ 加入想去", favDel: "★ 已在想去清單",
       betaTag: "開達封測 · 第一輪", tasksTitle: "幫我們試試看這 4 件事", tasksIntro: "完成後會自動打勾。最後留一句回饋，就是最大的幫忙。",
       fbTitle: "你的回饋", fbPh: "哪裡好用？哪裡卡住？少了哪個夜市？", fbSave: "送出回饋", fbReset: "重新開始任務",
@@ -43,15 +43,15 @@
       stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; },
       stallMore: function (n) { return "還有 " + n + " 家攤位，點這裡載入店名"; }, stallMoreBusy: "載入中…",
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
-      picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "在 Google 地圖找這家", picksSrc: "來源",
-      stallFree: function (n) { return "地圖上標了 " + n + " 個攤位，點圖釘就會打開 Google 地圖看那家店的店名、評分和評論。"; },
+      picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源",
+      stallFree: function (n) { return "地圖上標了 " + n + " 個攤位。有編號和店名的是下面的推薦攤位，點了會跳到介紹；其他圖釘點了會打開 Google 地圖。"; },
       stallLoad: function (n) { return n ? "地圖上標了 " + n + " 個攤位，點這裡載入店名和評分" : "點這裡從 Google 地圖載入店家和評分"; }
     },
     en: {
       title: "Taiwan Night Market Map", byKaida: "A Kaida beta project", tasksBtn: "Beta tasks",
       searchPh: "Search markets, cities or food (e.g. oyster omelette)", all: "All", today: "Open today", near: "Nearest", favs: "Want to go",
       mustEat: "Must-eat", openDays: "Open days", hours: "Hours (approx.)", transit: "Getting there", distance: "Distance",
-      warn: "Hours and stalls change often. Please check on site.", navigate: "Directions in Google Maps", share: "Share", report: "Report an error",
+      warn: "Hours and stalls change often. Please check on site.", navigate: "Directions in Google Maps", navigateApple: "Directions in Apple Maps", share: "Share", report: "Report an error",
       favAdd: "☆ Add to list", favDel: "★ On your list",
       betaTag: "Kaida beta · round 1", tasksTitle: "Help us test these 4 things", tasksIntro: "They tick themselves off as you go. A one-line note at the end helps the most.",
       fbTitle: "Your feedback", fbPh: "What worked? Where did you get stuck? Which market is missing?", fbSave: "Send feedback", fbReset: "Restart tasks",
@@ -84,8 +84,8 @@
       stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; },
       stallMore: function (n) { return n + " more stalls on the map. Tap to load their names"; }, stallMoreBusy: "Loading…",
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
-      picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Find on Google Maps", picksSrc: "Sources",
-      stallFree: function (n) { return n + " stalls are marked on the map. Tap a pin to open that place in Google Maps for its name, rating and reviews."; },
+      picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources",
+      stallFree: function (n) { return n + " stalls are marked on the map. Numbered pins with names are the picks below, and tapping one jumps to its card. Other pins open in Google Maps."; },
       stallLoad: function (n) { return n ? n + " stalls marked on the map. Tap to load names and ratings" : "Tap to load places and ratings from Google Maps"; }
     }
   };
@@ -175,6 +175,27 @@
     var c = window.NM_CURATED;
     return (c && c.markets && c.markets[m.id] && c.markets[m.id].stalls) || [];
   }
+  // 推薦攤位在地圖上的位置（資料檔裡用 Google 地點編號對到的座標）
+  function pickLoc(m) {
+    var db = window.NM_STALL_DB, e = db && db.markets && db.markets[m.id], out = {};
+    ((e && e.picks) || []).forEach(function (r) { out[r[0]] = { id: r[1], lat: r[2], lng: r[3] }; });
+    return out;
+  }
+  function pickPins(m) {
+    var loc = pickLoc(m), en = lang === "en";
+    return picksOf(m).map(function (p, i) {
+      var l = loc[p.zh];
+      return l ? { key: i, no: i + 1, name: en ? (p.en || p.zh) : p.zh, id: l.id, lat: l.lat, lng: l.lng } : null;
+    }).filter(Boolean);
+  }
+  function openPick(i) {
+    if (!stallFor) return;
+    if ($("detail").hidden) openDetail(stallFor);
+    var el = $("pick-" + i);
+    if (!el) return;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  }
   function renderPicks(m) {
     var list = picksOf(m).slice();
     $("dPicksWrap").hidden = !list.length;
@@ -183,15 +204,19 @@
     // 主頁搜尋的關鍵字（例如「臭豆腐」）對到的攤位排前面
     var words = state.q.trim().toLowerCase().split(/\s+/).filter(function (w) { return w && (m.zh + " " + m.en + " " + cityName(m.city)).toLowerCase().indexOf(w) < 0; });
     function hit(p) { var h = [p.zh, p.en].concat(p.foods || [], p.foodsEn || []).join(" ").toLowerCase(); return words.length && words.some(function (w) { return h.indexOf(w) >= 0; }); }
+    var loc = pickLoc(m), all = picksOf(m);
     list.sort(function (a, b) { return (hit(b) ? 1 : 0) - (hit(a) ? 1 : 0); });
     $("dPicks").innerHTML = list.map(function (p) {
       var name = en ? (p.en || p.zh) : p.zh, sub = en ? (p.en ? p.zh : "") : (p.en || "");
       var foods = (en && p.foodsEn && p.foodsEn.length ? p.foodsEn : p.foods) || [];
       var meta = [p.price, p.where, p.mentions ? t("picksMentions")(p.mentions) : ""].filter(Boolean).join(" · ");
       var gq = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.zh + " " + m.zh.replace(/（.*）/, ""));
+      // Apple 地圖：在夜市附近搜尋這家店，免費、不用金鑰
+      var aq = "https://maps.apple.com/?q=" + encodeURIComponent(p.zh) + "&sll=" + m.lat + "," + m.lng + "&z=16";
       var src = (p.sources || []).map(function (x, i) { return '<a href="' + esc(x.url) + '" target="_blank" rel="noopener" title="' + esc(x.title || "") + '">' + (i + 1) + "</a>"; }).join(" ");
       var ph = p.photo && p.photo.url ? '<figure class="pick-ph"><img src="' + esc(p.photo.url) + '" alt="' + esc(name) + '" loading="lazy" onerror="this.parentNode.remove()"><figcaption><a href="' + esc(p.photo.page || p.photo.url) + '" target="_blank" rel="noopener">' + esc(t("photoBy")) + " " + esc(p.photo.author || "") + " · " + esc(p.photo.license || "") + "</a></figcaption></figure>" : "";
-      return '<li class="pick' + (hit(p) ? " hit" : "") + '">' + ph + '<div class="pick-body"><h4>' + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + "</h4>" +
+      var no = all.indexOf(p);
+      return '<li class="pick' + (hit(p) ? " hit" : "") + '" id="pick-' + no + '">' + ph + '<div class="pick-body"><h4>' + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + "</h4>" +
         (foods.length ? '<ul class="foods">' + foods.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         '<p class="pick-sum">' + esc(en ? (p.summaryEn || p.summaryZh) : p.summaryZh) + "</p>" +
         // 網友原文只引用一兩句（合理引用），一定附上出處
@@ -200,7 +225,7 @@
           return '<blockquote class="pick-q">「' + esc(q.text) + '」<cite><a href="' + esc(sx.url) + '" target="_blank" rel="noopener">' + esc(sx.title || t("picksSrc")) + "</a></cite></blockquote>";
         }).join("") +
         (meta ? '<p class="pick-meta">' + esc(meta) + "</p>" : "") +
-        '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p></div></li>";
+        '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p></div></li>";
     }).join("");
   }
 
@@ -241,7 +266,8 @@
     skin: document.documentElement.getAttribute("data-skin") === "cyber" ? "cyber" : "beige",
     mapId: (window.NM_CONFIG || {}).googleMapId,
     onMarketClick: function (id) { openDetail(id); },
-    onStallClick: function (id) { openStall(id); }
+    onStallClick: function (id) { openStall(id); },
+    onPickClick: function (key) { openPick(key); }
   };
   // 地圖還沒準備好之前先用空殼，所有呼叫都安全
   var noop = function () {};
@@ -388,6 +414,7 @@
     $("dTransit").textContent = lang === "zh" ? m.transitZh : m.transitEn;
     if (state.me) { $("dDistRow").hidden = false; $("dDist").textContent = t("km")(distKm(state.me, m)); } else { $("dDistRow").hidden = true; }
     $("dNav").href = "https://www.google.com/maps/dir/?api=1&destination=" + m.lat + "," + m.lng;
+    $("dNavApple").href = "https://maps.apple.com/?daddr=" + m.lat + "," + m.lng + "&q=" + encodeURIComponent(m.zh);
     fillFavBtn(id);
     if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
     render();
@@ -419,6 +446,7 @@
     if (FREE_STALLS) {
       stallMode = "free"; stallQ = ""; $("dStallQ").value = "";
       stalls = (view.previewArea && view.previewArea(m)) || [];
+      if (stalls.length && view.showPicks) view.showPicks(pickPins(m));
       renderStalls();
       return;
     }
@@ -752,6 +780,7 @@
     ta.focus(); ta.setSelectionRange(t("reportPre")(m.zh).length, t("reportPre")(m.zh).length);
   };
 
+  $("reloadBtn").onclick = function () { location.reload(); };
   $("dStalls").addEventListener("click", function (e) {
     if (e.target.closest("#dStallMore")) { loadMoreStalls(); return; }
     if (e.target.closest("#dStallLoad")) { if (byId(stallFor)) loadStalls(byId(stallFor)); return; }

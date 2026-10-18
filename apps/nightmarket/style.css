@@ -352,3 +352,13 @@ body.has-stalls .osm-credit { display: none; }
 .pick-q { margin: 0 0 6px; padding: 4px 0 4px 10px; border-left: 3px solid var(--line); font-size: 13.5px; line-height: 1.5; }
 .pick-q cite { display: block; font-style: normal; font-size: 11.5px; margin-top: 2px; }
 .pick-q cite a { color: var(--muted); }
+/* 推薦攤位圖釘 */
+.pick-pin { display: flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
+.pick-pin b { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--lantern); color: #fff; font: 700 11px/1 var(--f-mono); border: 2px solid var(--surface); box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
+.pick-pin span { font: 600 11.5px/1.2 var(--f-display); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 2px 5px; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); max-width: 9em; overflow: hidden; text-overflow: ellipsis; }
+.map-wrap.night .pick-pin span { color: var(--nm-bulb); border-color: rgba(255, 77, 46, .5); }
+.pick-no { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 6px; border-radius: 50%; background: var(--lantern); color: #fff; font: 700 11px/1 var(--f-mono); vertical-align: 2px; }
+.pick.flash { animation: pickflash 1.4s ease-out; }
+@keyframes pickflash { 0%, 30% { border-color: var(--lantern); box-shadow: 0 0 0 3px var(--lantern); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.stall-pin.dot { width: 12px; height: 12px; border-width: 2px; opacity: .75; }
