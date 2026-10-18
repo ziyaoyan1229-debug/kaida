@@ -30,11 +30,13 @@ create table if not exists public.nm_submissions (
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   ip_hash text
 );
--- 四項評分（0–10）和勳章用的手機代號（舊資料庫重跑這份也會補上）
+-- 六項評分（0–10）和勳章用的手機代號（舊資料庫重跑這份也會補上）
 alter table public.nm_submissions add column if not exists taste smallint check (taste between 0 and 10);
 alter table public.nm_submissions add column if not exists aroma smallint check (aroma between 0 and 10);
 alter table public.nm_submissions add column if not exists attitude smallint check (attitude between 0 and 10);
 alter table public.nm_submissions add column if not exists cp smallint check (cp between 0 and 10);
+alter table public.nm_submissions add column if not exists visual smallint check (visual between 0 and 10);
+alter table public.nm_submissions add column if not exists vibe smallint check (vibe between 0 and 10);
 alter table public.nm_submissions add column if not exists device text check (char_length(device) <= 40);
 alter table public.nm_submissions add column if not exists mod_note text;
 create index if not exists nm_submissions_device on public.nm_submissions (device);
@@ -45,9 +47,9 @@ alter table public.nm_submissions enable row level security;
 
 -- 欄位權限：訪客只能寫入和讀取這些欄位（讀不到 ip_hash）
 revoke all on public.nm_submissions from anon, authenticated;
-grant insert (market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, consent, taste, aroma, attitude, cp, device)
+grant insert (market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, consent, taste, aroma, attitude, cp, visual, vibe, device)
   on public.nm_submissions to anon, authenticated;
-grant select (id, created_at, market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, status, taste, aroma, attitude, cp, device)
+grant select (id, created_at, market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, status, taste, aroma, attitude, cp, visual, vibe, device)
   on public.nm_submissions to anon, authenticated;
 
 drop policy if exists "nm insert pending" on public.nm_submissions;

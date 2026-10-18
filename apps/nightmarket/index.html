@@ -168,6 +168,8 @@
         <label><span data-i18n="sAroma">香氣</span><select id="f_aroma"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
         <label><span data-i18n="sAttitude">態度</span><select id="f_attitude"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
         <label><span data-i18n="sCp">CP 值</span><select id="f_cp"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
+        <label><span data-i18n="sVisual">視覺</span><select id="f_visual"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
+        <label><span data-i18n="sVibe">氛圍</span><select id="f_vibe"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
       </fieldset>
       <p class="medal-hint" id="fMedal" aria-live="polite"></p>
       <label><span data-i18n="fWhere">位置說明</span><input id="fWhere" maxlength="60" autocomplete="off"></label>
@@ -185,12 +187,25 @@
 </div>
 
 <!-- 封測任務 -->
+<!-- 本季排行榜 -->
+<div class="sheet" id="rank" role="dialog" aria-modal="true" aria-labelledby="rankTitle" hidden>
+  <div class="sheet-card">
+    <button class="close" type="button" data-close aria-label="關閉">×</button>
+    <h2 id="rankTitle">本季排行榜</h2>
+    <p class="rank-prize" data-i18n="rankPrize">每季第一名可以和開發者一起去逛夜市！</p>
+    <p class="fine" id="rankNote"></p>
+    <ol class="rank-list" id="rankList"></ol>
+    <p class="fine" data-i18n="rankRule">積分：開拓者 30 分、探險家 10 分、朝聖者 3 分，只算本季審核通過的投稿。</p>
+  </div>
+</div>
+
 <!-- 我的收藏：想去的夜市和喜愛的店家 -->
 <div class="sheet" id="mine" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
   <div class="sheet-card">
     <button class="close" type="button" data-close aria-label="關閉">×</button>
     <h2 id="mTitle" data-i18n="mineTitle">我的收藏</h2>
-    <div id="mineMedalsWrap" hidden><h3 data-i18n="mineMedals">我的勳章</h3><ul class="mine-list" id="mineMedals"></ul><p class="fine" data-i18n="medalRule"></p></div>
+    <button class="btn rank-btn" id="rankBtn" type="button" data-i18n="rankBtn">🏆 本季排行榜</button>
+    <div id="mineMedalsWrap" hidden><h3><span data-i18n="mineMedals">我的勳章</span> <small class="pts" id="minePts"></small></h3><ul class="mine-list" id="mineMedals"></ul><p class="fine" data-i18n="medalRule"></p></div>
     <h3 data-i18n="mineFavs">想去的夜市</h3>
     <ul class="mine-list" id="mineFavs"></ul>
     <h3 data-i18n="mineLikes">喜愛的店家</h3>

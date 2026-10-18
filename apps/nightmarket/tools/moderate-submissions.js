@@ -45,7 +45,7 @@ const RULES = `你是台灣夜市地圖的投稿審核員。判斷這篇網友�
 - 內容跟這個夜市的攤位、小吃有關；攤位名稱看起來是真的店名或小吃攤。
 - 文字沒有髒話、人身攻擊、歧視、廣告、聯絡方式、網址或別人的個資。負評可以，只要是在評論食物或服務。
 - 照片是食物、攤位、招牌或夜市街景；不能是色情、暴力、跟夜市無關的圖，也不能以拍某個路人的臉為主。
-- 四項分數 0–10 都是合理的。
+- 各項分數 0–10 都是合理的。
 看不出來、需要查證才能判斷的，回 human。
 只回一行 JSON：{"decision":"approve"|"reject"|"human","reason":"一句繁體中文理由"}`;
 
@@ -54,7 +54,7 @@ async function ask(row, m) {
   for (const u of (row.photos || []).slice(0, 4)) if (/^https:\/\//.test(u)) content.push({ type: "image", source: { type: "url", url: u } });
   content.push({ type: "text", text: JSON.stringify({
     夜市: m ? m.zh + "（" + m.city + "）" : row.market, 攤位: row.stall, 招牌小吃: row.foods, 價格: row.price, 位置說明: row.where_hint,
-    心得: row.review, 暱稱: row.nickname, 分數: { 味蕾度: row.taste, 香氣: row.aroma, 態度: row.attitude, CP值: row.cp }, 照片張數: (row.photos || []).length
+    心得: row.review, 暱稱: row.nickname, 分數: { 味蕾度: row.taste, 香氣: row.aroma, 態度: row.attitude, CP值: row.cp, 視覺: row.visual, 氛圍: row.vibe }, 照片張數: (row.photos || []).length
   }) });
   const r = await fetch((process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com") + "/v1/messages", {
     method: "POST",
