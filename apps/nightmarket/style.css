@@ -458,3 +458,24 @@ h3 .pts { font-size: 0.8rem; font-weight: 600; color: #b8860b; margin-left: 6px;
 .rank-list .rm { font-size: 0.8rem; font-family: system-ui, sans-serif; }
 .rank-list .rp { font-weight: 700; }
 .rank-list li.empty { display: block; opacity: 0.7; }
+.brand-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.trophy-btn { border: 0; background: none; padding: 2px 4px; font-size: 20px; line-height: 1; font-family: system-ui, sans-serif; cursor: pointer; flex: none; }
+.trophy-btn:active { transform: scale(0.9); }
+#rank #mineMedalsWrap { margin-bottom: 12px; }
+.dev-score { display: inline-flex; align-items: baseline; gap: 3px; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--lantern); color: #fff; font: 600 11px/1.6 system-ui, sans-serif; vertical-align: 2px; white-space: nowrap; }
+.dev-score b { font-size: 13px; }
+@media (max-width: 430px) {
+  .brand { gap: 8px; }
+  .brand-btn .caret { display: none; }
+  .trophy-btn { font-size: 18px; padding: 0 2px; }
+  .brand-row { gap: 2px; }
+  .top-actions { gap: 4px; }
+}
+button.dev-score { border: 0; cursor: pointer; }
+.radar { margin: 6px 0 8px; text-align: center; }
+.radar svg { width: 100%; max-width: 280px; height: auto; overflow: visible; }
+.radar .rg { fill: none; stroke: var(--line, #e2d8c8); stroke-width: 1; }
+.radar .rv { fill: color-mix(in srgb, var(--lantern) 28%, transparent); stroke: var(--lantern); stroke-width: 2; stroke-linejoin: round; }
+.radar text { font: 11px system-ui, sans-serif; fill: var(--ink, currentColor); }
+.radar .fine { margin: 2px 0 0; }
+@media (max-width: 430px) { #taskCount { display: none; } .brand-text strong { font-size: 16px; } }

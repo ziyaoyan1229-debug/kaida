@@ -55,7 +55,7 @@
       medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "六項評分都要選。",
       fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fGoldReview: "開拓者要審核通過才會頒發。", fNeedLoc: "新點位要在地圖上標出位置，才能拿開拓者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
       medalRule: "開拓者（金）：第一個發掘新點位的人，要標位置、拍照＋評分，審核通過才算。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
-      visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
+      devShort: "評分", radarDefault: "還沒有網友評分，先顯示開發者給的預設分數。", radarFrom: function (n) { return n + " 位網友評分的平均。"; }, visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
       fSaved: "還沒連上投稿資料庫，先存在這支手機。連線後會自動送出。", fSyncing: function (n) { return "正在送出先前存的 " + n + " 篇投稿…"; },
       mineMedals: "我的勳章", seasonPts: function (n) { return "本季積分 " + n + " 分"; }, rankBtn: "🏆 本季排行榜",
       rankTitle: function (y, q) { return y + " 年第 " + q + " 季排行榜"; }, rankPrize: "本季的第一名可以和開發者去逛夜市🤗",
@@ -115,7 +115,7 @@
       medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all six scores.",
       fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fGoldReview: "Pioneer is awarded once the post is approved.", fNeedLoc: "Mark the new spot on the map to earn Pioneer.", fWillGet: function (m) { return "This post earns: " + m; },
       medalRule: "Pioneer (gold): first to discover a new spot, with its location, a photo and scores. Counts once approved. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
-      visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
+      devShort: "Score", radarDefault: "No visitor ratings yet, so these are the developer's default scores.", radarFrom: function (n) { return "Average of " + n + (n === 1 ? " visitor rating." : " visitor ratings."); }, visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
       fSaved: "Not connected yet, so it's saved on this phone. It will be sent once we're online.", fSyncing: function (n) { return "Sending " + n + " saved posts…"; },
       mineMedals: "My medals", seasonPts: function (n) { return "This season: " + n + " pts"; }, rankBtn: "🏆 Season leaderboard",
       rankTitle: function (y, q) { return y + " Q" + q + " leaderboard"; }, rankPrize: "This season's No. 1 gets to explore a night market with the developer 🤗",
@@ -361,6 +361,28 @@
     el.scrollIntoView({ block: "center", behavior: "smooth" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }
+  // 店名旁的評分：還沒有網友評分時預設 10 分（開發者給的），有了就顯示網友的綜合分數
+  function devScore(p, items) {
+    var rs = (items || []).filter(scored);
+    var v = rs.length ? (rs.reduce(function (s, c) { return s + score(c); }, 0) / rs.length).toFixed(1) : (p.dev != null ? p.dev : 10);
+    return '<button type="button" class="dev-score" data-radar aria-expanded="false">' + esc(t("devShort")) + " <b>" + v + "</b></button>";
+  }
+  // 六角雷達圖：六項平均分數，沒人評過的項目用預設 10 分
+  function radarSvg(items) {
+    var rs = (items || []).filter(scored), R = 70, cx = 110, cy = 92;
+    var vals = SCORE_KEYS.map(function (k) { var v = rs.filter(function (c) { return c[k] != null; }); return v.length ? v.reduce(function (s, c) { return s + c[k]; }, 0) / v.length : 10; });
+    function pt(i, r) { var a = -Math.PI / 2 + i * Math.PI / 3; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+    function poly(r) { return SCORE_KEYS.map(function (k, i) { return pt(i, typeof r === "function" ? r(i) : r).map(function (n) { return n.toFixed(1); }).join(","); }).join(" "); }
+    var grid = [0.25, 0.5, 0.75, 1].map(function (f) { return '<polygon class="rg" points="' + poly(R * f) + '"/>'; }).join("");
+    var axes = SCORE_KEYS.map(function (k, i) { var e = pt(i, R); return '<line class="rg" x1="' + cx + '" y1="' + cy + '" x2="' + e[0].toFixed(1) + '" y2="' + e[1].toFixed(1) + '"/>'; }).join("");
+    var labels = SCORE_KEYS.map(function (k, i) {
+      var e = pt(i, R + 16), anchor = Math.abs(e[0] - cx) < 4 ? "middle" : e[0] > cx ? "start" : "end";
+      return '<text x="' + e[0].toFixed(1) + '" y="' + (e[1] + 4).toFixed(1) + '" text-anchor="' + anchor + '">' + esc(t("s" + k.charAt(0).toUpperCase() + k.slice(1))) + " " + vals[i].toFixed(vals[i] % 1 ? 1 : 0) + "</text>";
+    }).join("");
+    return '<div class="radar"><svg viewBox="0 0 220 184" role="img" aria-label="' + esc(t("devShort")) + '">' + grid + axes +
+      '<polygon class="rv" points="' + poly(function (i) { return R * vals[i] / 10; }) + '"/>' + labels + "</svg>" +
+      '<p class="fine">' + esc(rs.length ? t("radarFrom")(rs.length) : t("radarDefault")) + "</p></div>";
+  }
   function visitBtn(zh) { return window.NMCommunity ? '<button class="btn visit-btn" type="button" data-visit="' + esc(zh) + '">' + esc(t("visitBtn")) + "</button>" : ""; }
   function renderPicks(m) {
     var list = picksOf(m).slice(), cs = commSplit(m);
@@ -386,7 +408,7 @@
       var no = all.indexOf(p);
       var lk = liked(p);
       return '<li class="pick' + (hit(p) ? " hit" : "") + '" id="pick-' + no + '">' + ph + '<div class="pick-body">' +
-        '<button class="like-btn" type="button" data-like="' + esc(p.zh) + '" aria-pressed="' + lk + '" aria-label="' + esc(t(lk ? "unlike" : "like")) + '">' + (lk ? "♥" : "♡") + "</button><h4>" + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + "</h4>" +
+        '<button class="like-btn" type="button" data-like="' + esc(p.zh) + '" aria-pressed="' + lk + '" aria-label="' + esc(t(lk ? "unlike" : "like")) + '">' + (lk ? "♥" : "♡") + "</button><h4>" + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + devScore(p, cs.byPick[no]) + "</h4>" +
         (foods.length ? '<ul class="foods">' + foods.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         '<p class="pick-sum">' + esc(en ? (p.summaryEn || p.summaryZh) : p.summaryZh) + "</p>" +
         // 網友原文只引用一兩句（合理引用），一定附上出處
@@ -1102,6 +1124,15 @@
   // 點推薦攤位卡片（不是點連結）：地圖上跳出那家店的圖標
   $("dPicks").addEventListener("click", function (e) {
     if (e.target.closest("a")) return;
+    var rb = e.target.closest("[data-radar]");
+    if (rb) {
+      var card = rb.closest("li.pick"), open = card.querySelector(".radar");
+      if (open) { open.remove(); rb.setAttribute("aria-expanded", "false"); return; }
+      var m = byId(state.selected), no = +card.id.replace("pick-", ""), cs = commSplit(m);
+      card.querySelector("h4").insertAdjacentHTML("afterend", radarSvg(cs.byPick[no]));
+      rb.setAttribute("aria-expanded", "true");
+      return;
+    }
     var vb = e.target.closest("[data-visit]");
     if (vb) { openSubmit(vb.getAttribute("data-visit")); return; }
     var lb = e.target.closest("[data-like]");
@@ -1131,7 +1162,8 @@
       return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.zh) + '"><b><span class="h">♥</span> ' + esc(x.zh) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
     }).join("") : '<li class="empty">' + esc(t("mineNoLikes")) + "</li>";
     openSheet("mine");
-    if (!window.NMCommunity) return;
+  }
+  function loadMyMedals() {
     // 我的勳章：找出這支手機的投稿（含還沒送出的），載入那些夜市的投稿，照同樣規則算勳章
     NMCommunity.mine(deviceId()).then(function (rows) {
       rows = rows.concat(pending);
@@ -1144,7 +1176,6 @@
           if (!r.local && seasonOf(r.created_at) === cur) pts += POINTS[k];
         });
         got.sort(function (a, b) { return "grsb".indexOf(a.k[0]) - "grsb".indexOf(b.k[0]); });
-        $("mineMedalsWrap").hidden = false;
         $("minePts").textContent = t("seasonPts")(pts);
         $("mineMedals").innerHTML = got.length ? got.map(function (x) {
           return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.stall) + '"><b>' + medalHtml(x.k) + " " + esc(x.stall) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
@@ -1175,6 +1206,8 @@
     var now = new Date().toISOString(), cur = seasonOf(now), me = deviceId();
     $("rankTitle").textContent = t("rankTitle")(cur.slice(0, 4), cur.slice(5));
     $("rankList").innerHTML = "";
+    $("mineMedals").innerHTML = ""; $("minePts").textContent = "";
+    loadMyMedals();
     $("rankNote").textContent = NMCommunity.enabled() ? "" : t("rankOffline");
     openSheet("rank");
     (NMCommunity.enabled() ? NMCommunity.all() : Promise.resolve([])).then(function (rows) {
@@ -1196,7 +1229,7 @@
       });
     });
   }
-  $("rankBtn").onclick = function () { closeSheet($("mine")); openRank(); };
+  $("trophyBtn").onclick = function () { if (window.NMCommunity) openRank(); };
   $("mineBtn").onclick = openMine;
   $("mine").addEventListener("click", function (e) {
     var b = e.target.closest("[data-open]"); if (!b) return;
