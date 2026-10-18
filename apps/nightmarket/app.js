@@ -42,6 +42,7 @@
       stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…",
       stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; },
       stallMore: function (n) { return "還有 " + n + " 家攤位，點這裡載入店名"; }, stallMoreBusy: "載入中…",
+      stallFree: function (n) { return "地圖上標了 " + n + " 個攤位，點圖釘就會打開 Google 地圖看那家店的店名、評分和評論。"; },
       stallLoad: function (n) { return n ? "地圖上標了 " + n + " 個攤位，點這裡載入店名和評分" : "點這裡從 Google 地圖載入店家和評分"; }
     },
     en: {
@@ -80,6 +81,7 @@
       stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…",
       stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; },
       stallMore: function (n) { return n + " more stalls on the map. Tap to load their names"; }, stallMoreBusy: "Loading…",
+      stallFree: function (n) { return n + " stalls are marked on the map. Tap a pin to open that place in Google Maps for its name, rating and reviews."; },
       stallLoad: function (n) { return n ? n + " stalls marked on the map. Tap to load names and ratings" : "Tap to load places and ratings from Google Maps"; }
     }
   };
@@ -351,7 +353,8 @@
     if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
     render();
     openSheet("detail");
-    if (view.supportsStalls && stallFor === id && stalls.length) {
+    if (view.supportsStalls && stallFor === id && stalls.length && FREE_STALLS) renderStalls();
+    else if (view.supportsStalls && stallFor === id && stalls.length) {
       var cq = carryQuery(m);
       if (cq && cq !== stallQ) { stallQ = cq; $("dStallQ").value = cq; searchStalls(); } else renderStalls();
     }
@@ -362,6 +365,8 @@
   /* ---------- 夜市範圍與攤位（Google 地圖） ---------- */
   var stalls = [];
   var stallFor = null, stallMode = "loaded";
+  // 免費模式：只用資料檔畫攤位位置，不向 Google 抓店名、評分、照片和評論；點圖釘直接開 Google 地圖看那家店
+  var FREE_STALLS = true;
   var stallQ = "", stallHits = {}, stallBusy = false, stallTimer = null;
   function byId(id) { return MARKETS.filter(function (x) { return x.id === id; })[0]; }
   function stars(r) {
@@ -372,6 +377,12 @@
     if (!mapReady || !view.supportsStalls) return;
     stallFor = m.id; stalls = [];
     stallQ = carryQuery(m); $("dStallQ").value = stallQ; stallHits = {};
+    if (FREE_STALLS) {
+      stallMode = "free"; stallQ = ""; $("dStallQ").value = "";
+      stalls = (view.previewArea && view.previewArea(m)) || [];
+      renderStalls();
+      return;
+    }
     // 先只畫資料檔裡的攤位位置，不向 Google 查詢；使用者按「載入店名」或搜尋關鍵字才查
     var pre = view.previewArea ? view.previewArea(m) : null;
     if (pre || (view.previewArea && !stallQ)) {
@@ -445,6 +456,15 @@
     var box = $("dStalls");
     if (!view.supportsStalls) { $("dStallsWrap").hidden = true; return; }
     $("dStallsWrap").hidden = false;
+    if (stallMode === "free") {
+      $("dStallsWrap").hidden = !stalls.length;
+      $("dStallQWrap").hidden = true;
+      $("dStallHint").textContent = "";
+      $("dSeeMap").hidden = !stalls.length;
+      $("dSeeMap").textContent = t("seeMap")(stalls.length);
+      box.innerHTML = '<li class="muted">' + esc(t("stallFree")(stalls.length)) + "</li>";
+      return;
+    }
     if (stallMode === "preview" && mode !== "loading" && mode !== "error" && !norm(stallQ)) {
       $("dStallQWrap").hidden = !stalls.length;
       $("dStallHint").textContent = "";
@@ -506,6 +526,12 @@
   function openStall(id) {
     var s = stalls.filter(function (x) { return x.id === id; })[0];
     if (!s) return;
+    if (FREE_STALLS) {
+      view.selectStall(id);
+      var mk = byId(stallFor);
+      window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mk ? mk.zh : s.lat + "," + s.lng) + "&query_place_id=" + encodeURIComponent(s.id), "_blank", "noopener");
+      return;
+    }
     if (s.pending && view.resolveStall) {
       view.resolveStall(s).then(function () { renderStalls(); openStall(id); }).catch(function (e) { console.warn("[stall]", e); });
       return;
