@@ -52,7 +52,7 @@
       fDone: "謝謝你的投稿！審核通過後就會出現在網站上。", fErr: "送出失敗，請稍後再試。", fLimited: "投稿太頻繁了，請過一陣子再試。",
       commTitle: "網友心得", commBadge: "網友新增", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
-      picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源",
+      picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源", mineTitle: "我的收藏", mineFavs: "想去的夜市", mineLikes: "喜愛的店家", mineNote: "收藏只存在這支手機的瀏覽器裡。", mineNoFavs: "還沒有。在夜市頁按「☆ 加入想去」就會出現在這裡。", mineNoLikes: "還沒有。在推薦攤位按 ♡ 就會出現在這裡。", like: "喜愛這家店", unlike: "取消喜愛",
       stallFree: function (n) { return "地圖上標了 " + n + " 個攤位。有編號和店名的是下面的推薦攤位，點了會跳到介紹；其他圖釘點了會打開 Google 地圖。"; },
       stallLoad: function (n) { return n ? "地圖上標了 " + n + " 個攤位，點這裡載入店名和評分" : "點這裡從 Google 地圖載入店家和評分"; }
     },
@@ -102,7 +102,7 @@
       fDone: "Thanks! Your post will appear once it's reviewed.", fErr: "Couldn't send. Please try again later.", fLimited: "Too many posts. Please try again later.",
       commTitle: "Visitor reviews", commBadge: "Added by visitors", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
-      picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources",
+      picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources", mineTitle: "My saved", mineFavs: "Markets to visit", mineLikes: "Liked stalls", mineNote: "Saved only in this browser on this device.", mineNoFavs: "Nothing yet. Tap “☆ Save” on a market.", mineNoLikes: "Nothing yet. Tap ♡ on a recommended stall.", like: "Like this stall", unlike: "Unlike",
       stallFree: function (n) { return n + " stalls are marked on the map. Numbered pins with names are the picks below, and tapping one jumps to its card. Other pins open in Google Maps."; },
       stallLoad: function (n) { return n ? n + " stalls marked on the map. Tap to load names and ratings" : "Tap to load places and ratings from Google Maps"; }
     }
@@ -118,7 +118,7 @@
   try { lang = localStorage.getItem("kaida-lang") === "en" ? "en" : "zh"; } catch (e) { /* 預設中文 */ }
   var state = {
     q: "", region: "all", city: "all", today: false, near: false, favOnly: false,
-    favs: load("nm-favs", []), tasks: load("nm-tasks", {}), me: null, selected: null
+    favs: load("nm-favs", []), likes: load("nm-likes", []), tasks: load("nm-tasks", {}), me: null, selected: null
   };
   var t = function (k) { return T[lang][k]; };
   var $ = function (id) { return document.getElementById(id); };
@@ -290,7 +290,9 @@
     var words = state.q.trim().toLowerCase().split(/\s+/).filter(function (w) { return w && (m.zh + " " + m.en + " " + cityName(m.city)).toLowerCase().indexOf(w) < 0; });
     function hit(p) { var h = [p.zh, p.en].concat(p.foods || [], p.foodsEn || []).join(" ").toLowerCase(); return words.length && words.some(function (w) { return h.indexOf(w) >= 0; }); }
     var loc = pickLoc(m), all = picksOf(m);
-    list.sort(function (a, b) { return (hit(b) ? 1 : 0) - (hit(a) ? 1 : 0); });
+    function liked(p) { return state.likes.indexOf(m.id + "|" + p.zh) >= 0; }
+    // 搜尋命中的排最前面，再來是自己按過愛心的
+    list.sort(function (a, b) { return (hit(b) ? 2 : 0) + (liked(b) ? 1 : 0) - (hit(a) ? 2 : 0) - (liked(a) ? 1 : 0); });
     $("dPicks").innerHTML = list.map(function (p) {
       var name = en ? (p.en || p.zh) : p.zh, sub = en ? (p.en ? p.zh : "") : (p.en || "");
       var foods = (en && p.foodsEn && p.foodsEn.length ? p.foodsEn : p.foods) || [];
@@ -301,7 +303,9 @@
       var src = (p.sources || []).map(function (x, i) { return '<a href="' + esc(x.url) + '" target="_blank" rel="noopener" title="' + esc(x.title || "") + '">' + (i + 1) + "</a>"; }).join(" ");
       var ph = p.photo && p.photo.url ? '<figure class="pick-ph"><img src="' + esc(p.photo.url) + '" alt="' + esc(name) + '" loading="lazy" onerror="this.parentNode.remove()"><figcaption><a href="' + esc(p.photo.page || p.photo.url) + '" target="_blank" rel="noopener">' + esc(t("photoBy")) + " " + esc(p.photo.author || "") + " · " + esc(p.photo.license || "") + "</a></figcaption></figure>" : "";
       var no = all.indexOf(p);
-      return '<li class="pick' + (hit(p) ? " hit" : "") + '" id="pick-' + no + '">' + ph + '<div class="pick-body"><h4>' + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + "</h4>" +
+      var lk = liked(p);
+      return '<li class="pick' + (hit(p) ? " hit" : "") + '" id="pick-' + no + '">' + ph + '<div class="pick-body">' +
+        '<button class="like-btn" type="button" data-like="' + esc(p.zh) + '" aria-pressed="' + lk + '" aria-label="' + esc(t(lk ? "unlike" : "like")) + '">' + (lk ? "♥" : "♡") + "</button><h4>" + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + "</h4>" +
         (foods.length ? '<ul class="foods">' + foods.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         '<p class="pick-sum">' + esc(en ? (p.summaryEn || p.summaryZh) : p.summaryZh) + "</p>" +
         // 網友原文只引用一兩句（合理引用），一定附上出處
@@ -984,11 +988,48 @@
   // 點推薦攤位卡片（不是點連結）：地圖上跳出那家店的圖標
   $("dPicks").addEventListener("click", function (e) {
     if (e.target.closest("a")) return;
+    var lb = e.target.closest("[data-like]");
+    if (lb) {
+      var key = state.selected + "|" + lb.getAttribute("data-like"), i = state.likes.indexOf(key);
+      if (i >= 0) state.likes.splice(i, 1); else state.likes.push(key);
+      save("nm-likes", state.likes);
+      var on = i < 0;
+      lb.setAttribute("aria-pressed", String(on)); lb.textContent = on ? "♥" : "♡"; lb.setAttribute("aria-label", t(on ? "unlike" : "like"));
+      if (on) { lb.classList.remove("pop"); void lb.offsetWidth; lb.classList.add("pop"); }
+      return;
+    }
     var li = e.target.closest("li.pick"); if (!li || !view.highlightPick) return;
     if (view.highlightPick(li.id.replace("pick-", ""))) {
       [].forEach.call(document.querySelectorAll("#dPicks li.pick.on"), function (x) { x.classList.remove("on"); });
       li.classList.add("on");
     }
+  });
+  // 點標題「台灣夜市地圖」：我的收藏（想去的夜市＋喜愛的店家）
+  function openMine() {
+    var favs = state.favs.map(byId).filter(Boolean);
+    $("mineFavs").innerHTML = favs.length ? favs.map(function (m) {
+      return '<li><button type="button" data-open="' + m.id + '"><b>' + esc(name(m)) + "</b><small>" + esc(cityName(m.city)) + " · " + esc(status(m).text) + "</small></button></li>";
+    }).join("") : '<li class="empty">' + esc(t("mineNoFavs")) + "</li>";
+    var likes = state.likes.map(function (k) { var i = k.indexOf("|"); return { m: byId(k.slice(0, i)), zh: k.slice(i + 1) }; }).filter(function (x) { return x.m; });
+    $("mineLikes").innerHTML = likes.length ? likes.map(function (x) {
+      return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.zh) + '"><b><span class="h">♥</span> ' + esc(x.zh) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
+    }).join("") : '<li class="empty">' + esc(t("mineNoLikes")) + "</li>";
+    openSheet("mine");
+  }
+  $("mineBtn").onclick = openMine;
+  $("mine").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-open]"); if (!b) return;
+    var id = b.getAttribute("data-open"), stall = b.getAttribute("data-stall");
+    closeSheet($("mine"));
+    openDetail(id);
+    if (!stall) return;
+    // 攤位資料是點開才下載，等它出現再捲過去
+    var tries = 0;
+    (function seek() {
+      var idx = picksOf(byId(id)).map(function (p) { return p.zh; }).indexOf(stall);
+      if (idx >= 0) { setTimeout(function () { openPick(idx); if (view.highlightPick) view.highlightPick(idx); }, 50); return; }
+      if (++tries < 40) setTimeout(seek, 150);
+    })();
   });
   $("dContrib").onclick = openSubmit;
   $("fPick").onclick = function () {
