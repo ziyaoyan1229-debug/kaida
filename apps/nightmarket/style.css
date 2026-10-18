@@ -442,3 +442,8 @@ body.has-stalls .osm-credit { display: none; }
 .pick-comm .score { font-size: 0.95rem; color: var(--accent, #c0392b); margin-right: 2px; }
 .score-sum { font-size: 0.85rem; margin: 8px 0 4px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
 .score-sum span { opacity: 0.75; }
+.visit-btn { margin-top: 8px; font-size: 13px; padding: 6px 12px; }
+.contrib.visit .row2, .contrib.visit label:has(#fFoods), .contrib.visit label:has(#fWhere), .contrib.visit .loc-row { display: none; }
+.contrib.visit #fStall { opacity: 0.7; }
+.pick-comm li.local { opacity: 0.8; }
+.local-tag { font-size: 0.7rem; border: 1px dashed currentColor; border-radius: 4px; padding: 0 4px; opacity: 0.7; }

@@ -41,6 +41,18 @@
       return cache[market];
     },
     // 這支手機投過、已通過審核的投稿（算我的勳章用）
+    // 沒連線時先存在手機的小圖（長邊 900px），連線後再上傳
+    thumb: function (file) {
+      return new Promise(function (resolve) {
+        if (!window.createImageBitmap) return resolve("");
+        createImageBitmap(file).then(function (bmp) {
+          var k = Math.min(1, 900 / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas");
+          c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+          c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+          resolve(c.toDataURL("image/jpeg", 0.75));
+        }).catch(function () { resolve(""); });
+      });
+    },
     mine: function (device) {
       if (!this.enabled() || !device) return Promise.resolve([]);
       return fetch(URL + "/rest/v1/nm_submissions?select=id,market,stall&device=eq." + encodeURIComponent(device), { headers: headers() })

@@ -55,6 +55,8 @@
       medalGold: "開拓者", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "四項評分都要選。",
       fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
       medalRule: "開拓者（金）：第一個新增或補上位置的人，要拍照＋評分。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
+      visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
+      fSaved: "還沒連上投稿資料庫，先存在這支手機。連線後會自動送出。", fSyncing: function (n) { return "正在送出先前存的 " + n + " 篇投稿…"; },
       mineMedals: "我的勳章", mineNoMedals: "還沒有勳章。到夜市踩點、拍照、評分就能拿到。", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
       picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源", mineTitle: "我的收藏", mineFavs: "想去的夜市", mineLikes: "喜愛的店家", mineNote: "收藏只存在這支手機的瀏覽器裡。", mineNoFavs: "還沒有。在夜市頁按「☆ 加入想去」就會出現在這裡。", mineNoLikes: "還沒有。在推薦攤位按 ♡ 就會出現在這裡。", like: "喜愛這家店", unlike: "取消喜愛",
@@ -110,6 +112,8 @@
       medalGold: "Pioneer", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all four scores.",
       fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fWillGet: function (m) { return "This post earns: " + m; },
       medalRule: "Pioneer (gold): first to add a stall or its location, with a photo and scores. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
+      visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
+      fSaved: "Not connected yet, so it's saved on this phone. It will be sent once we're online.", fSyncing: function (n) { return "Sending " + n + " saved posts…"; },
       mineMedals: "My medals", mineNoMedals: "No medals yet. Visit a stall, take a photo and rate it to earn one.", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
       picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources", mineTitle: "My saved", mineFavs: "Markets to visit", mineLikes: "Liked stalls", mineNote: "Saved only in this browser on this device.", mineNoFavs: "Nothing yet. Tap “☆ Save” on a market.", mineNoLikes: "Nothing yet. Tap ♡ on a recommended stall.", like: "Like this stall", unlike: "Unlike",
@@ -244,10 +248,35 @@
     });
     return { byPick: byPick, extra: extra };
   }
+  // 還沒連上資料庫時，投稿先存在這支手機（照片縮小成內嵌圖），連線後自動送出
+  var pending = load("nm-pending", []);
+  function localFor(mid) { return pending.filter(function (c) { return c.market === mid; }); }
+  function savePending() {
+    try { localStorage.setItem("nm-pending", JSON.stringify(pending)); return true; } catch (e) { return false; }
+  }
+  function remoteComm(mid) {
+    return (window.NMCommunity && NMCommunity.enabled() ? NMCommunity.load(mid) : Promise.resolve([])).then(function (list) { return (list || []).concat(localFor(mid)); });
+  }
+  function flushPending() {
+    if (!pending.length || !window.NMCommunity || !NMCommunity.enabled()) return;
+    toast(t("fSyncing")(pending.length));
+    pending.slice().reduce(function (p, c) {
+      return p.then(function () {
+        var urls = [];
+        return c.photos.filter(Boolean).reduce(function (q, d) {
+          return q.then(function () { return fetch(d).then(function (r) { return r.blob(); }).then(NMCommunity.uploadPhoto).then(function (u) { urls.push(u); }); });
+        }, Promise.resolve()).then(function () {
+          var row = {};
+          Object.keys(c).forEach(function (k) { if (k !== "id" && k !== "local" && k !== "created_at") row[k] = c[k]; });
+          row.photos = urls;
+          return NMCommunity.submit(row);
+        }).then(function () { pending.splice(pending.indexOf(c), 1); savePending(); });
+      });
+    }, Promise.resolve()).catch(function (e) { console.warn("[pending]", e); });
+  }
   function loadComm(m) {
-    if (!window.NMCommunity || !NMCommunity.enabled()) return;
-    NMCommunity.load(m.id).then(function (list) {
-      comm[m.id] = list || [];
+    remoteComm(m.id).then(function (list) {
+      comm[m.id] = list;
       if (state.selected !== m.id) return;
       renderPicks(m);
       if (stallMode === "free" && stalls.length && view.showPicks) view.showPicks(pickPins(m));
@@ -257,7 +286,8 @@
   var WEIGHTS = { taste: 0.4, aroma: 0.15, attitude: 0.15, cp: 0.3 };
   function scored(c) { return ["taste", "aroma", "attitude", "cp"].every(function (k) { return c[k] != null; }); }
   function score(c) { return Object.keys(WEIGHTS).reduce(function (s, k) { return s + WEIGHTS[k] * c[k]; }, 0); }
-  function hasPhoto(c) { return (c.photos || []).some(function (u) { return /^https:\/\//.test(u); }); }
+  var PHOTO_RE = /^(https:\/\/|data:image\/)/;
+  function hasPhoto(c) { return (c.photos || []).some(function (u) { return PHOTO_RE.test(u); }); }
   // 勳章：依投稿先後。開拓者＝第一個新增攤位（或替沒位置的攤位補上位置）的人；探險家＝第一個踩點的人；兩者都要照片＋評分。朝聖者＝其他有評分的人
   function medals(items, newStall, hadLoc) {
     var gold = false, silver = false;
@@ -282,8 +312,8 @@
   function commHtml(items, newStall, hadLoc) {
     var md = medals(items, newStall, hadLoc);
     return scoreSummary(items) + '<ul class="pick-comm"><li class="who"><b>' + esc(t("commTitle")) + "</b></li>" + items.map(function (c) {
-      var photos = (c.photos || []).filter(function (u) { return /^https:\/\//.test(u); });
-      return "<li>" + (scored(c) ? '<b class="score">' + score(c).toFixed(1) + "</b> " : c.rating ? stars(c.rating) + " " : "") + medalHtml(md[c.id]) + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
+      var photos = (c.photos || []).filter(function (u) { return PHOTO_RE.test(u); });
+      return '<li' + (c.local ? ' class="local"' : "") + ">" + (c.local ? '<span class="local-tag">' + esc(t("localTag")) + "</span> " : "") + (scored(c) ? '<b class="score">' + score(c).toFixed(1) + "</b> " : c.rating ? stars(c.rating) + " " : "") + medalHtml(md[c.id]) + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
         (c.review ? "<br>" + esc(c.review) : "") +
         (photos.length ? '<div class="comm-photos">' + photos.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="" loading="lazy"></a>'; }).join("") + "</div>" : "") +
         "</li>";
@@ -318,10 +348,11 @@
     el.scrollIntoView({ block: "center", behavior: "smooth" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }
+  function visitBtn(zh) { return window.NMCommunity ? '<button class="btn visit-btn" type="button" data-visit="' + esc(zh) + '">' + esc(t("visitBtn")) + "</button>" : ""; }
   function renderPicks(m) {
     var list = picksOf(m).slice(), cs = commSplit(m);
     $("dPicksWrap").hidden = !list.length && !cs.extra.length;
-    $("dContrib").hidden = !(window.NMCommunity && NMCommunity.enabled());
+    $("dContrib").hidden = !window.NMCommunity;
     var en = lang === "en";
     // 主頁搜尋的關鍵字（例如「臭豆腐」）對到的攤位排前面
     var words = state.q.trim().toLowerCase().split(/\s+/).filter(function (w) { return w && (m.zh + " " + m.en + " " + cityName(m.city)).toLowerCase().indexOf(w) < 0; });
@@ -351,7 +382,7 @@
           return '<blockquote class="pick-q">「' + esc(q.text) + '」<cite><a href="' + esc(sx.url) + '" target="_blank" rel="noopener">' + esc(sx.title || t("picksSrc")) + "</a></cite></blockquote>";
         }).join("") +
         (meta ? '<p class="pick-meta">' + esc(meta) + "</p>" : "") +
-        '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p>" +
+        '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p>" + visitBtn(p.zh) +
         (cs.byPick[no] ? commHtml(cs.byPick[no], false, !!loc[p.zh]) : "") + "</div></li>";
     }).join("") + cs.extra.map(function (g, j) {
       var foods = [];
@@ -363,7 +394,7 @@
         (foods.length ? '<ul class="foods">' + foods.slice(0, 6).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         ([first.price, first.where_hint].filter(Boolean).length ? '<p class="pick-meta">' + esc([first.price, first.where_hint].filter(Boolean).join(" · ")) + "</p>" : "") +
         '<p class="pick-links"><a href="' + gq2 + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq2 + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a></p>" +
-        commHtml(g.items, true) + "</div></li>";
+        visitBtn(g.stall) + commHtml(g.items, true) + "</div></li>";
     }).join("");
   }
 
@@ -999,15 +1030,22 @@
     ta.focus(); ta.setSelectionRange(t("reportPre")(m.zh).length, t("reportPre")(m.zh).length);
   };
 
+  setTimeout(flushPending, 3000);
   $("reloadBtn").onclick = function () { location.reload(); };
 
   /* ---------- 網友投稿表單 ---------- */
   var formFor = null, formLoc = null;
   function fMsg(text, kind) { $("fMsg").textContent = text || ""; $("fMsg").className = "f-msg" + (kind ? " " + kind : ""); }
-  function openSubmit() {
+  function openSubmit(visit) {
     var m = byId(stallFor || state.selected);
-    if (!m || !window.NMCommunity || !NMCommunity.enabled()) return;
-    if (formFor !== m.id) { $("fForm").reset(); formLoc = null; $("fLoc").textContent = ""; formFor = m.id; }
+    if (!m || !window.NMCommunity) return;
+    if (formFor !== m.id || visit || $("fForm").classList.contains("visit")) { $("fForm").reset(); formLoc = null; $("fLoc").textContent = ""; formFor = m.id; }
+    // 從店家卡片的「踩點評分」進來：店名先填好，只留評分、照片、留言
+    $("fForm").classList.toggle("visit", !!visit);
+    $("fStall").value = visit || $("fStall").value;
+    $("fStall").readOnly = !!visit;
+    $("fTitle").textContent = t(visit ? "visitTitle" : "contribTitle");
+    if (!$("fNick").value) $("fNick").value = load("nm-nick", "");
     fMsg("");
     $("fMarket").textContent = name(m);
     var names = picksOf(m).map(function (p) { return p.zh; });
@@ -1051,6 +1089,8 @@
   // 點推薦攤位卡片（不是點連結）：地圖上跳出那家店的圖標
   $("dPicks").addEventListener("click", function (e) {
     if (e.target.closest("a")) return;
+    var vb = e.target.closest("[data-visit]");
+    if (vb) { openSubmit(vb.getAttribute("data-visit")); return; }
     var lb = e.target.closest("[data-like]");
     if (lb) {
       var key = state.selected + "|" + lb.getAttribute("data-like"), i = state.likes.indexOf(key);
@@ -1078,12 +1118,13 @@
       return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.zh) + '"><b><span class="h">♥</span> ' + esc(x.zh) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
     }).join("") : '<li class="empty">' + esc(t("mineNoLikes")) + "</li>";
     openSheet("mine");
-    if (!window.NMCommunity || !NMCommunity.enabled()) return;
-    // 我的勳章：找出這支手機的投稿，載入那些夜市的投稿，照同樣規則算勳章
+    if (!window.NMCommunity) return;
+    // 我的勳章：找出這支手機的投稿（含還沒送出的），載入那些夜市的投稿，照同樣規則算勳章
     NMCommunity.mine(deviceId()).then(function (rows) {
+      rows = rows.concat(pending);
       var ids = {}; rows.forEach(function (r) { ids[r.market] = 1; });
-      return Promise.all(Object.keys(ids).map(function (mid) {
-        return NMCommunity.load(mid).then(function (list) { comm[mid] = list || []; return loadPicks(byId(mid)); });
+      return Promise.all(Object.keys(ids).filter(byId).map(function (mid) {
+        return remoteComm(mid).then(function (list) { comm[mid] = list; return loadPicks(byId(mid)); });
       })).then(function () { return rows; });
     }).then(function (rows) {
       var got = [];
@@ -1116,7 +1157,7 @@
       if (++tries < 40) setTimeout(seek, 150);
     })();
   });
-  $("dContrib").onclick = openSubmit;
+  $("dContrib").onclick = function () { openSubmit(); };
   $("fPick").onclick = function () {
     var m = byId(formFor);
     if (!m || !view.pickPoint) return;
@@ -1145,22 +1186,38 @@
     if (!nick) return fMsg(t("fNeedNick"), "err");
     if (!$("fConsent").checked) return fMsg(t("fNeedConsent"), "err");
     $("fSend").disabled = true;
+    save("nm-nick", nick.slice(0, 30));
+    var row = {
+      market: formFor, stall: stall.slice(0, 40), foods: foodsList, price: $("fPrice").value.trim().slice(0, 30) || null,
+      where_hint: $("fWhere").value.trim().slice(0, 60) || null, lat: formLoc ? formLoc.lat : null, lng: formLoc ? formLoc.lng : null,
+      review: review.slice(0, 600) || null, photos: [], nickname: nick.slice(0, 30), consent: true,
+      taste: sc.taste, aroma: sc.aroma, attitude: sc.attitude, cp: sc.cp, device: deviceId()
+    };
+    function done(msg) {
+      var keepNick = nick, wasVisit = $("fForm").classList.contains("visit");
+      $("fForm").reset(); $("fNick").value = keepNick; formLoc = null; $("fLoc").textContent = "";
+      if (wasVisit) $("fStall").value = stall;
+      fMsg(msg, "ok"); formHint();
+    }
+    if (!NMCommunity.enabled()) {
+      Promise.all(files.map(function (f) { return NMCommunity.thumb(f); })).then(function (photos) {
+        row.photos = photos.filter(Boolean); row.id = "local-" + Date.now(); row.local = true; row.created_at = new Date().toISOString();
+        pending.push(row);
+        if (!savePending()) { row.photos = []; savePending(); }
+        comm[formFor] = (comm[formFor] || []).filter(function (c) { return !c.local; }).concat(localFor(formFor));
+        if (state.selected === formFor) renderPicks(byId(formFor));
+        done(t("fSaved"));
+      }).then(function () { $("fSend").disabled = false; });
+      return;
+    }
     var urls = [];
     files.reduce(function (p, f, i) {
       return p.then(function () { fMsg(t("fUploading")(i + 1, files.length)); return NMCommunity.uploadPhoto(f).then(function (u) { urls.push(u); }); });
     }, Promise.resolve()).then(function () {
       fMsg(t("fSending"));
-      return NMCommunity.submit({
-        market: formFor, stall: stall.slice(0, 40), foods: foodsList, price: $("fPrice").value.trim().slice(0, 30) || null,
-        where_hint: $("fWhere").value.trim().slice(0, 60) || null, lat: formLoc ? formLoc.lat : null, lng: formLoc ? formLoc.lng : null,
-        review: review.slice(0, 600) || null, photos: urls, nickname: nick.slice(0, 30), consent: true,
-        taste: sc.taste, aroma: sc.aroma, attitude: sc.attitude, cp: sc.cp, device: deviceId()
-      });
-    }).then(function () {
-      var keepNick = nick;
-      $("fForm").reset(); $("fNick").value = keepNick; formLoc = null; $("fLoc").textContent = "";
-      fMsg(t("fDone"), "ok"); formHint();
-    }).catch(function (err) {
+      row.photos = urls;
+      return NMCommunity.submit(row);
+    }).then(function () { done(t("fDone")); }).catch(function (err) {
       console.warn("[submit]", err);
       fMsg(err && err.limited ? t("fLimited") : t("fErr"), "err");
     }).then(function () { $("fSend").disabled = false; });
