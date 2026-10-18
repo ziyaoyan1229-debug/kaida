@@ -67,6 +67,10 @@
     <button class="night-btn" id="nightBtn" type="button" aria-pressed="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span data-i18n="night">夜市夜景</span>
     </button>
+    <div class="pick-banner" id="pickBanner" hidden>
+      <span data-i18n="pickHint">點一下地圖上攤位的位置</span>
+      <button class="btn ghost" id="pickCancel" type="button" data-i18n="cancel">取消</button>
+    </div>
     <button class="locate" id="locateBtn" type="button" aria-label="定位到我的位置">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>
     </button>
@@ -86,6 +90,7 @@
       <ol class="picks" id="dPicks"></ol>
       <p class="picks-note" data-i18n="picksNote">整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。</p>
     </div>
+    <button class="btn contrib-btn" id="dContrib" type="button" hidden data-i18n="contribBtn">＋ 投稿攤位、心得或照片</button>
     <div id="dStallsWrap" hidden>
       <h3 data-i18n="stallsTitle">夜市裡的店家（Google 地圖）</h3>
       <label class="search stall-q" id="dStallQWrap" hidden>
@@ -139,6 +144,34 @@
   </div>
 </div>
 
+<!-- 網友投稿 -->
+<div class="sheet" id="submit" role="dialog" aria-modal="true" aria-labelledby="fTitle" hidden>
+  <div class="sheet-card">
+    <button class="close" type="button" data-close aria-label="關閉">×</button>
+    <p class="d-meta" id="fMarket"></p>
+    <h2 id="fTitle" data-i18n="contribTitle">投稿攤位、心得或照片</h2>
+    <form id="fForm" class="contrib" novalidate>
+      <label><span data-i18n="fStall">攤位名稱 *</span><input id="fStall" list="fStallList" maxlength="40" required autocomplete="off"></label>
+      <datalist id="fStallList"></datalist>
+      <label><span data-i18n="fFoods">招牌小吃（用逗號分開）</span><input id="fFoods" maxlength="120" autocomplete="off"></label>
+      <div class="row2">
+        <label><span data-i18n="fPrice">價格</span><input id="fPrice" maxlength="30" placeholder="NT$60–80" autocomplete="off"></label>
+        <label><span data-i18n="fRating">你的評分</span><select id="fRating"><option value="">—</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label>
+      </div>
+      <label><span data-i18n="fWhere">位置說明</span><input id="fWhere" maxlength="60" autocomplete="off"></label>
+      <div class="loc-row"><button class="btn" id="fPick" type="button" data-i18n="fPick">在地圖上標位置</button><span id="fLoc" class="muted"></span></div>
+      <label><span data-i18n="fReview">你的心得</span><textarea id="fReview" maxlength="600" rows="4"></textarea></label>
+      <label><span data-i18n="fPhotos">照片（最多 4 張，限自己拍的）</span><input id="fPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+      <label><span data-i18n="fNick">暱稱 *（會顯示在投稿上）</span><input id="fNick" maxlength="30" required autocomplete="nickname"></label>
+      <label class="hp" aria-hidden="true">Website<input id="fWebsite" tabindex="-1" autocomplete="off"></label>
+      <label class="consent"><input id="fConsent" type="checkbox" required> <span data-i18n="fConsent">我同意以 CC BY-SA 4.0 授權這篇投稿（可自由使用，但要標示作者），而且文字和照片都是我自己寫、自己拍的。</span></label>
+      <p class="f-msg" id="fMsg" aria-live="polite"></p>
+      <button class="btn primary" id="fSend" type="submit" data-i18n="fSend">送出投稿</button>
+      <p class="fine" data-i18n="fNote">投稿會先經過審核，通過後才會出現在網站上。</p>
+    </form>
+  </div>
+</div>
+
 <!-- 封測任務 -->
 <div class="sheet" id="tasks" role="dialog" aria-modal="true" aria-labelledby="tTitle" hidden>
   <div class="sheet-card">
@@ -165,6 +198,7 @@
 <script src="map-leaflet.js"></script>
 <script src="stall-db.js"></script>
 <script src="curated.js"></script>
+<script src="community-api.js"></script>
 <script src="map-google.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>

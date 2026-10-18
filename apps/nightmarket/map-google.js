@@ -208,7 +208,7 @@
     function onClick(mk, fn) { mk.addEventListener("gmp-click", fn); }
     function div(cls, html) { var d = document.createElement("div"); d.className = cls; d.innerHTML = html; return d; }
 
-    var pickMarkers = [];
+    var pickMarkers = [], pickListener = null;
     function clearArea() {
       token++;
       stallMarkers.forEach(function (s) { s.marker.setMap(null); });
@@ -419,14 +419,25 @@
       // 推薦攤位：有編號和店名的圖釘（店名是我們自己整理的），同一家的一般圖釘藏起來
       showPicks: function (list) {
         var ids = {};
+        pickMarkers.forEach(function (mk) { mk.setMap(null); });
+        pickMarkers = [];
         list.forEach(function (p) {
           ids[p.id] = true;
-          var el = div("pick-pin", "<b>" + p.no + "</b><span>" + p.name.replace(/[&<>"]/g, "") + "</span>");
+          var el = div("pick-pin" + (p.kind ? " " + p.kind : ""), "<b>" + p.no + "</b><span>" + p.name.replace(/[&<>"]/g, "") + "</span>");
           var mk = new HtmlMarker({ map: map, position: { lat: p.lat, lng: p.lng }, content: el, title: p.name, center: true, zIndex: 800 - p.no });
           onClick(mk, function () { opts.onPickClick(p.key); });
           pickMarkers.push(mk);
         });
         stallMarkers.forEach(function (s) { if (ids[s.id]) s.marker.setMap(null); });
+      },
+      // 投稿時在地圖上點位置（點到圖釘不算，要點空白處）
+      pickPoint: function (cb) {
+        if (pickListener) { pickListener.remove(); pickListener = null; }
+        if (!cb) return;
+        pickListener = map.addListener("click", function (e) {
+          pickListener.remove(); pickListener = null;
+          cb({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+        });
       },
       clearArea: clearArea,
       resolveStall: resolveStall,

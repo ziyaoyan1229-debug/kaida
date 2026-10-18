@@ -362,3 +362,29 @@ body.has-stalls .osm-credit { display: none; }
 @keyframes pickflash { 0%, 30% { border-color: var(--lantern); box-shadow: 0 0 0 3px var(--lantern); } 100% { box-shadow: 0 0 0 0 transparent; } }
 .icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .stall-pin.dot { width: 12px; height: 12px; border-width: 2px; opacity: .75; }
+/* 網友投稿 */
+.contrib-btn { width: 100%; margin: 0 0 14px; }
+.contrib { display: grid; gap: 10px; }
+.contrib label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.contrib input:not([type=checkbox]), .contrib select, .contrib textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 10px; width: 100%; box-sizing: border-box; }
+.contrib textarea { resize: vertical; }
+.contrib .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.contrib .loc-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.contrib .consent { display: flex; gap: 8px; align-items: flex-start; color: var(--ink); font-size: 13px; line-height: 1.5; }
+.contrib .consent input { margin-top: 3px; flex: none; }
+.contrib .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.f-msg { margin: 0; font-size: 13.5px; min-height: 0; }
+.f-msg:empty { display: none; }
+.f-msg.err { color: var(--lantern); }
+.f-msg.ok { color: var(--open, #3c8a4a); }
+.pick-banner { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; background: var(--surface); color: var(--ink); border: 2px solid var(--lantern); border-radius: var(--r); box-shadow: 0 4px 12px rgba(0, 0, 0, .25); font-size: 14px; white-space: nowrap; }
+.picking #map { cursor: crosshair; }
+/* 網友心得 */
+.pick-comm { margin: 8px 0 0; padding: 8px 0 0; border-top: 1px dashed var(--line); list-style: none; display: grid; gap: 8px; }
+.pick-comm li { font-size: 13.5px; line-height: 1.5; }
+.pick-comm .who { font-size: 12px; color: var(--muted); }
+.pick-comm .stars { font-size: 12px; }
+.comm-photos { display: flex; gap: 6px; margin-top: 4px; overflow-x: auto; }
+.comm-photos img { width: 84px; height: 84px; object-fit: cover; border-radius: var(--r); background: var(--sunk); flex: none; }
+.pick.community .pick-badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--sunk); color: var(--muted); margin-left: 6px; vertical-align: 3px; }
+.pick-pin.community b { background: #2f8f5b; }

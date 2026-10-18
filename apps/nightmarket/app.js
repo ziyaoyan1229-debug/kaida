@@ -42,6 +42,15 @@
       stallNoMatch: function (q) { return "這個夜市沒找到「" + q + "」，換個關鍵字試試。"; }, stallSearching: "也在 Google 地圖上找…",
       stallRelated: function (n, q) { return "店名裡沒有「" + q + "」，以下 " + n + " 家是 Google 地圖依評論和菜單找到的相關店家"; },
       stallMore: function (n) { return "還有 " + n + " 家攤位，點這裡載入店名"; }, stallMoreBusy: "載入中…",
+      contribBtn: "＋ 投稿攤位、心得或照片", contribTitle: "投稿攤位、心得或照片", pickHint: "點一下地圖上攤位的位置", cancel: "取消",
+      fStall: "攤位名稱 *", fFoods: "招牌小吃（用逗號分開）", fPrice: "價格", fRating: "你的評分", fWhere: "位置說明", fPick: "在地圖上標位置",
+      fReview: "你的心得", fPhotos: "照片（最多 4 張，限自己拍的）", fNick: "暱稱 *（會顯示在投稿上）",
+      fConsent: "我同意以 CC BY-SA 4.0 授權這篇投稿（可自由使用，但要標示作者），而且文字和照片都是我自己寫、自己拍的。",
+      fSend: "送出投稿", fNote: "投稿會先經過審核，通過後才會出現在網站上。", fLocSet: "已標好位置 ✓",
+      fNeedStall: "請填攤位名稱。", fNeedNick: "請填暱稱。", fNeedConsent: "請勾選同意授權。", fNeedSome: "請至少寫心得、招牌小吃、標位置或附照片其中一項。",
+      fTooMany: "照片最多 4 張。", fUploading: function (i, n) { return "上傳照片 " + i + "/" + n + "…"; }, fSending: "送出中…",
+      fDone: "謝謝你的投稿！審核通過後就會出現在網站上。", fErr: "送出失敗，請稍後再試。", fLimited: "投稿太頻繁了，請過一陣子再試。",
+      commTitle: "網友心得", commBadge: "網友新增", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
       picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源",
       stallFree: function (n) { return "地圖上標了 " + n + " 個攤位。有編號和店名的是下面的推薦攤位，點了會跳到介紹；其他圖釘點了會打開 Google 地圖。"; },
@@ -83,6 +92,15 @@
       stallNoMatch: function (q) { return "Nothing for “" + q + "” here. Try another word."; }, stallSearching: "Also searching Google Maps…",
       stallRelated: function (n, q) { return "No name mentions “" + q + "”. These " + n + " places come up on Google Maps from reviews and menus."; },
       stallMore: function (n) { return n + " more stalls on the map. Tap to load their names"; }, stallMoreBusy: "Loading…",
+      contribBtn: "+ Add a stall, review or photo", contribTitle: "Add a stall, review or photo", pickHint: "Tap the stall's spot on the map", cancel: "Cancel",
+      fStall: "Stall name *", fFoods: "Signature items (comma separated)", fPrice: "Price", fRating: "Your rating", fWhere: "Where", fPick: "Mark it on the map",
+      fReview: "Your review", fPhotos: "Photos (up to 4, your own only)", fNick: "Nickname * (shown with your post)",
+      fConsent: "I license this post under CC BY-SA 4.0 (free to reuse with credit), and I wrote the text and took the photos myself.",
+      fSend: "Submit", fNote: "Posts are reviewed before they appear on the site.", fLocSet: "Location set ✓",
+      fNeedStall: "Please enter the stall name.", fNeedNick: "Please enter a nickname.", fNeedConsent: "Please tick the license box.", fNeedSome: "Add at least a review, items, a location or a photo.",
+      fTooMany: "Up to 4 photos.", fUploading: function (i, n) { return "Uploading photo " + i + "/" + n + "…"; }, fSending: "Sending…",
+      fDone: "Thanks! Your post will appear once it's reviewed.", fErr: "Couldn't send. Please try again later.", fLimited: "Too many posts. Please try again later.",
+      commTitle: "Visitor reviews", commBadge: "Added by visitors", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
       picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources",
       stallFree: function (n) { return n + " stalls are marked on the map. Numbered pins with names are the picks below, and tapping one jumps to its card. Other pins open in Google Maps."; },
@@ -175,6 +193,52 @@
     var c = window.NM_CURATED;
     return (c && c.markets && c.markets[m.id] && c.markets[m.id].stalls) || [];
   }
+  // 網友投稿（審核通過的），依夜市存
+  var comm = {};
+  function nameCore(x) { return String(x || "").replace(/[（(].*?[）)]/g, "").replace(/\s+/g, "").toLowerCase(); }
+  // 同一家店：名字互相包含，或短的那個有六成以上的兩字詞出現在長的裡（「鍾記生煎包」對「鍾記原上海生煎包」）
+  function sameName(a, b) {
+    a = nameCore(a); b = nameCore(b);
+    if (!a || !b) return false;
+    if (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
+    var s = a.length <= b.length ? a : b, l = s === a ? b : a, n = 0;
+    if (s.length < 3) return false;
+    for (var i = 0; i < s.length - 1; i++) if (l.indexOf(s.slice(i, i + 2)) >= 0) n++;
+    return n / (s.length - 1) >= 0.6;
+  }
+  // 每筆投稿對到哪個推薦攤位（對不到就是網友新增的攤位）
+  function commSplit(m) {
+    var picks = picksOf(m), byPick = {}, extra = [];
+    (comm[m.id] || []).forEach(function (c) {
+      var i = -1;
+      picks.forEach(function (p, k) { if (i < 0 && sameName(p.zh, c.stall)) i = k; });
+      if (i >= 0) (byPick[i] = byPick[i] || []).push(c);
+      else {
+        var g = extra.filter(function (e) { return sameName(e.stall, c.stall); })[0];
+        if (g) g.items.push(c); else extra.push({ stall: c.stall, items: [c] });
+      }
+    });
+    return { byPick: byPick, extra: extra };
+  }
+  function loadComm(m) {
+    if (!window.NMCommunity || !NMCommunity.enabled()) return;
+    NMCommunity.load(m.id).then(function (list) {
+      comm[m.id] = list || [];
+      if (state.selected !== m.id) return;
+      renderPicks(m);
+      if (stallMode === "free" && stalls.length && view.showPicks) view.showPicks(pickPins(m));
+    });
+  }
+  function commHtml(items) {
+    return '<ul class="pick-comm"><li class="who"><b>' + esc(t("commTitle")) + "</b></li>" + items.map(function (c) {
+      var photos = (c.photos || []).filter(function (u) { return /^https:\/\//.test(u); });
+      return "<li>" + (c.rating ? stars(c.rating) + " " : "") + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
+        (c.review ? "<br>" + esc(c.review) : "") +
+        (photos.length ? '<div class="comm-photos">' + photos.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="" loading="lazy"></a>'; }).join("") + "</div>" : "") +
+        "</li>";
+    }).join("") + "</ul>";
+  }
+
   // 推薦攤位在地圖上的位置（資料檔裡用 Google 地點編號對到的座標）
   function pickLoc(m) {
     var db = window.NM_STALL_DB, e = db && db.markets && db.markets[m.id], out = {};
@@ -183,10 +247,17 @@
   }
   function pickPins(m) {
     var loc = pickLoc(m), en = lang === "en";
-    return picksOf(m).map(function (p, i) {
-      var l = loc[p.zh];
-      return l ? { key: i, no: i + 1, name: en ? (p.en || p.zh) : p.zh, id: l.id, lat: l.lat, lng: l.lng } : null;
-    }).filter(Boolean);
+    var cs = commSplit(m);
+    function commLoc(items) { return items.filter(function (c) { return c.lat != null && c.lng != null; })[0]; }
+    var pins = picksOf(m).map(function (p, i) {
+      var l = loc[p.zh] || commLoc(cs.byPick[i] || []);
+      return l ? { key: i, no: i + 1, name: en ? (p.en || p.zh) : p.zh, id: l.id || "", lat: l.lat, lng: l.lng } : null;
+    });
+    cs.extra.forEach(function (g, j) {
+      var l = commLoc(g.items);
+      if (l) pins.push({ key: "c" + j, no: "+", name: g.stall, id: "", lat: l.lat, lng: l.lng, kind: "community" });
+    });
+    return pins.filter(Boolean);
   }
   function openPick(i) {
     if (!stallFor) return;
@@ -197,9 +268,9 @@
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }
   function renderPicks(m) {
-    var list = picksOf(m).slice();
-    $("dPicksWrap").hidden = !list.length;
-    if (!list.length) { $("dPicks").innerHTML = ""; return; }
+    var list = picksOf(m).slice(), cs = commSplit(m);
+    $("dPicksWrap").hidden = !list.length && !cs.extra.length;
+    $("dContrib").hidden = !(window.NMCommunity && NMCommunity.enabled());
     var en = lang === "en";
     // 主頁搜尋的關鍵字（例如「臭豆腐」）對到的攤位排前面
     var words = state.q.trim().toLowerCase().split(/\s+/).filter(function (w) { return w && (m.zh + " " + m.en + " " + cityName(m.city)).toLowerCase().indexOf(w) < 0; });
@@ -225,7 +296,19 @@
           return '<blockquote class="pick-q">「' + esc(q.text) + '」<cite><a href="' + esc(sx.url) + '" target="_blank" rel="noopener">' + esc(sx.title || t("picksSrc")) + "</a></cite></blockquote>";
         }).join("") +
         (meta ? '<p class="pick-meta">' + esc(meta) + "</p>" : "") +
-        '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p></div></li>";
+        '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p>" +
+        (cs.byPick[no] ? commHtml(cs.byPick[no]) : "") + "</div></li>";
+    }).join("") + cs.extra.map(function (g, j) {
+      var foods = [];
+      g.items.forEach(function (c) { (c.foods || []).forEach(function (f) { if (foods.indexOf(f) < 0) foods.push(f); }); });
+      var first = g.items[0], hasLoc = g.items.some(function (c) { return c.lat != null; });
+      var aq2 = "https://maps.apple.com/?q=" + encodeURIComponent(g.stall) + "&sll=" + m.lat + "," + m.lng + "&z=16";
+      var gq2 = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(g.stall + " " + m.zh.replace(/（.*）/, ""));
+      return '<li class="pick community" id="pick-c' + j + '"><div class="pick-body"><h4>' + (hasLoc ? '<span class="pick-no">+</span>' : "") + esc(g.stall) + '<span class="pick-badge">' + esc(t("commBadge")) + "</span></h4>" +
+        (foods.length ? '<ul class="foods">' + foods.slice(0, 6).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
+        ([first.price, first.where_hint].filter(Boolean).length ? '<p class="pick-meta">' + esc([first.price, first.where_hint].filter(Boolean).join(" · ")) + "</p>" : "") +
+        '<p class="pick-links"><a href="' + gq2 + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq2 + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a></p>" +
+        commHtml(g.items) + "</div></li>";
     }).join("");
   }
 
@@ -408,6 +491,7 @@
     $("dStatus").innerHTML = '<span class="badge ' + st.cls + '">' + esc(st.text) + "</span>";
     $("dNote").textContent = lang === "zh" ? m.noteZh : m.noteEn;
     renderPicks(m);
+    loadComm(m);
     $("dFoods").innerHTML = foods(m).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("");
     $("dDays").textContent = daysText(m);
     $("dHours").textContent = m.hours;
@@ -781,6 +865,76 @@
   };
 
   $("reloadBtn").onclick = function () { location.reload(); };
+
+  /* ---------- 網友投稿表單 ---------- */
+  var formFor = null, formLoc = null;
+  function fMsg(text, kind) { $("fMsg").textContent = text || ""; $("fMsg").className = "f-msg" + (kind ? " " + kind : ""); }
+  function openSubmit() {
+    var m = byId(stallFor || state.selected);
+    if (!m || !window.NMCommunity || !NMCommunity.enabled()) return;
+    if (formFor !== m.id) { $("fForm").reset(); formLoc = null; $("fLoc").textContent = ""; formFor = m.id; }
+    fMsg("");
+    $("fMarket").textContent = name(m);
+    var names = picksOf(m).map(function (p) { return p.zh; });
+    (comm[m.id] || []).forEach(function (c) { if (names.indexOf(c.stall) < 0) names.push(c.stall); });
+    $("fStallList").innerHTML = names.map(function (x) { return '<option value="' + esc(x) + '">'; }).join("");
+    $("detail").hidden = true;
+    openSheet("submit");
+  }
+  function endPicking() {
+    $("pickBanner").hidden = true;
+    document.querySelector(".map-wrap").classList.remove("picking");
+    if (view.pickPoint) view.pickPoint(null);
+    $("submit").hidden = false;
+  }
+  $("dContrib").onclick = openSubmit;
+  $("fPick").onclick = function () {
+    var m = byId(formFor);
+    if (!m || !view.pickPoint) return;
+    $("submit").hidden = true;
+    revealMap();
+    view.focus(m.lat, m.lng, 17);
+    $("pickBanner").hidden = false;
+    document.querySelector(".map-wrap").classList.add("picking");
+    view.pickPoint(function (ll) {
+      formLoc = { lat: +ll.lat.toFixed(6), lng: +ll.lng.toFixed(6) };
+      $("fLoc").textContent = t("fLocSet") + " (" + formLoc.lat + ", " + formLoc.lng + ")";
+      endPicking();
+    });
+  };
+  $("pickCancel").onclick = endPicking;
+  $("fForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if ($("fWebsite").value) return; // 機器人才會填這個隱藏欄位
+    var stall = $("fStall").value.trim(), nick = $("fNick").value.trim(), files = [].slice.call($("fPhotos").files || []);
+    var foodsList = $("fFoods").value.split(/[,，、]/).map(function (x) { return x.trim().slice(0, 20); }).filter(Boolean).slice(0, 6);
+    var review = $("fReview").value.trim();
+    if (!stall) return fMsg(t("fNeedStall"), "err");
+    if (!review && !foodsList.length && !formLoc && !files.length) return fMsg(t("fNeedSome"), "err");
+    if (files.length > 4) return fMsg(t("fTooMany"), "err");
+    if (!nick) return fMsg(t("fNeedNick"), "err");
+    if (!$("fConsent").checked) return fMsg(t("fNeedConsent"), "err");
+    $("fSend").disabled = true;
+    var urls = [];
+    files.reduce(function (p, f, i) {
+      return p.then(function () { fMsg(t("fUploading")(i + 1, files.length)); return NMCommunity.uploadPhoto(f).then(function (u) { urls.push(u); }); });
+    }, Promise.resolve()).then(function () {
+      fMsg(t("fSending"));
+      var rating = parseInt($("fRating").value, 10);
+      return NMCommunity.submit({
+        market: formFor, stall: stall.slice(0, 40), foods: foodsList, price: $("fPrice").value.trim().slice(0, 30) || null,
+        where_hint: $("fWhere").value.trim().slice(0, 60) || null, lat: formLoc ? formLoc.lat : null, lng: formLoc ? formLoc.lng : null,
+        review: review.slice(0, 600) || null, rating: rating >= 1 && rating <= 5 ? rating : null, photos: urls, nickname: nick.slice(0, 30), consent: true
+      });
+    }).then(function () {
+      var keepNick = nick;
+      $("fForm").reset(); $("fNick").value = keepNick; formLoc = null; $("fLoc").textContent = "";
+      fMsg(t("fDone"), "ok");
+    }).catch(function (err) {
+      console.warn("[submit]", err);
+      fMsg(err && err.limited ? t("fLimited") : t("fErr"), "err");
+    }).then(function () { $("fSend").disabled = false; });
+  });
   $("dStalls").addEventListener("click", function (e) {
     if (e.target.closest("#dStallMore")) { loadMoreStalls(); return; }
     if (e.target.closest("#dStallLoad")) { if (byId(stallFor)) loadStalls(byId(stallFor)); return; }
