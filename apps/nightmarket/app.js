@@ -50,7 +50,12 @@
       fNeedStall: "請填攤位名稱。", fNeedNick: "請填暱稱。", fNeedConsent: "請勾選同意授權。", fNeedSome: "請至少寫心得、招牌小吃、標位置或附照片其中一項。",
       fTooMany: "照片最多 4 張。", fUploading: function (i, n) { return "上傳照片 " + i + "/" + n + "…"; }, fSending: "送出中…",
       fDone: "謝謝你的投稿！審核通過後就會出現在網站上。", fErr: "送出失敗，請稍後再試。", fLimited: "投稿太頻繁了，請過一陣子再試。",
-      commTitle: "網友心得", commBadge: "網友新增", commBy: function (n, d) { return n + " · " + d; },
+      commTitle: "網友心得", commBadge: "網友新增",
+      sTaste: "味蕾度", sAroma: "香氣", sAttitude: "態度", sCp: "CP 值", sTotal: "綜合", sCount: function (n) { return n + " 人評"; },
+      medalGold: "開拓者", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "四項評分都要選。",
+      fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
+      medalRule: "開拓者（金）：第一個新增或補上位置的人，要拍照＋評分。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
+      mineMedals: "我的勳章", mineNoMedals: "還沒有勳章。到夜市踩點、拍照、評分就能拿到。", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
       picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源", mineTitle: "我的收藏", mineFavs: "想去的夜市", mineLikes: "喜愛的店家", mineNote: "收藏只存在這支手機的瀏覽器裡。", mineNoFavs: "還沒有。在夜市頁按「☆ 加入想去」就會出現在這裡。", mineNoLikes: "還沒有。在推薦攤位按 ♡ 就會出現在這裡。", like: "喜愛這家店", unlike: "取消喜愛",
       stallFree: function (n) { return "地圖上標了 " + n + " 個攤位。有編號和店名的是下面的推薦攤位，點了會跳到介紹；其他圖釘點了會打開 Google 地圖。"; },
@@ -100,7 +105,12 @@
       fNeedStall: "Please enter the stall name.", fNeedNick: "Please enter a nickname.", fNeedConsent: "Please tick the license box.", fNeedSome: "Add at least a review, items, a location or a photo.",
       fTooMany: "Up to 4 photos.", fUploading: function (i, n) { return "Uploading photo " + i + "/" + n + "…"; }, fSending: "Sending…",
       fDone: "Thanks! Your post will appear once it's reviewed.", fErr: "Couldn't send. Please try again later.", fLimited: "Too many posts. Please try again later.",
-      commTitle: "Visitor reviews", commBadge: "Added by visitors", commBy: function (n, d) { return n + " · " + d; },
+      commTitle: "Visitor reviews", commBadge: "Added by visitors",
+      sTaste: "Taste", sAroma: "Aroma", sAttitude: "Service", sCp: "Value", sTotal: "Score", sCount: function (n) { return n + (n === 1 ? " rating" : " ratings"); },
+      medalGold: "Pioneer", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all four scores.",
+      fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fWillGet: function (m) { return "This post earns: " + m; },
+      medalRule: "Pioneer (gold): first to add a stall or its location, with a photo and scores. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
+      mineMedals: "My medals", mineNoMedals: "No medals yet. Visit a stall, take a photo and rate it to earn one.", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
       picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources", mineTitle: "My saved", mineFavs: "Markets to visit", mineLikes: "Liked stalls", mineNote: "Saved only in this browser on this device.", mineNoFavs: "Nothing yet. Tap “☆ Save” on a market.", mineNoLikes: "Nothing yet. Tap ♡ on a recommended stall.", like: "Like this stall", unlike: "Unlike",
       stallFree: function (n) { return n + " stalls are marked on the map. Numbered pins with names are the picks below, and tapping one jumps to its card. Other pins open in Google Maps."; },
@@ -193,14 +203,14 @@
   var picksCache = {}, picksLoading = {};
   function picksOf(m) { return picksCache[m.id] || []; }
   function loadPicks(m) {
-    if (picksCache[m.id] || picksLoading[m.id]) return;
+    if (picksCache[m.id]) return Promise.resolve();
+    if (picksLoading[m.id]) return picksLoading[m.id];
     var idx = window.NM_CURATED_INDEX;
-    if (!idx || !idx.markets || !idx.markets[m.id]) { picksCache[m.id] = []; return; }
-    picksLoading[m.id] = true;
-    fetch("curated/" + m.id + ".json?v=" + encodeURIComponent(idx.updated || "")).then(function (r) { return r.ok ? r.json() : { stalls: [] }; })
+    if (!idx || !idx.markets || !idx.markets[m.id]) { picksCache[m.id] = []; return Promise.resolve(); }
+    return picksLoading[m.id] = fetch("curated/" + m.id + ".json?v=" + encodeURIComponent(idx.updated || "")).then(function (r) { return r.ok ? r.json() : { stalls: [] }; })
       .catch(function () { return null; })
       .then(function (d) {
-        picksLoading[m.id] = false;
+        picksLoading[m.id] = null;
         if (!d) return;
         picksCache[m.id] = d.stalls || [];
         if (state.selected === m.id && !$("detail").hidden) renderPicks(m);
@@ -243,10 +253,37 @@
       if (stallMode === "free" && stalls.length && view.showPicks) view.showPicks(pickPins(m));
     });
   }
-  function commHtml(items) {
-    return '<ul class="pick-comm"><li class="who"><b>' + esc(t("commTitle")) + "</b></li>" + items.map(function (c) {
+  // 四項評分加權成 0–10 分：好不好吃最重要，其次是划不划算
+  var WEIGHTS = { taste: 0.4, aroma: 0.15, attitude: 0.15, cp: 0.3 };
+  function scored(c) { return ["taste", "aroma", "attitude", "cp"].every(function (k) { return c[k] != null; }); }
+  function score(c) { return Object.keys(WEIGHTS).reduce(function (s, k) { return s + WEIGHTS[k] * c[k]; }, 0); }
+  function hasPhoto(c) { return (c.photos || []).some(function (u) { return /^https:\/\//.test(u); }); }
+  // 勳章：依投稿先後。開拓者＝第一個新增攤位（或替沒位置的攤位補上位置）的人；探險家＝第一個踩點的人；兩者都要照片＋評分。朝聖者＝其他有評分的人
+  function medals(items, newStall, hadLoc) {
+    var gold = false, silver = false;
+    return items.slice().sort(function (a, b) { return String(a.created_at).localeCompare(String(b.created_at)); }).reduce(function (o, c) {
+      if (!scored(c)) return o;
+      var pioneer = newStall || (!hadLoc && c.lat != null);
+      if (!gold && pioneer && hasPhoto(c)) { gold = true; o[c.id] = "gold"; }
+      else if (!silver && !pioneer && hasPhoto(c)) { silver = true; o[c.id] = "silver"; }
+      else o[c.id] = "bronze";
+      return o;
+    }, {});
+  }
+  var MEDAL_ICON = { gold: "🥇", silver: "🥈", bronze: "🥉" };
+  function medalHtml(k) { return k ? '<span class="medal ' + k + '">' + MEDAL_ICON[k] + " " + esc(t("medal" + k.charAt(0).toUpperCase() + k.slice(1))) + "</span>" : ""; }
+  function scoreSummary(items) {
+    var rs = items.filter(scored);
+    if (!rs.length) return "";
+    var avg = function (f) { return rs.reduce(function (s, c) { return s + f(c); }, 0) / rs.length; };
+    return '<p class="score-sum"><b>' + esc(t("sTotal")) + " " + avg(score).toFixed(1) + "</b> <small>" + esc(t("sCount")(rs.length)) + "</small> " +
+      ["taste", "aroma", "attitude", "cp"].map(function (k) { return '<span>' + esc(t("s" + k.charAt(0).toUpperCase() + k.slice(1))) + " " + avg(function (c) { return c[k]; }).toFixed(1) + "</span>"; }).join("") + "</p>";
+  }
+  function commHtml(items, newStall, hadLoc) {
+    var md = medals(items, newStall, hadLoc);
+    return scoreSummary(items) + '<ul class="pick-comm"><li class="who"><b>' + esc(t("commTitle")) + "</b></li>" + items.map(function (c) {
       var photos = (c.photos || []).filter(function (u) { return /^https:\/\//.test(u); });
-      return "<li>" + (c.rating ? stars(c.rating) + " " : "") + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
+      return "<li>" + (scored(c) ? '<b class="score">' + score(c).toFixed(1) + "</b> " : c.rating ? stars(c.rating) + " " : "") + medalHtml(md[c.id]) + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
         (c.review ? "<br>" + esc(c.review) : "") +
         (photos.length ? '<div class="comm-photos">' + photos.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="" loading="lazy"></a>'; }).join("") + "</div>" : "") +
         "</li>";
@@ -315,7 +352,7 @@
         }).join("") +
         (meta ? '<p class="pick-meta">' + esc(meta) + "</p>" : "") +
         '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p>" +
-        (cs.byPick[no] ? commHtml(cs.byPick[no]) : "") + "</div></li>";
+        (cs.byPick[no] ? commHtml(cs.byPick[no], false, !!loc[p.zh]) : "") + "</div></li>";
     }).join("") + cs.extra.map(function (g, j) {
       var foods = [];
       g.items.forEach(function (c) { (c.foods || []).forEach(function (f) { if (foods.indexOf(f) < 0) foods.push(f); }); });
@@ -326,7 +363,7 @@
         (foods.length ? '<ul class="foods">' + foods.slice(0, 6).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         ([first.price, first.where_hint].filter(Boolean).length ? '<p class="pick-meta">' + esc([first.price, first.where_hint].filter(Boolean).join(" · ")) + "</p>" : "") +
         '<p class="pick-links"><a href="' + gq2 + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq2 + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a></p>" +
-        commHtml(g.items) + "</div></li>";
+        commHtml(g.items, true) + "</div></li>";
     }).join("");
   }
 
@@ -977,8 +1014,34 @@
     (comm[m.id] || []).forEach(function (c) { if (names.indexOf(c.stall) < 0) names.push(c.stall); });
     $("fStallList").innerHTML = names.map(function (x) { return '<option value="' + esc(x) + '">'; }).join("");
     $("detail").hidden = true;
+    formHint();
     openSheet("submit");
   }
+  var SCORE_KEYS = ["taste", "aroma", "attitude", "cp"];
+  function formScores() {
+    var o = {};
+    return SCORE_KEYS.every(function (k) { var v = $("f_" + k).value; o[k] = +v; return v !== ""; }) ? o : null;
+  }
+  function deviceId() {
+    var d = load("nm-device", "");
+    if (!d) { d = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); save("nm-device", d); }
+    return d;
+  }
+  // 預估這篇會拿到哪個勳章（還在審核中的別人投稿看不到，所以只是預估）
+  function formHint() {
+    var m = byId(formFor), stall = $("fStall").value.trim(), sc = formScores();
+    if (!m || !stall) { $("fMedal").textContent = ""; return; }
+    var picks = picksOf(m), i = -1;
+    picks.forEach(function (p, k) { if (i < 0 && sameName(p.zh, stall)) i = k; });
+    var mine = { id: "_me", created_at: "9999", photos: ($("fPhotos").files || []).length ? ["https://x"] : [], lat: formLoc ? formLoc.lat : null };
+    SCORE_KEYS.forEach(function (k) { mine[k] = sc ? sc[k] : 0; });
+    var items = (comm[m.id] || []).filter(function (c) { return sameName(c.stall, i >= 0 ? picks[i].zh : stall); }).concat([mine]);
+    var k = medals(items, i < 0, i >= 0 && !!pickLoc(m)[picks[i].zh])._me;
+    var label = MEDAL_ICON[k] + " " + t("medal" + k.charAt(0).toUpperCase() + k.slice(1));
+    $("fMedal").textContent = t("fWillGet")(label) + (k === "bronze" && !mine.photos.length ? "　" + t("fNeedPhoto") : "");
+  }
+  ["fStall", "fPhotos", "f_taste", "f_aroma", "f_attitude", "f_cp"].forEach(function (id) { $(id).addEventListener("change", formHint); });
+  $("fStall").addEventListener("input", formHint);
   function endPicking() {
     $("pickBanner").hidden = true;
     document.querySelector(".map-wrap").classList.remove("picking");
@@ -1015,6 +1078,28 @@
       return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.zh) + '"><b><span class="h">♥</span> ' + esc(x.zh) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
     }).join("") : '<li class="empty">' + esc(t("mineNoLikes")) + "</li>";
     openSheet("mine");
+    if (!window.NMCommunity || !NMCommunity.enabled()) return;
+    // 我的勳章：找出這支手機的投稿，載入那些夜市的投稿，照同樣規則算勳章
+    NMCommunity.mine(deviceId()).then(function (rows) {
+      var ids = {}; rows.forEach(function (r) { ids[r.market] = 1; });
+      return Promise.all(Object.keys(ids).map(function (mid) {
+        return NMCommunity.load(mid).then(function (list) { comm[mid] = list || []; return loadPicks(byId(mid)); });
+      })).then(function () { return rows; });
+    }).then(function (rows) {
+      var got = [];
+      rows.forEach(function (r) {
+        var m = byId(r.market); if (!m) return;
+        var cs = commSplit(m), loc = pickLoc(m), md = {};
+        Object.keys(cs.byPick).forEach(function (i) { var o = medals(cs.byPick[i], false, !!loc[picksOf(m)[i].zh]); Object.keys(o).forEach(function (k) { md[k] = o[k]; }); });
+        cs.extra.forEach(function (g) { var o = medals(g.items, true); Object.keys(o).forEach(function (k) { md[k] = o[k]; }); });
+        if (md[r.id]) got.push({ m: m, stall: r.stall, k: md[r.id] });
+      });
+      got.sort(function (a, b) { return "gsb".indexOf(a.k[0]) - "gsb".indexOf(b.k[0]); });
+      $("mineMedalsWrap").hidden = false;
+      $("mineMedals").innerHTML = got.length ? got.map(function (x) {
+        return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.stall) + '"><b>' + medalHtml(x.k) + " " + esc(x.stall) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
+      }).join("") : '<li class="empty">' + esc(t("mineNoMedals")) + "</li>";
+    });
   }
   $("mineBtn").onclick = openMine;
   $("mine").addEventListener("click", function (e) {
@@ -1041,7 +1126,7 @@
     $("pickBanner").hidden = false;
     document.querySelector(".map-wrap").classList.add("picking");
     view.pickPoint(function (ll) {
-      formLoc = { lat: +ll.lat.toFixed(6), lng: +ll.lng.toFixed(6) };
+      formLoc = { lat: +ll.lat.toFixed(6), lng: +ll.lng.toFixed(6) }; formHint();
       $("fLoc").textContent = t("fLocSet") + " (" + formLoc.lat + ", " + formLoc.lng + ")";
       endPicking();
     });
@@ -1054,8 +1139,9 @@
     var foodsList = $("fFoods").value.split(/[,，、]/).map(function (x) { return x.trim().slice(0, 20); }).filter(Boolean).slice(0, 6);
     var review = $("fReview").value.trim();
     if (!stall) return fMsg(t("fNeedStall"), "err");
-    if (!review && !foodsList.length && !formLoc && !files.length) return fMsg(t("fNeedSome"), "err");
     if (files.length > 4) return fMsg(t("fTooMany"), "err");
+    var sc = formScores();
+    if (!sc) return fMsg(t("fNeedScores"), "err");
     if (!nick) return fMsg(t("fNeedNick"), "err");
     if (!$("fConsent").checked) return fMsg(t("fNeedConsent"), "err");
     $("fSend").disabled = true;
@@ -1064,16 +1150,16 @@
       return p.then(function () { fMsg(t("fUploading")(i + 1, files.length)); return NMCommunity.uploadPhoto(f).then(function (u) { urls.push(u); }); });
     }, Promise.resolve()).then(function () {
       fMsg(t("fSending"));
-      var rating = parseInt($("fRating").value, 10);
       return NMCommunity.submit({
         market: formFor, stall: stall.slice(0, 40), foods: foodsList, price: $("fPrice").value.trim().slice(0, 30) || null,
         where_hint: $("fWhere").value.trim().slice(0, 60) || null, lat: formLoc ? formLoc.lat : null, lng: formLoc ? formLoc.lng : null,
-        review: review.slice(0, 600) || null, rating: rating >= 1 && rating <= 5 ? rating : null, photos: urls, nickname: nick.slice(0, 30), consent: true
+        review: review.slice(0, 600) || null, photos: urls, nickname: nick.slice(0, 30), consent: true,
+        taste: sc.taste, aroma: sc.aroma, attitude: sc.attitude, cp: sc.cp, device: deviceId()
       });
     }).then(function () {
       var keepNick = nick;
       $("fForm").reset(); $("fNick").value = keepNick; formLoc = null; $("fLoc").textContent = "";
-      fMsg(t("fDone"), "ok");
+      fMsg(t("fDone"), "ok"); formHint();
     }).catch(function (err) {
       console.warn("[submit]", err);
       fMsg(err && err.limited ? t("fLimited") : t("fErr"), "err");
