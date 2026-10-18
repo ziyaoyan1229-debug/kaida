@@ -161,9 +161,15 @@
       <datalist id="fStallList"></datalist>
       <label><span data-i18n="fFoods">招牌小吃（用逗號分開）</span><input id="fFoods" maxlength="120" autocomplete="off"></label>
       <div class="row2">
-        <label><span data-i18n="fPrice">價格</span><input id="fPrice" maxlength="30" placeholder="NT$60–80" autocomplete="off"></label>
-        <label><span data-i18n="fRating">你的評分</span><select id="fRating"><option value="">—</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label>
+        <label class="full"><span data-i18n="fPrice">價格</span><input id="fPrice" maxlength="30" placeholder="NT$60–80" autocomplete="off"></label>
       </div>
+      <fieldset class="scores"><legend data-i18n="fScores">評分（0–10）*</legend>
+        <label><span data-i18n="sTaste">味蕾度</span><select id="f_taste"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
+        <label><span data-i18n="sAroma">香氣</span><select id="f_aroma"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
+        <label><span data-i18n="sAttitude">態度</span><select id="f_attitude"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
+        <label><span data-i18n="sCp">CP 值</span><select id="f_cp"><option value="">—</option><option>10</option><option>9</option><option>8</option><option>7</option><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option><option>0</option></select></label>
+      </fieldset>
+      <p class="medal-hint" id="fMedal" aria-live="polite"></p>
       <label><span data-i18n="fWhere">位置說明</span><input id="fWhere" maxlength="60" autocomplete="off"></label>
       <div class="loc-row"><button class="btn" id="fPick" type="button" data-i18n="fPick">在地圖上標位置</button><span id="fLoc" class="muted"></span></div>
       <label><span data-i18n="fReview">你的心得</span><textarea id="fReview" maxlength="600" rows="4"></textarea></label>
@@ -184,6 +190,7 @@
   <div class="sheet-card">
     <button class="close" type="button" data-close aria-label="關閉">×</button>
     <h2 id="mTitle" data-i18n="mineTitle">我的收藏</h2>
+    <div id="mineMedalsWrap" hidden><h3 data-i18n="mineMedals">我的勳章</h3><ul class="mine-list" id="mineMedals"></ul><p class="fine" data-i18n="medalRule"></p></div>
     <h3 data-i18n="mineFavs">想去的夜市</h3>
     <ul class="mine-list" id="mineFavs"></ul>
     <h3 data-i18n="mineLikes">喜愛的店家</h3>

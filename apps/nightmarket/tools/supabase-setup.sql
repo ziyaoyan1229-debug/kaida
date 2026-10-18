@@ -6,6 +6,7 @@
 --   * 網站只讀得到「審核通過」(approved) 的投稿，而且讀不到投稿者的 IP 雜湊。
 --   * 審核：到 Table Editor 打開 nm_submissions，把 status 改成 approved（或 rejected）。
 --   * 同一個網路位址每小時最多投稿 5 篇，全站每小時最多 200 篇，防止灌水。
+--   * 勳章由網站依「審核通過」投稿的先後計算：開拓者（金）、探險家（銀）、朝聖者（銅）。
 --   * 照片放在公開的 nm-photos 空間，每張最多 5MB，只收 JPEG / PNG / WebP。
 
 create extension if not exists pgcrypto;
@@ -28,6 +29,13 @@ create table if not exists public.nm_submissions (
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   ip_hash text
 );
+-- 四項評分（0–10）和勳章用的手機代號（舊資料庫重跑這份也會補上）
+alter table public.nm_submissions add column if not exists taste smallint check (taste between 0 and 10);
+alter table public.nm_submissions add column if not exists aroma smallint check (aroma between 0 and 10);
+alter table public.nm_submissions add column if not exists attitude smallint check (attitude between 0 and 10);
+alter table public.nm_submissions add column if not exists cp smallint check (cp between 0 and 10);
+alter table public.nm_submissions add column if not exists device text check (char_length(device) <= 40);
+create index if not exists nm_submissions_device on public.nm_submissions (device);
 create index if not exists nm_submissions_market on public.nm_submissions (market, status);
 create index if not exists nm_submissions_ip on public.nm_submissions (ip_hash, created_at);
 
@@ -35,9 +43,9 @@ alter table public.nm_submissions enable row level security;
 
 -- 欄位權限：訪客只能寫入和讀取這些欄位（讀不到 ip_hash）
 revoke all on public.nm_submissions from anon, authenticated;
-grant insert (market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, consent)
+grant insert (market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, consent, taste, aroma, attitude, cp, device)
   on public.nm_submissions to anon, authenticated;
-grant select (id, created_at, market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, status)
+grant select (id, created_at, market, stall, foods, price, where_hint, lat, lng, review, rating, photos, nickname, status, taste, aroma, attitude, cp, device)
   on public.nm_submissions to anon, authenticated;
 
 drop policy if exists "nm insert pending" on public.nm_submissions;

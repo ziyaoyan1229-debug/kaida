@@ -429,3 +429,16 @@ body.has-stalls .osm-credit { display: none; }
 #map.far.has-bubbles .nm-bubble { display: flex; }
 #map.far.has-bubbles .gm-pin, #map.far.has-bubbles .nm-icon { display: none; }
 .map-wrap.night .nm-bubble { box-shadow: 0 0 12px rgba(255, 77, 46, .6); }
+
+/* 評分與勳章 */
+.contrib .scores { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.contrib .scores legend { font-size: 0.85rem; margin-bottom: 6px; }
+.contrib .row2 .full { grid-column: 1 / -1; }
+.medal-hint { font-size: 0.85rem; margin: 4px 0 0; min-height: 1em; }
+.medal { display: inline-block; font-size: 0.75rem; padding: 1px 7px; border-radius: 999px; margin-right: 4px; font-family: system-ui, sans-serif; white-space: nowrap; }
+.medal.gold { background: #fff1c2; color: #7a5600; }
+.medal.silver { background: #e8ecf1; color: #3d4752; }
+.medal.bronze { background: #f6e0cf; color: #7a4219; }
+.pick-comm .score { font-size: 0.95rem; color: var(--accent, #c0392b); margin-right: 2px; }
+.score-sum { font-size: 0.85rem; margin: 8px 0 4px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.score-sum span { opacity: 0.75; }

@@ -4,7 +4,7 @@
 (function () {
   var cfg = window.NM_CONFIG || {};
   var URL = String(cfg.supabaseUrl || "").replace(/\/+$/, ""), KEY = cfg.supabaseKey || "";
-  var COLS = "id,created_at,market,stall,foods,price,where_hint,lat,lng,review,rating,photos,nickname";
+  var COLS = "id,created_at,market,stall,foods,price,where_hint,lat,lng,review,rating,photos,nickname,taste,aroma,attitude,cp,device";
   var cache = {};
   function headers(extra) {
     var h = { apikey: KEY, Authorization: "Bearer " + KEY };
@@ -39,6 +39,12 @@
           .catch(function (e) { delete cache[market]; console.warn("[community]", e); return []; });
       }
       return cache[market];
+    },
+    // 這支手機投過、已通過審核的投稿（算我的勳章用）
+    mine: function (device) {
+      if (!this.enabled() || !device) return Promise.resolve([]);
+      return fetch(URL + "/rest/v1/nm_submissions?select=id,market,stall&device=eq." + encodeURIComponent(device), { headers: headers() })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
     },
     uploadPhoto: function (file) {
       return shrink(file).then(function (blob) {
