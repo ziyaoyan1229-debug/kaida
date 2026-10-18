@@ -51,13 +51,16 @@
       fTooMany: "照片最多 4 張。", fUploading: function (i, n) { return "上傳照片 " + i + "/" + n + "…"; }, fSending: "送出中…",
       fDone: "謝謝你的投稿！審核通過後就會出現在網站上。", fErr: "送出失敗，請稍後再試。", fLimited: "投稿太頻繁了，請過一陣子再試。",
       commTitle: "網友心得", commBadge: "網友新增",
-      sTaste: "味蕾度", sAroma: "香氣", sAttitude: "態度", sCp: "CP 值", sTotal: "綜合", sCount: function (n) { return n + " 人評"; },
-      medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "四項評分都要選。",
+      sTaste: "味蕾度", sAroma: "香氣", sAttitude: "態度", sCp: "CP 值", sVisual: "視覺", sVibe: "氛圍", sTotal: "綜合", sCount: function (n) { return n + " 人評"; },
+      medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "六項評分都要選。",
       fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fGoldReview: "開拓者要審核通過才會頒發。", fNeedLoc: "新點位要在地圖上標出位置，才能拿開拓者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
       medalRule: "開拓者（金）：第一個發掘新點位的人，要標位置、拍照＋評分，審核通過才算。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
       visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
       fSaved: "還沒連上投稿資料庫，先存在這支手機。連線後會自動送出。", fSyncing: function (n) { return "正在送出先前存的 " + n + " 篇投稿…"; },
-      mineMedals: "我的勳章", mineNoMedals: "還沒有勳章。到夜市踩點、拍照、評分就能拿到。", commBy: function (n, d) { return n + " · " + d; },
+      mineMedals: "我的勳章", seasonPts: function (n) { return "本季積分 " + n + " 分"; }, rankBtn: "🏆 本季排行榜",
+      rankTitle: function (y, q) { return y + " 年第 " + q + " 季排行榜"; }, rankPrize: "每季第一名可以和開發者一起去逛夜市！",
+      rankRule: "積分：開拓者 30 分、探險家 10 分、朝聖者 3 分，只算本季審核通過的投稿。", rankEmpty: "本季還沒有人得分，第一名等你來拿。",
+      rankOffline: "連上投稿資料庫後才看得到大家的排名，下面先顯示你自己的。", rankMe: "你", rankPts: function (n) { return n + " 分"; }, mineNoMedals: "還沒有勳章。到夜市踩點、拍照、評分就能拿到。", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
       picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源", mineTitle: "我的收藏", mineFavs: "想去的夜市", mineLikes: "喜愛的店家", mineNote: "收藏只存在這支手機的瀏覽器裡。", mineNoFavs: "還沒有。在夜市頁按「☆ 加入想去」就會出現在這裡。", mineNoLikes: "還沒有。在推薦攤位按 ♡ 就會出現在這裡。", like: "喜愛這家店", unlike: "取消喜愛",
       stallFree: function (n) { return "地圖上標了 " + n + " 個攤位。有編號和店名的是下面的推薦攤位，點了會跳到介紹；其他圖釘點了會打開 Google 地圖。"; },
@@ -108,13 +111,16 @@
       fTooMany: "Up to 4 photos.", fUploading: function (i, n) { return "Uploading photo " + i + "/" + n + "…"; }, fSending: "Sending…",
       fDone: "Thanks! Your post will appear once it's reviewed.", fErr: "Couldn't send. Please try again later.", fLimited: "Too many posts. Please try again later.",
       commTitle: "Visitor reviews", commBadge: "Added by visitors",
-      sTaste: "Taste", sAroma: "Aroma", sAttitude: "Service", sCp: "Value", sTotal: "Score", sCount: function (n) { return n + (n === 1 ? " rating" : " ratings"); },
-      medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all four scores.",
+      sTaste: "Taste", sAroma: "Aroma", sAttitude: "Service", sCp: "Value", sVisual: "Looks", sVibe: "Vibe", sTotal: "Score", sCount: function (n) { return n + (n === 1 ? " rating" : " ratings"); },
+      medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all six scores.",
       fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fGoldReview: "Pioneer is awarded once the post is approved.", fNeedLoc: "Mark the new spot on the map to earn Pioneer.", fWillGet: function (m) { return "This post earns: " + m; },
       medalRule: "Pioneer (gold): first to discover a new spot, with its location, a photo and scores. Counts once approved. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
       visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
       fSaved: "Not connected yet, so it's saved on this phone. It will be sent once we're online.", fSyncing: function (n) { return "Sending " + n + " saved posts…"; },
-      mineMedals: "My medals", mineNoMedals: "No medals yet. Visit a stall, take a photo and rate it to earn one.", commBy: function (n, d) { return n + " · " + d; },
+      mineMedals: "My medals", seasonPts: function (n) { return "This season: " + n + " pts"; }, rankBtn: "🏆 Season leaderboard",
+      rankTitle: function (y, q) { return y + " Q" + q + " leaderboard"; }, rankPrize: "Each season's No. 1 gets a night market trip with the developer!",
+      rankRule: "Points: Pioneer 30, Explorer 10, Pilgrim 3. Only this season's approved posts count.", rankEmpty: "No points yet this season. The top spot is yours to take.",
+      rankOffline: "The full ranking shows once we're connected. Here's yours for now.", rankMe: "You", rankPts: function (n) { return n + " pts"; }, mineNoMedals: "No medals yet. Visit a stall, take a photo and rate it to earn one.", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
       picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources", mineTitle: "My saved", mineFavs: "Markets to visit", mineLikes: "Liked stalls", mineNote: "Saved only in this browser on this device.", mineNoFavs: "Nothing yet. Tap “☆ Save” on a market.", mineNoLikes: "Nothing yet. Tap ♡ on a recommended stall.", like: "Like this stall", unlike: "Unlike",
       stallFree: function (n) { return n + " stalls are marked on the map. Numbered pins with names are the picks below, and tapping one jumps to its card. Other pins open in Google Maps."; },
@@ -283,9 +289,15 @@
     });
   }
   // 四項評分加權成 0–10 分：好不好吃最重要，其次是划不划算
-  var WEIGHTS = { taste: 0.4, aroma: 0.15, attitude: 0.15, cp: 0.3 };
+  var WEIGHTS = { taste: 0.35, cp: 0.25, aroma: 0.12, attitude: 0.12, visual: 0.08, vibe: 0.08 };
+  var SCORE_KEYS = ["taste", "aroma", "attitude", "cp", "visual", "vibe"];
   function scored(c) { return ["taste", "aroma", "attitude", "cp"].every(function (k) { return c[k] != null; }); }
-  function score(c) { return Object.keys(WEIGHTS).reduce(function (s, k) { return s + WEIGHTS[k] * c[k]; }, 0); }
+  // 早期投稿沒有視覺、氛圍，就用有的項目按比例算
+  function score(c) {
+    var w = 0, s = 0;
+    Object.keys(WEIGHTS).forEach(function (k) { if (c[k] != null) { w += WEIGHTS[k]; s += WEIGHTS[k] * c[k]; } });
+    return w ? s / w : 0;
+  }
   var PHOTO_RE = /^(https:\/\/|data:image\/)/;
   function hasPhoto(c) { return (c.photos || []).some(function (u) { return PHOTO_RE.test(u); }); }
   // 勳章：依投稿先後。開拓者＝第一個新增攤位（或替沒位置的攤位補上位置）的人；探險家＝第一個踩點的人；兩者都要照片＋評分。朝聖者＝其他有評分的人
@@ -308,7 +320,7 @@
     if (!rs.length) return "";
     var avg = function (f) { return rs.reduce(function (s, c) { return s + f(c); }, 0) / rs.length; };
     return '<p class="score-sum"><b>' + esc(t("sTotal")) + " " + avg(score).toFixed(1) + "</b> <small>" + esc(t("sCount")(rs.length)) + "</small> " +
-      ["taste", "aroma", "attitude", "cp"].map(function (k) { return '<span>' + esc(t("s" + k.charAt(0).toUpperCase() + k.slice(1))) + " " + avg(function (c) { return c[k]; }).toFixed(1) + "</span>"; }).join("") + "</p>";
+      SCORE_KEYS.filter(function (k) { return rs.some(function (c) { return c[k] != null; }); }).map(function (k) { var v = rs.filter(function (c) { return c[k] != null; }); return '<span>' + esc(t("s" + k.charAt(0).toUpperCase() + k.slice(1))) + " " + (v.reduce(function (s, c) { return s + c[k]; }, 0) / v.length).toFixed(1) + "</span>"; }).join("") + "</p>";
   }
   function commHtml(items, newStall, hadLoc) {
     var md = medals(items, newStall, hadLoc);
@@ -1056,7 +1068,6 @@
     formHint();
     openSheet("submit");
   }
-  var SCORE_KEYS = ["taste", "aroma", "attitude", "cp"];
   function formScores() {
     var o = {};
     return SCORE_KEYS.every(function (k) { var v = $("f_" + k).value; o[k] = +v; return v !== ""; }) ? o : null;
@@ -1080,7 +1091,7 @@
     var tip = k === "gold" ? t("fGoldReview") : k === "bronze" && !mine.photos.length ? t("fNeedPhoto") : i < 0 && !formLoc ? t("fNeedLoc") : "";
     $("fMedal").textContent = t("fWillGet")(label) + (tip ? "　" + tip : "");
   }
-  ["fStall", "fPhotos", "f_taste", "f_aroma", "f_attitude", "f_cp"].forEach(function (id) { $(id).addEventListener("change", formHint); });
+  ["fStall", "fPhotos"].concat(SCORE_KEYS.map(function (k) { return "f_" + k; })).forEach(function (id) { $(id).addEventListener("change", formHint); });
   $("fStall").addEventListener("input", formHint);
   function endPicking() {
     $("pickBanner").hidden = true;
@@ -1124,26 +1135,68 @@
     // 我的勳章：找出這支手機的投稿（含還沒送出的），載入那些夜市的投稿，照同樣規則算勳章
     NMCommunity.mine(deviceId()).then(function (rows) {
       rows = rows.concat(pending);
-      var ids = {}; rows.forEach(function (r) { ids[r.market] = 1; });
-      return Promise.all(Object.keys(ids).filter(byId).map(function (mid) {
-        return remoteComm(mid).then(function (list) { comm[mid] = list; return loadPicks(byId(mid)); });
-      })).then(function () { return rows; });
-    }).then(function (rows) {
-      var got = [];
-      rows.forEach(function (r) {
-        var m = byId(r.market); if (!m) return;
-        var cs = commSplit(m), loc = pickLoc(m), md = {};
-        Object.keys(cs.byPick).forEach(function (i) { var o = medals(cs.byPick[i], false, !!loc[picksOf(m)[i].zh]); Object.keys(o).forEach(function (k) { md[k] = o[k]; }); });
-        cs.extra.forEach(function (g) { var o = medals(g.items, true); Object.keys(o).forEach(function (k) { md[k] = o[k]; }); });
-        if (md[r.id]) got.push({ m: m, stall: r.stall, k: md[r.id] });
+      return medalMap(rows).then(function (md) {
+        var got = [], cur = seasonOf(new Date().toISOString()), pts = 0;
+        rows.forEach(function (r) {
+          var m = byId(r.market), k = md[r.id];
+          if (!m || !k) return;
+          got.push({ m: m, stall: r.stall, k: k });
+          if (!r.local && seasonOf(r.created_at) === cur) pts += POINTS[k];
+        });
+        got.sort(function (a, b) { return "grsb".indexOf(a.k[0]) - "grsb".indexOf(b.k[0]); });
+        $("mineMedalsWrap").hidden = false;
+        $("minePts").textContent = t("seasonPts")(pts);
+        $("mineMedals").innerHTML = got.length ? got.map(function (x) {
+          return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.stall) + '"><b>' + medalHtml(x.k) + " " + esc(x.stall) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
+        }).join("") : '<li class="empty">' + esc(t("mineNoMedals")) + "</li>";
       });
-      got.sort(function (a, b) { return "grsb".indexOf(a.k[0]) - "grsb".indexOf(b.k[0]); });
-      $("mineMedalsWrap").hidden = false;
-      $("mineMedals").innerHTML = got.length ? got.map(function (x) {
-        return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.stall) + '"><b>' + medalHtml(x.k) + " " + esc(x.stall) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
-      }).join("") : '<li class="empty">' + esc(t("mineNoMedals")) + "</li>";
     });
   }
+  // 勳章積分：每季（台北時間的季度）重新計算
+  var POINTS = { gold: 30, silver: 10, bronze: 3, review: 0 };
+  function seasonOf(iso) { var d = new Date(Date.parse(iso) + 8 * 3600e3); return d.getUTCFullYear() + "Q" + (Math.floor(d.getUTCMonth() / 3) + 1); }
+  // 依整個夜市的投稿歷史算勳章（金、銀牌可能在更早的季就被拿走），回傳 投稿 id → 勳章
+  function medalMap(rows) {
+    var ids = {}; rows.forEach(function (r) { ids[r.market] = 1; });
+    return Promise.all(Object.keys(ids).filter(byId).map(function (mid) {
+      return remoteComm(mid).then(function (list) { comm[mid] = list; return loadPicks(byId(mid)); });
+    })).then(function () {
+      var md = {};
+      Object.keys(ids).filter(byId).forEach(function (mid) {
+        var m = byId(mid), cs = commSplit(m), loc = pickLoc(m);
+        function add(o) { Object.keys(o).forEach(function (k) { md[k] = o[k]; }); }
+        Object.keys(cs.byPick).forEach(function (i) { add(medals(cs.byPick[i], false, !!loc[picksOf(m)[i].zh])); });
+        cs.extra.forEach(function (g) { add(medals(g.items, true)); });
+      });
+      return md;
+    });
+  }
+  function openRank() {
+    var now = new Date().toISOString(), cur = seasonOf(now), me = deviceId();
+    $("rankTitle").textContent = t("rankTitle")(cur.slice(0, 4), cur.slice(5));
+    $("rankList").innerHTML = "";
+    $("rankNote").textContent = NMCommunity.enabled() ? "" : t("rankOffline");
+    openSheet("rank");
+    (NMCommunity.enabled() ? NMCommunity.all() : Promise.resolve([])).then(function (rows) {
+      // 全部投稿都要拿來排勳章順序，但只加總本季的積分
+      var all = rows.concat(pending);
+      return medalMap(all).then(function (md) {
+        var by = {};
+        rows.forEach(function (r) {
+          var k = md[r.id];
+          if (!k || !POINTS[k] || seasonOf(r.created_at) !== cur) return;
+          var key = r.device || ("n:" + r.nickname), u = by[key] = by[key] || { nick: r.nickname, pts: 0, gold: 0, silver: 0, bronze: 0, me: r.device === me };
+          u.pts += POINTS[k]; u[k]++; u.nick = r.nickname || u.nick;
+        });
+        var list = Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return b.pts - a.pts || b.gold - a.gold || b.silver - a.silver; });
+        $("rankList").innerHTML = list.length ? list.slice(0, 30).map(function (u, i) {
+          return '<li class="' + (u.me ? "me" : "") + '"><span class="rk">' + (i + 1) + '</span><b>' + esc(u.nick || "?") + (u.me ? " <small>(" + esc(t("rankMe")) + ")</small>" : "") + "</b>" +
+            '<span class="rm">' + (u.gold ? "🥇" + u.gold + " " : "") + (u.silver ? "🥈" + u.silver + " " : "") + (u.bronze ? "🥉" + u.bronze : "") + "</span><span class=\"rp\">" + esc(t("rankPts")(u.pts)) + "</span></li>";
+        }).join("") : '<li class="empty">' + esc(t("rankEmpty")) + "</li>";
+      });
+    });
+  }
+  $("rankBtn").onclick = function () { closeSheet($("mine")); openRank(); };
   $("mineBtn").onclick = openMine;
   $("mine").addEventListener("click", function (e) {
     var b = e.target.closest("[data-open]"); if (!b) return;
@@ -1193,7 +1246,7 @@
       market: formFor, stall: stall.slice(0, 40), foods: foodsList, price: $("fPrice").value.trim().slice(0, 30) || null,
       where_hint: $("fWhere").value.trim().slice(0, 60) || null, lat: formLoc ? formLoc.lat : null, lng: formLoc ? formLoc.lng : null,
       review: review.slice(0, 600) || null, photos: [], nickname: nick.slice(0, 30), consent: true,
-      taste: sc.taste, aroma: sc.aroma, attitude: sc.attitude, cp: sc.cp, device: deviceId()
+      taste: sc.taste, aroma: sc.aroma, attitude: sc.attitude, cp: sc.cp, visual: sc.visual, vibe: sc.vibe, device: deviceId()
     };
     function done(msg) {
       var keepNick = nick, wasVisit = $("fForm").classList.contains("visit");

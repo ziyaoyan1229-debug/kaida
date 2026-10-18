@@ -448,3 +448,13 @@ body.has-stalls .osm-credit { display: none; }
 .pick-comm li.local { opacity: 0.8; }
 .local-tag { font-size: 0.7rem; border: 1px dashed currentColor; border-radius: 4px; padding: 0 4px; opacity: 0.7; }
 .medal.review { background: transparent; border: 1px dashed #c9a227; color: #7a5600; }
+.rank-btn { margin: 4px 0 8px; }
+h3 .pts { font-size: 0.8rem; font-weight: 600; color: #b8860b; margin-left: 6px; }
+.rank-prize { background: #fff1c2; color: #7a5600; border-radius: 10px; padding: 8px 12px; font-size: 0.9rem; }
+.rank-list { list-style: none; padding: 0; margin: 8px 0; }
+.rank-list li { display: grid; grid-template-columns: 2em 1fr auto auto; gap: 8px; align-items: baseline; padding: 8px 4px; border-bottom: 1px solid var(--line, #e5ddd0); }
+.rank-list li.me { background: rgba(224, 36, 94, 0.07); border-radius: 8px; }
+.rank-list li:nth-child(1) .rk { color: #c9a227; font-weight: 800; }
+.rank-list .rm { font-size: 0.8rem; font-family: system-ui, sans-serif; }
+.rank-list .rp { font-weight: 700; }
+.rank-list li.empty { display: block; opacity: 0.7; }

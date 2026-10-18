@@ -4,7 +4,7 @@
 (function () {
   var cfg = window.NM_CONFIG || {};
   var URL = String(cfg.supabaseUrl || "").replace(/\/+$/, ""), KEY = cfg.supabaseKey || "";
-  var COLS = "id,created_at,market,stall,foods,price,where_hint,lat,lng,review,rating,photos,nickname,taste,aroma,attitude,cp,device";
+  var COLS = "id,created_at,market,stall,foods,price,where_hint,lat,lng,review,rating,photos,nickname,taste,aroma,attitude,cp,visual,vibe,device";
   var cache = {};
   function headers(extra) {
     var h = { apikey: KEY, Authorization: "Bearer " + KEY };
@@ -52,6 +52,12 @@
           resolve(c.toDataURL("image/jpeg", 0.75));
         }).catch(function () { resolve(""); });
       });
+    },
+    // 全部審核通過的投稿（排行榜用：要照時間排出每家店的勳章順序）
+    all: function () {
+      if (!this.enabled()) return Promise.resolve([]);
+      return fetch(URL + "/rest/v1/nm_submissions?select=" + COLS + "&order=created_at.asc&limit=5000", { headers: headers() })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
     },
     mine: function (device) {
       if (!this.enabled() || !device) return Promise.resolve([]);
