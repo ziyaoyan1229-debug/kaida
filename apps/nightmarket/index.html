@@ -80,6 +80,11 @@
     <h2 id="dName"></h2>
     <p class="d-status" id="dStatus"></p>
     <p class="d-note" id="dNote"></p>
+    <div id="dPicksWrap" hidden>
+      <h3 data-i18n="picksTitle">網友推薦攤位</h3>
+      <ol class="picks" id="dPicks"></ol>
+      <p class="picks-note" data-i18n="picksNote">整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。</p>
+    </div>
     <div id="dStallsWrap" hidden>
       <h3 data-i18n="stallsTitle">夜市裡的店家（Google 地圖）</h3>
       <label class="search stall-q" id="dStallQWrap" hidden>
@@ -157,6 +162,7 @@
 <script src="taiwan-counties.js"></script>
 <script src="map-leaflet.js"></script>
 <script src="stall-db.js"></script>
+<script src="curated.js"></script>
 <script src="map-google.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
