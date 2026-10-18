@@ -479,3 +479,21 @@ button.dev-score { border: 0; cursor: pointer; }
 .radar text { font: 11px system-ui, sans-serif; fill: var(--ink, currentColor); }
 .radar .fine { margin: 2px 0 0; }
 @media (max-width: 430px) { #taskCount { display: none; } .brand-text strong { font-size: 16px; } }
+.mine-list li.row { display: flex; align-items: stretch; gap: 6px; }
+.mine-list li.row > button[data-open] { flex: 1; min-width: 0; }
+.mine-list .unmark { flex: none; width: 44px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); font: 20px/1 system-ui, sans-serif; cursor: pointer; }
+.mine-list .unmark.star { color: #e0a800; }
+.mine-list .unmark.h { color: #e0245e; }
+.pick-comm li.empty { color: var(--muted); font-size: 13px; }
+.radar svg { max-width: 230px; }
+.radar .rt { font: 800 22px system-ui, sans-serif; fill: var(--lantern); }
+.radar.small { margin: 4px 0; }
+.radar.small svg { max-width: 170px; }
+.radar.small .rt { font-size: 20px; }
+.pick-comm-wrap { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.pick-comm-wrap > summary { cursor: pointer; font-weight: 700; font-size: 14px; list-style: none; padding: 4px 0; }
+.pick-comm-wrap > summary::-webkit-details-marker { display: none; }
+.pick-comm-wrap > summary::after { content: " ▾"; color: var(--muted); }
+.pick-comm-wrap[open] > summary::after { content: " ▴"; }
+.pick-comm-wrap .pick-comm { border-top: 0; margin-top: 0; }
+.comm-text { margin: 2px 0 4px; }

@@ -50,7 +50,7 @@
       fNeedStall: "請填攤位名稱。", fNeedNick: "請填暱稱。", fNeedConsent: "請勾選同意授權。", fNeedSome: "請至少寫心得、招牌小吃、標位置或附照片其中一項。",
       fTooMany: "照片最多 4 張。", fUploading: function (i, n) { return "上傳照片 " + i + "/" + n + "…"; }, fSending: "送出中…",
       fDone: "謝謝你的投稿！審核通過後就會出現在網站上。", fErr: "送出失敗，請稍後再試。", fLimited: "投稿太頻繁了，請過一陣子再試。",
-      commTitle: "網友心得", commBadge: "網友新增",
+      commTitle: "饕客心得", commCount: function (n) { return n + " 篇"; }, commEmpty: "還沒有饕客心得，按「踩點評分」寫第一篇。", commBadge: "網友新增",
       sTaste: "味蕾度", sAroma: "香氣", sAttitude: "態度", sCp: "CP 值", sVisual: "視覺", sVibe: "氛圍", sTotal: "綜合", sCount: function (n) { return n + " 人評"; },
       medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "六項評分都要選。",
       fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fGoldReview: "開拓者要審核通過才會頒發。", fNeedLoc: "新點位要在地圖上標出位置，才能拿開拓者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
@@ -62,7 +62,7 @@
       rankRule: "積分：開拓者 30 分、探險家 10 分、朝聖者 3 分，只算本季審核通過的投稿。", rankEmpty: "本季還沒有人得分，第一名等你來拿。",
       rankOffline: "連上投稿資料庫後才看得到大家的排名，下面先顯示你自己的。", rankMe: "你", rankPts: function (n) { return n + " 分"; }, mineNoMedals: "還沒有勳章。到夜市踩點、拍照、評分就能拿到。", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "網友推薦攤位", picksNote: "整理自網友的部落格和文章，用我們自己的話摘要，點「來源」可以看原文。攤位資訊可能有變動。",
-      picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源", mineTitle: "我的收藏", mineFavs: "想去的夜市", mineLikes: "喜愛的店家", mineNote: "收藏只存在這支手機的瀏覽器裡。", mineNoFavs: "還沒有。在夜市頁按「☆ 加入想去」就會出現在這裡。", mineNoLikes: "還沒有。在推薦攤位按 ♡ 就會出現在這裡。", like: "喜愛這家店", unlike: "取消喜愛",
+      picksMentions: function (n) { return n + " 篇推薦"; }, picksMap: "Google 地圖", picksApple: "Apple 地圖", picksSrc: "來源", mineTitle: "我的收藏", mineFavs: "想去的夜市", mineLikes: "喜愛的店家", mineNote: "收藏只存在這支手機的瀏覽器裡。", mineNoFavs: "還沒有。在夜市頁按「☆ 加入想去」就會出現在這裡。", mineNoLikes: "還沒有。在推薦攤位按 ♡ 就會出現在這裡。", like: "喜愛這家店", unlike: "取消喜愛", unfav: "取消想去",
       stallFree: function (n) { return "地圖上標了 " + n + " 個攤位。有編號和店名的是下面的推薦攤位，點了會跳到介紹；其他圖釘點了會打開 Google 地圖。"; },
       stallLoad: function (n) { return n ? "地圖上標了 " + n + " 個攤位，點這裡載入店名和評分" : "點這裡從 Google 地圖載入店家和評分"; }
     },
@@ -110,7 +110,7 @@
       fNeedStall: "Please enter the stall name.", fNeedNick: "Please enter a nickname.", fNeedConsent: "Please tick the license box.", fNeedSome: "Add at least a review, items, a location or a photo.",
       fTooMany: "Up to 4 photos.", fUploading: function (i, n) { return "Uploading photo " + i + "/" + n + "…"; }, fSending: "Sending…",
       fDone: "Thanks! Your post will appear once it's reviewed.", fErr: "Couldn't send. Please try again later.", fLimited: "Too many posts. Please try again later.",
-      commTitle: "Visitor reviews", commBadge: "Added by visitors",
+      commTitle: "Foodie notes", commCount: function (n) { return n + (n === 1 ? " note" : " notes"); }, commEmpty: "No foodie notes yet. Tap “Rate this stall” to write the first one.", commBadge: "Added by visitors",
       sTaste: "Taste", sAroma: "Aroma", sAttitude: "Service", sCp: "Value", sVisual: "Looks", sVibe: "Vibe", sTotal: "Score", sCount: function (n) { return n + (n === 1 ? " rating" : " ratings"); },
       medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all six scores.",
       fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fGoldReview: "Pioneer is awarded once the post is approved.", fNeedLoc: "Mark the new spot on the map to earn Pioneer.", fWillGet: function (m) { return "This post earns: " + m; },
@@ -122,7 +122,7 @@
       rankRule: "Points: Pioneer 30, Explorer 10, Pilgrim 3. Only this season's approved posts count.", rankEmpty: "No points yet this season. The top spot is yours to take.",
       rankOffline: "The full ranking shows once we're connected. Here's yours for now.", rankMe: "You", rankPts: function (n) { return n + " pts"; }, mineNoMedals: "No medals yet. Visit a stall, take a photo and rate it to earn one.", commBy: function (n, d) { return n + " · " + d; },
       picksTitle: "Stalls locals recommend", picksNote: "Compiled from blogs and posts, summarized in our own words. Tap a source number to read the original. Details may change.",
-      picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources", mineTitle: "My saved", mineFavs: "Markets to visit", mineLikes: "Liked stalls", mineNote: "Saved only in this browser on this device.", mineNoFavs: "Nothing yet. Tap “☆ Save” on a market.", mineNoLikes: "Nothing yet. Tap ♡ on a recommended stall.", like: "Like this stall", unlike: "Unlike",
+      picksMentions: function (n) { return n + " recommendations"; }, picksMap: "Google Maps", picksApple: "Apple Maps", picksSrc: "Sources", mineTitle: "My saved", mineFavs: "Markets to visit", mineLikes: "Liked stalls", mineNote: "Saved only in this browser on this device.", mineNoFavs: "Nothing yet. Tap “☆ Save” on a market.", mineNoLikes: "Nothing yet. Tap ♡ on a recommended stall.", like: "Like this stall", unlike: "Unlike", unfav: "Remove from saved",
       stallFree: function (n) { return n + " stalls are marked on the map. Numbered pins with names are the picks below, and tapping one jumps to its card. Other pins open in Google Maps."; },
       stallLoad: function (n) { return n ? n + " stalls marked on the map. Tap to load names and ratings" : "Tap to load places and ratings from Google Maps"; }
     }
@@ -315,22 +315,16 @@
   }
   var MEDAL_ICON = { gold: "🥇", silver: "🥈", bronze: "🥉", review: "🥇" };
   function medalHtml(k) { return k === "review" ? '<span class="medal review">🥇 ' + esc(t("medalReview")) + "</span>" : k ? '<span class="medal ' + k + '">' + MEDAL_ICON[k] + " " + esc(t("medal" + k.charAt(0).toUpperCase() + k.slice(1))) + "</span>" : ""; }
-  function scoreSummary(items) {
-    var rs = items.filter(scored);
-    if (!rs.length) return "";
-    var avg = function (f) { return rs.reduce(function (s, c) { return s + f(c); }, 0) / rs.length; };
-    return '<p class="score-sum"><b>' + esc(t("sTotal")) + " " + avg(score).toFixed(1) + "</b> <small>" + esc(t("sCount")(rs.length)) + "</small> " +
-      SCORE_KEYS.filter(function (k) { return rs.some(function (c) { return c[k] != null; }); }).map(function (k) { var v = rs.filter(function (c) { return c[k] != null; }); return '<span>' + esc(t("s" + k.charAt(0).toUpperCase() + k.slice(1))) + " " + (v.reduce(function (s, c) { return s + c[k]; }, 0) / v.length).toFixed(1) + "</span>"; }).join("") + "</p>";
-  }
   function commHtml(items, newStall, hadLoc) {
     var md = medals(items, newStall, hadLoc);
-    return scoreSummary(items) + '<ul class="pick-comm"><li class="who"><b>' + esc(t("commTitle")) + "</b></li>" + items.map(function (c) {
+    return '<details class="pick-comm-wrap"><summary>' + esc(t("commTitle")) + " · " + esc(t("commCount")(items.length)) + '</summary><ul class="pick-comm">' + items.map(function (c) {
       var photos = (c.photos || []).filter(function (u) { return PHOTO_RE.test(u); });
       return '<li' + (c.local ? ' class="local"' : "") + ">" + (c.local ? '<span class="local-tag">' + esc(t("localTag")) + "</span> " : "") + (scored(c) ? '<b class="score">' + score(c).toFixed(1) + "</b> " : c.rating ? stars(c.rating) + " " : "") + medalHtml(md[c.id]) + '<span class="who">' + esc(t("commBy")(c.nickname || "", String(c.created_at || "").slice(0, 10))) + "</span>" +
-        (c.review ? "<br>" + esc(c.review) : "") +
+        (scored(c) ? radarSvg([c], true) : "") +
+        (c.review ? '<p class="comm-text">' + esc(c.review) + "</p>" : "") +
         (photos.length ? '<div class="comm-photos">' + photos.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="" loading="lazy"></a>'; }).join("") + "</div>" : "") +
         "</li>";
-    }).join("") + "</ul>";
+    }).join("") + "</ul></details>";
   }
 
   // 推薦攤位在地圖上的位置（資料檔裡用 Google 地點編號對到的座標）
@@ -365,12 +359,13 @@
   function devScore(p, items) {
     var rs = (items || []).filter(scored);
     var v = rs.length ? (rs.reduce(function (s, c) { return s + score(c); }, 0) / rs.length).toFixed(1) : (p.dev != null ? p.dev : 10);
-    return '<button type="button" class="dev-score" data-radar aria-expanded="false">' + esc(t("devShort")) + " <b>" + v + "</b></button>";
+    return '<span class="dev-score">' + esc(t("devShort")) + " <b>" + v + "</b></span>";
   }
   // 六角雷達圖：六項平均分數，沒人評過的項目用預設 10 分
-  function radarSvg(items) {
+  function radarSvg(items, small) {
     var rs = (items || []).filter(scored), R = 70, cx = 110, cy = 92;
-    var vals = SCORE_KEYS.map(function (k) { var v = rs.filter(function (c) { return c[k] != null; }); return v.length ? v.reduce(function (s, c) { return s + c[k]; }, 0) / v.length : 10; });
+    var total = rs.length ? rs.reduce(function (s, c) { return s + score(c); }, 0) / rs.length : 10;
+    var vals = SCORE_KEYS.map(function (k) { var v = rs.filter(function (c) { return c[k] != null; }); return v.length ? v.reduce(function (s, c) { return s + c[k]; }, 0) / v.length : total; });
     function pt(i, r) { var a = -Math.PI / 2 + i * Math.PI / 3; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
     function poly(r) { return SCORE_KEYS.map(function (k, i) { return pt(i, typeof r === "function" ? r(i) : r).map(function (n) { return n.toFixed(1); }).join(","); }).join(" "); }
     var grid = [0.25, 0.5, 0.75, 1].map(function (f) { return '<polygon class="rg" points="' + poly(R * f) + '"/>'; }).join("");
@@ -379,9 +374,10 @@
       var e = pt(i, R + 16), anchor = Math.abs(e[0] - cx) < 4 ? "middle" : e[0] > cx ? "start" : "end";
       return '<text x="' + e[0].toFixed(1) + '" y="' + (e[1] + 4).toFixed(1) + '" text-anchor="' + anchor + '">' + esc(t("s" + k.charAt(0).toUpperCase() + k.slice(1))) + " " + vals[i].toFixed(vals[i] % 1 ? 1 : 0) + "</text>";
     }).join("");
-    return '<div class="radar"><svg viewBox="0 0 220 184" role="img" aria-label="' + esc(t("devShort")) + '">' + grid + axes +
-      '<polygon class="rv" points="' + poly(function (i) { return R * vals[i] / 10; }) + '"/>' + labels + "</svg>" +
-      '<p class="fine">' + esc(rs.length ? t("radarFrom")(rs.length) : t("radarDefault")) + "</p></div>";
+    return '<div class="radar' + (small ? " small" : "") + '"><svg viewBox="0 0 220 184" role="img" aria-label="' + esc(t("devShort")) + '">' + grid + axes +
+      '<polygon class="rv" points="' + poly(function (i) { return R * vals[i] / 10; }) + '"/>' + labels +
+      '<text class="rt" x="' + cx + '" y="' + (cy + 9) + '" text-anchor="middle">' + total.toFixed(total % 1 ? 1 : 0) + "</text></svg>" +
+      (small ? "" : '<p class="fine">' + esc(rs.length ? t("radarFrom")(rs.length) : t("radarDefault")) + "</p>") + "</div>";
   }
   function visitBtn(zh) { return window.NMCommunity ? '<button class="btn visit-btn" type="button" data-visit="' + esc(zh) + '">' + esc(t("visitBtn")) + "</button>" : ""; }
   function renderPicks(m) {
@@ -408,7 +404,7 @@
       var no = all.indexOf(p);
       var lk = liked(p);
       return '<li class="pick' + (hit(p) ? " hit" : "") + '" id="pick-' + no + '">' + ph + '<div class="pick-body">' +
-        '<button class="like-btn" type="button" data-like="' + esc(p.zh) + '" aria-pressed="' + lk + '" aria-label="' + esc(t(lk ? "unlike" : "like")) + '">' + (lk ? "♥" : "♡") + "</button><h4>" + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + devScore(p, cs.byPick[no]) + "</h4>" +
+        '<button class="like-btn" type="button" data-like="' + esc(p.zh) + '" aria-pressed="' + lk + '" aria-label="' + esc(t(lk ? "unlike" : "like")) + '">' + (lk ? "♥" : "♡") + "</button><h4>" + (loc[p.zh] ? '<span class="pick-no">' + (no + 1) + "</span>" : "") + esc(name) + (sub ? " <small>" + esc(sub) + "</small>" : "") + devScore(p, cs.byPick[no]) + "</h4>" + radarSvg(cs.byPick[no]) +
         (foods.length ? '<ul class="foods">' + foods.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         '<p class="pick-sum">' + esc(en ? (p.summaryEn || p.summaryZh) : p.summaryZh) + "</p>" +
         // 網友原文只引用一兩句（合理引用），一定附上出處
@@ -418,14 +414,14 @@
         }).join("") +
         (meta ? '<p class="pick-meta">' + esc(meta) + "</p>" : "") +
         '<p class="pick-links"><a href="' + gq + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a>" + (src ? ' <span>' + esc(t("picksSrc")) + " " + src + "</span>" : "") + "</p>" + visitBtn(p.zh) +
-        (cs.byPick[no] ? commHtml(cs.byPick[no], false, !!loc[p.zh]) : "") + "</div></li>";
+        (cs.byPick[no] ? commHtml(cs.byPick[no], false, !!loc[p.zh]) : window.NMCommunity ? '<details class="pick-comm-wrap"><summary>' + esc(t("commTitle")) + " · " + esc(t("commCount")(0)) + '</summary><ul class="pick-comm"><li class="empty">' + esc(t("commEmpty")) + "</li></ul></details>" : "") + "</div></li>";
     }).join("") + cs.extra.map(function (g, j) {
       var foods = [];
       g.items.forEach(function (c) { (c.foods || []).forEach(function (f) { if (foods.indexOf(f) < 0) foods.push(f); }); });
       var first = g.items[0], hasLoc = g.items.some(function (c) { return c.lat != null; });
       var aq2 = "https://maps.apple.com/?q=" + encodeURIComponent(g.stall) + "&sll=" + m.lat + "," + m.lng + "&z=16";
       var gq2 = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(g.stall + " " + m.zh.replace(/（.*）/, ""));
-      return '<li class="pick community" id="pick-c' + j + '"><div class="pick-body"><h4>' + (hasLoc ? '<span class="pick-no">+</span>' : "") + esc(g.stall) + '<span class="pick-badge">' + esc(t("commBadge")) + "</span></h4>" +
+      return '<li class="pick community" id="pick-c' + j + '"><div class="pick-body"><h4>' + (hasLoc ? '<span class="pick-no">+</span>' : "") + esc(g.stall) + '<span class="pick-badge">' + esc(t("commBadge")) + "</span></h4>" + radarSvg(g.items) +
         (foods.length ? '<ul class="foods">' + foods.slice(0, 6).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "") +
         ([first.price, first.where_hint].filter(Boolean).length ? '<p class="pick-meta">' + esc([first.price, first.where_hint].filter(Boolean).join(" · ")) + "</p>" : "") +
         '<p class="pick-links"><a href="' + gq2 + '" target="_blank" rel="noopener">' + esc(t("picksMap")) + '</a><a href="' + aq2 + '" target="_blank" rel="noopener">' + esc(t("picksApple")) + "</a></p>" +
@@ -1124,15 +1120,6 @@
   // 點推薦攤位卡片（不是點連結）：地圖上跳出那家店的圖標
   $("dPicks").addEventListener("click", function (e) {
     if (e.target.closest("a")) return;
-    var rb = e.target.closest("[data-radar]");
-    if (rb) {
-      var card = rb.closest("li.pick"), open = card.querySelector(".radar");
-      if (open) { open.remove(); rb.setAttribute("aria-expanded", "false"); return; }
-      var m = byId(state.selected), no = +card.id.replace("pick-", ""), cs = commSplit(m);
-      card.querySelector("h4").insertAdjacentHTML("afterend", radarSvg(cs.byPick[no]));
-      rb.setAttribute("aria-expanded", "true");
-      return;
-    }
     var vb = e.target.closest("[data-visit]");
     if (vb) { openSubmit(vb.getAttribute("data-visit")); return; }
     var lb = e.target.closest("[data-like]");
@@ -1155,11 +1142,11 @@
   function openMine() {
     var favs = state.favs.map(byId).filter(Boolean);
     $("mineFavs").innerHTML = favs.length ? favs.map(function (m) {
-      return '<li><button type="button" data-open="' + m.id + '"><b>' + esc(name(m)) + "</b><small>" + esc(cityName(m.city)) + " · " + esc(status(m).text) + "</small></button></li>";
+      return '<li class="row"><button type="button" data-open="' + m.id + '"><b>' + esc(name(m)) + "</b><small>" + esc(cityName(m.city)) + " · " + esc(status(m).text) + '</small></button><button type="button" class="unmark star" data-unfav="' + m.id + '" aria-label="' + esc(t("unfav")) + '">★</button></li>';
     }).join("") : '<li class="empty">' + esc(t("mineNoFavs")) + "</li>";
     var likes = state.likes.map(function (k) { var i = k.indexOf("|"); return { m: byId(k.slice(0, i)), zh: k.slice(i + 1) }; }).filter(function (x) { return x.m; });
     $("mineLikes").innerHTML = likes.length ? likes.map(function (x) {
-      return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.zh) + '"><b><span class="h">♥</span> ' + esc(x.zh) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";
+      return '<li class="row"><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.zh) + '"><b>' + esc(x.zh) + "</b><small>" + esc(name(x.m)) + '</small></button><button type="button" class="unmark h" data-unlike="' + esc(x.m.id + "|" + x.zh) + '" aria-label="' + esc(t("unlike")) + '">♥</button></li>';
     }).join("") : '<li class="empty">' + esc(t("mineNoLikes")) + "</li>";
     openSheet("mine");
   }
@@ -1232,6 +1219,18 @@
   $("trophyBtn").onclick = function () { if (window.NMCommunity) openRank(); };
   $("mineBtn").onclick = openMine;
   $("mine").addEventListener("click", function (e) {
+    // 星星、愛心：點一下取消收藏
+    var u = e.target.closest("[data-unfav],[data-unlike]");
+    if (u) {
+      var f = u.getAttribute("data-unfav"), l = u.getAttribute("data-unlike");
+      if (f) toggleFav(f);
+      if (l) {
+        state.likes = state.likes.filter(function (x) { return x !== l; }); save("nm-likes", state.likes);
+        if (state.selected && byId(state.selected)) renderPicks(byId(state.selected));
+      }
+      openMine();
+      return;
+    }
     var b = e.target.closest("[data-open]"); if (!b) return;
     var id = b.getAttribute("data-open"), stall = b.getAttribute("data-stall");
     closeSheet($("mine"));
