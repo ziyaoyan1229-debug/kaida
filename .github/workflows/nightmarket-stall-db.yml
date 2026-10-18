@@ -1,10 +1,11 @@
-# 每週一早上（台北時間 06:00）更新夜市店家資料檔 apps/nightmarket/stall-db.js
+# 每月 2 號、16 號早上（台北時間 06:00）更新夜市店家資料檔 apps/nightmarket/stall-db.js
+# 132 個夜市每次約 1300 次查詢，一個月兩次可留在 Google 每月免費額度內，也不會超過 30 天的保存期限
 # 需要 repo secret NM_PLACES_KEY（只開 Places API (New) 的伺服器用金鑰）；沒設定就跳過
 name: Night market stall data
 
 on:
   schedule:
-    - cron: "0 22 * * 0"
+    - cron: "0 22 1,15 * *"
   workflow_dispatch:
 
 permissions:
@@ -48,7 +49,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add apps/nightmarket/stall-db.js
-          git commit -m "nightmarket: weekly stall data refresh"
+          git commit -m "nightmarket: stall data refresh"
           git push
           # 機器人推的 commit 不一定會觸發網站重建，主動請 GitHub Pages 重建一次
           gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "::warning::Pages rebuild request failed; the next push will deploy it."

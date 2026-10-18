@@ -1,5 +1,5 @@
 /*
- * 每週更新夜市店家資料檔（GitHub Actions 執行）。
+ * 每半個月更新夜市店家資料檔（GitHub Actions 執行）。
  * 需要環境變數 NM_PLACES_KEY：一把只開 Places API (New)、沒有網址限制的伺服器用金鑰。
  * 用法：NM_PLACES_KEY=... node apps/nightmarket/tools/update-stall-db.js
  */
