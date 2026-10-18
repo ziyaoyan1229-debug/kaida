@@ -331,7 +331,36 @@
     if (!q) return true;
     var hay = [m.zh, m.en, cityName(m.city), CITIES.filter(function (c) { return c.key === m.city; }).map(function (c) { return c.zh + " " + c.en; }).join(" ")]
       .concat(m.foodsZh, m.foodsEn, (window.NM_CURATED_INDEX && NM_CURATED_INDEX.markets[m.id]) || "").join(" ").toLowerCase();
-    return q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
+    hay = hay.replace(/臺/g, "台");
+    return q.toLowerCase().replace(/臺/g, "台").split(/\s+/).every(function (w) { return wordHit(hay, w); });
+  }
+  // 搜尋同義詞：同一組裡任何一個詞都算命中
+  var SYN = [
+    ["蚵仔煎", "蚵煎", "oyster omelette", "oyster omelet"], ["雞排", "炸雞排", "chicken cutlet"], ["臭豆腐", "stinky tofu"],
+    ["珍珠奶茶", "珍奶", "波霸", "bubble tea", "boba"], ["鹽酥雞", "鹹酥雞", "popcorn chicken"], ["大腸包小腸", "sausage"],
+    ["地瓜球", "sweet potato ball"], ["刈包", "割包", "gua bao"], ["胡椒餅", "pepper bun"], ["蔥油餅", "蔥抓餅", "scallion pancake"],
+    ["滷味", "滷", "braised"], ["豆花", "tofu pudding"], ["生煎包", "水煎包", "pan-fried bun"], ["肉圓", "bawan"],
+    ["剉冰", "刨冰", "挫冰", "雪花冰", "shaved ice"], ["甜不辣", "天婦羅", "tempura"], ["章魚燒", "takoyaki"],
+    ["麵線", "vermicelli"], ["烤玉米", "grilled corn"], ["四神湯", "four herb"], ["燒烤", "碳烤", "炭烤", "bbq"],
+    ["牛排", "steak"], ["鴨頭", "東山鴨頭"], ["車輪餅", "紅豆餅", "wheel cake"], ["雞蛋糕", "egg cake"], ["炸物", "fried"]
+  ];
+  function wordHit(hay, w) {
+    if (!w || hay.indexOf(w) >= 0) return true;
+    for (var i = 0; i < SYN.length; i++) {
+      if (SYN[i].indexOf(w) >= 0 && SYN[i].some(function (s) { return hay.indexOf(s) >= 0; })) return true;
+    }
+    return fuzzyHit(hay, w);
+  }
+  // 打錯一個字也算：三個字以上的詞，允許其中一個字不同
+  function fuzzyHit(hay, w) {
+    var n = w.length;
+    if (n < 3 || /^[\x00-\x7f]+$/.test(w) && n < 5) return false;
+    for (var i = 0; i + n <= hay.length; i++) {
+      var miss = 0;
+      for (var j = 0; j < n && miss < 2; j++) if (hay.charCodeAt(i + j) !== w.charCodeAt(j)) miss++;
+      if (miss < 2) return true;
+    }
+    return false;
   }
   function foodHit(m, q) {
     if (!q) return false;
@@ -365,7 +394,8 @@
     mapId: (window.NM_CONFIG || {}).googleMapId,
     onMarketClick: function (id) { openDetail(id); },
     onStallClick: function (id) { openStall(id); },
-    onPickClick: function (key) { openPick(key); }
+    onPickClick: function (key) { openPick(key); },
+    onRegionClick: function (key) { state.region = key; state.city = "all"; renderChips(); render({ fit: true }); }
   };
   // 地圖還沒準備好之前先用空殼，所有呼叫都安全
   var noop = function () {};
@@ -402,6 +432,7 @@
   function syncMarkers(list) {
     var ids = list.map(function (m) { return m.id; });
     view.syncMarkets(MARKETS, ids, state.selected, function (m) { return status(m).today === false; });
+    if (view.setBubbles) view.setBubbles(bubbles(list));
   }
   function fitTo(list) {
     var pts = list.map(function (m) { return [m.lat, m.lng]; });
@@ -412,6 +443,17 @@
 
   /* ---------- 清單 ---------- */
   var REGIONS = window.NM_REGIONS || [];
+  // 全台視角時把夜市依大區合成數字泡泡（只在沒選大區、而且夜市夠多時）
+  function bubbles(list) {
+    if (state.region !== "all" || list.length <= 15) return [];
+    var g = {};
+    list.forEach(function (m) { var k = regionOf(m.city); if (!k) return; (g[k] = g[k] || []).push(m); });
+    return REGIONS.filter(function (r) { return g[r.key]; }).map(function (r) {
+      var ms = g[r.key];
+      var at = r.at || [ms.reduce(function (s, m) { return s + m.lat; }, 0) / ms.length, ms.reduce(function (s, m) { return s + m.lng; }, 0) / ms.length];
+      return { key: r.key, n: ms.length, label: r[lang], lat: at[0], lng: at[1] };
+    });
+  }
   function regionOf(city) { var r = REGIONS.filter(function (x) { return x.cities.indexOf(city) >= 0; })[0]; return r ? r.key : ""; }
   function chip(attr, key, label, n, on) {
     return '<button class="chip" type="button" ' + attr + '="' + key + '" aria-pressed="' + on + '">' + esc(label) + "<small>" + n + "</small></button>";
@@ -768,8 +810,34 @@
   }
   function revealMap() {
     var el = $("map");
+    if (mapH() < 120) setMapH(0.45);
     if (el.getBoundingClientRect().top < 0) window.scrollTo({ top: 0, behavior: "smooth" });
   }
+  // 手機：清單上方的把手。點一下在「地圖＋清單」和「只有清單」之間切換，也可以上下拖
+  var wrap = document.querySelector(".map-wrap");
+  function mapH() { return wrap.getBoundingClientRect().height; }
+  function setMapH(f) {
+    wrap.style.setProperty("--map-h", Math.round(f * window.innerHeight) + "px");
+    setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 300);
+  }
+  (function () {
+    var hd = $("panelHandle"), y0 = 0, h0 = 0, moved = false;
+    hd.addEventListener("click", function () { if (moved) return; setMapH(mapH() > 40 ? 0 : 0.45); });
+    hd.addEventListener("touchstart", function (e) { y0 = e.touches[0].clientY; h0 = mapH(); moved = false; wrap.classList.add("dragging"); }, { passive: true });
+    hd.addEventListener("touchmove", function (e) {
+      var dy = e.touches[0].clientY - y0;
+      if (Math.abs(dy) > 6) moved = true;
+      wrap.style.setProperty("--map-h", Math.max(0, Math.min(window.innerHeight * 0.75, h0 + dy)) + "px");
+      e.preventDefault();
+    }, { passive: false });
+    hd.addEventListener("touchend", function () {
+      wrap.classList.remove("dragging");
+      if (!moved) return;
+      var f = mapH() / window.innerHeight;
+      setMapH([0, 0.45, 0.72].reduce(function (b, s) { return Math.abs(s - f) < Math.abs(b - f) ? s : b; }, 0.45));
+      setTimeout(function () { moved = false; }, 50);
+    });
+  })();
 
   /* ---------- 封測任務 ---------- */
   var TASK_KEYS = ["near", "search", "fav", "today"];
@@ -827,7 +895,7 @@
   function applySkin(skin) {
     if (skin === "cyber") document.documentElement.setAttribute("data-skin", "cyber");
     else document.documentElement.removeAttribute("data-skin");
-    document.querySelector('meta[name="theme-color"]').content = skin === "cyber" ? "#07080d" : "#2a2620";
+    document.querySelector('meta[name="theme-color"]').content = skin === "cyber" ? "#0d0a1c" : "#2a2620";
     mapOpts.skin = skin;
     view.setSkin(skin);
   }
@@ -840,7 +908,7 @@
   });
   $("cityChips").addEventListener("click", function (e) {
     var b = e.target.closest("[data-region],[data-city]"); if (!b) return;
-    if (b.hasAttribute("data-region")) { state.region = b.getAttribute("data-region"); state.city = "all"; }
+    if (b.hasAttribute("data-region")) { state.region = b.getAttribute("data-region"); state.city = "all"; if (mapH() < 120) setMapH(0.45); }
     else state.city = b.getAttribute("data-city");
     renderChips(); render({ fit: true });
   });

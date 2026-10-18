@@ -33,12 +33,14 @@ window.NMLeafletMap = function (el, opts) {
     if (showTiles && !map.hasLayer(tiles)) tiles.addTo(map);
     if (!showTiles && map.hasLayer(tiles)) map.removeLayer(tiles);
     el.classList.toggle("show-names", z >= 10);
+    el.classList.toggle("far", z < 9);
     if (counties) { counties.setStyle(countyStyle()); counties.bringToFront(); }
     labels.forEach(function (l) {
       var show = !detail && !(l.small && z < 9);
       var e = l.mk.getElement(); if (e) e.style.display = show ? "" : "none";
     });
   }
+  var bubbles = [];
   map.on("zoomend", onZoom);
   setTimeout(onZoom, 0);
   el.classList.add("is-leaflet");
@@ -46,11 +48,19 @@ window.NMLeafletMap = function (el, opts) {
   var markers = {};
   var meMarker = null;
   function icon(m, sel, off) {
-    return L.divIcon({ className: "", html: opts.pinHtml(sel, off, opts.label(m)), iconSize: [30, 38], iconAnchor: [15, 37] });
+    return L.divIcon({ className: "nm-icon", html: opts.pinHtml(sel, off, opts.label(m)), iconSize: [30, 38], iconAnchor: [15, 37] });
   }
 
   return {
     supportsStalls: false,
+    setBubbles: function (list) {
+      bubbles.forEach(function (b) { map.removeLayer(b); });
+      bubbles = list.map(function (b) {
+        return L.marker([b.lat, b.lng], { title: b.label, zIndexOffset: 500, icon: L.divIcon({ className: "nm-bubble-icon", html: '<div class="nm-bubble"><b>' + b.n + "</b><span>" + b.label + "</span></div>", iconSize: [64, 48], iconAnchor: [32, 24] }) })
+          .on("click", function () { opts.onRegionClick(b.key); }).addTo(map);
+      });
+      el.classList.toggle("has-bubbles", list.length > 0);
+    },
     syncMarkets: function (all, visibleIds, selectedId, isOff) {
       all.forEach(function (m) {
         var mk = markers[m.id];
