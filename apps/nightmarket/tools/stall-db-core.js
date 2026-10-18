@@ -49,13 +49,36 @@
     return { center: [r6(center.lat), r6(center.lng)], stalls: keep.map(function (s) { return [s.id, r6(s.lat), r6(s.lng)]; }) };
   }
 
+  // 推薦攤位（我們自己整理的店名）找 Google 上的位置：只留地點編號和座標，店名不存
+  function core(name) { return String(name || "").replace(/[（(].*?[）)]/g, "").replace(/\s+/g, ""); }
+  function sameShop(a, b) {
+    a = core(a); b = core(b);
+    if (!a || !b) return false;
+    if (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
+    var grams = [];
+    for (var i = 0; i < b.length - 1; i++) grams.push(b.slice(i, i + 2));
+    var hit = grams.filter(function (g) { return a.indexOf(g) >= 0; }).length;
+    return grams.length > 0 && hit / grams.length >= 0.5;
+  }
+  async function locatePicks(m, center, picks, searchText) {
+    var c = { lat: center[0], lng: center[1] }, out = [];
+    var mk = m.zh.replace(/（.*?）/g, "");
+    for (var i = 0; i < picks.length; i++) {
+      var pk = picks[i];
+      var list = await searchText(core(pk.zh) + " " + mk, { center: c, radius: 900 }, 3);
+      var best = list.filter(function (p) { return distM(p, c) < 1000 && sameShop(p.name, pk.zh); })[0];
+      if (best) out.push([pk.zh, best.id, r6(best.lat), r6(best.lng)]);
+    }
+    return out;
+  }
+
   // 寫成網頁直接載入的 stall-db.js
   function toFile(markets, date) {
     return "/* 夜市店家資料檔：自動產生，請勿手動修改。只存 Google 地點編號與座標（座標超過 30 天網頁就不再使用）。 */\n" +
       "window.NM_STALL_DB = " + JSON.stringify({ updated: date, markets: markets }) + ";\n";
   }
 
-  var api = { collect: collect, toFile: toFile, box: box };
+  var api = { collect: collect, locatePicks: locatePicks, toFile: toFile, box: box };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.NMStallDbCore = api;
 })(this);

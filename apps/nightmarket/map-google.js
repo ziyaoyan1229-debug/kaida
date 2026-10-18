@@ -208,10 +208,13 @@
     function onClick(mk, fn) { mk.addEventListener("gmp-click", fn); }
     function div(cls, html) { var d = document.createElement("div"); d.className = cls; d.innerHTML = html; return d; }
 
+    var pickMarkers = [];
     function clearArea() {
       token++;
       stallMarkers.forEach(function (s) { s.marker.setMap(null); });
       stallMarkers = [];
+      pickMarkers.forEach(function (mk) { mk.setMap(null); });
+      pickMarkers = [];
       if (polygon) { polygon.setMap(null); polygon = null; }
       curArea = null;
     }
@@ -323,7 +326,8 @@
     }
 
     function addStallMarker(s, i) {
-      var content = div("stall-pin", "<span>" + (i + 1) + "</span>");
+      // 免費模式只有位置沒有店名，畫成小圓點，不跟推薦攤位的編號混在一起
+      var content = curArea && curArea.preview ? div("stall-pin dot", "") : div("stall-pin", "<span>" + (i + 1) + "</span>");
       var mk = new HtmlMarker({ map: map, position: { lat: s.lat, lng: s.lng }, content: content, title: s.name, zIndex: 500 - i, gmpClickable: true });
       onClick(mk, function () { opts.onStallClick(s.id); });
       stallMarkers.push({ id: s.id, marker: mk, el: content });
@@ -411,6 +415,18 @@
         curArea = area;
         draw(area);
         return area.stalls;
+      },
+      // 推薦攤位：有編號和店名的圖釘（店名是我們自己整理的），同一家的一般圖釘藏起來
+      showPicks: function (list) {
+        var ids = {};
+        list.forEach(function (p) {
+          ids[p.id] = true;
+          var el = div("pick-pin", "<b>" + p.no + "</b><span>" + p.name.replace(/[&<>"]/g, "") + "</span>");
+          var mk = new HtmlMarker({ map: map, position: { lat: p.lat, lng: p.lng }, content: el, title: p.name, center: true, zIndex: 800 - p.no });
+          onClick(mk, function () { opts.onPickClick(p.key); });
+          pickMarkers.push(mk);
+        });
+        stallMarkers.forEach(function (s) { if (ids[s.id]) s.marker.setMap(null); });
       },
       clearArea: clearArea,
       resolveStall: resolveStall,
