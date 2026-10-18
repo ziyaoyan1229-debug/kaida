@@ -4,7 +4,8 @@
 -- 規則：
 --   * 任何人都能投稿，但投稿一律是「待審核」(pending)。
 --   * 網站只讀得到「審核通過」(approved) 的投稿，而且讀不到投稿者的 IP 雜湊。
---   * 審核：到 Table Editor 打開 nm_submissions，把 status 改成 approved（或 rejected）。
+--   * 審核：GitHub Actions 每 15 分鐘用 AI 自動審核（.github/workflows/nightmarket-moderate.yml），
+--     AI 拿不準的會留在 pending、mod_note 以「人工：」開頭；到 Table Editor 把 status 改成 approved 或 rejected 即可。
 --   * 同一個網路位址每小時最多投稿 5 篇，全站每小時最多 200 篇，防止灌水。
 --   * 勳章由網站依「審核通過」投稿的先後計算：開拓者（金）、探險家（銀）、朝聖者（銅）。
 --   * 照片放在公開的 nm-photos 空間，每張最多 5MB，只收 JPEG / PNG / WebP。
@@ -35,6 +36,7 @@ alter table public.nm_submissions add column if not exists aroma smallint check 
 alter table public.nm_submissions add column if not exists attitude smallint check (attitude between 0 and 10);
 alter table public.nm_submissions add column if not exists cp smallint check (cp between 0 and 10);
 alter table public.nm_submissions add column if not exists device text check (char_length(device) <= 40);
+alter table public.nm_submissions add column if not exists mod_note text;
 create index if not exists nm_submissions_device on public.nm_submissions (device);
 create index if not exists nm_submissions_market on public.nm_submissions (market, status);
 create index if not exists nm_submissions_ip on public.nm_submissions (ip_hash, created_at);

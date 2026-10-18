@@ -52,9 +52,9 @@
       fDone: "謝謝你的投稿！審核通過後就會出現在網站上。", fErr: "送出失敗，請稍後再試。", fLimited: "投稿太頻繁了，請過一陣子再試。",
       commTitle: "網友心得", commBadge: "網友新增",
       sTaste: "味蕾度", sAroma: "香氣", sAttitude: "態度", sCp: "CP 值", sTotal: "綜合", sCount: function (n) { return n + " 人評"; },
-      medalGold: "開拓者", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "四項評分都要選。",
-      fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
-      medalRule: "開拓者（金）：第一個新增或補上位置的人，要拍照＋評分。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
+      medalGold: "開拓者", medalReview: "開拓者・審核中", medalSilver: "探險家", medalBronze: "朝聖者", fScores: "評分（0–10）*", fNeedScores: "四項評分都要選。",
+      fNeedPhoto: "拿開拓者或探險家勳章要附一張照片，沒照片會是朝聖者。", fGoldReview: "開拓者要審核通過才會頒發。", fNeedLoc: "新點位要在地圖上標出位置，才能拿開拓者。", fWillGet: function (m) { return "這篇會拿到：" + m; },
+      medalRule: "開拓者（金）：第一個發掘新點位的人，要標位置、拍照＋評分，審核通過才算。探險家（銀）：第一個踩點的人，要拍照＋評分。朝聖者（銅）：之後去踩點並評分的人。",
       visitBtn: "📍 踩點評分", visitTitle: "踩點評分", localTag: "未送出",
       fSaved: "還沒連上投稿資料庫，先存在這支手機。連線後會自動送出。", fSyncing: function (n) { return "正在送出先前存的 " + n + " 篇投稿…"; },
       mineMedals: "我的勳章", mineNoMedals: "還沒有勳章。到夜市踩點、拍照、評分就能拿到。", commBy: function (n, d) { return n + " · " + d; },
@@ -109,9 +109,9 @@
       fDone: "Thanks! Your post will appear once it's reviewed.", fErr: "Couldn't send. Please try again later.", fLimited: "Too many posts. Please try again later.",
       commTitle: "Visitor reviews", commBadge: "Added by visitors",
       sTaste: "Taste", sAroma: "Aroma", sAttitude: "Service", sCp: "Value", sTotal: "Score", sCount: function (n) { return n + (n === 1 ? " rating" : " ratings"); },
-      medalGold: "Pioneer", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all four scores.",
-      fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fWillGet: function (m) { return "This post earns: " + m; },
-      medalRule: "Pioneer (gold): first to add a stall or its location, with a photo and scores. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
+      medalGold: "Pioneer", medalReview: "Pioneer · in review", medalSilver: "Explorer", medalBronze: "Pilgrim", fScores: "Scores (0–10) *", fNeedScores: "Please pick all four scores.",
+      fNeedPhoto: "Pioneer and Explorer medals need a photo. Without one you get Pilgrim.", fGoldReview: "Pioneer is awarded once the post is approved.", fNeedLoc: "Mark the new spot on the map to earn Pioneer.", fWillGet: function (m) { return "This post earns: " + m; },
+      medalRule: "Pioneer (gold): first to discover a new spot, with its location, a photo and scores. Counts once approved. Explorer (silver): first visit with a photo and scores. Pilgrim (bronze): later visits with scores.",
       visitBtn: "📍 Rate this stall", visitTitle: "Rate this stall", localTag: "not sent yet",
       fSaved: "Not connected yet, so it's saved on this phone. It will be sent once we're online.", fSyncing: function (n) { return "Sending " + n + " saved posts…"; },
       mineMedals: "My medals", mineNoMedals: "No medals yet. Visit a stall, take a photo and rate it to earn one.", commBy: function (n, d) { return n + " · " + d; },
@@ -293,15 +293,16 @@
     var gold = false, silver = false;
     return items.slice().sort(function (a, b) { return String(a.created_at).localeCompare(String(b.created_at)); }).reduce(function (o, c) {
       if (!scored(c)) return o;
-      var pioneer = newStall || (!hadLoc && c.lat != null);
-      if (!gold && pioneer && hasPhoto(c)) { gold = true; o[c.id] = "gold"; }
+      // 開拓者是發掘新點位：一定要標位置，而且要審核通過才算（還沒送出或審核中的只顯示「審核中」）
+      var pioneer = (newStall || !hadLoc) && c.lat != null;
+      if (!gold && pioneer && hasPhoto(c)) { if (c.local) o[c.id] = "review"; else { gold = true; o[c.id] = "gold"; } }
       else if (!silver && !pioneer && hasPhoto(c)) { silver = true; o[c.id] = "silver"; }
       else o[c.id] = "bronze";
       return o;
     }, {});
   }
-  var MEDAL_ICON = { gold: "🥇", silver: "🥈", bronze: "🥉" };
-  function medalHtml(k) { return k ? '<span class="medal ' + k + '">' + MEDAL_ICON[k] + " " + esc(t("medal" + k.charAt(0).toUpperCase() + k.slice(1))) + "</span>" : ""; }
+  var MEDAL_ICON = { gold: "🥇", silver: "🥈", bronze: "🥉", review: "🥇" };
+  function medalHtml(k) { return k === "review" ? '<span class="medal review">🥇 ' + esc(t("medalReview")) + "</span>" : k ? '<span class="medal ' + k + '">' + MEDAL_ICON[k] + " " + esc(t("medal" + k.charAt(0).toUpperCase() + k.slice(1))) + "</span>" : ""; }
   function scoreSummary(items) {
     var rs = items.filter(scored);
     if (!rs.length) return "";
@@ -1071,12 +1072,13 @@
     if (!m || !stall) { $("fMedal").textContent = ""; return; }
     var picks = picksOf(m), i = -1;
     picks.forEach(function (p, k) { if (i < 0 && sameName(p.zh, stall)) i = k; });
-    var mine = { id: "_me", created_at: "9999", photos: ($("fPhotos").files || []).length ? ["https://x"] : [], lat: formLoc ? formLoc.lat : null };
+    var mine = { id: "_me", created_at: "9999", local: false, photos: ($("fPhotos").files || []).length ? ["https://x"] : [], lat: formLoc ? formLoc.lat : null };
     SCORE_KEYS.forEach(function (k) { mine[k] = sc ? sc[k] : 0; });
     var items = (comm[m.id] || []).filter(function (c) { return sameName(c.stall, i >= 0 ? picks[i].zh : stall); }).concat([mine]);
     var k = medals(items, i < 0, i >= 0 && !!pickLoc(m)[picks[i].zh])._me;
     var label = MEDAL_ICON[k] + " " + t("medal" + k.charAt(0).toUpperCase() + k.slice(1));
-    $("fMedal").textContent = t("fWillGet")(label) + (k === "bronze" && !mine.photos.length ? "　" + t("fNeedPhoto") : "");
+    var tip = k === "gold" ? t("fGoldReview") : k === "bronze" && !mine.photos.length ? t("fNeedPhoto") : i < 0 && !formLoc ? t("fNeedLoc") : "";
+    $("fMedal").textContent = t("fWillGet")(label) + (tip ? "　" + tip : "");
   }
   ["fStall", "fPhotos", "f_taste", "f_aroma", "f_attitude", "f_cp"].forEach(function (id) { $(id).addEventListener("change", formHint); });
   $("fStall").addEventListener("input", formHint);
@@ -1135,7 +1137,7 @@
         cs.extra.forEach(function (g) { var o = medals(g.items, true); Object.keys(o).forEach(function (k) { md[k] = o[k]; }); });
         if (md[r.id]) got.push({ m: m, stall: r.stall, k: md[r.id] });
       });
-      got.sort(function (a, b) { return "gsb".indexOf(a.k[0]) - "gsb".indexOf(b.k[0]); });
+      got.sort(function (a, b) { return "grsb".indexOf(a.k[0]) - "grsb".indexOf(b.k[0]); });
       $("mineMedalsWrap").hidden = false;
       $("mineMedals").innerHTML = got.length ? got.map(function (x) {
         return '<li><button type="button" data-open="' + x.m.id + '" data-stall="' + esc(x.stall) + '"><b>' + medalHtml(x.k) + " " + esc(x.stall) + "</b><small>" + esc(name(x.m)) + "</small></button></li>";

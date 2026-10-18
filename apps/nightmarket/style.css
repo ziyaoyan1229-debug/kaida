@@ -447,3 +447,4 @@ body.has-stalls .osm-credit { display: none; }
 .contrib.visit #fStall { opacity: 0.7; }
 .pick-comm li.local { opacity: 0.8; }
 .local-tag { font-size: 0.7rem; border: 1px dashed currentColor; border-radius: 4px; padding: 0 4px; opacity: 0.7; }
+.medal.review { background: transparent; border: 1px dashed #c9a227; color: #7a5600; }
