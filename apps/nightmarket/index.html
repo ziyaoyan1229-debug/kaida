@@ -38,12 +38,13 @@
     <span class="brand-text">
       <span class="brand-row">
         <button class="brand-btn" id="mineBtn" type="button" aria-haspopup="dialog"><strong data-i18n="title">台灣夜市地圖</strong><span class="caret" aria-hidden="true">▾</span></button>
-        <button class="icon-btn trophy-btn" id="trophyBtn" type="button" aria-haspopup="dialog" aria-label="勳章與排行榜">🏆</button>
       </span>
       <small><a href="../../" data-i18n="byKaida">開達 Kaida 封測作品</a></small>
     </span>
   </div>
   <div class="top-actions">
+    <button class="icon-btn sim-btn" id="simBtn" type="button" aria-pressed="false" aria-label="隨機模擬">🎲</button>
+    <button class="icon-btn trophy-btn" id="trophyBtn" type="button" aria-haspopup="dialog" aria-label="勳章與排行榜">🏆</button>
     <button class="pill" id="tasksBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span class="pill-label" data-i18n="tasksBtn">封測任務</span> <b id="taskCount">0/4</b></button>
     <button class="icon-btn" id="reloadBtn" type="button" aria-label="重新整理" title="重新整理"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
     <button class="icon-btn" id="langBtn" type="button" aria-label="切換語言">EN</button>
@@ -199,7 +200,6 @@
     <p class="rank-prize" data-i18n="rankPrize">本季的第一名可以和開發者去逛夜市🤗</p>
     <p class="fine" id="rankNote"></p>
     <ol class="rank-list" id="rankList"></ol>
-    <button class="btn sim-btn" id="simBtn" type="button">🎲 隨機模擬</button>
     <p class="fine" data-i18n="rankRule">積分：開拓者 30 分、探險家 10 分、朝聖者 3 分，只算本季審核通過的投稿。</p>
   </div>
 </div>

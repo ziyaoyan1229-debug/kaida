@@ -262,8 +262,61 @@
   function savePending() {
     try { localStorage.setItem("nm-pending", JSON.stringify(pending)); return true; } catch (e) { return false; }
   }
+  // 隨機模擬：在這支手機產生假的投稿（留言、評分、勳章、排行榜），只用來看效果，不會送出
+  var sim = load("nm-sim", []);
+  var SIM_NICK = ["夜市小隊長", "鹹酥雞獵人", "珍奶星人", "臭豆腐派", "蚵仔煎控", "胡椒餅仔", "大腸包小腸", "滷味王", "地瓜球球", "雞排妹", "烤玉米", "豆花阿伯", "車輪餅", "愛玉冰", "麻辣鴨血", "肉圓弟", "割包仔", "米糕姐", "生煎包", "炸雞翅"];
+  var SIM_TXT = ["排隊十分鐘，值得！", "老闆很親切，還多送一點。", "香味遠遠就聞到了。", "份量大，CP 值很高。", "味道普通，但氣氛很好。", "第二次來了，一樣好吃。", "有點鹹，搭飲料剛好。", "拍照很好看，朋友都說讚。", "夜市必吃，推薦給大家。", "現點現做，熱騰騰。", "", ""];
+  var SIM_NEW = ["阿嬤古早味粉粿", "炭烤杏鮑菇", "日式章魚燒", "手工芋圓", "蔥抓餅", "烤雞屁股", "檸檬愛玉", "麻油雞麵線"];
+  var SIM_PHOTO = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90"><rect width="120" height="90" fill="#3a2a4d"/><text x="60" y="60" font-size="44" text-anchor="middle">🍢</text></svg>');
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function pickOne(a) { return a[rnd(a.length)]; }
+  function simUsers() {
+    // 120 個假帳號（排行榜最多顯示 100 名），加上自己
+    var users = [];
+    for (var i = 0; i < 120; i++) users.push({ nick: SIM_NICK[i % SIM_NICK.length] + (i >= SIM_NICK.length ? Math.floor(i / SIM_NICK.length) + 1 : ""), dev: "sim-" + i });
+    users.push({ nick: load("nm-nick", "") || t("rankMe"), dev: deviceId() });
+    return users;
+  }
+  // 一個夜市的模擬投稿：每家推薦攤位 1–4 篇，再加 0–2 家網友新增的攤位
+  function simForMarket(m, seq) {
+    var users = simUsers(), picks = picksOf(m), out = [];
+    var start = Date.parse(new Date().getUTCFullYear() + "-" + String(Math.floor(new Date().getUTCMonth() / 3) * 3 + 1).padStart(2, "0") + "-01T00:00:00+08:00"), span = Date.now() - start;
+    var stalls = picks.map(function (p) { return { zh: p.zh, n: 1 + rnd(4) }; });
+    SIM_NEW.slice().sort(function () { return Math.random() - 0.5; }).slice(0, rnd(3)).forEach(function (zh) { stalls.push({ zh: zh, n: 1 + rnd(3), fresh: true }); });
+    stalls.forEach(function (st) {
+      var base = 5 + rnd(5);
+      for (var k = 0; k < st.n; k++) {
+        var u = pickOne(users), c = {
+          id: "sim-" + m.id + "-" + (seq++), sim: true, market: m.id, created_at: new Date(start + Math.random() * span).toISOString(),
+          stall: st.zh, nickname: u.nick, device: u.dev, review: pickOne(SIM_TXT) || null,
+          photos: Math.random() < 0.6 ? [SIM_PHOTO] : [], lat: st.fresh || Math.random() < 0.15 ? m.lat + (Math.random() - 0.5) * 0.003 : null
+        };
+        c.lng = c.lat != null ? m.lng + (Math.random() - 0.5) * 0.003 : null;
+        SCORE_KEYS.forEach(function (key) { c[key] = Math.max(0, Math.min(10, base + rnd(4) - 1)); });
+        out.push(c);
+      }
+    });
+    return out;
+  }
+  function makeSim() {
+    var idx = window.NM_CURATED_INDEX;
+    var mids = MARKETS.filter(function (m) { return idx && idx.markets[m.id]; }).map(function (m) { return m.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 25);
+    if (state.selected && mids.indexOf(state.selected) < 0) mids.push(state.selected);
+    return Promise.all(mids.map(function (mid) { return loadPicks(byId(mid)); })).then(function () {
+      return mids.reduce(function (all, mid) { return all.concat(simForMarket(byId(mid), 0)); }, []);
+    });
+  }
+  // 模擬開著時，打開還沒模擬過的夜市就當場補上
+  function ensureSim(mid) {
+    if (!sim.length || sim.some(function (c) { return c.market === mid; }) || !byId(mid)) return Promise.resolve();
+    return loadPicks(byId(mid)).then(function () {
+      sim = sim.concat(simForMarket(byId(mid), 0));
+      try { localStorage.setItem("nm-sim", JSON.stringify(sim)); } catch (e) { /* 存不下就只留在這次 */ }
+    });
+  }
   function remoteComm(mid) {
-    return (window.NMCommunity && NMCommunity.enabled() ? NMCommunity.load(mid) : Promise.resolve([])).then(function (list) {
+    return Promise.all([window.NMCommunity && NMCommunity.enabled() ? NMCommunity.load(mid) : Promise.resolve([]), ensureSim(mid)]).then(function (r) {
+      var list = r[0];
       return (list || []).concat(localFor(mid), sim.filter(function (c) { return c.market === mid; }));
     });
   }
@@ -1201,48 +1254,13 @@
       return md;
     });
   }
-  // 隨機模擬：在這支手機產生假的投稿（留言、評分、勳章、排行榜），只用來看效果，不會送出
-  var sim = load("nm-sim", []);
-  var SIM_NICK = ["夜市小隊長", "鹹酥雞獵人", "珍奶星人", "臭豆腐派", "蚵仔煎控", "胡椒餅仔", "大腸包小腸", "滷味王", "地瓜球球", "雞排妹", "烤玉米", "豆花阿伯", "車輪餅", "愛玉冰", "麻辣鴨血", "肉圓弟", "割包仔", "米糕姐", "生煎包", "炸雞翅"];
-  var SIM_TXT = ["排隊十分鐘，值得！", "老闆很親切，還多送一點。", "香味遠遠就聞到了。", "份量大，CP 值很高。", "味道普通，但氣氛很好。", "第二次來了，一樣好吃。", "有點鹹，搭飲料剛好。", "拍照很好看，朋友都說讚。", "夜市必吃，推薦給大家。", "現點現做，熱騰騰。", "", ""];
-  var SIM_NEW = ["阿嬤古早味粉粿", "炭烤杏鮑菇", "日式章魚燒", "手工芋圓", "蔥抓餅", "烤雞屁股", "檸檬愛玉", "麻油雞麵線"];
-  var SIM_PHOTO = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90"><rect width="120" height="90" fill="#3a2a4d"/><text x="60" y="60" font-size="44" text-anchor="middle">🍢</text></svg>');
-  function rnd(n) { return Math.floor(Math.random() * n); }
-  function pickOne(a) { return a[rnd(a.length)]; }
-  function makeSim() {
-    var idx = window.NM_CURATED_INDEX, me = deviceId();
-    var mids = MARKETS.filter(function (m) { return idx && idx.markets[m.id]; }).map(function (m) { return m.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 25);
-    // 120 個假帳號（排行榜最多顯示 100 名），加上自己
-    var users = [];
-    for (var i = 0; i < 120; i++) users.push({ nick: SIM_NICK[i % SIM_NICK.length] + (i >= SIM_NICK.length ? Math.floor(i / SIM_NICK.length) + 1 : ""), dev: "sim-" + i });
-    users.push({ nick: load("nm-nick", "") || t("rankMe"), dev: me });
-    var start = Date.parse(new Date().getUTCFullYear() + "-" + String(Math.floor(new Date().getUTCMonth() / 3) * 3 + 1).padStart(2, "0") + "-01T00:00:00+08:00"), span = Date.now() - start;
-    return Promise.all(mids.map(function (mid) { return loadPicks(byId(mid)); })).then(function () {
-      var out = [], n = 0;
-      mids.forEach(function (mid) {
-        var m = byId(mid), picks = picksOf(m);
-        for (var k = 10 + rnd(20); k > 0; k--) {
-          var u = pickOne(users), fresh = !picks.length || Math.random() < 0.15;
-          var base = 5 + rnd(5), c = {
-            id: "sim-" + (n++), sim: true, market: mid, created_at: new Date(start + Math.random() * span).toISOString(),
-            stall: fresh ? pickOne(SIM_NEW) : pickOne(picks).zh, nickname: u.nick, device: u.dev, review: pickOne(SIM_TXT) || null,
-            photos: Math.random() < 0.6 ? [SIM_PHOTO] : [], lat: fresh || Math.random() < 0.2 ? m.lat + (Math.random() - 0.5) * 0.003 : null
-          };
-          c.lng = c.lat != null ? m.lng + (Math.random() - 0.5) * 0.003 : null;
-          SCORE_KEYS.forEach(function (key) { c[key] = Math.max(0, Math.min(10, base + rnd(4) - 1)); });
-          out.push(c);
-        }
-      });
-      return out;
-    });
-  }
   function setSim(list) {
     sim = list;
     try { localStorage.setItem("nm-sim", JSON.stringify(sim)); } catch (e) { /* 存不下就只留在這次 */ }
     Object.keys(comm).forEach(function (k) { delete comm[k]; });
     if (state.selected && byId(state.selected) && !$("detail").hidden) loadComm(byId(state.selected));
-    $("simBtn").textContent = t(sim.length ? "simClear" : "simBtn");
-    openRank();
+    $("simBtn").setAttribute("aria-pressed", String(!!sim.length));
+    if (!$("rank").hidden) openRank();
   }
   function openRank() {
     var now = new Date().toISOString(), cur = seasonOf(now), me = deviceId();
@@ -1273,7 +1291,7 @@
     });
   }
   $("trophyBtn").onclick = function () { if (window.NMCommunity) openRank(); };
-  $("simBtn").textContent = t(sim.length ? "simClear" : "simBtn");
+  $("simBtn").setAttribute("aria-pressed", String(!!sim.length));
   $("simBtn").onclick = function () {
     if (sim.length) { setSim([]); toast(t("simCleared")); return; }
     this.disabled = true;
