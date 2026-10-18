@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>台灣夜市地圖 · 開達 Kaida</title>
 <meta name="description" content="找台灣夜市：地圖、今天有開、附近、特色小吃，一頁搞定。開達 Kaida 封測作品。">
 <meta name="theme-color" content="#2a2620">
@@ -19,6 +19,8 @@
 <script>
   // 沒有結尾斜線時補上，相對路徑的資源才找得到
   if (!/\/$|\.html$/.test(location.pathname)) location.replace(location.pathname + "/" + location.search + location.hash);
+  // 整個頁面不能縮放（iOS 不理會 user-scalable=no，所以擋掉雙指縮放手勢）；地圖自己的縮放不受影響
+  document.addEventListener("gesturestart", function (e) { if (!(e.target.closest && e.target.closest("#map"))) e.preventDefault(); }, { passive: false });
   // 白天／夜晚模式：記住使用者的選擇；沒選過就看台北時間，傍晚 5 點到清晨 5 點用夜晚模式
   (function () {
     var th = null;
