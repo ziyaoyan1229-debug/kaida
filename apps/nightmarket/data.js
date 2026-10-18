@@ -632,7 +632,7 @@ window.NM_MARKETS = [
     noteZh: "嘉義市區占地最大的夜市，約六千坪，還有打擊場，攤位種類比文化路更雜。", noteEn: "Chiayi City's largest night-market site (about 6,000 ping, batting cages included) with a more eclectic stall mix than Wenhua Road."
   },
   {
-    id: "chiayi-humei", city: "chiayi", lat: 23.46, lng: 120.428, days: [3,5,6], hours: "17:00–24:00",
+    id: "chiayi-humei", city: "chiayi", lat: 23.46, lng: 120.428, days: [2,6], hours: "17:00–24:00",
     zh: "湖美夜市", en: "Humei Night Market",
     foodsZh: ["拔絲地瓜", "手工鮮蝦貢丸", "仙草", "五花肉泡菜卷", "蛋堡"],
     foodsEn: ["Candied sweet potato", "Handmade shrimp meatballs", "Grass jelly", "Pork-belly kimchi rolls", "Egg burger"],
