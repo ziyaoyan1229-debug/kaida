@@ -21,7 +21,11 @@ window.NMLeafletMap = function (el, opts) {
   function countyStyle() {
     var detail = map.getZoom() >= DETAIL_ZOOM, night = opts.night && opts.night();
     var cs = getComputedStyle(el);
-    return { color: cs.getPropertyValue("--signal").trim(), weight: detail ? 1 : 1.2, opacity: detail ? .35 : .8, fillColor: cs.getPropertyValue("--surface").trim(), fillOpacity: detail || !night ? 0 : 1 };
+    var pickCb = null;
+  map.on("click", function (e) { if (!pickCb) return; var cb = pickCb; pickCb = null; cb({ lat: e.latlng.lat, lng: e.latlng.lng }); });
+  return {
+    // 投稿時在地圖上點位置
+    pickPoint: function (cb) { pickCb = cb || null; }, color: cs.getPropertyValue("--signal").trim(), weight: detail ? 1 : 1.2, opacity: detail ? .35 : .8, fillColor: cs.getPropertyValue("--surface").trim(), fillOpacity: detail || !night ? 0 : 1 };
   }
   function onZoom() {
     // 白天一直顯示原色地圖；夜晚模式縮小時只畫縣市
