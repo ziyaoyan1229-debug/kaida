@@ -1,0 +1,46 @@
+# 每 15 分鐘用 AI 審核夜市地圖的網友投稿（apps/nightmarket/tools/moderate-submissions.js）
+# 需要 repo secrets：NM_SUPABASE_URL、NM_SUPABASE_SERVICE_KEY（service_role 金鑰，只放這裡）、ANTHROPIC_API_KEY；沒設定就跳過
+name: Night market moderation
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightmarket-moderate
+  cancel-in-progress: false
+
+jobs:
+  moderate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secrets
+        id: key
+        env:
+          NM_SUPABASE_URL: ${{ secrets.NM_SUPABASE_URL }}
+          NM_SUPABASE_SERVICE_KEY: ${{ secrets.NM_SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$NM_SUPABASE_URL" ] || [ -z "$NM_SUPABASE_SERVICE_KEY" ] || [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::Moderation secrets are not set, skipping."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.ok == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.key.outputs.ok == 'true'
+        with:
+          node-version: 20
+      - name: Moderate
+        if: steps.key.outputs.ok == 'true'
+        env:
+          NM_SUPABASE_URL: ${{ secrets.NM_SUPABASE_URL }}
+          NM_SUPABASE_SERVICE_KEY: ${{ secrets.NM_SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node apps/nightmarket/tools/moderate-submissions.js
