@@ -16,8 +16,11 @@ const ROOT = path.join(__dirname, "..");
 global.window = {};
 require(path.join(ROOT, "data.js"));
 const MARKETS = global.window.NM_MARKETS;
-require(path.join(ROOT, "curated.js"));
-const CURATED = (global.window.NM_CURATED && global.window.NM_CURATED.markets) || {};
+// 推薦攤位：curated/<夜市 id>.json
+const CURATED = {};
+for (const f of fs.readdirSync(path.join(ROOT, "curated"))) {
+  if (f.endsWith(".json")) CURATED[f.slice(0, -5)] = JSON.parse(fs.readFileSync(path.join(ROOT, "curated", f), "utf8"));
+}
 
 async function searchText(text, where, max) {
   const body = { textQuery: text, languageCode: "zh-TW", regionCode: "TW", pageSize: max };

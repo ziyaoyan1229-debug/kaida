@@ -189,9 +189,23 @@
   }
 
   /* ---------- 網友推薦攤位（自己整理的資料，不用 Google） ---------- */
-  function picksOf(m) {
-    var c = window.NM_CURATED;
-    return (c && c.markets && c.markets[m.id] && c.markets[m.id].stalls) || [];
+  // 每個夜市的攤位放在 curated/<id>.json，點開夜市才下載；搜尋用 curated-index.js 的關鍵字
+  var picksCache = {}, picksLoading = {};
+  function picksOf(m) { return picksCache[m.id] || []; }
+  function loadPicks(m) {
+    if (picksCache[m.id] || picksLoading[m.id]) return;
+    var idx = window.NM_CURATED_INDEX;
+    if (!idx || !idx.markets || !idx.markets[m.id]) { picksCache[m.id] = []; return; }
+    picksLoading[m.id] = true;
+    fetch("curated/" + m.id + ".json?v=" + encodeURIComponent(idx.updated || "")).then(function (r) { return r.ok ? r.json() : { stalls: [] }; })
+      .catch(function () { return null; })
+      .then(function (d) {
+        picksLoading[m.id] = false;
+        if (!d) return;
+        picksCache[m.id] = d.stalls || [];
+        if (state.selected === m.id && !$("detail").hidden) renderPicks(m);
+        if (stallFor === m.id && stallMode === "free" && stalls.length && view.showPicks) view.showPicks(pickPins(m));
+      });
   }
   // 網友投稿（審核通過的），依夜市存
   var comm = {};
@@ -316,7 +330,7 @@
   function matches(m, q) {
     if (!q) return true;
     var hay = [m.zh, m.en, cityName(m.city), CITIES.filter(function (c) { return c.key === m.city; }).map(function (c) { return c.zh + " " + c.en; }).join(" ")]
-      .concat(m.foodsZh, m.foodsEn, picksOf(m).map(function (p) { return [p.zh, p.en].concat(p.foods || [], p.foodsEn || []).join(" "); })).join(" ").toLowerCase();
+      .concat(m.foodsZh, m.foodsEn, (window.NM_CURATED_INDEX && NM_CURATED_INDEX.markets[m.id]) || "").join(" ").toLowerCase();
     return q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
   }
   function foodHit(m, q) {
@@ -491,6 +505,7 @@
     $("dStatus").innerHTML = '<span class="badge ' + st.cls + '">' + esc(st.text) + "</span>";
     $("dNote").textContent = lang === "zh" ? m.noteZh : m.noteEn;
     renderPicks(m);
+    loadPicks(m);
     loadComm(m);
     $("dFoods").innerHTML = foods(m).map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("");
     $("dDays").textContent = daysText(m);
@@ -526,6 +541,7 @@
   function showArea(m) {
     if (!mapReady || !view.supportsStalls) return;
     stallFor = m.id; stalls = [];
+    loadPicks(m);
     stallQ = carryQuery(m); $("dStallQ").value = stallQ; stallHits = {};
     if (FREE_STALLS) {
       stallMode = "free"; stallQ = ""; $("dStallQ").value = "";
