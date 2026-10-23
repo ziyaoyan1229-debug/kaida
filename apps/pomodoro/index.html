@@ -77,6 +77,19 @@
   .switch input:checked + span::after { transform: translateX(20px); background: var(--accent-ink); }
   .switch input:focus-visible + span { outline: 2px solid var(--signal); outline-offset: 2px; }
 
+  .grow { display: flex; gap: 14px; align-items: center; }
+  .grow-pet { width: 76px; height: 90px; flex: none; }
+  .grow-b { flex: 1; min-width: 0; }
+  .grow-b p { margin: 6px 0 0; }
+  .grow-lv { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .grow-lv b { font-size: 22px; }
+  .grow-st { font-size: 13px; color: var(--muted); }
+  .grow-bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
+  .grow-bar i { display: block; height: 100%; background: var(--signal); }
+  .books { display: grid; gap: 8px; margin-bottom: 12px; }
+  .book { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .book-c { font-size: 26px; }
+  .books-next { margin: 0; }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
   .stat .n { font-family: var(--f-mono); font-size: 24px; font-weight: 600; line-height: 1.2; }
@@ -718,6 +731,11 @@
       <div class="stat"><div class="n" id="st-today-pomo">0</div><div class="l" data-i18n="st.todaypomo">今天完成番茄</div></div>
       <div class="stat"><div class="n" id="st-streak">0</div><div class="l" data-i18n="st.streak">連續讀書天數</div></div>
     </div>
+    <h2 data-i18n="g.h">我的成長</h2>
+    <div class="card grow" id="grow"></div>
+    <h2 data-i18n="b.h">我捐出的書</h2>
+    <p class="small muted" data-i18n="b.p" style="margin:-4px 0 8px">個人每累積 10、50、100 小時，之後每 100 小時，開發者就替你捐出一本書。</p>
+    <div class="books" id="books"></div>
     <div class="card motto" id="motto"></div>
     <h2 data-i18n="st.week">最近 7 天（分鐘）</h2>
     <div class="card"><div class="week" id="week"></div><p class="small muted" style="margin:8px 0 0" id="week-total"></p></div>
@@ -774,7 +792,7 @@
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
       "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "set.quit": "退出", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.dnd": "專注中，請勿打擾", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
-      "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘。確定離開嗎？",
+      "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘，寵物會有點難過，但不會扣木頭或等級。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "set.title": "設定", "hop.t": "準備房間中", "set.close": "關閉", "set.lang": "語言 Language", "set.reload": "重新整理（拿到最新版本）", "set.sound": "聲音與提醒", "set.room": "房間", "opt.view": "房間視角", "opt.viewL": "大", "opt.viewM": "中", "opt.viewS": "小", "opt.wake": "讀書時保持螢幕亮著", "opt.mute": "全部靜音", "mu.mute": "靜音", "mu.unmute": "取消靜音", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
       "toast.done": "完成一顆番茄！休息 {m} 分鐘", "toast.focus": "休息結束，開始專注",
@@ -785,6 +803,13 @@
       "st.week": "最近 7 天（分鐘）", "st.weektotal": "這 7 天一共專注 {m} 分鐘，完成 {p} 顆番茄",
       "st.notes": "休息時留的話", "st.nonotes": "還沒有留言。下次休息時寫一句給自己吧。",
       "st.privacy": "紀錄只存在這個瀏覽器裡，不會上傳。換手機或清除瀏覽資料就會不見。",
+      "g.h": "我的成長", "g.lvP": "每累積 2 小時升一級", "g.stage0": "寶寶", "g.stage1": "小朋友", "g.stage2": "長大了", "g.stage3": "進化",
+      "g.next": "再讀 {h} 小時，{p}就會長大", "g.max": "{p}已經進化到最終型態了", "g.noPet": "到商店領養一隻寵物，牠會跟著你的讀書時數長大。",
+      "b.h": "我捐出的書", "b.p": "個人每累積 10、50、100 小時，之後每 100 小時，開發者就替你捐出一本書。",
+      "b.next": "再讀 {h} 小時，捐出下一本", "b.none": "還沒有捐出的書。讀滿 10 小時就有第一本。", "b.item": "累積 {h} 小時",
+      "b.got": "📚 累積 {h} 小時！開發者替你捐出一本《{t}》", "pet.up": "🎉 {p}長大了：{s}！",
+      "lock.focus": "專注中不能逛商店或換裝，休息時再來", "feed.btn": "🍖 餵寵物", "feed.done": "{p}吃得好開心",
+      "feed.sadQuit": "這一輪只記錄已經專注的部分，{p}有點難過。下次讀完一整輪牠就會開心起來。", "feed.happyAgain": "讀完一整輪，{p}又開心起來了",
       "st.clear": "清除我的所有紀錄", "st.clearconfirm": "要清除所有專注紀錄、留言、好友和封測任務進度嗎？這個動作沒辦法復原。", "st.cleared": "已清除",
       "beta.h": "封測任務", "beta.sub": "做完這幾件事，再回開達留下回饋",
       "beta.t1": "加入一間讀書房", "beta.t2": "完成一顆番茄鐘（專注到最後）",
@@ -865,7 +890,7 @@
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
       "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "set.quit": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.dnd": "Focusing, do not disturb", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
-      "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged. Leave?",
+      "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged and your pet will look a little sad, but you lose no logs or levels. Leave?",
       "opt.sound": "Chime and vibrate between phases", "set.title": "Settings", "hop.t": "Getting your room ready", "set.close": "Close", "set.lang": "語言 Language", "set.reload": "Reload (get the latest version)", "set.sound": "Sound and reminders", "set.room": "Room", "opt.view": "Room view", "opt.viewL": "Close", "opt.viewM": "Medium", "opt.viewS": "Wide", "opt.wake": "Keep screen on while studying", "opt.mute": "Mute all sound", "mu.mute": "Mute", "mu.unmute": "Unmute", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
       "toast.done": "Pomodoro done! Take {m} minutes off", "toast.focus": "Break's over, time to focus",
@@ -876,6 +901,13 @@
       "st.week": "Last 7 days (minutes)", "st.weektotal": "{m} focus minutes and {p} pomodoros in the last 7 days",
       "st.notes": "Break notes", "st.nonotes": "No notes yet. Leave yourself one on your next break.",
       "st.privacy": "Your stats stay in this browser and are never uploaded. They're gone if you switch phones or clear browser data.",
+      "g.h": "My growth", "g.lvP": "Level up every 2 hours of focus", "g.stage0": "Baby", "g.stage1": "Kid", "g.stage2": "Grown", "g.stage3": "Evolved",
+      "g.next": "{h} more hours until {p} grows", "g.max": "{p} has reached its final form", "g.noPet": "Adopt a pet in the shop and it will grow with your study hours.",
+      "b.h": "Books I donated", "b.p": "At 10, 50 and 100 hours, then every 100 hours, the developer donates a book for you.",
+      "b.next": "{h} more hours until the next book", "b.none": "No books yet. Your first one comes at 10 hours.", "b.item": "{h} hours",
+      "b.got": "📚 {h} hours! The developer donated “{t}” for you", "pet.up": "🎉 {p} grew up: {s}!",
+      "lock.focus": "No shopping or dressing up during focus. Come back on your break.", "feed.btn": "🍖 Feed pet", "feed.done": "{p} loved it",
+      "feed.sadQuit": "Only the focused part was logged, and {p} looks a little sad. Finish a full round next time to cheer it up.", "feed.happyAgain": "A full round done, {p} is happy again",
       "st.clear": "Clear all my data", "st.clearconfirm": "Clear all focus stats, notes, friends and beta task progress? This can't be undone.", "st.cleared": "Cleared",
       "beta.h": "Beta tasks", "beta.sub": "Do these, then leave feedback on Kaida",
       "beta.t1": "Join a study room", "beta.t2": "Finish one pomodoro (stay to the end)",
@@ -1041,12 +1073,14 @@
       var n = woodFor(session.cfg);
       data.wood += n; updateWood();
       K.toast(t("s.reward", { n: n }));
+      if (data.petSad) { data.petSad = false; if (data.look.pet) setTimeout(function () { K.toast(t("feed.happyAgain", { p: petName() })); }, 2600); pubMood(); }
     } else if (session && ms > 0) {
       // 中途加入的那一輪：照專注的比例給小木頭，最少 1 根
       var pn = Math.max(1, Math.round(woodFor(session.cfg) * Math.min(1, ms / (session.cfg.focus * MIN))));
       data.wood += pn; updateWood();
       K.toast(t("s.rewardPart", { n: pn }));
     }
+    if (!(session && session.cfg.test)) checkGrowth();
   }
 
   // 把 session.credited 到 upTo 之間已經結束的專注段記進紀錄
@@ -1092,7 +1126,7 @@
     return S.ACTS[Math.abs(x) % S.ACTS.length];
   }
   function actLabel() { return t("act." + (data.act === "other" ? "other" : myAct())); }
-  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: myAct(), dnd: !!data.opts.focusMode, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal() }; }
+  function meInfo() { return { id: data.me.id, name: data.me.name, look: data.look, act: myAct(), dnd: !!data.opts.focusMode, up: !!(session && session.up), av: data.me.avatar || "🍅", fl: data.me.flag, hr: myTotal(), pm: myMood() }; }
   function needName() {
     if (data.me.name) return false;
     K.toast(t("r.needName")); show("char"); return true;
@@ -1455,6 +1489,8 @@
     if (p.focus) {
       var segStart = Math.max(p.start, session.credited, session.joinedAt);
       if (now > segStart) addFocus(now, now - segStart, false);
+      // 失敗溫和處理：不扣木頭、不退等級，只是寵物有點難過
+      if (!silent && data.look.pet) { data.petSad = true; var pn = petName(); setTimeout(function () { K.toast(t("feed.sadQuit", { p: pn })); }, 2600); }
     }
     if (session.kind === "room" && net) net.leave();
     clearInterval(sim.timer);
@@ -1495,6 +1531,9 @@
           if (data.opts.notify) K.notify(t("n.breakTitle"), t("n.breakBody", { m: r.brk }));
         }
         session.wasFocus = p.focus;
+        if (p.focus && (current === "shop" || current === "char")) { show("session"); K.toast(t("lock.focus")); }
+        if (current === "session") renderSays();
+        pubMood();
       }
       session.lastSeen = now;
       if (res.finished || now % 10000 < 1000) persist();
@@ -1505,6 +1544,8 @@
 
   var current = "rooms";
   function show(v) {
+    // 專注中不能玩養成：商店和換裝只在休息時間開放
+    if ((v === "shop" || v === "char") && data.me.name && session && !session.away && phaseAt("cur", Date.now(), roomOrigin()).focus) { K.toast(t("lock.focus")); return; }
     // 第一次打開：先取暱稱、選好角色才能進讀書房
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session && !session.away) v = "session";
@@ -1756,17 +1797,17 @@
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, away: m.away, av: m.av, look: m.look, act: m.act, dnd: !!m.dnd, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, pm: m.pm, away: m.away, av: m.av, look: m.look, act: m.act, dnd: !!m.dnd, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
       list.push(me);
       if (session.kind === "sim") BOTS.forEach(function (b) {
         var sy = sim.says[b.id];
-        list.push({ id: b.id, name: b.name, fl: b.fl, joined: session.joinedAt - botSeed(b.id) % 40 * 60000, hr: 600 + botSeed(b.id) % 9000, look: Object.assign(S.defaultLook(), b.look), act: b.act, dnd: !!b.dnd, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
+        list.push({ id: b.id, name: b.name, fl: b.fl, joined: session.joinedAt - botSeed(b.id) % 40 * 60000, hr: 300 + botSeed(b.id) * 7919 % 9000, look: Object.assign(S.defaultLook(), b.look), act: b.act, dnd: !!b.dnd, up: !!sim.up[b.id], bubble: sy && now - sy.at < 6000 ? sy.text : "", emo: sy ? emoOf(sy.text) : "", emoAt: sy ? sy.at : 0 });
       });
     }
-    return list.slice(0, 6);
+    return list.slice(0, 6).map(decoGrowth);
   }
   var lastSig = "";
   function renderScene(force) {
@@ -1887,6 +1928,7 @@
       return '<button type="button" data-say="' + K.esc(x) + '"' + (dup ? ' tabindex="-1" aria-hidden="true" data-dup="1"' : "") + '>' + K.esc(x) + '</button>';
     }).join(""); };
     el.innerHTML = '<button type="button" data-up="1" class="' + (session.up ? "up" : "") + '" aria-pressed="' + !!session.up + '">' + K.esc(t(session.up ? "s.down" : "s.up")) + '</button>' +
+      (canFeed() ? '<button type="button" data-feed="1">' + K.esc(t("feed.btn")) + '</button>' : "") +
       (session.kind === "solo" ? "" : '<div class="says-run">' + chips(false) + chips(true) + '</div>');
     var run = el.querySelector(".says-run"); if (run) { run.scrollLeft = keep; marq.pos = keep; }
   }
@@ -2151,8 +2193,24 @@
     if (a === "save") { data.motto = document.getElementById("motto-in").value.trim().slice(0, 80); persist(); }
     mottoEdit = a === "edit"; renderMotto();
   });
+  function renderGrowth() {
+    var tot = myTotal(), gr = S.growth(tot), h = tot / 60, pk = data.look.pet, from = 2 * (gr.lv - 1);
+    var pct = Math.round(Math.min(1, (h - from) / 2) * 100);
+    var pet = pk ? '<svg class="grow-pet" viewBox="-16 -34 32 38" aria-hidden="true">' + S.pet(pk, 0, 0, gr.stage, myMood()) + '</svg>' : "";
+    var note = !pk ? t("g.noPet") : gr.next ? t("g.next", { h: Math.max(0.1, Math.ceil((gr.next - h) * 10) / 10), p: petName() }) : t("g.max", { p: petName() });
+    document.getElementById("grow").innerHTML = pet + '<div class="grow-b"><div class="grow-lv"><b class="mono">Lv ' + gr.lv + '</b>' +
+      (pk ? '<span class="grow-st">' + K.esc(petName()) + " · " + K.esc(t("g.stage" + gr.stage)) + '</span>' : "") + '</div>' +
+      '<div class="grow-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>' +
+      '<p class="small muted">' + K.esc(t("g.lvP")) + " · " + K.esc(hrs(tot)) + '</p><p class="small">' + K.esc(note) + '</p></div>';
+    var bk = data.books || {}, ks = Object.keys(bk).map(Number).sort(function (a, b) { return a - b; });
+    var nx = '<p class="small muted books-next">' + K.esc(t("b.next", { h: Math.max(0.1, Math.ceil((nextBook(tot) - h) * 10) / 10) })) + '</p>';
+    document.getElementById("books").innerHTML = (ks.length ? ks.map(function (k) {
+      return '<div class="book"><div class="book-c" aria-hidden="true">📕</div><div><b>' + K.esc(bookTitle(k)) + '</b><div class="small muted">' + K.esc(t("b.item", { h: k })) + " · " + K.dayKey(new Date(bk[k])) + '</div></div></div>';
+    }).join("") : '<p class="small muted">' + K.esc(t("b.none")) + '</p>') + nx;
+  }
   function renderMe() {
     renderMotto();
+    renderGrowth();
     var today = data.days[K.dayKey()] || { min: 0, pomo: 0 };
     document.getElementById("st-today-min").textContent = Math.floor(today.min);
     document.getElementById("st-today-pomo").textContent = today.pomo;
@@ -2325,6 +2383,27 @@
     { name: "Tokyo Study Club", en: "Tokyo Study Club", n: 5, h: 248 }, { name: "早起寫論文", en: "Early Thesis", n: 3, h: 131 },
     { name: "程式自學社", en: "Self-taught Coders", n: 7, h: 296 }
   ];
+  // 成長與捐書：寵物跟著累積時數長大；個人每到里程碑，開發者就捐一本書
+  var BOOK_TITLES = [["小王子", "The Little Prince"], ["夏綠蒂的網", "Charlotte's Web"], ["窗邊的小荳荳", "Totto-chan"], ["獅子、女巫、魔衣櫥", "The Lion, the Witch and the Wardrobe"], ["愛的教育", "Heart"], ["湯姆歷險記", "Tom Sawyer"], ["清秀佳人", "Anne of Green Gables"], ["祕密花園", "The Secret Garden"], ["柳林中的風聲", "The Wind in the Willows"], ["說不完的故事", "The Neverending Story"]];
+  function bookMarks(min) { var h = (min || 0) / 60, out = []; [10, 50, 100].forEach(function (x) { if (h >= x) out.push(x); }); for (var x = 200; x <= h; x += 100) out.push(x); return out; }
+  function nextBook(min) { var h = (min || 0) / 60; if (h < 10) return 10; if (h < 50) return 50; if (h < 100) return 100; return (Math.floor(h / 100) + 1) * 100; }
+  function bookTitle(h) { var i = h === 10 ? 0 : h === 50 ? 1 : h === 100 ? 2 : 1 + h / 100; return BOOK_TITLES[i % BOOK_TITLES.length][K.lang() === "en" ? 1 : 0]; }
+  function petName() { var it = data.look.pet && S.item(data.look.pet); return it ? it[K.lang() === "en" ? "en" : "zh"] : ""; }
+  function checkGrowth(silent) {
+    if (!data.books) data.books = {};
+    var tot = myTotal(), gr = S.growth(tot), msgs = [];
+    bookMarks(tot).forEach(function (h) { if (!data.books[h]) { data.books[h] = Date.now(); msgs.push(t("b.got", { h: h, t: bookTitle(h) })); } });
+    if (data.petStage != null && gr.stage > data.petStage && data.look.pet) msgs.unshift(t("pet.up", { p: petName(), s: t("g.stage" + gr.stage) }));
+    data.petStage = gr.stage;
+    if (!silent) msgs.forEach(function (m, i) { setTimeout(function () { K.toast(m); }, 2600 * (i + 1)); });
+  }
+  // 寵物心情：中途離開會難過，讀完一整輪或休息時餵牠就開心
+  function myMood() { if (data.petSad) return "sad"; if (session && session.fedAt && !phaseAt("cur", Date.now(), roomOrigin()).focus && session.fedAt >= phaseAt("cur", Date.now(), roomOrigin()).start) return "happy"; return ""; }
+  var lastMood = null;
+  function pubMood() { var m = myMood(); if (m === lastMood) return; lastMood = m; if (session && session.kind === "room" && net) net.publishMe({ pm: m }); }
+  function decoGrowth(m) { if (!m.look) return m; var gr = S.growth(m.hr); m.lv = gr.lv; m.look = Object.assign({}, m.look, { ps: gr.stage, pm: m.me ? myMood() : m.pm || "" }); return m; }
+  function canFeed() { if (!session || !data.look.pet) return false; var p = phaseAt("cur", Date.now(), roomOrigin()); return !p.focus && !(session.fedAt >= p.start); }
+
   function myTotal() { var m = 0; Object.keys(data.days).forEach(function (k) { m += data.days[k].min || 0; }); return Math.floor(m); }
   function teamStats(tm) {
     var wk = weekKey(), all = 0, tot = 0, week = 0;
@@ -2935,6 +3014,7 @@
   });
   document.getElementById("says").addEventListener("click", function (e) {
     if (e.target.closest("[data-up]")) { ackBreak(); setUp(!session.up); renderSession(Date.now()); return; }
+    if (e.target.closest("[data-feed]")) { session.fedAt = Date.now(); data.petSad = false; persist(); pubMood(); K.toast(t("feed.done", { p: petName() })); renderSays(); renderScene(true); return; }
     var b = e.target.closest("[data-say]"); if (b) say(b.dataset.say);
   });
   // 暫離：人還在房間裡，角色起身離開座位走動；跳回房間才走回座位
@@ -3027,6 +3107,7 @@
     data.opts.layout = b.dataset.layout; persist(); renderLayoutOpt(); applyClassic();
   });
   renderLayoutOpt();
+  checkGrowth(true); persist();
   // 說明
   document.addEventListener("click", function (e) {
     if (!e.target.closest("[data-help]")) return;
