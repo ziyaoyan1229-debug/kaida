@@ -404,7 +404,7 @@ function makeChar(look) {
   if (look.hat === "bucket") { const br = cyl(0.42, 0.48, 0.08, "#c9b48a", 0, 0.17, -0.02, head, 24); br.rotation.x = -0.1; cyl(0.3, 0.34, 0.22, "#c9b48a", 0, 0.3, -0.02, head, 22).rotation.x = -0.1; cyl(0.345, 0.345, 0.04, "#a8916a", 0, 0.22, -0.02, head, 22).rotation.x = -0.1; }
   if (look.hat === "crown") { const cr = cyl(0.16, 0.16, 0.12, mat("#e8b93a", { metalness: 0.5, roughness: 0.35 }), 0, 0.33, 0, head, 10); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; const k = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.09, 6), mat("#e8b93a", { metalness: 0.5, roughness: 0.35 })); k.position.set(Math.cos(a) * 0.15, 0.43, Math.sin(a) * 0.15); head.add(k); } sph(0.03, "#c2453b", 0, 0.34, 0.16, head); cr.castShadow = true; }
   // 寵物夥伴
-  const cat = look.pet ? makePet(look.pet) : null;
+  const cat = look.pet ? makePet(look.pet, look.ps, look.pm) : null;
   // 手上的小東西：書（翻頁）、杯子、餅乾，依動作顯示
   const book = new THREE.Group(); book.position.set(0, 0.3, 0.26); book.rotation.x = -0.75; torso.add(book);
   box(0.36, 0.012, 0.24, "#7a5c8a", 0, -0.008, 0, book);
@@ -426,7 +426,8 @@ function makeChar(look) {
 }
 
 /* ===== 寵物 ===== */
-function makePet(kind) {
+const PET_SCALE = [0.72, 0.86, 1, 1.12];
+function makePet(kind, ps, pm) {
   const g = new THREE.Group();
   const col = { cat: "#e3a35b", shiba: "#d9914a", bunny: "#fffdf8", chick: "#f2cc4a", panda: "#fffdf8", fox: "#e07a3a", hamster: "#e8c08a", blackcat: "#3c3842", calico: "#fffaf2", corgi: "#ec9a4e", poodle: "#c98a5a" }[kind] || "#e3a35b";
   let tail;
@@ -457,6 +458,11 @@ function makePet(kind) {
     else { tail = cap(0.025, 0.18, col, g); tail.position.set(0, 0.22, -0.16); tail.rotation.x = -0.6; }
   }
   g.userData.tail = tail;
+  // 成長階段決定大小；進化後頭上有顆金星，心情用小愛心或眼淚表示
+  g.scale.setScalar(PET_SCALE[ps != null ? ps : 2]);
+  if (ps === 3) { const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.05), mat("#f2c94c", { metalness: 0.5, roughness: 0.3, emissive: "#6a4a00" })); st.position.set(0, 0.5, 0.1); g.add(st); g.userData.spark = st; }
+  if (pm === "happy") { const h = new THREE.Group(); [-1, 1].forEach((sd) => sph(0.032, "#f07a8a", sd * 0.026, 0.02, 0, h, 8, 6)); const tip = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.06, 8), mat("#f07a8a")); tip.rotation.z = Math.PI; tip.position.y = -0.02; h.add(tip); h.position.set(0.1, 0.46, 0.1); g.add(h); g.userData.heart = h; }
+  if (pm === "sad") { const d = sph(0.022, mat("#7fb7e6", { roughness: 0.2 }), -0.07, 0.22, 0.24, g, 8, 6); d.scale.set(0.8, 1.3, 0.8); }
   return g;
 }
 
@@ -2255,7 +2261,7 @@ function pickSpotPose(id, poses) {
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
-function tagText(m) { return m.name; }
+function tagText(m) { return (m.lv ? "Lv" + m.lv + " " : "") + m.name; }
 // 專注模式（勿擾）：名字前面一個玻璃感的靜音符號
 const DND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke-width="1.6"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
 function addChar(m, seat) {
@@ -2592,6 +2598,8 @@ function animChar(st, dt, now) {
     c.cat.position.z += (tz - c.cat.position.z) * Math.min(1, dt * 2.5);
     c.cat.rotation.y = st.ry;
     c.cat.userData.tail.rotation.z = Math.sin(s * 3) * 0.5;
+    if (c.cat.userData.spark) c.cat.userData.spark.rotation.y = s * 2;
+    if (c.cat.userData.heart) c.cat.userData.heart.position.y = 0.46 + Math.sin(s * 3) * 0.03;
   }
 }
 

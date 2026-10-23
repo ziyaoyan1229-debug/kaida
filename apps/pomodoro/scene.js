@@ -95,6 +95,13 @@
     var bad = {}; CLASH.forEach(function (c) { if (c.indexOf(id) >= 0) c.forEach(function (x) { bad[x] = 1; }); });
     return list.filter(function (x) { return !bad[x]; }).concat(id).join(" ");
   }
+  // 成長：每累積 2 小時升一級；寵物在 10、50、100 小時各長大一階
+  var PET_STAGES = [0, 10, 50, 100], PET_SCALE = [.72, .86, 1, 1.12];
+  function growth(min) {
+    var h = (min || 0) / 60, st = 0;
+    PET_STAGES.forEach(function (x, i) { if (h >= x) st = i; });
+    return { lv: 1 + Math.floor(h / 2), stage: st, next: PET_STAGES[st + 1] || 0 };
+  }
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
 
   var ACTS = ["read", "novel", "homework", "research", "report", "code", "pc", "draw", "vocab", "journal", "calligraphy", "lesson", "music", "piano", "sing", "craft"];
@@ -214,7 +221,7 @@
     if (opt.headPet) s += '<g transform="translate(2 ' + (hy - (look.hat && look.hat !== "catband" ? 20 : 15) + (opt.headPet === "chick" || opt.headPet === "hamster" ? 4 : 0)) + ') scale(' + (opt.headPet === "chick" || opt.headPet === "hamster" ? ".5" : ".52") + ')">' + pet(opt.headPet, 0, 0).replace(/<ellipse[^>]*rgba\(60,40,20,\.18\)"\/>/, "") + '</g>';
     s += HEAD_CLOSE;
     s += '</g>';
-    if (look.pet && !opt.noPet) s += pet(look.pet, opt.petX != null ? opt.petX : 20, 0);
+    if (look.pet && !opt.noPet) s += pet(look.pet, opt.petX != null ? opt.petX : 20, 0, look.ps, look.pm);
     return s;
   }
 
@@ -355,8 +362,10 @@
       '<path d="M-2.2 -6.8 C-.6 -6.6 .2 -4.8 -.4 -3.4 C-1 -2.4 -3.4 -2.4 -4 -3.4 C-4.6 -4.8 -3.8 -6.6 -2.2 -6.8 Z" fill="#5a4a3e" stroke="#2f2622" stroke-width=".3"/><path d="M-2.2 -6.4 v3.6 M-3.2 -5.8 q-.2 1.4 .2 2.4 M-1.2 -5.8 q.2 1.4 -.2 2.4" stroke="#f2ead8" stroke-width=".35" fill="none"/>' +
       '<ellipse cx="-4.4" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx="0" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>';
   }
-  function pet(kind, x, y) {
-    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ')"><ellipse cx="1" cy="0" rx="' + (kind === "chick" || kind === "hamster" ? 6.6 : 9.5) + '" ry="' + (kind === "chick" || kind === "hamster" ? 1.6 : 2.1) + '" fill="rgba(60,40,20,.18)"/>';
+  // ps：成長階段（0～3，沒給就是一般大小）；pm：心情 sad / happy
+  function pet(kind, x, y, ps, pm) {
+    var sc = PET_SCALE[ps != null ? ps : 2];
+    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ') scale(' + sc + ')"><ellipse cx="1" cy="0" rx="' + (kind === "chick" || kind === "hamster" ? 6.6 : 9.5) + '" ry="' + (kind === "chick" || kind === "hamster" ? 1.6 : 2.1) + '" fill="rgba(60,40,20,.18)"/>';
     if (kind === "cat") g += catPet("#f0a052", "#d07a32", "#9a5420", "#fff1de", "#7a8a3a", true);
     else if (kind === "blackcat") g += catPet("#3c3842", "#26232b", "#141218", "#5a5560", "#e2b63a", false);
     else if (kind === "calico") g += catPet("#fffaf2", "#e6dccc", "#a89a86", "#fffaf2", "#6a8a3a", false, true);
@@ -398,6 +407,10 @@
         petEyes(-4.9, .5, -14.9, .95, "#c87a2a") + petBlush(-7, 2.6, -12.6) +
         '<ellipse cx="-2.2" cy="-9.8" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-10.1" r=".3" fill="#fff" opacity=".8"/>';
     }
+    // 進化後頭上一顆閃亮星星；難過掉一滴淚；開心冒愛心
+    if (ps === 3) g += '<path class="spark" d="M-2 -31 l1.3 2.6 2.8 .4 -2 2 .5 2.8 -2.6 -1.4 -2.6 1.4 .5 -2.8 -2 -2 2.8 -.4 Z" fill="#f2c94c" stroke="#c9952a" stroke-width=".4"/>';
+    if (pm === "sad") g += '<path d="M-7.4 -13.4 q-1.4 2.4 0 3.2 q1.4 -.8 0 -3.2 Z" fill="#7fb7e6" stroke="#4a86c0" stroke-width=".3"/><path d="M-5.6 -9.6 q1.6 -1 3.2 0" stroke="#5a3a2a" stroke-width=".5" fill="none"/>';
+    if (pm === "happy") g += '<path class="heart" d="M5 -25 c-1.6 -2.4 -4.6 -.6 -2.6 1.8 l2.6 2.6 2.6 -2.6 c2 -2.4 -1 -4.2 -2.6 -1.8 Z" fill="#f07a8a" stroke="#c9505f" stroke-width=".4"/>';
     return g + '</g>';
   }
   function cat(x, y) { return pet("cat", x, y); }
@@ -435,9 +448,9 @@
   // 兩碼國家代碼 → 國旗表情符號
   function flag(c) { return /^[A-Z]{2}$/.test(c || "") ? String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65, 0x1F1E6 + c.charCodeAt(1) - 65) : ""; }
   function nameTag(name, y, me, fl) {
-    var f = flag(fl), w = Math.min(84, 10 + String(name).length * 7.5 + (f ? 10 : 0));
+    var f = flag(fl), w = Math.min(104, 10 + String(name).length * 7.5 + (f ? 10 : 0));
     return '<g transform="translate(0 ' + y + ')"><rect x="' + (-w / 2) + '" y="-8" width="' + w + '" height="11" rx="5.5" fill="' + (me ? "#9a7440" : "rgba(42,38,32,.72)") + '"/>' +
-      '<text x="0" y="0.5" text-anchor="middle" font-size="7" fill="#f8f4ec" font-family="Twemoji Country Flags, Noto Sans TC, sans-serif">' + (f ? f + " " : "") + esc(String(name).slice(0, 8)) + '</text></g>';
+      '<text x="0" y="0.5" text-anchor="middle" font-size="7" fill="#f8f4ec" font-family="Twemoji Country Flags, Noto Sans TC, sans-serif">' + (f ? f + " " : "") + esc(String(name).slice(0, 13)) + '</text></g>';
   }
   function bubble(text, y) {
     var w = Math.min(110, 14 + String(text).length * 8);
@@ -544,7 +557,7 @@
     var body = pose === "sofa" ? '<g transform="translate(0 -14)">' + character(m.look, "desk", { smile: true, noPet: true }) + '</g>'
                                : '<g class="' + (walking ? "walk" : "") + '">' + character(m.look, pose, { smile: true, petX: spot.x > 300 ? -22 : 22, noPet: walking }) + '</g>';
     var ty = pose === "sofa" ? -78 : -64;
-    return body + nameTag(m.name, ty, m.me, "") + (m.bubble ? bubble(m.bubble, ty - 10) : "");
+    return body + nameTag((m.lv ? "Lv" + m.lv + " " : "") + m.name, ty, m.me, "") + (m.bubble ? bubble(m.bubble, ty - 10) : "");
   }
 
   /*
@@ -582,8 +595,8 @@
         g += '<g transform="translate(' + seat[0] + ' ' + seat[1] + ')">' + chair(0, -2) +
           '<g transform="translate(0 -8)">' + character(m.look, "desk", { focus: true, lookDown: act !== "pc", glow: act === "pc", noPet: true }) + '</g>' +
           desk(act, true) +
-          (m.look && m.look.pet ? pet(m.look.pet, 36, 8) : "") +
-          nameTag(m.name, -72, m.me, "") + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
+          (m.look && m.look.pet ? pet(m.look.pet, 36, 8, m.look.ps, m.look.pm) : "") +
+          nameTag((m.lv ? "Lv" + m.lv + " " : "") + m.name, -72, m.me, "") + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
       }
       if (m && !focus) {
         var sp = SPOTS[spots[m.id]];
@@ -644,5 +657,5 @@
       '<g transform="scale(1.35)">' + character(look, "stand", { smile: true, petX: 24 }) + '</g>';
   }
 
-  window.KaidaScene = { flag: flag, pet: pet, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, has: has, toggle: toggle, STACK: STACK, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
+  window.KaidaScene = { flag: flag, pet: pet, render: render, move: move, preview: preview, bust: bust, ITEMS: ITEMS, CATS: CATS, item: item, growth: growth, has: has, toggle: toggle, STACK: STACK, SKINS: SKINS, HAIRS: HAIRS, ACTS: ACTS, defaultLook: defaultLook, W: W, H: H };
 })();
