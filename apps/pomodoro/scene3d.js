@@ -2855,3 +2855,4 @@ function rebuild() {
 function times(map) { Object.keys(chars).forEach((id) => { const st = chars[id], v = map[id] || ""; if (st.tag.ft.textContent !== v) st.tag.ft.textContent = v; }); }
 window.KaidaScene3D = { times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
+export { makeChar, makePet, mat, box, cyl, sph, outline };

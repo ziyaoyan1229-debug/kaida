@@ -299,5 +299,29 @@
     this.run(function () { c.client.publish(PREFIX + "lb/" + tid + "/" + uid, "", { retain: true, qos: 1 }); });
   };
 
-  window.KaidaNet = { Teams: Teams, Room: Room, Social: Social, findPublic: findPublic, MAX: MAX, BROKER: function () { return BROKER; } };
+  /* 我的家：家具擺設放在 home/<自己>（保留訊息），朋友打開連結就讀得到 */
+  function oneShot(f, ms) {
+    if (!window.mqtt) return Promise.resolve(null);
+    return new Promise(function (resolve) {
+      var c, done = false;
+      function finish(r) { if (done) return; done = true; clearTimeout(timer); setTimeout(function () { try { c && c.end(true); } catch (e) {} }, 300); resolve(r); }
+      var timer = setTimeout(function () { finish(null); }, ms || 9000);
+      try { c = window.mqtt.connect(BROKER, { clientId: "kh_" + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 8000, reconnectPeriod: 0 }); }
+      catch (e) { finish(null); return; }
+      c.on("connect", function () { f(c, finish); });
+      c.on("error", function () { finish(null); });
+    });
+  }
+  function homePut(uid, obj) {
+    return oneShot(function (c, finish) { c.publish(PREFIX + "home/" + uid, JSON.stringify(obj), { retain: true, qos: 1 }, function () { finish(true); }); });
+  }
+  function homeGet(uid) {
+    return oneShot(function (c, finish) {
+      var t = PREFIX + "home/" + uid;
+      c.on("message", function (topic, payload) { if (topic === t) finish(parse(payload)); });
+      c.subscribe(t, { qos: 1 }, function () { setTimeout(function () { finish(null); }, 3500); });
+    }, 9000);
+  }
+
+  window.KaidaNet = { homePut: homePut, homeGet: homeGet, Teams: Teams, Room: Room, Social: Social, findPublic: findPublic, MAX: MAX, BROKER: function () { return BROKER; } };
 })();
