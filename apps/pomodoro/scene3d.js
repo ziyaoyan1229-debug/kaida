@@ -2320,9 +2320,21 @@ function nearSpot(tp, from) {
   }
   return { x: tp.x, z: tp.z };
 }
+// 椅子後面一個走得到的點：要坐下時先走到這裡，再往前坐進椅子，不會穿過桌子
+function behindSeat(s) {
+  for (const r of [0.6, 0.75, 0.9]) for (const da of [0, 0.6, -0.6, 1.2, -1.2]) {
+    const x = s.x - Math.sin(s.ry + da) * r, z = s.z - Math.cos(s.ry + da) * r;
+    if (free(...cellOf(x, z))) return { x, z };
+  }
+  return null;
+}
+// 有人坐著的位子；站起來走動的人（休息中）位子先空著，可以點
+function seatTaken(i) { return Object.values(chars).some((st) => st.seat === i && !st.m.up); }
 function walkTo(st, to, then) {
   st.treat = Math.random() < 0.6 ? "drink" : "eat";
-  st.path = findPath({ x: st.pos.x, z: st.pos.z }, to);
+  const s = then === "sit" ? SEATS[st.seat] : null, ap = s && behindSeat(s);
+  if (ap) { st.path = findPath({ x: st.pos.x, z: st.pos.z }, ap); st.path.push({ x: s.x, z: s.z }); }
+  else st.path = findPath({ x: st.pos.x, z: st.pos.z }, to);
   st.mode = "walk"; st.after = then;
 }
 
@@ -2812,15 +2824,18 @@ function mount(el) {
     }
     if (id) { window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id } })); return; }
     // 起身後：點家具就走過去做對應的事（沙發坐、書櫃拿書…），點地板就走到那裡；點桌椅還是照舊問要不要坐回去
+    // 點到哪個座位：射線碰到桌椅（前面被盆栽、隔板擋住也算），沒碰到就找畫面上離手指最近的空位
+    const seatHit = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
+    let si = -1;
+    if (seatHit) { let o = seatHit.object; while (o && o.userData.seat == null) o = o.parent; si = o ? o.userData.seat : -1; }
+    if (si < 0) { let bd = 0.1; SEATS.forEach((sp, i) => { if (!seatProps[i]) return; tmpV.set(sp.x, 0.55, sp.z).project(camera); const d = Math.hypot(tmpV.x - ndc.x, tmpV.y - ndc.y); if (d < bd && !seatTaken(i)) { bd = d; si = i; } }); }
     const me = Object.values(chars).find((st) => st.m.me);
-    if (me && me.m.up && !me.m.away && me.mode !== "chat") {
-      const onSeat = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
+    if (me && me.m.up && !me.m.away && me.mode !== "chat" && si < 0) {
       // 頭頂上的吊燈、燈串不算：只看手搆得到的高度
       const hits = ray.intersectObjects(scene.children, true).filter((h) => { if (h.point.y > 1.8 || !h.object.isMesh) return false; let o = h.object; while (o) { if (o.userData.cid || o.userData.outline) return false; o = o.parent; } return h.object.visible; });
       const hit = hits[0];
       // 點到書桌或椅子：交給下面的「坐下」按鈕
-      let onDesk = false; for (let o = hit && hit.object; o; o = o.parent) if (o.userData.seat != null) { onDesk = true; break; }
-      if (!onDesk && !(onSeat && !hit)) {
+      {
         let best = -1;
         if (hit && hit.point.y > 0.05) { let bd = 1.4; SPOTS.forEach((sp, i) => { if (reserved[i] && reserved[i] !== me.m.id) return; const d = Math.hypot(sp.x - hit.point.x, sp.z - hit.point.z); if (d < bd) { bd = d; best = i; } }); }
         const fl = new THREE.Vector3(), onFloor = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), fl);
@@ -2833,10 +2848,7 @@ function mount(el) {
       }
     }
     // 點到空的桌子或椅子：問要不要坐過去
-    const seatHit = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
-    let si = -1;
-    if (seatHit) { let o = seatHit.object; while (o && o.userData.seat == null) o = o.parent; si = o ? o.userData.seat : -1; }
-    const taken = Object.values(chars).some((st) => st.seat === si);
+    const taken = seatTaken(si);
     window.dispatchEvent(new CustomEvent("kaida3d-seat", { detail: { seat: si >= 0 && !taken ? si : -1, x: e.clientX - r.left, y: e.clientY - r.top } }));
   });
   window.addEventListener("pointermove", (e) => {

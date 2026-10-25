@@ -2,10 +2,11 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025c"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025d"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
+const DOOR_X = 0, DOOR_CELLS = [{ x: 4, z: 0 }, { x: 5, z: 0 }]; // 二樓房門在後牆正中間（第 4、5 格前面）
 // 家具：w × d 是佔幾格（沒旋轉時），price 是小木頭
 const FURN = {
   bed: { w: 2, d: 3, price: 16, zh: "單人床", en: "Bed", ic: "🛏️" },
@@ -27,7 +28,8 @@ const FURN = {
   stairsDown: { w: 2, d: 3, price: 0, zh: "下樓梯口", en: "Stairs down", ic: "🕳️", fixed: true }
 };
 // 每層該有的樓梯：一樓只往上、二樓上下各一、頂樓只往下
-function stairKinds(f) { return f === 0 ? ["stairs"] : f === FLOORS.length - 1 ? ["stairsDown"] : ["stairs", "stairsDown"]; }
+// 二樓分成走廊（上下樓梯都在這）和房間（沒有樓梯，從房門進出）
+function stairKinds(f, hall) { return f === 0 ? ["stairs"] : f === FLOORS.length - 1 ? ["stairsDown"] : hall ? ["stairs", "stairsDown"] : []; }
 // 三層樓：一樓客廳、二樓房間、三樓露臺
 const FLOORS = [
   { floor: "#c99a68", wall: "#efe3cf", bg: "#d4ecf5", out: "garden" },
@@ -124,7 +126,7 @@ function build(kind) {
 /* ===== 場景 ===== */
 let renderer, scene, camera, container, raf = 0, mounted = false, clock;
 let floor, gridLines, selBox, ghostOK = true;
-let state = { owner: null, guest: null, items: [], edit: false, floor: 0, locked: false }, roomG = null, doorG = null;
+let state = { owner: null, guest: null, items: [], edit: false, floor: 0, locked: false, hall: false }, roomG = null, doorG = null, backG = null, leftG = null, clouds = [];
 let meshes = [], sel = -1, onChange = null, ownerSt = null, guestSt = null;
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hitP = new THREE.Vector3();
 
@@ -170,7 +172,9 @@ function buildWalls() {
   const F = FLOORS[state.floor] || FLOORS[0];
   floor.material = mat(F.floor);
   if (scene.background) scene.background.set(F.bg);
-  const cloud = (x, y, z, r) => { const c = new THREE.Group(); c.position.set(x, y, z); roomG.add(c); [[0, 0, r], [r * 0.9, -0.1 * r, r * 0.7], [-r * 0.9, -0.12 * r, r * 0.65]].forEach(([a, b2, rr]) => { const m = sph(rr, mat("#ffffff", { emissive: "#ffffff", emissiveIntensity: 0.3 }), a, b2, 0, c, 12, 10); m.castShadow = false; }); };
+  clouds = [];
+  // 雲：記下原本的位置，每一幀左右飄、上下浮
+  const cloud = (x, y, z, r) => { const c = new THREE.Group(); c.position.set(x, y, z); roomG.add(c); clouds.push({ c, x, y, z, ph: clouds.length * 1.7, sp: 0.12 + (clouds.length % 3) * 0.04 }); [[0, 0, r], [r * 0.9, -0.1 * r, r * 0.7], [-r * 0.9, -0.12 * r, r * 0.65]].forEach(([a, b2, rr]) => { const m = sph(rr, mat("#ffffff", { emissive: "#ffffff", emissiveIntensity: 0.3 }), a, b2, 0, c, 12, 10); m.castShadow = false; }); };
   if (F.out === "garden") {
     // 一樓外面：一圈草地、石板路、矮樹叢和小花
     const g = new THREE.Mesh(new THREE.PlaneGeometry(W + 8, D + 8), mat("#9cc584")); g.rotation.x = -Math.PI / 2; g.position.y = -0.02; g.receiveShadow = true; roomG.add(g);
@@ -182,7 +186,7 @@ function buildWalls() {
     // 二樓外面：房子的外牆往下延伸，旁邊飄著雲，像在半空中
     const slab = box(W + 0.12, 0.5, D + 0.12, "#e7c8a6", 0, -0.26, 0, roomG); slab.castShadow = false;
     box(W + 0.16, 0.06, D + 0.16, "#b98a5a", 0, -0.02, 0, roomG).castShadow = false;
-    cloud(W / 2 + 1.0, -0.2, 0.4, 0.3); cloud(-0.6, -0.35, D / 2 + 1.0, 0.36); cloud(W / 2 + 0.7, 0.3, D / 2 + 0.6, 0.2); cloud(-W / 2 - 0.4, 1.9, -D / 2 - 0.6, 0.25);
+    cloud(W / 2 + 1.0, -0.2, 0.4, 0.3); cloud(-0.6, -0.35, D / 2 + 1.0, 0.36); cloud(W / 2 + 0.7, 0.3, D / 2 + 0.6, 0.2); cloud(-W / 2 - 0.4, 1.9, -D / 2 - 0.6, 0.25); cloud(1.6, 2.2, -D / 2 - 1.2, 0.3); cloud(-W / 2 - 1.2, 0.6, 0.8, 0.28);
   }
   if (!F.wall) {
     // 露臺：沒有牆，四周一圈矮欄杆，外面是天空
@@ -190,19 +194,23 @@ function buildWalls() {
       box(alongX ? len : 0.05, 0.05, alongX ? 0.05 : len, "#b98a5a", x, 0.62, z, roomG);
       const n = Math.round(len / 0.5); for (let i = 0; i <= n; i++) { const o = -len / 2 + i * len / n; box(0.04, 0.6, 0.04, "#8a6040", alongX ? x + o : x, 0.3, alongX ? z : z + o, roomG); }
     };
+    backG = leftG = doorG = null;
     rail(0, -D / 2 - 0.03, W, true); rail(-W / 2 - 0.03, 0, D, false); rail(0, D / 2 + 0.03, W, true); rail(W / 2 + 0.03, 0, D, false);
     const edge = box(W + 0.2, 0.12, D + 0.2, "#a89a88", 0, -0.065, 0, roomG); edge.castShadow = false; edge.receiveShadow = true;
-    [[-1.9, 1.7, -3.0, 0.16], [0.6, 2.0, -3.3, 0.22], [2.3, 1.6, -2.9, 0.14]].forEach(([x, y, z, r]) => { const c = new THREE.Group(); c.position.set(x, y, z); roomG.add(c); [[0, 0, r], [r * 0.9, -0.1, r * 0.7], [-r * 0.9, -0.12, r * 0.65]].forEach(([a, b, rr]) => { const m = sph(rr, mat("#ffffff", { emissive: "#ffffff", emissiveIntensity: 0.3 }), a, b, 0, c, 12, 10); m.castShadow = false; }); });
+    [[-1.9, 1.7, -3.0, 0.16], [0.6, 2.0, -3.3, 0.22], [2.3, 1.6, -2.9, 0.14], [W / 2 + 1.1, 0.5, 0.6, 0.24], [-0.8, -0.4, D / 2 + 1.1, 0.3], [-W / 2 - 1.0, 1.2, 1.2, 0.2]].forEach(([x, y, z, r]) => cloud(x, y, z, r));
     return;
   }
+  // 後牆、左牆各一組；鏡頭轉到牆後面時把那面牆藏起來，才看得到房間
   const wallM = mat(F.wall);
-  const back = box(W + 0.12, 1.5, 0.1, wallM, 0, 0.75, -D / 2 - 0.05, roomG); back.castShadow = false;
-  const left = box(0.1, 1.5, D, wallM, -W / 2 - 0.05, 0.75, 0, roomG); left.castShadow = false;
-  box(W + 0.12, 0.1, 0.12, "#b98a5a", 0, 0.05, -D / 2 - 0.04, roomG).castShadow = false;
-  box(0.12, 0.1, D, "#b98a5a", -W / 2 - 0.04, 0.05, 0, roomG).castShadow = false;
-  // 窗戶
-  // 左牆上的門：一樓是大門、二樓是房門；鎖上時門把旁掛一個金色鎖頭
-  doorG = new THREE.Group(); doorG.position.set(-W / 2 + 0.02, 0, D / 2 - 0.75); doorG.rotation.y = Math.PI / 2; roomG.add(doorG);
+  backG = new THREE.Group(); leftG = new THREE.Group(); roomG.add(backG, leftG);
+  box(W + 0.12, 1.5, 0.1, wallM, 0, 0.75, -D / 2 - 0.05, backG).castShadow = false;
+  box(0.1, 1.5, D, wallM, -W / 2 - 0.05, 0.75, 0, leftG).castShadow = false;
+  box(W + 0.12, 0.1, 0.12, "#b98a5a", 0, 0.05, -D / 2 - 0.04, backG).castShadow = false;
+  box(0.12, 0.1, D, "#b98a5a", -W / 2 - 0.04, 0.05, 0, leftG).castShadow = false;
+  // 門：一樓大門在左牆；二樓房門在後牆、下樓梯口左邊（走廊和房間同一扇門）。鎖上時門把旁掛一個金色鎖頭
+  doorG = new THREE.Group();
+  if (state.floor === 0) { doorG.position.set(-W / 2 + 0.02, 0, D / 2 - 0.75); doorG.rotation.y = Math.PI / 2; leftG.add(doorG); }
+  else { doorG.position.set(DOOR_X, 0, -D / 2 + 0.02); backG.add(doorG); }
   const dc = state.floor === 0 ? "#8a5a3a" : "#c98f6a";
   box(0.72, 1.2, 0.03, "#fffaf2", 0, 0.6, 0, doorG).castShadow = false;
   box(0.62, 1.12, 0.05, dc, 0, 0.56, 0.01, doorG).castShadow = false;
@@ -212,7 +220,9 @@ function buildWalls() {
   box(0.09, 0.08, 0.03, "#e8b93a", 0, 0, 0, lk);
   const sh = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.009, 6, 14, Math.PI), mat("#c99a2a")); sh.position.y = 0.04; lk.add(sh);
   lk.visible = state.locked;
-  const win = new THREE.Group(); win.position.set(0.6, 0.95, -D / 2 + 0.01); roomG.add(win);
+  // 窗戶：走廊沒有窗；房間的窗在右邊（門在中間）
+  if (state.floor === 1 && state.hall) return;
+  const win = new THREE.Group(); win.position.set(state.floor === 1 ? 1.75 : 0.6, 0.95, -D / 2 + 0.01); backG.add(win);
   box(0.9, 0.7, 0.03, "#fffaf2", 0, 0, 0, win); box(0.8, 0.6, 0.035, mat("#bfe0f2", { emissive: "#6a98b8", emissiveIntensity: 0.35 }), 0, 0, 0.002, win);
   box(0.03, 0.6, 0.04, "#fffaf2", 0, 0, 0.004, win); box(0.8, 0.03, 0.04, "#fffaf2", 0, 0, 0.004, win);
 }
@@ -223,12 +233,22 @@ function lighting() {
   scene.add(sun);
   scene.background = new THREE.Color((FLOORS[state.floor] || FLOORS[0]).bg);
 }
+// 鏡頭：預設從右前方斜斜往下看；拖曳可以轉（yaw 左右、pitch 上下），兩指或滾輪縮放
+const DIR0 = new THREE.Vector3(0.62, 0.86, 0.78).normalize(), AIM = new THREE.Vector3(-0.1, 0.35, 0);
+const YAW0 = Math.atan2(DIR0.x, DIR0.z), PITCH0 = Math.asin(DIR0.y);
+let yaw = YAW0, pitch = PITCH0, zoom = 1, baseFar = 8;
+function applyCam() {
+  pitch = Math.max(0.3, Math.min(1.45, pitch)); zoom = Math.max(0.45, Math.min(1.4, zoom));
+  const cp = Math.cos(pitch), f = baseFar * zoom;
+  camera.position.set(AIM.x + Math.sin(yaw) * cp * f, AIM.y + Math.sin(pitch) * f, AIM.z + Math.cos(yaw) * cp * f);
+  camera.lookAt(AIM); camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+}
 function resize() {
   if (!container) return;
   const w = container.clientWidth || 300, h = container.clientHeight || 300;
   renderer.setSize(w, h, false); camera.aspect = w / h;
-  // 從右前方斜斜往下看；拉到整個房間（含牆頂）都在畫面裡
-  const dir = new THREE.Vector3(0.62, 0.86, 0.78).normalize(), aim = new THREE.Vector3(-0.1, 0.35, 0);
+  // 用預設角度量出剛好整個房間（含牆頂）都在畫面裡的距離
+  const dir = DIR0, aim = AIM;
   const pts = []; [-W / 2, W / 2].forEach((x) => [-D / 2, D / 2].forEach((z) => [0, x < 0 || z < 0 ? 1.5 : 0].forEach((y) => pts.push(new THREE.Vector3(x, y, z)))));
   let far = 4;
   for (let i = 0; i < 60; i++) {
@@ -236,6 +256,7 @@ function resize() {
     if (pts.every((p) => { const v = p.clone().project(camera); return Math.abs(v.x) < 0.94 && Math.abs(v.y) < 0.92; })) break;
     far += 0.25;
   }
+  baseFar = far; applyCam();
 }
 
 function rebuildItems() {
@@ -296,10 +317,12 @@ function placePeople(keep) {
     const sti = state.items.find((it) => it.k === (arriveDir > 0 ? "stairsDown" : "stairs")) || state.items.find((it) => FURN[it.k].fixed);
     let stF = null;
     if (sti) { const fa = frontAngle(sti), fx = Math.round(Math.sin(fa)), fz = Math.round(Math.cos(fa)), mine = cellsOf(sti); const c0 = mine.map((c) => c.split(",").map(Number)).map(([x, z]) => ({ x: x + fx, z: z + fz })).find((c) => mine.indexOf(c.x + "," + c.z) < 0); stF = c0 || null; }
+    if (arriveDir === 2) stF = { x: DOOR_CELLS[1].x, z: 1 }; // 剛從房門進出：站在門口
     const want = keep ? cur : stF || (k ? { x: GW - 2, z: GD - 1 } : { x: Math.floor(GW / 2), z: Math.floor(GD / 2) });
     free.sort((a, b) => Math.hypot(a.x - want.x, a.z - want.z) - Math.hypot(b.x - want.x, b.z - want.z));
     const c = free.shift() || want; st.pos.copy(cellPos(c));
     if (st.pet && !keep) st.pet.position.set(st.pos.x + 0.3, 0, st.pos.z + 0.2);
+    if (!keep && arriveDir === 2) st.ry = 0;
   });
 }
 function setPeople() {
@@ -332,23 +355,43 @@ function goTo(st, cell, itemIdx) {
     st.path = best.map(cellPos);
     const w = worldOf(it);
     if (SEAT_H[it.k] != null) onto = new THREE.Vector3(w.x, 0, w.z);
-    st.spot = { onto, face: it.k === "bed" || SEAT_H[it.k] != null ? fa : Math.atan2(w.x - st.path[st.path.length - 1].x, w.z - st.path[st.path.length - 1].z), item: itemIdx, k: it.k };
+    const last = st.path[st.path.length - 1];
+    st.spot = { onto, face: SEAT_H[it.k] != null ? fa : Math.atan2(w.x - last.x, w.z - last.z), item: itemIdx, k: it.k };
+    // 床：先背對床坐到床邊，再躺下去
+    if (it.k === "bed") { const dx = w.x - last.x, dz = w.z - last.z, dl = Math.hypot(dx, dz) || 1; st.spot.onto = new THREE.Vector3(last.x + dx / dl * 0.34, 0, last.z + dz / dl * 0.34); st.spot.face = Math.atan2(-dx, -dz); }
   } else {
     const pth = findPath(from, target); if (!pth) return false;
     st.path = pth.map(cellPos); st.spot = null;
   }
-  st.act = ""; st.item = -1; st.idle = 0;
+  standUp(st); st.idle = 0;
   if (st.pet && st.petBed) st.petBed = null;
   return true;
 }
 function arrive(st) {
   const sp = st.spot; st.spot = null; if (!sp) return;
-  if (sp.onto) st.pos.copy(sp.onto);
+  if (sp.door) { st.ry = Math.PI; emitDoor(); return; }
+  // 坐上沙發、椅子、床：從旁邊的格子慢慢挪進去，不是瞬間移過去
+  if (sp.onto) { st.hop = { from: st.pos.clone(), to: sp.onto.clone(), t: 0 }; st.pos.copy(sp.onto); }
   st.ry = sp.k === "bed" ? sp.face : sp.face; st.act = sp.deskSit ? "sitwrite" : ACT_OF[sp.k] || ""; st.item = sp.item; st.actAt = clock.elapsedTime;
   if (sp.k === "lamp") { const m = meshes[sp.item]; m && m.traverse((o) => { if (o.isPointLight) o.visible = !o.visible; }); }
   if (FURN[sp.k].fixed && st.climb) { startClimb(st, sp.item); return; }
   if (FURN[sp.k].fixed) { window.dispatchEvent(new CustomEvent("kaida-home-stairs", { detail: { floor: state.floor, dir: sp.k === "stairs" ? 1 : -1 } })); }
   if (sp.k === "petbed" && st.pet) { const w = worldOf(state.items[sp.item]); st.petBed = new THREE.Vector3(w.x, 0.05, w.z); }
+}
+// 停下手邊的事；正躺在床上的話，先坐起來、站起來才開始走
+function standUp(st) {
+  if (st.act === "sleep" && state.items[st.item]) st.getUp = { t: 0, it: state.items[st.item], edge: st.pos.clone(), ry: st.ry };
+  st.act = ""; st.item = -1;
+}
+function emitDoor() { window.dispatchEvent(new CustomEvent("kaida-home-door", { detail: { floor: state.floor, hall: state.hall } })); }
+// 點二樓的房門：先走到門口，到了才開門（走不到就直接開）
+function walkToDoor(st) {
+  if (state.floor !== 1 || !st) return emitDoor();
+  const from = cellOfPos(st.pos); let best = null;
+  DOOR_CELLS.forEach((c) => { const p = findPath(from, c); if (p && (!best || p.length < best.length)) best = p; });
+  if (!best) return emitDoor();
+  st.path = best.map(cellPos); st.spot = { door: true }; standUp(st); st.idle = 0;
+  if (!st.path.length) arrive(st);
 }
 // 按了書桌的「坐下」：書桌旁有椅子就坐上去寫字，沒有就站著寫
 function sitDesk(i) {
@@ -392,6 +435,15 @@ function climbStep(st, dt) {
     setTimeout(() => { cl.done && cl.done(); requestAnimationFrame(() => { renderer.domElement.style.opacity = "1"; }); }, 260);
   }
 }
+// 床上的姿勢：u = 0 坐在床邊（背對床）、u = 1 躺平（頭朝床頭）
+function bedPose(c, it, u, edge, outRy) {
+  const w = worldOf(it), fa = frontAngle(it), s = dims(it), len = (it.r % 2 ? s.w : s.d) * T;
+  const e = u * u * (3 - 2 * u), lx = w.x + Math.sin(fa) * (len / 2 - 0.12), lz = w.z + Math.cos(fa) * (len / 2 - 0.12);
+  let dr = fa - outRy; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
+  c.root.position.set(edge.x + (lx - edge.x) * e, 0.4 * e, edge.z + (lz - edge.z) * e);
+  c.root.rotation.x = -Math.PI / 2 * e; c.root.rotation.y = outRy + dr * e;
+  c.hips.position.y = SEAT_H.bed + (0.36 - SEAT_H.bed) * e; c.legs.forEach((l) => { l.rotation.x = -1.45 * (1 - e); });
+}
 function animPerson(st, dt, s, wander) {
   if (!st) return;
   st.idle += dt;
@@ -402,19 +454,23 @@ function animPerson(st, dt, s, wander) {
     if (near.length) goTo(st, near[Math.floor(Math.random() * near.length)], -1);
   }
   let walking = false;
-  if (st.path.length) {
+  if (st.getUp) { st.getUp.t += dt; if (st.getUp.t >= 1.3) { st.getUp = null; } }
+  if (st.path.length && !st.getUp) {
     const to = st.path[0], dx = to.x - st.pos.x, dz = to.z - st.pos.z, dist = Math.hypot(dx, dz);
     if (dist < 0.02) { st.path.shift(); if (!st.path.length) arrive(st); }
     else { const step = Math.min(dist, dt * 1.6); st.pos.x += dx / dist * step; st.pos.z += dz / dist * step; st.ry = Math.atan2(dx, dz); walking = true; }
   }
   if (st.climb && st.climb.on) { climbStep(st, dt); walking = true; }
+  if (st.hop) { st.hop.t += dt; if (st.hop.t >= 0.4) st.hop = null; else walking = true; }
+  const gu = st.getUp;
   const c = st.c, act = walking ? "" : st.act, lie = act === "sleep";
   // 每一幀先站直，再擺姿勢
   c.hips.position.set(0, 0.36, 0); c.torso.rotation.set(0, 0, 0); c.head.rotation.set(0, 0, 0);
   c.legs.forEach((l) => l.rotation.set(0, 0, 0)); c.arms.forEach((a) => a.rotation.set(0, 0, 0));
   c.book.visible = act === "book"; c.cup.visible = act === "mug"; c.cookie.visible = false;
   let dr = st.ry - c.root.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); c.root.rotation.y += dr * Math.min(1, dt * 8);
-  c.root.position.copy(st.pos); c.root.rotation.x = 0; c.root.children[0].visible = !lie;
+  if (st.hop) c.root.position.lerpVectors(st.hop.from, st.hop.to, st.hop.t / 0.4); else c.root.position.copy(st.pos);
+  c.root.rotation.x = 0; c.root.children[0].visible = !lie;
   const k = s - (st.actAt || 0);
   if (walking) {
     const sw = Math.sin(s * 10) * 0.55;
@@ -423,13 +479,15 @@ function animPerson(st, dt, s, wander) {
   } else if (act === "sit") {
     c.hips.position.y = SEAT_H[(state.items[st.item] || {}).k] || 0.32; c.legs.forEach((l) => { l.rotation.x = -1.45; });
     c.arms.forEach((a) => { a.rotation.x = -0.5; }); c.head.rotation.y = Math.sin(s * 0.4) * 0.35;
+  } else if (gu) {
+    // 下床：躺 → 坐到床邊 → 站起來
+    bedPose(c, gu.it, 1 - Math.min(1, gu.t / 0.8), gu.edge, gu.ry);
+    if (gu.t > 0.8) { const q = Math.min(1, (gu.t - 0.8) / 0.5); c.hips.position.y = SEAT_H.bed + (0.36 - SEAT_H.bed) * q; c.legs.forEach((l) => { l.rotation.x = -1.45 * (1 - q); }); }
   } else if (lie) {
-    // 躺在床上：頭朝床頭，眼睛閉起來
-    c.root.rotation.x = -Math.PI / 2;
-    const it = state.items[st.item], w = it ? worldOf(it) : st.pos, fa = it ? frontAngle(it) : 0, half = it ? dims(it) : { w: 2, d: 3 };
-    const len = (it && it.r % 2 ? half.w : half.d) * T;
-    c.root.position.set(w.x + Math.sin(fa) * (len / 2 - 0.12), 0.4, w.z + Math.cos(fa) * (len / 2 - 0.12));
-    c.root.rotation.y = fa; c.torso.position.y = Math.sin(s * 1.2) * 0.008;
+    // 上床：先坐在床邊，再往後躺下；躺好了頭朝床頭，眼睛閉起來
+    const it = state.items[st.item], kk = k - 0.4;
+    if (it) bedPose(c, it, kk < 0.6 ? 0 : Math.min(1, (kk - 0.6) / 0.8), st.pos, st.ry);
+    c.torso.position.y = Math.sin(s * 1.2) * 0.008;
   } else if (act === "book") {
     c.arms.forEach((a, i) => { a.rotation.x = -1.25; a.rotation.z = (i ? -1 : 1) * 0.55; }); c.head.rotation.x = 0.38;
     const ph = (s % 3.2) / 0.7; c.book.userData.page.rotation.z = ph < 1 ? Math.PI * (1 - Math.cos(ph * Math.PI)) / 2 : 0;
@@ -500,6 +558,10 @@ function frame() {
   if (!container || !container.isConnected || container.offsetParent === null) return;
   const dt = Math.min(0.05, clock.getDelta()), s = clock.elapsedTime;
   tickRipples(dt);
+  clouds.forEach((o) => { o.c.position.x = o.x + Math.sin(s * o.sp + o.ph) * 0.7; o.c.position.y = o.y + Math.sin(s * 0.5 + o.ph) * 0.06; });
+  // 鏡頭轉到牆外面就藏起那面牆
+  if (backG) backG.visible = camera.position.z > -D / 2;
+  if (leftG) leftG.visible = camera.position.x > -W / 2;
   animPerson(ownerSt, dt, s, !state.edit && !!guestSt);
   animPerson(guestSt, dt, s, false);
   // 方格只在擺設、移動家具時出現
@@ -508,7 +570,15 @@ function frame() {
   // 樓梯上的上下樓按鈕跟著樓梯走；擺設時收起來
   const busy = state.edit || [ownerSt, guestSt].some((p) => p && p.climb);
   Object.keys(pins).forEach((k) => {
-    const el = pins[k], it = state.items.find((o) => o.k === k);
+    const el = pins[k];
+    // 房門旁的鎖：只在二樓走廊、門看得到時出現
+    if (k === "door") {
+      if (busy || state.floor !== 1 || !state.hall || !doorG || !doorG.parent.visible) { el.hidden = true; return; }
+      const v = new THREE.Vector3(0.62, 0.7, 0.1); doorG.localToWorld(v); v.project(camera);
+      el.hidden = false; el.style.left = ((v.x + 1) / 2 * container.clientWidth) + "px"; el.style.top = ((1 - v.y) / 2 * container.clientHeight) + "px";
+      return;
+    }
+    const it = state.items.find((o) => o.k === k);
     if (!it || busy) { el.hidden = true; return; }
     const w = worldOf(it), v = new THREE.Vector3(w.x, k === "stairs" ? 0.9 : 0.35, w.z).project(camera);
     el.hidden = false;
@@ -518,7 +588,8 @@ function frame() {
 let pins = {}, arriveDir = 0;
 
 /* ===== 操作：點家具選取，拖曳或點格子移動 ===== */
-let drag = null, tapStart = null;
+let drag = null, tapStart = null, orbit = null, pinch = null, gesture = false;
+const touches = new Map();
 function pickItem(e) {
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -547,25 +618,46 @@ function moveSelTo(cell, commit) {
 }
 function bindInput(el) {
   el.addEventListener("pointerdown", (e) => {
-    tapStart = { x: e.clientX, y: e.clientY };
-    if (!state.edit) return;
-    const i = pickItem(e);
-    drag = { x: e.clientX, y: e.clientY, i, moved: false, id: e.pointerId };
-    if (i >= 0 && i === sel) { el.setPointerCapture && el.setPointerCapture(e.pointerId); }
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // 兩指：縮放；這次手勢不算點擊
+    if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: zoom }; orbit = null; drag = null; gesture = true; return; }
+    if (touches.size > 2) return;
+    tapStart = { x: e.clientX, y: e.clientY }; gesture = false;
+    el.setPointerCapture && el.setPointerCapture(e.pointerId);
+    const i = state.edit ? pickItem(e) : -1;
+    if (state.edit) drag = { x: e.clientX, y: e.clientY, i, moved: false, id: e.pointerId };
+    // 擺設時拖選中的家具是搬家具，其他拖曳都是轉鏡頭
+    orbit = state.edit && i >= 0 && i === sel ? null : { x: e.clientX, y: e.clientY, yaw, pitch, on: false };
   });
+  const endTouch = (e) => { touches.delete(e.pointerId); if (touches.size < 2) pinch = null; if (!touches.size) orbit = null; };
+  // 點兩下回到原本的角度
+  el.addEventListener("dblclick", () => { yaw = YAW0; pitch = PITCH0; zoom = 1; applyCam(); });
+  el.addEventListener("pointercancel", (e) => { endTouch(e); drag = null; gesture = false; });
+  el.addEventListener("wheel", (e) => { e.preventDefault(); zoom *= Math.exp(e.deltaY * 0.0012); applyCam(); }, { passive: false });
   el.addEventListener("pointermove", (e) => {
+    if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && touches.size === 2) { const [a, b] = [...touches.values()]; zoom = pinch.z * pinch.d / (Math.hypot(a.x - b.x, a.y - b.y) || 1); applyCam(); return; }
+    if (orbit && touches.size === 1) {
+      const dx = e.clientX - orbit.x, dy = e.clientY - orbit.y;
+      if (!orbit.on && Math.hypot(dx, dy) < 8) return;
+      orbit.on = true; gesture = true; e.preventDefault();
+      yaw = orbit.yaw - dx * 0.007; pitch = orbit.pitch + dy * 0.006; applyCam();
+      return;
+    }
     if (!drag || !state.edit || drag.i < 0 || drag.i !== sel) return;
     if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
     drag.moved = true; e.preventDefault();
     moveSelTo(cellAt(e.clientX, e.clientY), false);
   });
   el.addEventListener("pointerup", (e) => {
+    endTouch(e);
+    if (gesture) { if (!touches.size) { gesture = false; drag = null; } return; }
     if (!state.edit) {
       // 逛家模式：點地板走過去，點家具做對應的事（自己家動自己，去別人家動客人）
-      if (doorG && doorG.parent && tapStart && Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) <= 10) {
+      if (doorG && doorG.parent && doorG.parent.visible && tapStart && Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) <= 10) {
         const r = renderer.domElement.getBoundingClientRect();
         ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera);
-        if (ray.intersectObject(doorG, true).length) { window.dispatchEvent(new CustomEvent("kaida-home-door", { detail: { floor: state.floor } })); return; }
+        if (ray.intersectObject(doorG, true).length) { const st = guestSt || ownerSt; if (st && st.climb) return; walkToDoor(st); return; }
       }
       const st = guestSt || ownerSt; if (!st || st.climb || !tapStart || Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 10) return;
       const i = pickItem(e), cell = cellAt(e.clientX, e.clientY);
@@ -603,13 +695,14 @@ function mount(el) {
 function set(o) {
   const lk = (x) => JSON.stringify(x && x.look || null);
   const peopleChanged = lk(o.owner) !== lk(state.owner) || lk(o.guest) !== lk(state.guest);
-  const fl = Math.max(0, Math.min(FLOORS.length - 1, o.floor | 0)), floorChanged = fl !== state.floor;
+  const fl = Math.max(0, Math.min(FLOORS.length - 1, o.floor | 0)), hall = fl === 1 && !!o.hall, floorChanged = fl !== state.floor || hall !== state.hall;
+  state.hall = hall;
   state.owner = o.owner || null; state.guest = o.guest || null; state.edit = !!o.edit; state.floor = fl; state.locked = !!o.locked;
   if (doorG) { const lk = doorG.getObjectByName("padlock"); if (lk) lk.visible = state.locked; }
   state.items = (o.items || []).filter((it) => FURN[it.k]).map((it) => ({ k: it.k, x: it.x | 0, z: it.z | 0, r: (it.r | 0) % 4 }));
   // 每層該有的樓梯：舊的頂樓樓梯改成樓梯口、多的拿掉、少的自己擺（右後角優先）
   let added = false;
-  const want = stairKinds(fl);
+  const want = stairKinds(fl, hall);
   state.items.forEach((it) => { if (it.k === "stairs" && want.indexOf("stairs") < 0) { it.k = "stairsDown"; added = true; } });
   state.items = state.items.filter((it, i) => { if (!FURN[it.k].fixed) return true; const keep = want.indexOf(it.k) >= 0 && state.items.findIndex((o) => o.k === it.k) === i; if (!keep) added = true; return keep; });
   want.forEach((k) => {
@@ -667,6 +760,6 @@ function screenOf(kind) {
 }
 function who() { const st = guestSt || ownerSt; return st ? { act: st.act, k: (state.items[st.item] || {}).k || "", walking: st.path.length, x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
 // 門在畫面上的位置（測試用）
-function doorAt() { if (!doorG || !doorG.parent) return null; const v = new THREE.Vector3(0, 0.7, 0); doorG.localToWorld(v); v.project(camera); const r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
+function doorAt() { if (!doorG || !doorG.parent || !doorG.parent.visible) return null; const v = new THREE.Vector3(0, 0.7, 0); doorG.localToWorld(v); v.project(camera); const r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
 window.KaidaHome = { sitDesk, doorAt, climb, pin: (map) => { pins = map; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
 window.dispatchEvent(new Event("kaida-home-ready"));
