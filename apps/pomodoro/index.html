@@ -121,8 +121,12 @@
   .fshop .sw { display: block; height: 34px; border-radius: 8px; border: 1px solid var(--line); }
   .modal .card:has(.fcats) { width: min(440px, calc(100vw - 32px)); min-width: 0; }
   .fcats { display: flex; gap: 6px; overflow-x: auto; margin: 0 -4px 10px; padding: 2px 4px; scrollbar-width: none; }
+  .mcat-x { grid-column: 1 / -1; justify-self: start; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); border-radius: 999px; padding: 4px 12px; min-height: 32px; font: inherit; font-size: 13px; cursor: pointer; }
   .fcats::-webkit-scrollbar { display: none; }
   .fcats button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; min-height: 36px; cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
+  .home-cats { margin: 8px 0 4px; }
+  .home-cats:empty { display: none; }
+  .home-cats b { font-weight: 600; margin-left: 4px; opacity: .6; }
   .fcats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
   .grow { display: flex; gap: 14px; align-items: center; }
   .grow-pet { width: 76px; height: 90px; flex: none; }
@@ -726,7 +730,7 @@
   <section id="view-home" hidden>
     <div class="home-top"><button class="btn ghost" type="button" id="home-back" data-i18n="h.back" hidden>‹ 離開</button><h2 id="home-title"></h2><span class="home-fl" id="home-floor"></span></div>
     <div class="home-wrap" id="home-3d"><button type="button" class="sit-btn" id="home-sit" hidden data-i18n="s.sit">坐下</button><div class="stair-btns" id="stair-up" hidden></div><div class="stair-btns" id="stair-down" hidden></div><div class="stair-btns" id="door-lock" hidden></div><div class="hfocus" id="home-focus" hidden></div></div>
-    <p class="small muted" id="home-hint"></p>
+    <div class="fcats home-cats" id="home-cats"></div>
     <div class="home-bar" id="home-bar"></div>
     <div id="home-store"></div>
   </section>
@@ -826,12 +830,12 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261025j"></script>
-<script src="net.js?v=20261025j"></script>
-<script src="music.js?v=20261025j"></script>
-<script type="module" src="scene3d.js?v=20261025j" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261025j"></script>
-<script src="books.js?v=20261025j"></script>
+<script src="scene.js?v=20261025k"></script>
+<script src="net.js?v=20261025k"></script>
+<script src="music.js?v=20261025k"></script>
+<script type="module" src="scene3d.js?v=20261025k" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025k"></script>
+<script src="books.js?v=20261025k"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -2632,10 +2636,10 @@
     climbing = true;
   }
   function renderHomeBar() {
-    var bar = document.getElementById("home-bar"), hint = document.getElementById("home-hint"), st = document.getElementById("home-store");
-    if (homeVisit) { hint.textContent = t("h.hintVisit", { n: homeVisit.n }); bar.innerHTML = ""; st.innerHTML = ""; return; }
-    if (inHall()) { hint.textContent = t("h.hintHall"); bar.innerHTML = '<button class="btn ghost" type="button" data-h="invite">' + K.esc(t("h.invite")) + '</button>'; st.innerHTML = ""; return; }
-    hint.textContent = t(homeEdit ? "h.hintEdit" : "h.hintView");
+    var bar = document.getElementById("home-bar"), st = document.getElementById("home-store");
+    renderHomeCats();
+    if (homeVisit) { bar.innerHTML = ""; st.innerHTML = ""; return; }
+    if (inHall()) { bar.innerHTML = '<button class="btn ghost" type="button" data-h="invite">' + K.esc(t("h.invite")) + '</button>'; st.innerHTML = ""; return; }
     var b = function (act, label, cls) { return '<button class="btn ' + (cls || "ghost") + '" type="button" data-h="' + act + '">' + K.esc(t(label)) + '</button>'; };
     if (homeEdit) {
       bar.innerHTML = (homeSel >= 0 ? b("rotate", "h.rotate") + b("store", "h.store") : "") + b("shop", "h.shop") + b("done", "h.done", "");
@@ -2646,6 +2650,16 @@
       st.innerHTML = "";
     }
   }
+  // 家下面一排：我有的家具分類（擺著的加倉庫裡的），點一下打開「我的」只看那一類
+  function renderHomeCats() {
+    var el = document.getElementById("home-cats"), F = H() && H().FURN; if (!el) return;
+    if (homeVisit || !F) { el.innerHTML = ""; return; }
+    var n = {};
+    data.home.floors.forEach(function (fl) { (fl || []).forEach(function (it) { var f = F[it.k]; if (f && !f.fixed && f.cat) n[f.cat] = (n[f.cat] || 0) + 1; }); });
+    Object.keys(data.home.store).forEach(function (k) { var f = F[k]; if (f && f.cat && data.home.store[k] > 0) n[f.cat] = (n[f.cat] || 0) + data.home.store[k]; });
+    el.innerHTML = FCATS.filter(function (c) { return n[c]; }).map(function (c) { return '<button type="button" data-hmcat="' + c + '">' + K.esc(t("hc." + c)) + '<b>' + n[c] + '</b></button>'; }).join("");
+  }
+  var mineCat = "";
   function furnName(k) { var f = H() && H().FURN[k]; return f ? (K.lang() === "en" ? f.en : f.zh) : k; }
   // 家具商店分成好幾類；牆壁漆和地板是整層換，買一次之後每層都可以用
   var FCATS = ["mine", "paint", "floor", "rug", "plant", "decor", "elec", "gallery", "desk", "chair", "shelf", "lamp", "table", "bedroom", "curtain", "outdoor", "pet", "fest", "books"], furnCat = "mine";
@@ -2659,13 +2673,14 @@
       var fi = function (k, attr, note) { var f = F[k]; return f ? '<button type="button" class="fi" ' + attr + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(note) + '</span></button>' : ""; };
       var order = [homeFloor].concat([0, 1, 2].filter(function (f) { return f !== homeFloor; }));
       body = order.map(function (f) {
-        var its = (data.home.floors[f] || []).map(function (it, i) { return { it: it, i: i }; }).filter(function (o) { return F[o.it.k] && !F[o.it.k].fixed; });
+        var its = (data.home.floors[f] || []).map(function (it, i) { return { it: it, i: i }; }).filter(function (o) { return F[o.it.k] && !F[o.it.k].fixed && (!mineCat || F[o.it.k].cat === mineCat); });
         if (!its.length) return "";
         return '<p class="fsub">' + K.esc(t("h.f" + f)) + (f === homeFloor && !inHall() ? " · " + K.esc(t("h.mineHere")) : "") + '</p>' + its.map(function (o) { return fi(o.it.k, 'data-hmine="' + f + ':' + o.i + '"', t("h.mineEdit")); }).join("");
       }).join("");
-      var ks = Object.keys(data.home.store).filter(function (k) { return data.home.store[k] > 0; });
+      var ks = Object.keys(data.home.store).filter(function (k) { return data.home.store[k] > 0 && (!mineCat || (F[k] && F[k].cat === mineCat)); });
       if (ks.length) body += '<p class="fsub">📦 ' + K.esc(t("h.mineStore")) + '</p>' + ks.map(function (k) { return fi(k, 'data-hmput="' + k + '"', "×" + data.home.store[k] + " · " + t("h.minePut")); }).join("");
       if (!body) body = '<p class="small muted">' + K.esc(t("h.mineNone")) + '</p>';
+      if (mineCat) body = '<button type="button" class="mcat-x" data-hmcat="">' + K.esc(t("hc." + mineCat)) + ' ✕</button>' + body;
     } else if (furnCat === "books") {
       // 書店：沒有版權的經典節選，買了放上書櫃，點書櫃就能讀
       body = (window.KaidaBooks || []).map(function (bk) { var own = myBooks().indexOf(bk.id) >= 0;
@@ -2690,6 +2705,7 @@
       '<div class="fshop">' + body + '</div><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:12px">' + K.esc(t("tm.close")) + '</button>';
     document.getElementById("modal").hidden = false;
     var on = card.querySelector('.fcats [aria-selected="true"]'); if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "center" });
+    renderHomeCats();
   }
   // 牆壁漆、地板：沒買過先付小木頭，然後換到現在這層
   function useSurf(key, id) {
@@ -3015,6 +3031,7 @@
   document.getElementById("home-back").addEventListener("click", function () { show("friends"); });
   document.getElementById("view-home").addEventListener("click", function (e) {
     var hc = e.target.closest("[data-hclimb]"); if (hc) { climbTo(+hc.dataset.hclimb); return; }
+    var hm = e.target.closest("[data-hmcat]"); if (hm) { furnCat = "mine"; mineCat = hm.dataset.hmcat; showFurnShop(); return; }
     if (e.target.closest("[data-hbedlock]")) { doorAct("bed"); return; }
     var hf = e.target.closest("[data-hfloor]"); if (hf) { climbing = false; goFloor(+hf.dataset.hfloor); return; }
     var hp = e.target.closest("[data-hput]");
@@ -3036,7 +3053,8 @@
     if (e.target.closest("[data-hbookshop]")) { furnCat = "books"; showFurnShop(); return; }
     var hm = e.target.closest("[data-hmine]"); if (hm) { this.hidden = true; var pm = hm.dataset.hmine.split(":"); editMine(+pm[0], +pm[1]); return; }
     var hmp = e.target.closest("[data-hmput]"); if (hmp) { this.hidden = true; putMine(hmp.dataset.hmput); return; }
-    var fc = e.target.closest("[data-hcat]"); if (fc) { furnCat = fc.dataset.hcat; showFurnShop(); return; }
+    var fc = e.target.closest("[data-hcat]"); if (fc) { furnCat = fc.dataset.hcat; mineCat = ""; showFurnShop(); return; }
+    var mc = e.target.closest("[data-hmcat]"); if (mc) { furnCat = "mine"; mineCat = mc.dataset.hmcat; showFurnShop(); return; }
     var fs = e.target.closest("[data-hsurf]"); if (fs) { var ps = fs.dataset.hsurf.split(":"); useSurf(ps[0], ps[1]); return; }
     var fb = e.target.closest("[data-hbuy]"); if (fb) { this.hidden = true; buyFurn(fb.dataset.hbuy); return; }
     var hf = e.target.closest("[data-hfloor]"); if (hf) { this.hidden = true; goFloor(+hf.dataset.hfloor); return; }
