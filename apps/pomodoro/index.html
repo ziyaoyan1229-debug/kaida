@@ -106,6 +106,13 @@
   .fshop .fi { display: grid; gap: 2px; }
   .fshop .fi .ic { font-size: 26px; }
   .fshop .fi[disabled] { opacity: .5; cursor: default; }
+  .fshop .fi.on { border: 2px solid var(--signal); }
+  .fshop .sw { display: block; height: 34px; border-radius: 8px; border: 1px solid var(--line); }
+  .modal .card:has(.fcats) { width: min(440px, calc(100vw - 32px)); min-width: 0; }
+  .fcats { display: flex; gap: 6px; overflow-x: auto; margin: 0 -4px 10px; padding: 2px 4px; scrollbar-width: none; }
+  .fcats::-webkit-scrollbar { display: none; }
+  .fcats button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; min-height: 36px; cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
+  .fcats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
   .grow { display: flex; gap: 14px; align-items: center; }
   .grow-pet { width: 76px; height: 90px; flex: none; }
   .grow-b { flex: 1; min-width: 0; }
@@ -808,11 +815,11 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261025d"></script>
-<script src="net.js?v=20261025d"></script>
-<script src="music.js?v=20261025d"></script>
-<script type="module" src="scene3d.js?v=20261025d" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261025d"></script>
+<script src="scene.js?v=20261025e"></script>
+<script src="net.js?v=20261025e"></script>
+<script src="music.js?v=20261025e"></script>
+<script type="module" src="scene3d.js?v=20261025e" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025e"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -828,7 +835,7 @@
       "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f1h": "2F 走廊", "h.hintHall": "點房門進房間。按門旁的鎖可以鎖上房間，客人就進不去。", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人進不去", "h.bedOpenT": "房間打開了，客人可以進去", "h.upTo": "上樓到{f}", "h.downTo": "下樓到{f}", "h.doorH": "一樓大門", "h.pinFirst": "歡迎回家！先幫一樓大門設一組 4 位數密碼，朋友來參觀要輸入這組密碼", "h.pinLater": "之後點一樓的門也可以設密碼", "h.doorGuest": "這是大門", "h.bedGuest": "這是房門", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
       "h.back": "‹ 離開", "h.shop": "🛒 買家具", "h.edit": "✏️ 擺設", "h.done": "✓ 完成", "h.rotate": "↻ 旋轉", "h.store": "📦 收起", "h.invite": "💌 邀請朋友", "h.lockOn": "🔓 開鎖", "h.lockOff": "🔒 鎖門",
       "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。按樓梯上的 ⬆ ⬇ 上下樓，點門可以鎖門。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
-      "h.shopH": "家具商店", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
+      "h.shopH": "家具商店", "hc.paint": "🎨 牆壁漆", "hc.floor": "🟫 地板", "hc.rug": "🧶 地毯", "hc.plant": "🪴 植物", "hc.elec": "📺 家電樂器", "hc.gallery": "🖼️ 畫廊", "hc.desk": "🗃️ 書桌", "hc.chair": "🪑 椅子沙發", "hc.shelf": "📚 書櫃", "hc.lamp": "💡 燈", "hc.table": "🫖 茶几桌子", "hc.bedroom": "🛏️ 寢具收納", "hc.curtain": "🪟 窗簾", "hc.outdoor": "⛱️ 露臺戶外", "hc.pet": "🐾 寵物用品", "hc.fest": "🎄 節日裝飾", "h.inUse": "這層正在用", "h.owned": "已擁有，點一下換上", "h.onWall": "掛牆", "h.onlyOutS": "露臺限定", "h.noWall": "露臺沒有牆，換到一樓或二樓房間再掛", "h.onlyOut": "這個只能擺在三樓露臺", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
       "h.pinSet": "設定 4 位數門鎖密碼", "h.pinChange": "🔑 改密碼", "h.pinBad": "密碼要是 4 位數字", "h.locked": "上鎖了，朋友要輸入密碼才進得來", "h.unlocked": "沒上鎖，拿到連結的人都能來參觀",
       "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，對方可能還沒佈置", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
       "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "小日誌",
@@ -936,7 +943,7 @@
       "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f1h": "2F Hallway", "h.hintHall": "Tap the door to enter the bedroom. Tap the lock beside it to keep guests out.", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom is locked", "h.bedLockT": "Bedroom locked. Guests can't go in.", "h.bedOpenT": "Bedroom open. Guests can go in.", "h.upTo": "Up to {f}", "h.downTo": "Down to {f}", "h.doorH": "Front door", "h.pinFirst": "Welcome home! Set a 4-digit code for the front door. Friends need it to visit.", "h.pinLater": "You can set it later by tapping the front door", "h.doorGuest": "The front door", "h.bedGuest": "The bedroom door", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
       "h.back": "‹ Leave", "h.shop": "🛒 Furniture", "h.edit": "✏️ Arrange", "h.done": "✓ Done", "h.rotate": "↻ Rotate", "h.store": "📦 Put away", "h.invite": "💌 Invite", "h.lockOn": "🔓 Unlock", "h.lockOff": "🔒 Lock",
       "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap ⬆ ⬇ on the stairs to change floors, and tap a door to lock it.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
-      "h.shopH": "Furniture shop", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
+      "h.shopH": "Furniture shop", "hc.paint": "🎨 Wall paint", "hc.floor": "🟫 Flooring", "hc.rug": "🧶 Rugs", "hc.plant": "🪴 Plants", "hc.elec": "📺 Appliances", "hc.gallery": "🖼️ Gallery", "hc.desk": "🗃️ Desks", "hc.chair": "🪑 Seating", "hc.shelf": "📚 Shelves", "hc.lamp": "💡 Lamps", "hc.table": "🫖 Tables", "hc.bedroom": "🛏️ Bedroom", "hc.curtain": "🪟 Curtains", "hc.outdoor": "⛱️ Terrace", "hc.pet": "🐾 Pets", "hc.fest": "🎄 Holiday", "h.inUse": "On this floor", "h.owned": "Owned, tap to use", "h.onWall": "Wall", "h.onlyOutS": "Terrace only", "h.noWall": "The terrace has no walls. Try 1F or the bedroom.", "h.onlyOut": "This only goes on the 3F terrace", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
       "h.pinSet": "Set a 4-digit door code", "h.pinChange": "🔑 Change code", "h.pinBad": "The code must be 4 digits", "h.locked": "Locked. Friends need the code to come in.", "h.unlocked": "Unlocked. Anyone with the link can visit.",
       "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. They may not have set it up yet.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
       "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Journal",
@@ -2539,7 +2546,7 @@
     clearTimeout(homePubT);
     homePubT = setTimeout(function () {
       if (!window.KaidaNet || !window.KaidaNet.homePut || !data.me.name) return;
-      window.KaidaNet.homePut(data.me.id, { n: data.me.name, look: myLook(), floors: data.home.floors, items: data.home.floors[0], lock: data.home.lock || "", bl: data.home.bedLock ? 1 : 0, ts: Date.now() });
+      window.KaidaNet.homePut(data.me.id, { n: data.me.name, look: myLook(), floors: data.home.floors, items: data.home.floors[0], paint: data.home.paint || [], tile: data.home.tile || [], lock: data.home.lock || "", bl: data.home.bedLock ? 1 : 0, ts: Date.now() });
     }, 1200);
   }
   function renderHome() {
@@ -2552,7 +2559,7 @@
       h.onChange(function (items) { if (homeVisit || inHall()) return; data.home.floors[homeFloor] = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
     }
     var lockedHere = homeFloor === 0 ? !!(vis ? vis.lock : data.home.lock) : homeFloor === 1 ? !!(vis ? vis.bl : data.home.bedLock) : false;
-    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: inHall() ? HALL : vis.floors[homeFloor] || [], edit: false, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive });
+    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: inHall() ? HALL : vis.floors[homeFloor] || [], edit: false, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive, paint: inHall() ? "" : (vis.paint || [])[homeFloor], tile: inHall() ? "" : (vis.tile || [])[homeFloor] } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive, paint: inHall() ? "" : (data.home.paint || [])[homeFloor], tile: inHall() ? "" : (data.home.tile || [])[homeFloor] });
     homeArrive = 0;
     // 第一次進自己家：先設一樓大門的密碼
     if (!vis && !data.home.pinHash && !homePinAsked) { homePinAsked = true; setTimeout(function () { if (current === "home" && !homeVisit) setPin(true); }, 500); }
@@ -2627,20 +2634,51 @@
     }
   }
   function furnName(k) { var f = H() && H().FURN[k]; return f ? (K.lang() === "en" ? f.en : f.zh) : k; }
+  // 家具商店分成好幾類；牆壁漆和地板是整層換，買一次之後每層都可以用
+  var FCATS = ["paint", "floor", "rug", "plant", "elec", "gallery", "desk", "chair", "shelf", "lamp", "table", "bedroom", "curtain", "outdoor", "pet", "fest"], furnCat = "paint";
+  function surfOwned(kind, id, spec) { return !spec.price || !!(data.home.owned && data.home.owned[kind + ":" + id]); }
   function showFurnShop() {
-    var F = H() && H().FURN; if (!F) return;
+    var h = H(), F = h && h.FURN; if (!F) return;
     var card = document.getElementById("modal-card"); card.className = "card";
-    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 10px">🪵 ' + data.wood + '</p><div class="fshop">' +
-      Object.keys(F).filter(function (k) { return !F[k].fixed; }).map(function (k) { var f = F[k];
-        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(t("h.size", { w: f.w, d: f.d })) + ' · 🪵 ' + f.price + '</span></button>';
-      }).join("") + '</div><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:12px">' + K.esc(t("tm.close")) + '</button>';
+    var nm = function (o) { return K.lang() === "en" ? o.en : o.zh; }, body = "";
+    if (furnCat === "paint" || furnCat === "floor") {
+      var map = furnCat === "paint" ? h.PAINTS : h.TILES, key = furnCat === "paint" ? "paint" : "tile";
+      var cur = (data.home[key] || [])[homeFloor] || h.FLOORS[homeFloor][furnCat === "paint" ? "wall" : "floor"];
+      body = Object.keys(map).map(function (id) { var o = map[id], own = surfOwned(key, id, o);
+        var sw = '<span class="sw" style="background:' + o.c + (o.tex ? ';background-image:repeating-linear-gradient(' + (o.tex === "brick" || o.tex === "plank" || o.tex === "tatami" ? "0deg" : "90deg") + ',rgba(0,0,0,.15) 0 2px,transparent 2px 12px)' : "") + '"></span>';
+        var tag = id === cur ? t("h.inUse") : own ? t("h.owned") : "🪵 " + o.price;
+        return '<button type="button" class="fi' + (id === cur ? " on" : "") + '" data-hsurf="' + key + ':' + id + '"' + (!own && data.wood < o.price ? " disabled" : "") + '>' + sw + '<b>' + K.esc(nm(o)) + '</b><span class="small muted">' + K.esc(tag) + '</span></button>';
+      }).join("");
+    } else {
+      body = Object.keys(F).filter(function (k) { return !F[k].fixed && F[k].cat === furnCat; }).map(function (k) { var f = F[k];
+        var note = f.wall ? t("h.onWall") : f.out ? t("h.onlyOutS") : t("h.size", { w: f.w, d: f.d });
+        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(note) + ' · 🪵 ' + f.price + '</span></button>';
+      }).join("");
+    }
+    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 8px">🪵 ' + data.wood + ' · ' + K.esc(t(inHall() ? "h.f1h" : "h.f" + homeFloor)) + '</p>' +
+      '<div class="fcats" role="tablist">' + FCATS.map(function (c) { return '<button type="button" role="tab" data-hcat="' + c + '" aria-selected="' + (c === furnCat) + '">' + K.esc(t("hc." + c)) + '</button>'; }).join("") + '</div>' +
+      '<div class="fshop">' + body + '</div><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:12px">' + K.esc(t("tm.close")) + '</button>';
     document.getElementById("modal").hidden = false;
+    var on = card.querySelector('.fcats [aria-selected="true"]'); if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "center" });
   }
+  // 牆壁漆、地板：沒買過先付小木頭，然後換到現在這層
+  function useSurf(key, id) {
+    var h = H(), spec = (key === "paint" ? h.PAINTS : h.TILES)[id]; if (!spec) return;
+    if (key === "paint" && !h.FLOORS[homeFloor].wall) { K.toast(t("h.noWall")); return; }
+    if (!surfOwned(key, id, spec)) {
+      if (data.wood < spec.price) { K.toast(t("h.needWood", { n: spec.price - data.wood })); return; }
+      data.wood -= spec.price; updateWood(); data.home.owned = data.home.owned || {}; data.home.owned[key + ":" + id] = 1;
+    }
+    data.home[key] = data.home[key] || [];
+    data.home[key][homeFloor] = id; persist(); publishHome(); renderHome(); showFurnShop();
+  }
+  function placeErr(k) { var f = H() && H().FURN[k]; if (!f) return "h.full"; if (f.wall && !H().FLOORS[homeFloor].wall) return "h.noWall"; if (f.out && homeFloor !== 2) return "h.onlyOut"; return ""; }
   function buyFurn(k) {
     var f = H() && H().FURN[k]; if (!f) return;
+    var pe = placeErr(k); if (pe) { K.toast(t(pe)); return; }
     if (data.wood < f.price) { K.toast(t("h.needWood", { n: f.price - data.wood })); return; }
     data.wood -= f.price; updateWood();
-    homeEdit = true; H().set({ owner: { look: homeLook() }, items: homeItems(), edit: true, floor: homeFloor });
+    homeEdit = true; renderHome();
     if (H().place(k)) K.toast(t("h.bought", { f: furnName(k) }));
     else { data.home.store[k] = (data.home.store[k] || 0) + 1; K.toast(t("h.full")); }
     persist(); renderHomeBar();
@@ -2659,7 +2697,8 @@
       if (!o || !(Array.isArray(o.floors) || Array.isArray(o.items))) { K.toast(t("h.notFound")); return; }
       var fl = Array.isArray(o.floors) ? o.floors.slice(0, 3).map(function (f) { return Array.isArray(f) ? f.slice(0, 80) : []; }) : [o.items.slice(0, 80), [], []];
       while (fl.length < 3) fl.push([]);
-      var go = function () { homeVisit = { uid: uid, n: String(o.n || "?").slice(0, 16), look: o.look || {}, floors: fl, bl: !!o.bl, lock: !!o.lock }; show("home"); };
+      var sl = function (a) { return Array.isArray(a) ? a.slice(0, 3).map(function (x) { return typeof x === "string" ? x.slice(0, 20) : ""; }) : []; };
+      var go = function () { homeVisit = { uid: uid, n: String(o.n || "?").slice(0, 16), look: o.look || {}, floors: fl, bl: !!o.bl, lock: !!o.lock, paint: sl(o.paint), tile: sl(o.tile) }; show("home"); };
       if (!o.lock) return go();
       var pin = prompt(t("h.pinAsk", { n: String(o.n || "?").slice(0, 16) }));
       if (pin == null) return;
@@ -2874,7 +2913,7 @@
     if (e.target.closest("[data-hbedlock]")) { doorAct("bed"); return; }
     var hf = e.target.closest("[data-hfloor]"); if (hf) { climbing = false; goFloor(+hf.dataset.hfloor); return; }
     var hp = e.target.closest("[data-hput]");
-    if (hp) { var k = hp.dataset.hput; if (!(data.home.store[k] > 0)) return; if (H().place(k)) { data.home.store[k]--; if (!data.home.store[k]) delete data.home.store[k]; persist(); } else K.toast(t("h.full")); renderHomeBar(); return; }
+    if (hp) { var k = hp.dataset.hput; if (!(data.home.store[k] > 0)) return; var pe = placeErr(k); if (pe) { K.toast(t(pe)); return; } if (H().place(k)) { data.home.store[k]--; if (!data.home.store[k]) delete data.home.store[k]; persist(); } else K.toast(t("h.full")); renderHomeBar(); return; }
     var b = e.target.closest("[data-h]"); if (!b || homeVisit) return;
     var a = b.dataset.h;
     if (a === "shop") showFurnShop();
@@ -2886,6 +2925,8 @@
     else if (a === "invite") { publishHome(); shareLink(t("h.inviteText", { n: data.me.name }), location.origin + location.pathname + "#home=" + data.me.id); }
   });
   document.getElementById("modal").addEventListener("click", function (e) {
+    var fc = e.target.closest("[data-hcat]"); if (fc) { furnCat = fc.dataset.hcat; showFurnShop(); return; }
+    var fs = e.target.closest("[data-hsurf]"); if (fs) { var ps = fs.dataset.hsurf.split(":"); useSurf(ps[0], ps[1]); return; }
     var fb = e.target.closest("[data-hbuy]"); if (fb) { this.hidden = true; buyFurn(fb.dataset.hbuy); return; }
     var hf = e.target.closest("[data-hfloor]"); if (hf) { this.hidden = true; goFloor(+hf.dataset.hfloor); return; }
     var hd = e.target.closest("[data-hdoor]"); if (hd) { this.hidden = true; doorAct(hd.dataset.hdoor); return; }
