@@ -179,6 +179,22 @@ const BASE_OBST = [
 // 依主題重算這間房的座位、休息點和障礙物（家裡用原本的配置）
 // 經典版：每個主題房間都用同一套家具擺法（舊版），只換顏色和窗外
 let CLASSIC = false;
+// 休息時間：寵物會跟著主人玩、做動作、冒表情；專注時安靜趴在旁邊
+let petPlay = false;
+const PET_ACTS = ["hop", "circle", "spin", "wag", "beg", "hop", "circle"];
+const PET_ICON = { hop: ["♪", "#6a8ad8"], circle: ["♥", "#e5607a"], spin: ["!", "#e0a020"], wag: ["♥", "#e5607a"], beg: ["…", "#8a7a6a"], sleep: ["z", "#7a8aa8"], sad: ["💧", "#5a9ad8"] };
+const _iconTex = {};
+function petIconTex(k) {
+  if (_iconTex[k]) return _iconTex[k];
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  g.fillStyle = "rgba(255,253,248,.95)"; g.strokeStyle = "rgba(60,40,20,.25)"; g.lineWidth = 3;
+  g.beginPath(); g.arc(32, 28, 22, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(26, 46); g.lineTo(32, 58); g.lineTo(38, 46); g.fill();
+  g.fillStyle = PET_ICON[k][1]; g.font = "bold 30px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(k === "sleep" ? "zz" : k === "sad" ? "" : PET_ICON[k][0], 32, 29);
+  if (k === "sad") { g.beginPath(); g.moveTo(32, 14); g.quadraticCurveTo(44, 32, 32, 40); g.quadraticCurveTo(20, 32, 32, 14); g.fill(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; _iconTex[k] = t; return t;
+}
 function applyLayout() {
   const L = CLASSIC ? {} : LAYOUTS[THEME] || {}, hide = L.hide || [], mv = L.move || {};
   const off = (m) => mv[m] || [0, 0];
@@ -458,6 +474,9 @@ function makePet(kind, ps, pm) {
     else { tail = cap(0.025, 0.18, col, g); tail.position.set(0, 0.22, -0.16); tail.rotation.x = -0.6; }
   }
   g.userData.tail = tail;
+  // 頭上的表情泡泡（休息時玩耍、專注時睡覺）
+  const ic = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false })); ic.scale.set(0.24, 0.24, 1); ic.position.set(0, 0.66, 0); ic.visible = false; g.add(ic);
+  g.userData.icon = ic; g.userData.pm = pm;
   // 成長階段決定大小；進化後頭上有顆金星，心情用小愛心或眼淚表示
   g.scale.setScalar(PET_SCALE[ps != null ? ps : 2]);
   if (ps === 3) { const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.05), mat("#f2c94c", { metalness: 0.5, roughness: 0.3, emissive: "#6a4a00" })); st.position.set(0, 0.5, 0.1); g.add(st); g.userData.spark = st; }
@@ -2593,11 +2612,39 @@ function animChar(st, dt, now) {
     // 坐著時待在椅子旁邊偏後面，不要鑽到桌腳裡；走路時跟在旁邊
     const sitting = st.mode === "sit";
     const off = tmpV.set(sitting ? 0.6 : 0.45, 0, sitting ? -0.32 : 0.1).applyAxisAngle(new THREE.Vector3(0, 1, 0), st.ry);
-    const tx = st.pos.x + off.x, tz = st.pos.z + off.z;
-    c.cat.position.x += (tx - c.cat.position.x) * Math.min(1, dt * 2.5);
-    c.cat.position.z += (tz - c.cat.position.z) * Math.min(1, dt * 2.5);
-    c.cat.rotation.y = st.ry;
-    c.cat.userData.tail.rotation.z = Math.sin(s * 3) * 0.5;
+    let tx = st.pos.x + off.x, tz = st.pos.z + off.z;
+    const P = c.cat, U = P.userData;
+    if (U.seed == null) { let h = 7; for (let k = 0; k < st.m.id.length; k++) h = (h * 31 + st.m.id.charCodeAt(k)) % 997; U.seed = h; }
+    // 每 6 秒換一個動作；每個人的寵物節奏錯開
+    const segT = s + U.seed * 0.37, seg = Math.floor(segT / 6), segK = segT / 6 - seg;
+    const act = !petPlay ? "sleep" : st.mode === "walk" ? "follow" : PET_ACTS[(seg + U.seed) % PET_ACTS.length];
+    let ry = st.ry, y = 0, rz = 0, wagF = 3, wagA = 0.5;
+    if (act === "circle") {
+      // 繞著主人跑一圈
+      const a = segK * Math.PI * 2 + U.seed;
+      tx = st.pos.x + Math.cos(a) * 0.55; tz = st.pos.z + Math.sin(a) * 0.55; ry = -a; y = Math.abs(Math.sin(s * 10)) * 0.04;
+    } else if (act !== "follow" && act !== "sleep") {
+      // 其他動作：在主人面前看著他
+      const fr = tmpV.set(sitting ? 0.55 : 0.1, 0, sitting ? 0.25 : 0.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), st.ry);
+      tx = st.pos.x + fr.x; tz = st.pos.z + fr.z; ry = Math.atan2(st.pos.x - P.position.x, st.pos.z - P.position.z);
+      if (act === "hop") y = Math.max(0, Math.sin(s * 7)) * 0.16;
+      else if (act === "spin") ry += segK * Math.PI * 4;
+      else if (act === "wag") { rz = Math.sin(s * 8) * 0.12; wagF = 14; wagA = 0.8; }
+      else if (act === "beg") { P.rotation.x = -0.35; y = 0.03; }
+    }
+    if (act !== "beg") P.rotation.x = 0;
+    if (act === "sleep") { wagF = 0.8; wagA = 0.15; }
+    P.position.x += (tx - P.position.x) * Math.min(1, dt * (act === "circle" ? 6 : 2.5));
+    P.position.z += (tz - P.position.z) * Math.min(1, dt * (act === "circle" ? 6 : 2.5));
+    P.position.y = y; P.rotation.z = rz;
+    let dr = ry - (U.ry != null ? U.ry : ry); dr = Math.atan2(Math.sin(dr), Math.cos(dr)); U.ry = (U.ry != null ? U.ry : ry) + dr * Math.min(1, dt * (act === "spin" ? 20 : 6));
+    P.rotation.y = U.ry;
+    U.tail.rotation.z = Math.sin(s * wagF) * wagA;
+    // 表情泡泡：每段開頭冒 2.5 秒；難過時改冒眼淚；專注時偶爾打呼
+    const ik = U.pm === "sad" && act !== "follow" ? "sad" : act === "follow" ? "" : act;
+    const show = ik && (act === "sleep" ? segK > 0.55 : segK < 0.42);
+    U.icon.visible = !!show;
+    if (show) { if (U.iconK !== ik) { U.icon.material.map = petIconTex(ik); U.icon.material.needsUpdate = true; U.iconK = ik; } U.icon.position.y = 0.66 + Math.sin(s * 4) * 0.02; }
     if (c.cat.userData.spark) c.cat.userData.spark.rotation.y = s * 2;
     if (c.cat.userData.heart) c.cat.userData.heart.position.y = 0.46 + Math.sin(s * 3) * 0.03;
   }
@@ -2806,5 +2853,5 @@ function rebuild() {
 }
 // 名牌下面的專注時間，index 每秒傳進來 { id: "00:25:13" }
 function times(map) { Object.keys(chars).forEach((id) => { const st = chars[id], v = map[id] || ""; if (st.tag.ft.textContent !== v) st.tag.ft.textContent = v; }); }
-window.KaidaScene3D = { times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
+window.KaidaScene3D = { times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
