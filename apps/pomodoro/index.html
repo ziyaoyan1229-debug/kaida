@@ -836,12 +836,12 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261025m"></script>
-<script src="net.js?v=20261025m"></script>
-<script src="music.js?v=20261025m"></script>
-<script type="module" src="scene3d.js?v=20261025m" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261025m"></script>
-<script src="books.js?v=20261025m"></script>
+<script src="scene.js?v=20261025n"></script>
+<script src="net.js?v=20261025n"></script>
+<script src="music.js?v=20261025n"></script>
+<script type="module" src="scene3d.js?v=20261025n" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025n"></script>
+<script src="books.js?v=20261025n"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -2528,6 +2528,7 @@
   var HALL = [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "stairsDown", x: 6, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "rug", x: 3, z: 4, r: 1 }];
   function homeDef(i) { return HOME_DEF[i].map(function (it) { return Object.assign({}, it); }); }
   data.home = data.home || { store: {} };
+  data.home.store = data.home.store || {};
   delete data.home.bedLock;
   if (!data.home.floors) {
     // 舊的單層家：原本擺的放一樓，其他兩層給預設家具
@@ -2825,7 +2826,7 @@
   function hideHomeSit() { homeSit.hidden = true; homeSitI = -1; clearTimeout(homeSitT); }
   window.addEventListener("kaida-home-desk", function (e) {
     var d = e.detail, wrap = document.getElementById("home-3d");
-    homeSit.textContent = t(d.k === "studyset" && !homeVisit ? "h.sitStudy" : "s.sit");
+    homeSit.textContent = t(H().FURN[d.k] && H().FURN[d.k].study && !homeVisit ? "h.sitStudy" : "s.sit");
     homeSitI = d.i; homeSit.style.left = Math.max(50, Math.min(wrap.clientWidth - 50, d.x)) + "px"; homeSit.style.top = Math.max(60, d.y) + "px";
     homeSit.hidden = false; clearTimeout(homeSitT); homeSitT = setTimeout(hideHomeSit, 5000);
   });
@@ -2833,7 +2834,7 @@
   document.getElementById("home-3d").addEventListener("pointerdown", function (e) { if (e.target.tagName === "CANVAS") hideHomeSit(); });
   // 書桌椅組：自己家裡坐在這組上才能開始專注，時間算進讀書紀錄；起來或離開就停，已經讀的分鐘照算
   var homeFocus = null;
-  function atStudySet() { var w = H() && H().who && H().who(); return !homeVisit && !!w && w.act === "sitwrite" && w.k === "studyset"; }
+  function atStudySet() { var w = H() && H().who && H().who(); return !homeVisit && !!w && w.act === "sitwrite" && !!(H().FURN[w.k] && H().FURN[w.k].study); }
   function creditHome(ms, full, cfg) {
     var d = data.days[K.dayKey()] || (data.days[K.dayKey()] = { min: 0, pomo: 0 });
     if (ms >= MIN) d.min = Math.round((d.min + ms / MIN) * 10) / 10;
