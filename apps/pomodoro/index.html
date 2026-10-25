@@ -825,12 +825,12 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261025f"></script>
-<script src="net.js?v=20261025f"></script>
-<script src="music.js?v=20261025f"></script>
-<script type="module" src="scene3d.js?v=20261025f" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261025f"></script>
-<script src="books.js?v=20261025f"></script>
+<script src="scene.js?v=20261025g"></script>
+<script src="net.js?v=20261025g"></script>
+<script src="music.js?v=20261025g"></script>
+<script type="module" src="scene3d.js?v=20261025g" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025g"></script>
+<script src="books.js?v=20261025g"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -2568,7 +2568,7 @@
     document.getElementById("home-back").hidden = !vis;
     if (h && !homeReady) {
       homeReady = h.mount(el); if (h.pin) h.pin({ stairs: document.getElementById("stair-up"), stairsDown: document.getElementById("stair-down"), door: document.getElementById("door-lock") });
-      h.onChange(function (items) { if (homeVisit || inHall()) return; data.home.floors[homeFloor] = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
+      h.onChange(function (items) { if (homeVisit || inHall()) return; data.home.floors[homeFloor] = items.map(function (it) { var o = { k: it.k, x: it.x, z: it.z, r: it.r }; if (it.s) o.s = it.s; return o; }); persist(); publishHome(); });
     }
     var lockedHere = homeFloor === 0 ? !!(vis ? vis.lock : data.home.lock) : homeFloor === 1 ? !!(vis ? vis.bl : data.home.bedLock) : false;
     if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: inHall() ? HALL : vis.floors[homeFloor] || [], edit: false, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive, paint: inHall() ? "" : (vis.paint || [])[homeFloor], tile: inHall() ? "" : (vis.tile || [])[homeFloor] } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive, paint: inHall() ? "" : (data.home.paint || [])[homeFloor], tile: inHall() ? "" : (data.home.tile || [])[homeFloor] });
