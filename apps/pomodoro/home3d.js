@@ -27,8 +27,8 @@ const FURN = {
 };
 // 三層樓：一樓客廳、二樓房間、三樓露臺
 const FLOORS = [
-  { floor: "#c99a68", wall: "#efe3cf", bg: "#f3ece1" },
-  { floor: "#d8b08a", wall: "#f2e2e2", bg: "#f3ece1" },
+  { floor: "#c99a68", wall: "#efe3cf", bg: "#d4ecf5", out: "garden" },
+  { floor: "#d8b08a", wall: "#f2e2e2", bg: "#f9dfcc", out: "sky" },
   { floor: "#cfc3b0", wall: null, bg: "#bfe0f2" }
 ];
 
@@ -167,6 +167,20 @@ function buildWalls() {
   const F = FLOORS[state.floor] || FLOORS[0];
   floor.material = mat(F.floor);
   if (scene.background) scene.background.set(F.bg);
+  const cloud = (x, y, z, r) => { const c = new THREE.Group(); c.position.set(x, y, z); roomG.add(c); [[0, 0, r], [r * 0.9, -0.1 * r, r * 0.7], [-r * 0.9, -0.12 * r, r * 0.65]].forEach(([a, b2, rr]) => { const m = sph(rr, mat("#ffffff", { emissive: "#ffffff", emissiveIntensity: 0.3 }), a, b2, 0, c, 12, 10); m.castShadow = false; }); };
+  if (F.out === "garden") {
+    // 一樓外面：一圈草地、石板路、矮樹叢和小花
+    const g = new THREE.Mesh(new THREE.PlaneGeometry(W + 8, D + 8), mat("#9cc584")); g.rotation.x = -Math.PI / 2; g.position.y = -0.02; g.receiveShadow = true; roomG.add(g);
+    for (let i = 0; i < 4; i++) { const st = cyl(0.16, 0.16, 0.02, "#d9cfbf", W / 2 + 0.45 + (i % 2) * 0.12, -0.01, D / 2 - 0.4 - i * 0.55, roomG, 14); st.castShadow = false; }
+    [[W / 2 + 0.5, 0.7, 0.22], [W / 2 + 0.35, -D / 2 + 0.3, 0.28], [-W / 2 + 0.6, D / 2 + 0.5, 0.25], [0.8, D / 2 + 0.45, 0.2], [W / 2 + 0.55, D / 2 + 0.5, 0.3]].forEach(([x, z, r]) => { sph(r, "#5f9a50", x, r * 0.7, z, roomG, 12, 10); sph(r * 0.7, "#74b061", x + r * 0.5, r * 0.6, z + r * 0.3, roomG, 10, 8); });
+    const fc = ["#f2a7b8", "#ffffff", "#f7d35a", "#c9a0e8"];
+    for (let i = 0; i < 14; i++) { const x = -W / 2 + 0.3 + (i * 0.37) % W, z = D / 2 + 0.2 + (i % 3) * 0.18; if (i % 2) sph(0.04, fc[i % 4], x, 0.06, z, roomG, 8, 6); else sph(0.04, fc[i % 4], W / 2 + 0.2 + (i % 3) * 0.16, 0.06, -D / 2 + 0.3 + i * 0.28, roomG, 8, 6); }
+  } else if (F.out === "sky") {
+    // 二樓外面：房子的外牆往下延伸，旁邊飄著雲，像在半空中
+    const slab = box(W + 0.12, 0.5, D + 0.12, "#e7c8a6", 0, -0.26, 0, roomG); slab.castShadow = false;
+    box(W + 0.16, 0.06, D + 0.16, "#b98a5a", 0, -0.02, 0, roomG).castShadow = false;
+    cloud(W / 2 + 1.0, -0.2, 0.4, 0.3); cloud(-0.6, -0.35, D / 2 + 1.0, 0.36); cloud(W / 2 + 0.7, 0.3, D / 2 + 0.6, 0.2); cloud(-W / 2 - 0.4, 1.9, -D / 2 - 0.6, 0.25);
+  }
   if (!F.wall) {
     // 露臺：沒有牆，四周一圈矮欄杆，外面是天空
     const rail = (x, z, len, alongX) => {
@@ -412,7 +426,18 @@ function frame() {
   // 方格只在擺設、移動家具時出現
   gridLines.visible = state.edit;
   renderer.render(scene, camera);
+  // 樓梯上的上下樓按鈕跟著樓梯走；擺設時收起來
+  if (pinEl) {
+    const it = state.items.find((o) => o.k === "stairs");
+    if (!it || state.edit) pinEl.hidden = true;
+    else {
+      const w = worldOf(it), v = new THREE.Vector3(w.x, state.floor === FLOORS.length - 1 ? 0.35 : 0.9, w.z).project(camera);
+      pinEl.hidden = false;
+      pinEl.style.left = ((v.x + 1) / 2 * container.clientWidth) + "px"; pinEl.style.top = ((1 - v.y) / 2 * container.clientHeight) + "px";
+    }
+  }
 }
+let pinEl = null;
 
 /* ===== 操作：點家具選取，拖曳或點格子移動 ===== */
 let drag = null, tapStart = null;
@@ -550,5 +575,5 @@ function screenOf(kind) {
   return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height };
 }
 function who() { const st = guestSt || ownerSt; return st ? { act: st.act, k: (state.items[st.item] || {}).k || "", walking: st.path.length, x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
-window.KaidaHome = { who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
+window.KaidaHome = { pin: (el) => { pinEl = el; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
 window.dispatchEvent(new Event("kaida-home-ready"));

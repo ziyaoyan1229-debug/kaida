@@ -89,6 +89,11 @@
   .home-top h2 { margin: 0; font-size: 20px; }
   .home-wrap { position: relative; height: min(62vh, 96vw); min-height: 300px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: #f3ece1; }
   .home-wrap canvas { display: block; width: 100%; height: 100%; }
+  .stair-btns { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 8px; z-index: 2; }
+  .stair-btns button { width: 52px; height: 52px; border-radius: 16px; font: inherit; font-size: 22px; font-weight: 700; color: #2b2622; cursor: pointer;
+    background: rgba(255, 255, 255, .38); border: 1px solid rgba(255, 255, 255, .75); box-shadow: 0 6px 18px rgba(60, 40, 20, .22), inset 0 1px 0 rgba(255, 255, 255, .8);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); }
+  .stair-btns button:active { transform: scale(.94); background: rgba(255, 255, 255, .55); }
   .home-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
   .home-bar .btn { flex: 1 1 auto; }
   .home-floors { display: flex; gap: 6px; margin: 0 0 8px; }
@@ -701,7 +706,7 @@
   <section id="view-home" hidden>
     <div class="home-top"><button class="btn ghost" type="button" id="home-back" data-i18n="h.back">‹ 回讀書房</button><h2 id="home-title"></h2></div>
     <div class="home-floors" id="home-floors"></div>
-    <div class="home-wrap" id="home-3d"></div>
+    <div class="home-wrap" id="home-3d"><div class="stair-btns" id="stair-btns" hidden></div></div>
     <p class="small muted" id="home-hint"></p>
     <div class="home-bar" id="home-bar"></div>
     <div id="home-store"></div>
@@ -819,9 +824,9 @@
       "tm.approved": "「{n}」同意你加入了！", "tm.rejected": "「{n}」這次沒有通過你的申請", "tm.reqH": "加入申請", "tm.ok": "同意", "tm.no": "拒絕", "tm.studyingN": "讀書中", "tm.reading": "讀書中",
       "tm.inTeam": "你已經在「{n}」了，要先退出才能加入別隊。", "tm.demoNote": "這是示範團隊，不能加入。", "tm.cap": "{n}/30 人", "tm.tap": "點團隊可以看成員和狀態。", "tm.owner": "隊長", "tm.yours": "這是你的團隊", "tm.close": "關閉", "tm.view": "查看成員狀態", "tm.weekTot": "本週 {w} · 累積 {t}", "tm.noMem": "還沒有成員資料",
       "chip.set": "個人設定", "h.card": "{n}的家", "h.cardP": "三層樓的家：一樓客廳、二樓房間、三樓露臺，已經擺了基本家具。用小木頭買更多，擺成你喜歡的樣子，還能邀請朋友來參觀。", "h.cardN": "三層樓，擺了 {k} 件家具",
-      "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "二樓房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人上不了二樓", "h.bedOpenT": "房間打開了，客人可以上二樓", "h.up": "⬆ 上三樓露臺", "h.down": "⬇ 下一樓客廳", "h.stairsH": "要去哪一層？", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
+      "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "二樓房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人上不了二樓", "h.bedOpenT": "房間打開了，客人可以上二樓", "h.upTo": "上樓到{f}", "h.downTo": "下樓到{f}", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
       "h.back": "‹ 回讀書房", "h.shop": "🛒 買家具", "h.edit": "✏️ 擺設", "h.done": "✓ 完成", "h.rotate": "↻ 旋轉", "h.store": "📦 收起", "h.invite": "💌 邀請朋友", "h.lockOn": "🔒 已鎖門（點一下開鎖）", "h.lockOff": "🔓 沒鎖（點一下鎖門）",
-      "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。點樓梯上下樓。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
+      "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。按樓梯上的 ⬆ ⬇ 上下樓。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
       "h.shopH": "家具商店", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
       "h.pinSet": "設定 4 位數門鎖密碼", "h.pinChange": "🔑 改密碼", "h.pinBad": "密碼要是 4 位數字", "h.locked": "上鎖了，朋友要輸入密碼才進得來", "h.unlocked": "沒上鎖，拿到連結的人都能來參觀",
       "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，對方可能還沒佈置", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
@@ -927,9 +932,9 @@
       "tm.approved": "“{n}” accepted you!", "tm.rejected": "“{n}” didn't accept your request this time", "tm.reqH": "Join requests", "tm.ok": "Accept", "tm.no": "Decline", "tm.studyingN": "Studying now", "tm.reading": "studying",
       "tm.inTeam": "You're already in “{n}”. Leave it first to join another team.", "tm.demoNote": "This is a demo team and can't be joined.", "tm.cap": "{n}/30", "tm.tap": "Tap a team to see its members and status.", "tm.owner": "captain", "tm.yours": "This is your team", "tm.close": "Close", "tm.view": "Member status", "tm.weekTot": "Week {w} · total {t}", "tm.noMem": "No member data yet",
       "chip.set": "Profile", "h.card": "{n}'s home", "h.cardP": "A three-floor home: living room, bedroom and a rooftop terrace, with the basics already in. Buy more with logs, arrange it your way and invite friends over.", "h.cardN": "3 floors, {k} pieces of furniture",
-      "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom upstairs is locked", "h.bedLockT": "Bedroom locked. Guests can't go to 2F.", "h.bedOpenT": "Bedroom open. Guests can go upstairs.", "h.up": "⬆ Up to the terrace", "h.down": "⬇ Down to the living room", "h.stairsH": "Which floor?", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
+      "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom upstairs is locked", "h.bedLockT": "Bedroom locked. Guests can't go to 2F.", "h.bedOpenT": "Bedroom open. Guests can go upstairs.", "h.upTo": "Up to {f}", "h.downTo": "Down to {f}", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
       "h.back": "‹ Back to rooms", "h.shop": "🛒 Furniture", "h.edit": "✏️ Arrange", "h.done": "✓ Done", "h.rotate": "↻ Rotate", "h.store": "📦 Put away", "h.invite": "💌 Invite", "h.lockOn": "🔒 Locked (tap to unlock)", "h.lockOff": "🔓 Unlocked (tap to lock)",
-      "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap the stairs to change floors.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
+      "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap ⬆ ⬇ on the stairs to change floors.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
       "h.shopH": "Furniture shop", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
       "h.pinSet": "Set a 4-digit door code", "h.pinChange": "🔑 Change code", "h.pinBad": "The code must be 4 digits", "h.locked": "Locked. Friends need the code to come in.", "h.unlocked": "Unlocked. Anyone with the link can visit.",
       "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. They may not have set it up yet.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
@@ -2531,11 +2536,14 @@
     var vis = homeVisit, owner = vis ? vis.n : data.me.name;
     document.getElementById("home-title").textContent = t("h.card", { n: owner });
     if (h && !homeReady) {
-      homeReady = h.mount(el);
+      homeReady = h.mount(el); if (h.pin) h.pin(document.getElementById("stair-btns"));
       h.onChange(function (items) { if (homeVisit) return; data.home.floors[homeFloor] = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
     }
     if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: vis.floors[homeFloor] || [], edit: false, floor: homeFloor } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor });
     renderHomeFloors(); renderHomeBar();
+    var sb = document.getElementById("stair-btns");
+    sb.innerHTML = (homeFloor < 2 ? '<button type="button" data-hfloor="' + (homeFloor + 1) + '" aria-label="' + K.esc(t("h.upTo", { f: t("h.f" + (homeFloor + 1)) })) + '">⬆</button>' : "") +
+      (homeFloor > 0 ? '<button type="button" data-hfloor="' + (homeFloor - 1) + '" aria-label="' + K.esc(t("h.downTo", { f: t("h.f" + (homeFloor - 1)) })) + '">⬇</button>' : "");
   }
   function bedLocked() { return homeVisit ? !!homeVisit.bl : false; }
   function renderHomeFloors() {
@@ -2609,9 +2617,6 @@
     if (current !== "home" || homeEdit) return;
     if (homeFloor === 0) return goFloor(1);
     if (homeFloor === 2) return goFloor(1);
-    var card = document.getElementById("modal-card"); card.className = "card";
-    card.innerHTML = '<h2 style="margin:0 0 10px">' + K.esc(t("h.stairsH")) + '</h2><button class="btn block" type="button" data-hfloor="2">' + K.esc(t("h.up")) + '</button><button class="btn block" type="button" data-hfloor="0" style="margin-top:8px">' + K.esc(t("h.down")) + '</button><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:8px">' + K.esc(t("tm.close")) + '</button>';
-    document.getElementById("modal").hidden = false;
   });
 
   function teamStats(tm) {
