@@ -127,11 +127,24 @@
   .home-cats:empty { display: none; }
   .fshop.hcl { max-height: none; overflow: visible; margin-bottom: 10px; }
   .fshop.hcl:empty { display: none; }
-  .fshop.hcl { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+  .fshop.hcl { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; align-items: start; }
   .fshop.hcl .fi { grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; text-align: left; padding: 6px 10px; }
   .fshop.hcl .fi .ic { grid-row: span 2; font-size: 24px; }
   .fshop.hcl .fi b { font-size: 14px; }
-  .fshop.hcl .fi .small { font-size: 11px; }
+  .fshop.hcl .fi .small { font-size: 11px; opacity: .7; }
+  /* 玻璃感卡片：倉庫裡的淺色、擺著的深色；點了冒出玻璃按鍵 */
+  .fshop.hcl .fi.glass { position: relative; cursor: pointer; border-radius: 14px; border: 1px solid rgba(255,255,255,.7); color: var(--ink, #2a2420);
+    background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.28)); -webkit-backdrop-filter: blur(14px) saturate(1.5); backdrop-filter: blur(14px) saturate(1.5);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.04), 0 6px 18px rgba(60,40,20,.10); transition: transform .15s, box-shadow .15s; }
+  .fshop.hcl .fi.glass.placed { color: #fff; border-color: rgba(255,255,255,.18);
+    background: linear-gradient(135deg, rgba(58,48,42,.92), rgba(34,28,26,.82)); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 6px 18px rgba(30,20,10,.22); }
+  .fshop.hcl .fi.glass.on { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 2px rgba(255,255,255,.8), 0 8px 22px rgba(60,40,20,.18); }
+  .fshop.hcl .fi.glass.placed.on { box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 0 0 2px rgba(255,255,255,.35), 0 8px 22px rgba(30,20,10,.3); }
+  .gacts { grid-column: 1 / -1; display: flex; gap: 6px; margin-top: 6px; }
+  .gbtn { flex: 1; min-height: 34px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink, #2a2420);
+    border: 1px solid rgba(255,255,255,.8); background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.45));
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 #fff, 0 2px 8px rgba(60,40,20,.12); }
+  .placed .gbtn { color: #fff; border-color: rgba(255,255,255,.35); background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.08)); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 8px rgba(0,0,0,.2); }
   .home-cats b { font-weight: 600; margin-left: 4px; opacity: .6; }
   .fcats button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
   .grow { display: flex; gap: 14px; align-items: center; }
@@ -836,12 +849,12 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261025n"></script>
-<script src="net.js?v=20261025n"></script>
-<script src="music.js?v=20261025n"></script>
-<script type="module" src="scene3d.js?v=20261025n" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261025n"></script>
-<script src="books.js?v=20261025n"></script>
+<script src="scene.js?v=20261025o"></script>
+<script src="net.js?v=20261025o"></script>
+<script src="music.js?v=20261025o"></script>
+<script type="module" src="scene3d.js?v=20261025o" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025o"></script>
+<script src="books.js?v=20261025o"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -857,7 +870,7 @@
       "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f1h": "2F 走廊", "h.hintHall": "點房門進房間。按門旁的鎖可以鎖上房間，客人就進不去。", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人進不去", "h.bedOpenT": "房間打開了，客人可以進去", "h.upTo": "上樓到{f}", "h.downTo": "下樓到{f}", "h.doorH": "一樓大門", "h.pinFirst": "歡迎回家！先幫一樓大門設一組 4 位數密碼，朋友來參觀要輸入這組密碼", "h.pinLater": "之後點一樓的門也可以設密碼", "h.doorGuest": "這是大門", "h.bedGuest": "這是房門", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
       "h.back": "‹ 離開", "h.shop": "🛒 買家具", "h.edit": "✏️ 擺設", "h.done": "✓ 完成", "h.rotate": "↻ 旋轉", "h.store": "📦 收起", "h.invite": "💌 邀請朋友", "h.lockOn": "🔓 開鎖", "h.lockOff": "🔒 鎖門",
       "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。按樓梯上的 ⬆ ⬇ 上下樓，點門可以鎖門。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
-      "h.shopH": "家具商店", "hc.mine": "⭐ 我的", "h.mineHere": "現在這層", "h.mineEdit": "點一下搬、轉、收", "h.mineStore": "倉庫", "h.minePut": "點一下擺出來", "h.mineNone": "還沒有家具，去其他分類逛逛吧", "h.mineOut": "{f}拿出來了，可以拖曳移動", "hc.books": "📖 書店", "h.bookOwn": "已擁有，點一下讀", "h.bookBought": "買了《{b}》，放上書櫃了", "h.shelfH": "我的書櫃", "h.shelfP": "挑一本來讀", "h.shelfEmpty": "書櫃還是空的，去書店挑幾本吧", "h.toBookshop": "去書店", "h.shelfBack": "回書櫃", "h.sitStudy": "坐下讀書", "h.focusGo": "開始專注 {n} 分", "h.focusStop": "起來", "h.focusPart": "這段專注記了 {n} 分鐘", "h.focusAgain": "休息結束，坐好就可以再來一顆", "hc.paint": "🎨 牆壁漆", "hc.floor": "🟫 地板", "hc.rug": "🧶 地毯", "hc.plant": "🪴 植物", "hc.decor": "🧸 擺飾", "hc.elec": "📺 家電樂器", "hc.gallery": "🖼️ 畫廊", "hc.desk": "🪑 桌椅", "hc.chair": "🛋️ 沙發", "hc.shelf": "📚 書櫃", "hc.lamp": "💡 燈", "hc.table": "🫖 茶几桌子", "hc.bedroom": "🛏️ 寢具收納", "hc.curtain": "🪟 窗簾", "hc.outdoor": "⛱️ 露臺戶外", "hc.pet": "🐾 寵物用品", "hc.fest": "🎄 節日裝飾", "h.inUse": "這層正在用", "h.owned": "已擁有，點一下換上", "h.onWall": "掛牆", "h.onlyOutS": "露臺限定", "h.noWall": "露臺沒有牆，換到一樓或二樓房間再掛", "h.onlyOut": "這個只能擺在三樓露臺", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
+      "h.shopH": "家具商店", "hc.mine": "⭐ 我的", "h.mineHere": "現在這層", "h.lift": "拿起", "h.move": "移動", "h.place": "放置", "h.placedS": "已擺放", "h.lifted": "{f}收進倉庫了", "h.mineEdit": "點一下搬、轉、收", "h.mineStore": "倉庫", "h.minePut": "點一下擺出來", "h.mineNone": "還沒有家具，去其他分類逛逛吧", "h.mineOut": "{f}拿出來了，可以拖曳移動", "hc.books": "📖 書店", "h.bookOwn": "已擁有，點一下讀", "h.bookBought": "買了《{b}》，放上書櫃了", "h.shelfH": "我的書櫃", "h.shelfP": "挑一本來讀", "h.shelfEmpty": "書櫃還是空的，去書店挑幾本吧", "h.toBookshop": "去書店", "h.shelfBack": "回書櫃", "h.sitStudy": "坐下讀書", "h.focusGo": "開始專注 {n} 分", "h.focusStop": "起來", "h.focusPart": "這段專注記了 {n} 分鐘", "h.focusAgain": "休息結束，坐好就可以再來一顆", "hc.paint": "🎨 牆壁漆", "hc.floor": "🟫 地板", "hc.rug": "🧶 地毯", "hc.plant": "🪴 植物", "hc.decor": "🧸 擺飾", "hc.elec": "📺 家電樂器", "hc.gallery": "🖼️ 畫廊", "hc.desk": "🪑 桌椅", "hc.chair": "🛋️ 沙發", "hc.shelf": "📚 書櫃", "hc.lamp": "💡 燈", "hc.table": "🫖 茶几桌子", "hc.bedroom": "🛏️ 寢具收納", "hc.curtain": "🪟 窗簾", "hc.outdoor": "⛱️ 露臺戶外", "hc.pet": "🐾 寵物用品", "hc.fest": "🎄 節日裝飾", "h.inUse": "這層正在用", "h.owned": "已擁有，點一下換上", "h.onWall": "掛牆", "h.onlyOutS": "露臺限定", "h.noWall": "露臺沒有牆，換到一樓或二樓房間再掛", "h.onlyOut": "這個只能擺在三樓露臺", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
       "h.pinSet": "設定 4 位數門鎖密碼", "h.pinChange": "🔑 改密碼", "h.pinBad": "密碼要是 4 位數字", "h.locked": "上鎖了，朋友要輸入密碼才進得來", "h.unlocked": "沒上鎖，拿到連結的人都能來參觀",
       "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，對方可能還沒佈置", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
       "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "小日誌",
@@ -965,7 +978,7 @@
       "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f1h": "2F Hallway", "h.hintHall": "Tap the door to enter the bedroom. Tap the lock beside it to keep guests out.", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom is locked", "h.bedLockT": "Bedroom locked. Guests can't go in.", "h.bedOpenT": "Bedroom open. Guests can go in.", "h.upTo": "Up to {f}", "h.downTo": "Down to {f}", "h.doorH": "Front door", "h.pinFirst": "Welcome home! Set a 4-digit code for the front door. Friends need it to visit.", "h.pinLater": "You can set it later by tapping the front door", "h.doorGuest": "The front door", "h.bedGuest": "The bedroom door", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
       "h.back": "‹ Leave", "h.shop": "🛒 Furniture", "h.edit": "✏️ Arrange", "h.done": "✓ Done", "h.rotate": "↻ Rotate", "h.store": "📦 Put away", "h.invite": "💌 Invite", "h.lockOn": "🔓 Unlock", "h.lockOff": "🔒 Lock",
       "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap ⬆ ⬇ on the stairs to change floors, and tap a door to lock it.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
-      "h.shopH": "Furniture shop", "hc.mine": "⭐ Mine", "h.mineHere": "this floor", "h.mineEdit": "Tap to move, turn or store", "h.mineStore": "Storage", "h.minePut": "Tap to place", "h.mineNone": "No furniture yet. Browse the other tabs", "h.mineOut": "{f} is out. Drag to move it", "hc.books": "📖 Bookstore", "h.bookOwn": "Owned, tap to read", "h.bookBought": "Bought {b}. It's on your shelf", "h.shelfH": "My bookshelf", "h.shelfP": "Pick something to read", "h.shelfEmpty": "Your shelf is empty. Visit the bookstore", "h.toBookshop": "Bookstore", "h.shelfBack": "Back to shelf", "h.sitStudy": "Sit and study", "h.focusGo": "Focus {n} min", "h.focusStop": "Stand up", "h.focusPart": "Logged {n} min of focus", "h.focusAgain": "Break's over. Ready for another round", "hc.paint": "🎨 Wall paint", "hc.floor": "🟫 Flooring", "hc.rug": "🧶 Rugs", "hc.plant": "🪴 Plants", "hc.decor": "🧸 Decor", "hc.elec": "📺 Appliances", "hc.gallery": "🖼️ Gallery", "hc.desk": "🪑 Desks & chairs", "hc.chair": "🛋️ Sofas", "hc.shelf": "📚 Shelves", "hc.lamp": "💡 Lamps", "hc.table": "🫖 Tables", "hc.bedroom": "🛏️ Bedroom", "hc.curtain": "🪟 Curtains", "hc.outdoor": "⛱️ Terrace", "hc.pet": "🐾 Pets", "hc.fest": "🎄 Holiday", "h.inUse": "On this floor", "h.owned": "Owned, tap to use", "h.onWall": "Wall", "h.onlyOutS": "Terrace only", "h.noWall": "The terrace has no walls. Try 1F or the bedroom.", "h.onlyOut": "This only goes on the 3F terrace", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
+      "h.shopH": "Furniture shop", "hc.mine": "⭐ Mine", "h.mineHere": "this floor", "h.lift": "Pick up", "h.move": "Move", "h.place": "Place", "h.placedS": "Placed", "h.lifted": "{f} went to storage", "h.mineEdit": "Tap to move, turn or store", "h.mineStore": "Storage", "h.minePut": "Tap to place", "h.mineNone": "No furniture yet. Browse the other tabs", "h.mineOut": "{f} is out. Drag to move it", "hc.books": "📖 Bookstore", "h.bookOwn": "Owned, tap to read", "h.bookBought": "Bought {b}. It's on your shelf", "h.shelfH": "My bookshelf", "h.shelfP": "Pick something to read", "h.shelfEmpty": "Your shelf is empty. Visit the bookstore", "h.toBookshop": "Bookstore", "h.shelfBack": "Back to shelf", "h.sitStudy": "Sit and study", "h.focusGo": "Focus {n} min", "h.focusStop": "Stand up", "h.focusPart": "Logged {n} min of focus", "h.focusAgain": "Break's over. Ready for another round", "hc.paint": "🎨 Wall paint", "hc.floor": "🟫 Flooring", "hc.rug": "🧶 Rugs", "hc.plant": "🪴 Plants", "hc.decor": "🧸 Decor", "hc.elec": "📺 Appliances", "hc.gallery": "🖼️ Gallery", "hc.desk": "🪑 Desks & chairs", "hc.chair": "🛋️ Sofas", "hc.shelf": "📚 Shelves", "hc.lamp": "💡 Lamps", "hc.table": "🫖 Tables", "hc.bedroom": "🛏️ Bedroom", "hc.curtain": "🪟 Curtains", "hc.outdoor": "⛱️ Terrace", "hc.pet": "🐾 Pets", "hc.fest": "🎄 Holiday", "h.inUse": "On this floor", "h.owned": "Owned, tap to use", "h.onWall": "Wall", "h.onlyOutS": "Terrace only", "h.noWall": "The terrace has no walls. Try 1F or the bedroom.", "h.onlyOut": "This only goes on the 3F terrace", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
       "h.pinSet": "Set a 4-digit door code", "h.pinChange": "🔑 Change code", "h.pinBad": "The code must be 4 digits", "h.locked": "Locked. Friends need the code to come in.", "h.unlocked": "Unlocked. Anyone with the link can visit.",
       "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. They may not have set it up yet.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
       "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Journal",
@@ -2679,7 +2692,7 @@
     var cats = FCATS.filter(function (c) { return n[c]; });
     if (cats.indexOf(homeCat) < 0) homeCat = cats[0] || "";
     el.innerHTML = cats.map(function (c) { return '<button type="button" role="tab" data-hmcat="' + c + '" aria-selected="' + (c === homeCat) + '">' + K.esc(t("hc." + c)) + '<b>' + n[c] + '</b></button>'; }).join("");
-    ls.innerHTML = homeCat ? mineList(F, homeCat) : "";
+    ls.innerHTML = homeCat ? homeList(F, homeCat) : "";
   }
   var homeCat = "";
   // 我的：每層擺著的家具和倉庫裡的，點一下就去那層、選起來可以搬、轉、收；cat 有給就只列那一類
@@ -2694,6 +2707,32 @@
     var ks = Object.keys(data.home.store).filter(function (k) { return data.home.store[k] > 0 && (!cat || (F[k] && F[k].cat === cat)); });
     if (ks.length) body += '<p class="fsub">📦 ' + K.esc(t("h.mineStore")) + '</p>' + ks.map(function (k) { return fi(k, 'data-hmput="' + k + '"', "×" + data.home.store[k] + " · " + t("h.minePut")); }).join("");
     return body || '<p class="small muted">' + K.esc(t("h.mineNone")) + '</p>';
+  }
+  // 家下面的清單：擺著的是深色玻璃卡、倉庫裡的是淺色玻璃卡；點一下卡片冒出玻璃按鍵（擺著的「拿起」「移動」，倉庫的「放置」）
+  var homePick = "";
+  function homeList(F, cat) {
+    var card = function (k, id, placed, note) {
+      var f = F[k]; if (!f) return "";
+      var on = homePick === id, acts = !on ? "" : '<span class="gacts">' + (placed
+        ? '<button type="button" class="gbtn" data-hlift="' + id.slice(2) + '">' + K.esc(t("h.lift")) + '</button><button type="button" class="gbtn" data-hmine="' + id.slice(2) + '">' + K.esc(t("h.move")) + '</button>'
+        : '<button type="button" class="gbtn" data-hmput="' + k + '">' + K.esc(t("h.place")) + '</button>') + '</span>';
+      return '<div class="fi glass' + (placed ? " placed" : "") + (on ? " on" : "") + '" role="button" tabindex="0" data-hpick="' + id + '"><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small">' + K.esc(note) + '</span>' + acts + '</div>';
+    };
+    var order = [homeFloor].concat([0, 1, 2].filter(function (f) { return f !== homeFloor; }));
+    var body = order.map(function (f) {
+      var its = (data.home.floors[f] || []).map(function (it, i) { return { it: it, i: i }; }).filter(function (o) { return F[o.it.k] && !F[o.it.k].fixed && (!cat || F[o.it.k].cat === cat); });
+      if (!its.length) return "";
+      return '<p class="fsub">' + K.esc(t("h.f" + f)) + (f === homeFloor ? " · " + K.esc(t("h.mineHere")) : "") + '</p>' + its.map(function (o) { return card(o.it.k, "f:" + f + ":" + o.i, true, t("h.placedS")); }).join("");
+    }).join("");
+    var ks = Object.keys(data.home.store).filter(function (k) { return data.home.store[k] > 0 && (!cat || (F[k] && F[k].cat === cat)); });
+    if (ks.length) body += '<p class="fsub">📦 ' + K.esc(t("h.mineStore")) + '</p>' + ks.map(function (k) { return card(k, "s:" + k, false, "×" + data.home.store[k]); }).join("");
+    return body;
+  }
+  // 拿起：從那層收進倉庫
+  function liftMine(f, i) {
+    var fl = data.home.floors[f], it = fl && fl[i], F = H() && H().FURN; if (!it || !F || !F[it.k] || F[it.k].fixed) return;
+    fl.splice(i, 1); data.home.store[it.k] = (data.home.store[it.k] || 0) + 1; homePick = "s:" + it.k;
+    persist(); publishHome(); homeSel = -1; renderHome(); K.toast(t("h.lifted", { f: furnName(it.k) }));
   }
   function furnName(k) { var f = H() && H().FURN[k]; return f ? (K.lang() === "en" ? f.en : f.zh) : k; }
   // 家具商店分成好幾類；牆壁漆和地板是整層換，買一次之後每層都可以用
@@ -3056,6 +3095,8 @@
   document.getElementById("view-home").addEventListener("click", function (e) {
     var hc = e.target.closest("[data-hclimb]"); if (hc) { climbTo(+hc.dataset.hclimb); return; }
     var hm = e.target.closest("[data-hmcat]"); if (hm) { homeCat = hm.dataset.hmcat; renderHomeCats(); return; }
+    var hl = e.target.closest("[data-hlift]"); if (hl) { var pl = hl.dataset.hlift.split(":"); liftMine(+pl[0], +pl[1]); return; }
+    var hpk = e.target.closest("[data-hpick]"); if (hpk && !e.target.closest(".gbtn")) { homePick = homePick === hpk.dataset.hpick ? "" : hpk.dataset.hpick; renderHomeCats(); return; }
     var hme = e.target.closest("[data-hmine]"); if (hme) { var pm = hme.dataset.hmine.split(":"); editMine(+pm[0], +pm[1]); return; }
     var hmp = e.target.closest("[data-hmput]"); if (hmp) { putMine(hmp.dataset.hmput); return; }
     if (e.target.closest("[data-hbedlock]")) { doorAct("bed"); return; }
