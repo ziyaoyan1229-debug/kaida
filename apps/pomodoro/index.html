@@ -704,7 +704,7 @@
 
   <section id="view-home" hidden>
     <div class="home-top"><button class="btn ghost" type="button" id="home-back" data-i18n="h.back" hidden>‹ 離開</button><h2 id="home-title"></h2><span class="home-fl" id="home-floor"></span></div>
-    <div class="home-wrap" id="home-3d"><div class="stair-btns" id="stair-btns" hidden></div></div>
+    <div class="home-wrap" id="home-3d"><div class="stair-btns" id="stair-up" hidden></div><div class="stair-btns" id="stair-down" hidden></div></div>
     <p class="small muted" id="home-hint"></p>
     <div class="home-bar" id="home-bar"></div>
     <div id="home-store"></div>
@@ -2488,8 +2488,8 @@
   // 三層樓：floors[0] 一樓客廳、[1] 二樓房間、[2] 三樓露臺；一開始就擺好基本家具
   var HOME_DEF = [
     [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "tv", x: 2, z: 0, r: 0 }, { k: "rug", x: 1, z: 2, r: 0 }, { k: "sofa", x: 1, z: 4, r: 2 }, { k: "table", x: 5, z: 3, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "lamp", x: 7, z: 0, r: 0 }],
-    [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "bed", x: 0, z: 0, r: 0 }, { k: "wardrobe", x: 4, z: 0, r: 0 }, { k: "lamp", x: 2, z: 0, r: 0 }, { k: "rug", x: 3, z: 3, r: 0 }, { k: "petbed", x: 6, z: 0, r: 0 }],
-    [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "desk", x: 2, z: 0, r: 0 }, { k: "chair", x: 2, z: 1, r: 2 }, { k: "shelf", x: 5, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "plant", x: 0, z: 7, r: 0 }, { k: "beanbag", x: 5, z: 4, r: 0 }]
+    [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "stairsDown", x: 8, z: 5, r: 0 }, { k: "bed", x: 0, z: 0, r: 0 }, { k: "wardrobe", x: 4, z: 0, r: 0 }, { k: "lamp", x: 2, z: 0, r: 0 }, { k: "rug", x: 3, z: 3, r: 0 }, { k: "petbed", x: 6, z: 0, r: 0 }],
+    [{ k: "stairsDown", x: 8, z: 0, r: 0 }, { k: "desk", x: 2, z: 0, r: 0 }, { k: "chair", x: 2, z: 1, r: 2 }, { k: "shelf", x: 5, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "plant", x: 0, z: 7, r: 0 }, { k: "beanbag", x: 5, z: 4, r: 0 }]
   ];
   function homeDef(i) { return HOME_DEF[i].map(function (it) { return Object.assign({}, it); }); }
   data.home = data.home || { store: {} };
@@ -2498,9 +2498,9 @@
     data.home.floors = [data.home.items && data.home.items.length ? data.home.items : homeDef(0), homeDef(1), homeDef(2)];
     delete data.home.items;
   }
-  var homePinAsked = false, homeVisit = null, homeEdit = false, homeSel = -1, homeReady = false, homePubT = 0, pendingHome = null, homeFloor = 0;
+  var homeArrive = 0, homePinAsked = false, homeVisit = null, homeEdit = false, homeSel = -1, homeReady = false, homePubT = 0, pendingHome = null, homeFloor = 0;
   function homeItems() { return data.home.floors[homeFloor]; }
-  function homeCount() { var n = 0; data.home.floors.forEach(function (f) { f.forEach(function (it) { if (it.k !== "stairs") n++; }); }); return n; }
+  function homeCount() { var n = 0; data.home.floors.forEach(function (f) { f.forEach(function (it) { if (it.k.indexOf("stairs") !== 0) n++; }); }); return n; }
   // 模擬好友的家：預先擺好的樣子
   var BOT_HOMES = [
     [{ k: "bed", x: 0, z: 0, r: 0 }, { k: "desk", x: 3, z: 0, r: 0 }, { k: "chair", x: 3, z: 1, r: 2 }, { k: "shelf", x: 6, z: 0, r: 0 }, { k: "rug", x: 4, z: 4, r: 0 }, { k: "plant", x: 9, z: 0, r: 0 }],
@@ -2536,17 +2536,18 @@
     document.getElementById("home-title").textContent = t("h.card", { n: owner });
     document.getElementById("home-back").hidden = !vis;
     if (h && !homeReady) {
-      homeReady = h.mount(el); if (h.pin) h.pin(document.getElementById("stair-btns"));
+      homeReady = h.mount(el); if (h.pin) h.pin({ stairs: document.getElementById("stair-up"), stairsDown: document.getElementById("stair-down") });
       h.onChange(function (items) { if (homeVisit) return; data.home.floors[homeFloor] = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
     }
     var lockedHere = homeFloor === 0 ? !!(vis ? vis.lock : data.home.lock) : homeFloor === 1 ? !!(vis ? vis.bl : data.home.bedLock) : false;
-    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: vis.floors[homeFloor] || [], edit: false, floor: homeFloor, locked: lockedHere } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, locked: lockedHere });
+    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: vis.floors[homeFloor] || [], edit: false, floor: homeFloor, locked: lockedHere, arrive: homeArrive } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, locked: lockedHere, arrive: homeArrive });
+    homeArrive = 0;
     // 第一次進自己家：先設一樓大門的密碼
     if (!vis && !data.home.pinHash && !homePinAsked) { homePinAsked = true; setTimeout(function () { if (current === "home" && !homeVisit) setPin(true); }, 500); }
     renderHomeFloors(); renderHomeBar();
-    var sb = document.getElementById("stair-btns");
-    sb.innerHTML = (homeFloor < 2 ? '<button type="button" data-hclimb="' + (homeFloor + 1) + '" aria-label="' + K.esc(t("h.upTo", { f: t("h.f" + (homeFloor + 1)) })) + '">⬆</button>' : "") +
-      (homeFloor > 0 ? '<button type="button" data-hclimb="' + (homeFloor - 1) + '" aria-label="' + K.esc(t("h.downTo", { f: t("h.f" + (homeFloor - 1)) })) + '">⬇</button>' : "");
+    // ⬆ 浮在上樓梯上、⬇ 浮在下樓梯口上
+    document.getElementById("stair-up").innerHTML = homeFloor < 2 ? '<button type="button" data-hclimb="' + (homeFloor + 1) + '" aria-label="' + K.esc(t("h.upTo", { f: t("h.f" + (homeFloor + 1)) })) + '">⬆</button>' : "";
+    document.getElementById("stair-down").innerHTML = homeFloor > 0 ? '<button type="button" data-hclimb="' + (homeFloor - 1) + '" aria-label="' + K.esc(t("h.downTo", { f: t("h.f" + (homeFloor - 1)) })) + '">⬇</button>' : "";
   }
   function bedLocked() { return homeVisit ? !!homeVisit.bl : false; }
   // 標題旁顯示現在在幾樓；上下樓只能走樓梯
@@ -2589,7 +2590,8 @@
     if (climbing || i === homeFloor) return;
     if (i === 1 && bedLocked()) { K.toast(t("h.bedLocked")); return; }
     var h = H();
-    if (!h || !h.climb || !h.climb(i > homeFloor ? 1 : -1, function () { climbing = false; goFloor(i); })) { goFloor(i); return; }
+    var dir = i > homeFloor ? 1 : -1;
+    if (!h || !h.climb || !h.climb(dir, function () { climbing = false; homeArrive = dir; goFloor(i); })) { homeArrive = dir; goFloor(i); return; }
     climbing = true;
   }
   function renderHomeBar() {
@@ -2649,11 +2651,10 @@
   window.addEventListener("kaida-home-sel", function (e) { homeSel = e.detail.i; if (current === "home") renderHomeBar(); });
   window.addEventListener("kaida-home-blocked", function () { K.toast(t("h.blocked")); });
   window.addEventListener("kaida-home-ready", function () { if (current === "home") renderHome(); });
-  // 走到樓梯：一樓往上、三樓往下，二樓問要上還是下
-  window.addEventListener("kaida-home-stairs", function () {
+  // 點樓梯走過去：上樓梯就上樓、樓梯口就下樓
+  window.addEventListener("kaida-home-stairs", function (e) {
     if (current !== "home" || homeEdit) return;
-    if (homeFloor === 0) return climbTo(1);
-    if (homeFloor === 2) return climbTo(1);
+    climbTo(homeFloor + e.detail.dir);
   });
 
   function teamStats(tm) {
@@ -2851,7 +2852,7 @@
     else if (a === "edit") { homeEdit = true; homeSel = -1; renderHome(); }
     else if (a === "done") { homeEdit = false; homeSel = -1; renderHome(); K.toast(t("h.saved")); }
     else if (a === "rotate") { if (!H().rotate()) K.toast(t("h.blocked")); }
-    else if (a === "store" && homeSel >= 0 && homeItems()[homeSel] && homeItems()[homeSel].k === "stairs") K.toast(t("h.noStore"));
+    else if (a === "store" && homeSel >= 0 && homeItems()[homeSel] && homeItems()[homeSel].k.indexOf("stairs") === 0) K.toast(t("h.noStore"));
     else if (a === "store") { var k2 = H().store(); if (k2) { data.home.store[k2] = (data.home.store[k2] || 0) + 1; persist(); renderHomeBar(); } }
     else if (a === "invite") { publishHome(); shareLink(t("h.inviteText", { n: data.me.name }), location.origin + location.pathname + "#home=" + data.me.id); }
   });
