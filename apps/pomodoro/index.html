@@ -81,6 +81,22 @@
   body.pet-play svg .cat > g { animation: pethop .9s ease-in-out infinite; }
   @keyframes pethop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: reduce) { body.pet-play svg .cat > g { animation: none; } }
+  .home-card { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .home-card .hc-ic { font-size: 34px; }
+  .home-card h3 { margin: 0; }
+  .home-card p { margin: 2px 0 0; }
+  .home-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .home-top h2 { margin: 0; font-size: 20px; }
+  .home-wrap { position: relative; height: min(62vh, 96vw); min-height: 300px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: #f3ece1; }
+  .home-wrap canvas { display: block; width: 100%; height: 100%; }
+  .home-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .home-bar .btn { flex: 1 1 auto; }
+  .hstore { display: flex; gap: 6px; flex-wrap: wrap; }
+  .hstore button, .fshop button.fi { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 10px; font: inherit; cursor: pointer; color: inherit; }
+  .fshop { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; max-height: 56vh; overflow-y: auto; text-align: left; }
+  .fshop .fi { display: grid; gap: 2px; }
+  .fshop .fi .ic { font-size: 26px; }
+  .fshop .fi[disabled] { opacity: .5; cursor: default; }
   .grow { display: flex; gap: 14px; align-items: center; }
   .grow-pet { width: 76px; height: 90px; flex: none; }
   .grow-b { flex: 1; min-width: 0; }
@@ -668,13 +684,22 @@
     <button role="tab" id="tab-friends" aria-selected="false" data-i18n="tab.friends">好友</button>
     <button role="tab" id="tab-team" aria-selected="false" data-i18n="tab.team">團隊</button>
     <button role="tab" id="tab-shop" aria-selected="false" data-i18n="tab.shop">商店</button>
-    <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">我的</button>
+    <button role="tab" id="tab-me" aria-selected="false" data-i18n="tab.me">小日誌</button>
   </nav>
 
   <section id="view-rooms">
+    <div id="home-card"></div>
     <div class="quote" id="quote-rooms"></div>
     <div id="room-list"></div>
     <p class="small muted" data-i18n="rooms.how">房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。</p>
+  </section>
+
+  <section id="view-home" hidden>
+    <div class="home-top"><button class="btn ghost" type="button" id="home-back" data-i18n="h.back">‹ 回讀書房</button><h2 id="home-title"></h2></div>
+    <div class="home-wrap" id="home-3d"></div>
+    <p class="small muted" id="home-hint"></p>
+    <div class="home-bar" id="home-bar"></div>
+    <div id="home-store"></div>
   </section>
 
   <section id="view-session" hidden>
@@ -776,6 +801,7 @@
 <script src="net.js"></script>
 <script src="music.js"></script>
 <script type="module" src="scene3d.js" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -787,7 +813,13 @@
       "tab.team": "團隊", "tm.modeH": "加入方式", "tm.modeOpen": "直接加入", "tm.modeReview": "需要審核", "tm.apply": "申請加入", "tm.applied": "已送出申請，等隊長同意", "tm.applyWait": "申請中，等隊長同意", "tm.cancelApply": "取消申請",
       "tm.approved": "「{n}」同意你加入了！", "tm.rejected": "「{n}」這次沒有通過你的申請", "tm.reqH": "加入申請", "tm.ok": "同意", "tm.no": "拒絕", "tm.studyingN": "讀書中", "tm.reading": "讀書中",
       "tm.inTeam": "你已經在「{n}」了，要先退出才能加入別隊。", "tm.demoNote": "這是示範團隊，不能加入。", "tm.cap": "{n}/30 人", "tm.tap": "點團隊可以看成員和狀態。", "tm.owner": "隊長", "tm.yours": "這是你的團隊", "tm.close": "關閉", "tm.view": "查看成員狀態", "tm.weekTot": "本週 {w} · 累積 {t}", "tm.noMem": "還沒有成員資料",
-      "chip.set": "個人設定", "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "我的",
+      "chip.set": "個人設定", "h.card": "{n}的家", "h.cardP": "空房間等你佈置。用小木頭買家具，擺成你喜歡的樣子，還能邀請朋友來參觀。", "h.cardN": "已經擺了 {k} 件家具", "h.enter": "進去",
+      "h.back": "‹ 回讀書房", "h.shop": "🛒 買家具", "h.edit": "✏️ 擺設", "h.done": "✓ 完成", "h.rotate": "↻ 旋轉", "h.store": "📦 收起", "h.invite": "💌 邀請朋友", "h.lockOn": "🔒 已鎖門（點一下開鎖）", "h.lockOff": "🔓 沒鎖（點一下鎖門）",
+      "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
+      "h.shopH": "家具商店", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
+      "h.pinSet": "設定 4 位數門鎖密碼", "h.pinChange": "🔑 改密碼", "h.pinBad": "密碼要是 4 位數字", "h.locked": "上鎖了，朋友要輸入密碼才進得來", "h.unlocked": "沒上鎖，拿到連結的人都能來參觀",
+      "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，對方可能還沒佈置", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
+      "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "小日誌",
       "rooms.how": "讀書房照「整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。",
       "room.hour.name": "整點房", "room.hour.desc": "25 分專注 · 5 分休息 · 每個 :00 和 :30 開始",
       "room.deep.name": "深度房", "room.deep.desc": "50 分專注 · 10 分休息 · 每個整點開始",
@@ -888,7 +920,13 @@
       "tab.team": "Teams", "tm.modeH": "How people join", "tm.modeOpen": "Open", "tm.modeReview": "Approval needed", "tm.apply": "Ask to join", "tm.applied": "Request sent. Waiting for the captain.", "tm.applyWait": "Request pending", "tm.cancelApply": "Cancel request",
       "tm.approved": "“{n}” accepted you!", "tm.rejected": "“{n}” didn't accept your request this time", "tm.reqH": "Join requests", "tm.ok": "Accept", "tm.no": "Decline", "tm.studyingN": "Studying now", "tm.reading": "studying",
       "tm.inTeam": "You're already in “{n}”. Leave it first to join another team.", "tm.demoNote": "This is a demo team and can't be joined.", "tm.cap": "{n}/30", "tm.tap": "Tap a team to see its members and status.", "tm.owner": "captain", "tm.yours": "This is your team", "tm.close": "Close", "tm.view": "Member status", "tm.weekTot": "Week {w} · total {t}", "tm.noMem": "No member data yet",
-      "chip.set": "Profile", "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Me",
+      "chip.set": "Profile", "h.card": "{n}'s home", "h.cardP": "An empty room waiting for you. Buy furniture with logs, arrange it your way and invite friends over.", "h.cardN": "{k} pieces of furniture", "h.enter": "Go in",
+      "h.back": "‹ Back to rooms", "h.shop": "🛒 Furniture", "h.edit": "✏️ Arrange", "h.done": "✓ Done", "h.rotate": "↻ Rotate", "h.store": "📦 Put away", "h.invite": "💌 Invite", "h.lockOn": "🔒 Locked (tap to unlock)", "h.lockOff": "🔓 Unlocked (tap to lock)",
+      "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
+      "h.shopH": "Furniture shop", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
+      "h.pinSet": "Set a 4-digit door code", "h.pinChange": "🔑 Change code", "h.pinBad": "The code must be 4 digits", "h.locked": "Locked. Friends need the code to come in.", "h.unlocked": "Unlocked. Anyone with the link can visit.",
+      "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. They may not have set it up yet.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
+      "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Journal",
       "rooms.how": "Rooms run on the clock: the Half-hour room starts every :00 and :30 (25 min focus, 5 min break), the Deep room starts every hour (50 min focus, 10 min break). Anyone opening a room at the same moment sees the same countdown.",
       "room.hour.name": "Half-hour room", "room.hour.desc": "25 focus · 5 break · starts at :00 and :30",
       "room.deep.name": "Deep room", "room.deep.desc": "50 focus · 10 break · starts every hour",
@@ -1570,7 +1608,7 @@
   var current = "rooms";
   function show(v) {
     // 專注中不能玩養成：商店和換裝只在休息時間開放
-    if ((v === "shop" || v === "char") && data.me.name && session && !session.away && phaseAt("cur", Date.now(), roomOrigin()).focus) { K.toast(t("lock.focus")); return; }
+    if ((v === "shop" || v === "char" || v === "home") && data.me.name && session && !session.away && phaseAt("cur", Date.now(), roomOrigin()).focus) { K.toast(t("lock.focus")); return; }
     // 第一次打開：先取暱稱、選好角色才能進讀書房
     if (v !== "char" && !data.me.name) { if (current === "char" && v !== current) K.toast(t("c.firstNeed")); v = "char"; }
     if (v === "rooms" && session && !session.away) v = "session";
@@ -1581,8 +1619,10 @@
     document.body.classList.toggle("in-room", v === "session");
     applyRoomBar();
     if (v !== "session") { document.getElementById("rchat").hidden = true; document.getElementById("fov").hidden = true; }
-    ["rooms", "session", "me", "friends", "char", "team", "shop"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
-    document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session");
+    if (v !== "home") { homeVisit = null; homeEdit = false; }
+    ["rooms", "session", "me", "friends", "char", "team", "shop", "home"].forEach(function (x) { document.getElementById("view-" + x).hidden = x !== v; });
+    document.getElementById("tab-rooms").setAttribute("aria-selected", v === "rooms" || v === "session" || v === "home");
+    if (v === "home") renderHome();
     document.getElementById("tab-char").setAttribute("aria-selected", v === "char");
     document.getElementById("tab-friends").setAttribute("aria-selected", v === "friends");
     document.getElementById("tab-team").setAttribute("aria-selected", v === "team");
@@ -1738,6 +1778,7 @@
     }, { passive: false });
   })();
   function renderRooms() {
+    renderHomeCard();
     var el = document.getElementById("room-list"), keep = {};
     el.querySelectorAll("[data-rail]").forEach(function (r) { keep[r.dataset.rail] = r.scrollLeft; });
     var row = function (key, title, inner) { return '<div class="prow"><h4>' + K.esc(title) + '</h4><div class="rail-wrap"><button type="button" class="rail-arr l" data-rail-go="-1" aria-label="' + K.esc(t("r.prev")) + '">‹</button><div class="rail" data-rail="' + key + '">' + inner + '</div><button type="button" class="rail-arr r" data-rail-go="1" aria-label="' + K.esc(t("r.next")) + '">›</button></div></div>'; };
@@ -2192,7 +2233,9 @@
       data.me.named = true; data.paidName = data.me.name;
       if (data.welcomeToast) { data.welcomeToast = false; setTimeout(function () { K.toast(t("gift.welcome")); }, 1500); }
       persist(); syncMe(); if (!cost) K.toast(t("c.saved"));
-      show("rooms"); window.scrollTo(0, 0); return;
+      show("rooms"); window.scrollTo(0, 0);
+      if (pendingHome) { var ph = pendingHome; pendingHome = null; visitHome(ph); }
+      return;
     } else return;
     persist(); syncMe(); rerenderLook();
   }
@@ -2429,6 +2472,105 @@
   function canFeed() { if (!session || !data.look.pet) return false; var p = phaseAt("cur", Date.now(), roomOrigin()); return !p.focus && !(session.fedAt >= p.start); }
 
   function myTotal() { var m = 0; Object.keys(data.days).forEach(function (k) { m += data.days[k].min || 0; }); return Math.floor(m); }
+  /* ===== 我的家 ===== */
+  data.home = data.home || { items: [], store: {} };
+  var homeVisit = null, homeEdit = false, homeSel = -1, homeReady = false, homePubT = 0, pendingHome = null;
+  // 模擬好友的家：預先擺好的樣子
+  var BOT_HOMES = [
+    [{ k: "bed", x: 0, z: 0, r: 0 }, { k: "desk", x: 3, z: 0, r: 0 }, { k: "chair", x: 3, z: 1, r: 2 }, { k: "shelf", x: 6, z: 0, r: 0 }, { k: "rug", x: 4, z: 4, r: 0 }, { k: "plant", x: 9, z: 0, r: 0 }],
+    [{ k: "sofa", x: 1, z: 0, r: 0 }, { k: "table", x: 1, z: 2, r: 0 }, { k: "piano", x: 6, z: 0, r: 0 }, { k: "lamp", x: 0, z: 0, r: 0 }, { k: "petbed", x: 8, z: 5, r: 0 }, { k: "plant", x: 9, z: 0, r: 0 }],
+    [{ k: "tv", x: 2, z: 0, r: 0 }, { k: "sofa", x: 1, z: 4, r: 2 }, { k: "beanbag", x: 5, z: 3, r: 0 }, { k: "wardrobe", x: 7, z: 0, r: 0 }, { k: "rug", x: 1, z: 2, r: 0 }],
+    [{ k: "shelf", x: 0, z: 0, r: 0 }, { k: "shelf", x: 2, z: 0, r: 0 }, { k: "desk", x: 5, z: 0, r: 0 }, { k: "chair", x: 5, z: 1, r: 2 }, { k: "bed", x: 8, z: 0, r: 0 }, { k: "lamp", x: 4, z: 0, r: 0 }],
+    [{ k: "bed", x: 8, z: 0, r: 0 }, { k: "tv", x: 0, z: 2, r: 1 }, { k: "beanbag", x: 3, z: 3, r: 0 }, { k: "petbed", x: 4, z: 4, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }]
+  ];
+  function H() { return window.KaidaHome; }
+  function homeLook() { var gr = S.growth(myTotal()); return Object.assign({}, myLook(), { ps: gr.stage, pm: myMood() }); }
+  function storeCount() { var n = 0; Object.keys(data.home.store).forEach(function (k) { n += data.home.store[k]; }); return n; }
+  function renderHomeCard() {
+    var el = document.getElementById("home-card"); if (!el) return;
+    if (!data.me.name) { el.innerHTML = ""; return; }
+    var n = data.home.items.length;
+    el.innerHTML = '<div class="card room-card home-card"><span class="hc-ic" aria-hidden="true">🏠</span><div style="flex:1;min-width:0"><h3>' + K.esc(t("h.card", { n: data.me.name })) + '</h3><p class="small muted">' + K.esc(n ? t("h.cardN", { k: n }) : t("h.cardP")) + '</p></div><button class="btn" type="button" data-home-go="1">' + K.esc(t("h.enter")) + '</button></div>';
+  }
+  function hashPin(uid, pin) {
+    var str = "kaida-home:" + uid + ":" + pin;
+    if (window.crypto && crypto.subtle && window.TextEncoder) return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join(""); });
+    var h = 5381; for (var i = 0; i < str.length; i++) h = (h * 33 + str.charCodeAt(i)) >>> 0;
+    return Promise.resolve("d" + h.toString(16));
+  }
+  function publishHome() {
+    clearTimeout(homePubT);
+    homePubT = setTimeout(function () {
+      if (!window.KaidaNet || !window.KaidaNet.homePut || !data.me.name) return;
+      window.KaidaNet.homePut(data.me.id, { n: data.me.name, look: myLook(), items: data.home.items, lock: data.home.lock || "", ts: Date.now() });
+    }, 1200);
+  }
+  function renderHome() {
+    var h = H(), el = document.getElementById("home-3d");
+    var vis = homeVisit, owner = vis ? vis.n : data.me.name;
+    document.getElementById("home-title").textContent = t("h.card", { n: owner });
+    if (h && !homeReady) {
+      homeReady = h.mount(el);
+      h.onChange(function (items) { if (homeVisit) return; data.home.items = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
+    }
+    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: vis.items, edit: false } : { owner: { look: homeLook() }, items: data.home.items, edit: homeEdit });
+    renderHomeBar();
+  }
+  function renderHomeBar() {
+    var bar = document.getElementById("home-bar"), hint = document.getElementById("home-hint"), st = document.getElementById("home-store");
+    if (homeVisit) { hint.textContent = t("h.hintVisit", { n: homeVisit.n }); bar.innerHTML = ""; st.innerHTML = ""; return; }
+    hint.textContent = t(homeEdit ? "h.hintEdit" : "h.hintView");
+    var b = function (act, label, cls) { return '<button class="btn ' + (cls || "ghost") + '" type="button" data-h="' + act + '">' + K.esc(t(label)) + '</button>'; };
+    if (homeEdit) {
+      bar.innerHTML = (homeSel >= 0 ? b("rotate", "h.rotate") + b("store", "h.store") : "") + b("shop", "h.shop") + b("done", "h.done", "");
+      var ks = Object.keys(data.home.store).filter(function (k) { return data.home.store[k] > 0; });
+      st.innerHTML = ks.length ? '<p class="small muted" style="margin:4px 0">' + K.esc(t("h.storeH")) + '</p><div class="hstore">' + ks.map(function (k) { var f = H() && H().FURN[k]; return f ? '<button type="button" data-hput="' + k + '">' + f.ic + " " + K.esc(K.lang() === "en" ? f.en : f.zh) + " ×" + data.home.store[k] + '</button>' : ""; }).join("") + '</div>' : "";
+    } else {
+      bar.innerHTML = b("shop", "h.shop") + b("edit", "h.edit") + b("invite", "h.invite") + b("lock", data.home.lock ? "h.lockOn" : "h.lockOff") + (data.home.lock ? b("pin", "h.pinChange") : "");
+      st.innerHTML = "";
+    }
+  }
+  function furnName(k) { var f = H() && H().FURN[k]; return f ? (K.lang() === "en" ? f.en : f.zh) : k; }
+  function showFurnShop() {
+    var F = H() && H().FURN; if (!F) return;
+    var card = document.getElementById("modal-card"); card.className = "card";
+    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 10px">🪵 ' + data.wood + '</p><div class="fshop">' +
+      Object.keys(F).map(function (k) { var f = F[k];
+        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(t("h.size", { w: f.w, d: f.d })) + ' · 🪵 ' + f.price + '</span></button>';
+      }).join("") + '</div><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:12px">' + K.esc(t("tm.close")) + '</button>';
+    document.getElementById("modal").hidden = false;
+  }
+  function buyFurn(k) {
+    var f = H() && H().FURN[k]; if (!f) return;
+    if (data.wood < f.price) { K.toast(t("h.needWood", { n: f.price - data.wood })); return; }
+    data.wood -= f.price; updateWood();
+    homeEdit = true; H().set({ owner: { look: homeLook() }, items: data.home.items, edit: true });
+    if (H().place(k)) K.toast(t("h.bought", { f: furnName(k) }));
+    else { data.home.store[k] = (data.home.store[k] || 0) + 1; K.toast(t("h.full")); }
+    persist(); renderHomeBar();
+  }
+  function visitHome(uid) {
+    if (uid === data.me.id) { show("home"); return; }
+    if (isBot(uid)) {
+      var bi = BOTS.map(function (x) { return x.id; }).indexOf(uid), bt = BOTS[bi];
+      homeVisit = { uid: uid, n: bt.name, look: Object.assign(S.defaultLook(), bt.look), items: BOT_HOMES[bi % BOT_HOMES.length] };
+      show("home"); return;
+    }
+    if (!window.KaidaNet || !window.KaidaNet.homeGet) { K.toast(t("c.noNet")); return; }
+    K.toast(t("h.finding"));
+    window.KaidaNet.homeGet(uid).then(function (o) {
+      if (!o || !Array.isArray(o.items)) { K.toast(t("h.notFound")); return; }
+      var go = function () { homeVisit = { uid: uid, n: String(o.n || "?").slice(0, 16), look: o.look || {}, items: o.items.slice(0, 80) }; show("home"); };
+      if (!o.lock) return go();
+      var pin = prompt(t("h.pinAsk", { n: String(o.n || "?").slice(0, 16) }));
+      if (pin == null) return;
+      hashPin(uid, pin.trim()).then(function (hx) { if (hx === o.lock) go(); else K.toast(t("h.pinWrong")); });
+    });
+  }
+  window.addEventListener("kaida-home-sel", function (e) { homeSel = e.detail.i; if (current === "home") renderHomeBar(); });
+  window.addEventListener("kaida-home-blocked", function () { K.toast(t("h.blocked")); });
+  window.addEventListener("kaida-home-ready", function () { if (current === "home") renderHome(); });
+
   function teamStats(tm) {
     var wk = weekKey(), all = 0, tot = 0, week = 0, on = 0;
     Object.keys(tm.members).forEach(function (id) {
@@ -2611,6 +2753,31 @@
   if (teams && data.team) { teams.start(); teamSync(); }
   if (teams && data.teamApply) teams.start();
   document.getElementById("view-team").addEventListener("keydown", function (e) { var tv = e.target.closest("[data-tview]"); if (tv && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showTeam(tv.dataset.tview); } });
+  document.getElementById("room-list").parentNode.addEventListener("click", function (e) { if (e.target.closest("[data-home-go]")) { homeVisit = null; show("home"); } });
+  document.getElementById("home-back").addEventListener("click", function () { show("rooms"); });
+  document.getElementById("view-home").addEventListener("click", function (e) {
+    var hp = e.target.closest("[data-hput]");
+    if (hp) { var k = hp.dataset.hput; if (!(data.home.store[k] > 0)) return; if (H().place(k)) { data.home.store[k]--; if (!data.home.store[k]) delete data.home.store[k]; persist(); } else K.toast(t("h.full")); renderHomeBar(); return; }
+    var b = e.target.closest("[data-h]"); if (!b || homeVisit) return;
+    var a = b.dataset.h;
+    if (a === "shop") showFurnShop();
+    else if (a === "edit") { homeEdit = true; homeSel = -1; renderHome(); }
+    else if (a === "done") { homeEdit = false; homeSel = -1; renderHome(); K.toast(t("h.saved")); }
+    else if (a === "rotate") { if (!H().rotate()) K.toast(t("h.blocked")); }
+    else if (a === "store") { var k2 = H().store(); if (k2) { data.home.store[k2] = (data.home.store[k2] || 0) + 1; persist(); renderHomeBar(); } }
+    else if (a === "invite") { publishHome(); shareLink(t("h.inviteText", { n: data.me.name }), location.origin + location.pathname + "#home=" + data.me.id); }
+    else if (a === "lock" || a === "pin") {
+      // 點一下鎖門或開鎖；第一次鎖門（或按改密碼）才問密碼
+      if (a === "lock" && data.home.lock) { data.home.lock = ""; persist(); publishHome(); renderHomeBar(); K.toast(t("h.unlocked")); return; }
+      if (a === "lock" && data.home.pinHash) { data.home.lock = data.home.pinHash; persist(); publishHome(); renderHomeBar(); K.toast(t("h.locked")); return; }
+      var pin = prompt(t("h.pinSet")); if (pin == null) return; pin = pin.trim();
+      if (!/^\d{4}$/.test(pin)) { K.toast(t("h.pinBad")); return; }
+      hashPin(data.me.id, pin).then(function (hx) { data.home.pinHash = data.home.lock = hx; persist(); publishHome(); renderHomeBar(); K.toast(t("h.locked")); });
+    }
+  });
+  document.getElementById("modal").addEventListener("click", function (e) {
+    var fb = e.target.closest("[data-hbuy]"); if (fb) { this.hidden = true; buyFurn(fb.dataset.hbuy); return; }
+  });
   document.getElementById("modal").addEventListener("click", function (e) {
     var b = e.target.closest("[data-tvact]"); if (!b) return;
     if (b.dataset.tvact === "cancel") { if (teams && data.teamApply) teams.request(data.teamApply.id, data.me.id, null); data.teamApply = null; persist(); renderTeam(); showTeam(teamView); return; }
@@ -2623,6 +2790,8 @@
 
   // 打開別人的好友卡連結
   function readHash() {
+    var hm = location.hash.match(/[#&]home=([A-Za-z0-9_-]{3,40})/);
+    if (hm) { history.replaceState(null, "", location.pathname + location.search); if (data.me.name) visitHome(hm[1]); else pendingHome = hm[1]; return; }
     var tmh = location.hash.match(/[#&]team=([a-z0-9]{5})/);
     if (tmh) {
       history.replaceState(null, "", location.pathname + location.search);
@@ -2981,7 +3150,7 @@
       return '<li class="' + (r.me ? "me" : "") + '"><span class="rk' + (i < 3 && r.m > 0 ? " top" : "") + '">' + (i < 3 && r.m > 0 ? medals[i] : i + 1) + '</span>' +
         '<span class="av">' + (r.me ? avOf("me") : avOf(r.id, r.a)) + '</span><span class="who"><b>' + K.esc(r.n) + '</b><span>' + K.esc(sub) + (r.s ? " · 🔥" + r.s : "") + '</span></span>' +
         '<span class="min">' + r.m + '<small>' + (K.lang() === "en" ? "min · " : "分 · ") + K.esc(t("f.pomos", { n: r.p })) + '</small></span>' +
-        (r.me ? "" : '<span class="acts"><button class="btn ghost" type="button" data-chat="' + K.esc(r.id) + '">' + K.esc(t("c.chat")) + (data.unread[r.id] ? " (" + data.unread[r.id] + ")" : "") + '</button><button class="btn ghost" type="button" data-cheer="' + K.esc(r.id) + '">' + K.esc(t("f.cheer")) + '</button></span>') + '</li>';
+        (r.me ? "" : '<span class="acts"><button class="btn ghost" type="button" data-chat="' + K.esc(r.id) + '">' + K.esc(t("c.chat")) + (data.unread[r.id] ? " (" + data.unread[r.id] + ")" : "") + '</button><button class="btn ghost" type="button" data-cheer="' + K.esc(r.id) + '">' + K.esc(t("f.cheer")) + '</button><button class="btn ghost" type="button" data-visit="' + K.esc(r.id) + '">' + K.esc(t("h.visit")) + '</button></span>') + '</li>';
     }).join("") + '</ol>' + (rows.length === 1 ? '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.boardEmpty")) + '</p>' : "") + '</div>';
 
     if (cheerTo && data.friends[cheerTo]) {
@@ -3023,6 +3192,7 @@
     if (ds.rno) { declineReq(ds.rno); return renderFriends(); }
     if (ds.rcancel) { cancelReq(ds.rcancel); return renderFriends(); }
     if (ds.chat) { openChat(ds.chat); return; }
+    if (ds.visit) { visitHome(ds.visit); return; }
     if (ds.act === "close-chat") { chatWith = null; return renderFriends(); }
     if (ds.act === "send-chat") { sendChat(); return; }
     if (ds.unfriend) {
