@@ -515,6 +515,7 @@ function arrive(st) {
   if (ACT_OF[sp.k] === "lamp") { const m = meshes[sp.item]; m && m.traverse((o) => { if (o.isPointLight) o.visible = !o.visible; }); }
   if (FURN[sp.k].fixed && st.climb) { startClimb(st, sp.item); return; }
   if (FURN[sp.k].fixed) { window.dispatchEvent(new CustomEvent("kaida-home-stairs", { detail: { floor: state.floor, dir: sp.k === "stairs" ? 1 : -1 } })); }
+  if (ACT_OF[sp.k] === "book") window.dispatchEvent(new CustomEvent("kaida-home-shelf", { detail: { k: sp.k } }));
   if (sp.k === "petbed" && st.pet) { const w = worldOf(state.items[sp.item]); st.petBed = new THREE.Vector3(w.x, 0.05, w.z); }
 }
 // 停下手邊的事；正躺在床上的話，先坐起來、站起來才開始走
