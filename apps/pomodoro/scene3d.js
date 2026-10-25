@@ -290,7 +290,7 @@ const OUTLINE_M = new THREE.MeshBasicMaterial({ color: 0x2a1d16, side: THREE.Bac
 const tmpBox = new THREE.Box3(), tmpSize = new THREE.Vector3();
 function outline(root, t) {
   const list = [];
-  root.traverse((o) => { if (o.isMesh && !o.material.isMeshBasicMaterial) list.push(o); });
+  root.traverse((o) => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent && !o.material.wireframe) list.push(o); });
   list.forEach((o) => {
     const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
     if (g.boundingSphere.radius < 0.05) return; // 眼睛、嘴巴這些小東西不描
@@ -2963,4 +2963,4 @@ function proj(x, y, z) { const v = new THREE.Vector3(x, y, z).project(camera), r
 function meState() { const st = Object.values(chars).find((c) => c.m.me); return st ? { mode: st.mode, spot: st.spot, pose: SPOTS[st.spot] ? SPOTS[st.spot].pose : "", x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
 window.KaidaScene3D = { seats: () => SEATS.map((s) => ({ x: s.x, z: s.z })), proj, meState, spots: () => SPOTS.map((s) => ({ x: s.x, z: s.z, pose: s.pose, m: s.m || "" })), times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
-export { makeChar, makePet, mat, box, cyl, sph, outline };
+export { makeChar, makePet, mat, box, cyl, sph, cap, outline };
