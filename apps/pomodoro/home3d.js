@@ -2,42 +2,154 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025d"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025e"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
 const DOOR_X = 0, DOOR_CELLS = [{ x: 4, z: 0 }, { x: 5, z: 0 }]; // 二樓房門在後牆正中間（第 4、5 格前面）
 // 家具：w × d 是佔幾格（沒旋轉時），price 是小木頭
+// cat 是商店分類；wall 掛在牆上（不佔地板、不擋路）；out 只能擺在三樓露臺
 const FURN = {
-  bed: { w: 2, d: 3, price: 16, zh: "單人床", en: "Bed", ic: "🛏️" },
-  desk: { w: 2, d: 1, price: 10, zh: "書桌", en: "Desk", ic: "🗃️" },
-  chair: { w: 1, d: 1, price: 4, zh: "椅子", en: "Chair", ic: "🪑" },
-  shelf: { w: 2, d: 1, price: 12, zh: "書櫃", en: "Bookshelf", ic: "📚" },
-  sofa: { w: 3, d: 1, price: 14, zh: "沙發", en: "Sofa", ic: "🛋️" },
-  table: { w: 2, d: 2, price: 8, zh: "圓桌", en: "Round table", ic: "🍵" },
-  lamp: { w: 1, d: 1, price: 5, zh: "立燈", en: "Floor lamp", ic: "💡" },
-  plant: { w: 1, d: 1, price: 3, zh: "盆栽", en: "Plant", ic: "🪴" },
-  rug: { w: 3, d: 2, price: 6, zh: "地毯", en: "Rug", ic: "🟫" },
-  tv: { w: 2, d: 1, price: 12, zh: "電視櫃", en: "TV stand", ic: "📺" },
-  wardrobe: { w: 2, d: 1, price: 12, zh: "衣櫃", en: "Wardrobe", ic: "🚪" },
-  piano: { w: 2, d: 1, price: 18, zh: "鋼琴", en: "Piano", ic: "🎹" },
-  petbed: { w: 1, d: 1, price: 4, zh: "寵物窩", en: "Pet bed", ic: "🧺" },
-  beanbag: { w: 1, d: 1, price: 6, zh: "懶骨頭", en: "Beanbag", ic: "🟠" },
+  rug: { w: 3, d: 2, price: 6, zh: "方地毯", en: "Rug", ic: "🟫", cat: "rug" },
+  rugRound: { w: 2, d: 2, price: 6, zh: "圓地毯", en: "Round rug", ic: "⭕", cat: "rug" },
+  runner: { w: 1, d: 4, price: 5, zh: "長條地毯", en: "Runner", ic: "➖", cat: "rug" },
+  plant: { w: 1, d: 1, price: 3, zh: "小盆栽", en: "Plant", ic: "🪴", cat: "plant" },
+  monstera: { w: 1, d: 1, price: 6, zh: "龜背芋", en: "Monstera", ic: "🌿", cat: "plant" },
+  cactus: { w: 1, d: 1, price: 3, zh: "仙人掌", en: "Cactus", ic: "🌵", cat: "plant" },
+  hanger: { w: 1, d: 1, price: 5, zh: "吊盆架", en: "Hanging plant", ic: "🌱", cat: "plant" },
+  tree: { w: 1, d: 1, price: 9, zh: "室內小樹", en: "Indoor tree", ic: "🌳", cat: "plant" },
+  tv: { w: 2, d: 1, price: 12, zh: "電視櫃", en: "TV stand", ic: "📺", cat: "elec" },
+  fridge: { w: 1, d: 1, price: 14, zh: "冰箱", en: "Fridge", ic: "🧊", cat: "elec" },
+  coffee: { w: 1, d: 1, price: 10, zh: "咖啡機", en: "Coffee maker", ic: "☕", cat: "elec" },
+  fan: { w: 1, d: 1, price: 6, zh: "電風扇", en: "Fan", ic: "🌀", cat: "elec" },
+  speaker: { w: 1, d: 1, price: 8, zh: "音響", en: "Speaker", ic: "🔊", cat: "elec" },
+  piano: { w: 2, d: 1, price: 18, zh: "鋼琴", en: "Piano", ic: "🎹", cat: "elec" },
+  painting: { w: 2, d: 1, price: 8, zh: "風景畫", en: "Painting", ic: "🖼️", cat: "gallery", wall: true },
+  frame: { w: 1, d: 1, price: 4, zh: "相框", en: "Photo frame", ic: "🪞", cat: "gallery", wall: true },
+  poster: { w: 1, d: 1, price: 4, zh: "海報", en: "Poster", ic: "📜", cat: "gallery", wall: true },
+  clock: { w: 1, d: 1, price: 6, zh: "掛鐘", en: "Wall clock", ic: "🕰️", cat: "gallery", wall: true },
+  desk: { w: 2, d: 1, price: 10, zh: "木書桌", en: "Desk", ic: "🗃️", cat: "desk" },
+  deskWhite: { w: 2, d: 1, price: 10, zh: "白書桌", en: "White desk", ic: "🗂️", cat: "desk" },
+  chair: { w: 1, d: 1, price: 4, zh: "木椅", en: "Chair", ic: "🪑", cat: "chair" },
+  stool: { w: 1, d: 1, price: 3, zh: "圓凳", en: "Stool", ic: "🟤", cat: "chair" },
+  armchair: { w: 1, d: 1, price: 10, zh: "單人沙發", en: "Armchair", ic: "💺", cat: "chair" },
+  sofa: { w: 3, d: 1, price: 14, zh: "沙發", en: "Sofa", ic: "🛋️", cat: "chair" },
+  beanbag: { w: 1, d: 1, price: 6, zh: "懶骨頭", en: "Beanbag", ic: "🟠", cat: "chair" },
+  shelf: { w: 2, d: 1, price: 12, zh: "書櫃", en: "Bookshelf", ic: "📚", cat: "shelf" },
+  shelfTall: { w: 1, d: 1, price: 8, zh: "窄高書櫃", en: "Tall shelf", ic: "📗", cat: "shelf" },
+  shelfLow: { w: 2, d: 1, price: 8, zh: "矮書櫃", en: "Low shelf", ic: "📘", cat: "shelf" },
+  lamp: { w: 1, d: 1, price: 5, zh: "落地燈", en: "Floor lamp", ic: "💡", cat: "lamp" },
+  lampArc: { w: 1, d: 1, price: 8, zh: "弧形落地燈", en: "Arc lamp", ic: "🔦", cat: "lamp" },
+  table: { w: 2, d: 2, price: 8, zh: "圓桌", en: "Round table", ic: "🍵", cat: "table" },
+  coffeeTable: { w: 2, d: 1, price: 8, zh: "茶几", en: "Coffee table", ic: "🫖", cat: "table" },
+  dining: { w: 2, d: 2, price: 12, zh: "餐桌", en: "Dining table", ic: "🍽️", cat: "table" },
+  bed: { w: 2, d: 3, price: 16, zh: "單人床", en: "Bed", ic: "🛏️", cat: "bedroom" },
+  bedDouble: { w: 3, d: 3, price: 24, zh: "雙人床", en: "Double bed", ic: "🛌", cat: "bedroom" },
+  wardrobe: { w: 2, d: 1, price: 12, zh: "衣櫃", en: "Wardrobe", ic: "🚪", cat: "bedroom" },
+  drawer: { w: 1, d: 1, price: 7, zh: "抽屜櫃", en: "Drawers", ic: "🗄️", cat: "bedroom" },
+  curtain: { w: 2, d: 1, price: 6, zh: "窗簾", en: "Curtains", ic: "🪟", cat: "curtain", wall: true },
+  curtainBlue: { w: 2, d: 1, price: 6, zh: "藍窗簾", en: "Blue curtains", ic: "🟦", cat: "curtain", wall: true },
+  parasol: { w: 1, d: 1, price: 10, zh: "陽傘", en: "Parasol", ic: "⛱️", cat: "outdoor", out: true },
+  lounger: { w: 1, d: 2, price: 10, zh: "躺椅", en: "Lounger", ic: "🏖️", cat: "outdoor", out: true },
+  flowerbed: { w: 2, d: 1, price: 8, zh: "花圃", en: "Flower bed", ic: "🌷", cat: "outdoor", out: true },
+  petbed: { w: 1, d: 1, price: 4, zh: "寵物窩", en: "Pet bed", ic: "🧺", cat: "pet" },
+  catTree: { w: 1, d: 1, price: 10, zh: "貓跳台", en: "Cat tree", ic: "🐈", cat: "pet" },
+  ball: { w: 1, d: 1, price: 2, zh: "玩具球", en: "Toy ball", ic: "⚽", cat: "pet" },
+  xmasTree: { w: 1, d: 1, price: 12, zh: "聖誕樹", en: "Christmas tree", ic: "🎄", cat: "fest" },
+  lights: { w: 2, d: 1, price: 5, zh: "燈串", en: "String lights", ic: "✨", cat: "fest", wall: true },
+  pumpkin: { w: 1, d: 1, price: 4, zh: "南瓜燈", en: "Jack-o'-lantern", ic: "🎃", cat: "fest" },
   // 樓梯每層都有一座，不賣、不能收，可以搬
   stairs: { w: 2, d: 3, price: 0, zh: "上樓梯", en: "Stairs up", ic: "🪜", fixed: true },
   stairsDown: { w: 2, d: 3, price: 0, zh: "下樓梯口", en: "Stairs down", ic: "🕳️", fixed: true }
 };
+// 牆壁漆、地板：整層換，買一次就可以一直用；tex 是有花紋的（用畫的）
+const PAINTS = {
+  cream: { c: "#efe3cf", price: 0, zh: "奶油白", en: "Cream" }, rose: { c: "#f2e2e2", price: 0, zh: "淡玫瑰", en: "Rose" },
+  mint: { c: "#d6eadb", price: 6, zh: "薄荷綠", en: "Mint" }, sky: { c: "#d7e6f2", price: 6, zh: "天空藍", en: "Sky blue" },
+  lilac: { c: "#e4dcef", price: 6, zh: "薰衣草", en: "Lilac" }, sun: { c: "#f6e7b8", price: 6, zh: "暖陽黃", en: "Sunny" },
+  sage: { c: "#c9d4bc", price: 6, zh: "灰綠", en: "Sage" }, panel: { c: "#c79a68", tex: "panel", price: 10, zh: "木牆板", en: "Wood panel" },
+  brick: { c: "#c46a4f", tex: "brick", price: 10, zh: "紅磚牆", en: "Brick" }
+};
+const TILES = {
+  oak: { c: "#c99a68", tex: "plank", price: 0, zh: "橡木地板", en: "Oak" }, maple: { c: "#d8b08a", tex: "plank", price: 0, zh: "楓木地板", en: "Maple" },
+  stone: { c: "#cfc3b0", price: 0, zh: "石板", en: "Stone" }, walnut: { c: "#8a5e3c", tex: "plank", price: 8, zh: "胡桃木地板", en: "Walnut" },
+  birch: { c: "#e6cfa6", tex: "plank", price: 8, zh: "白樺地板", en: "Birch" }, tile: { c: "#eeeae2", tex: "tile", price: 8, zh: "白磁磚", en: "White tile" },
+  marble: { c: "#ece8e4", tex: "marble", price: 12, zh: "大理石", en: "Marble" }, tatami: { c: "#cdbf86", tex: "tatami", price: 10, zh: "榻榻米", en: "Tatami" },
+  checker: { c: "#e9e2d6", tex: "checker", price: 10, zh: "黑白格", en: "Checker" }
+};
+const texCache = {};
+function texOf(kind, base, rx, ry) {
+  const key = kind + base + rx + ry; if (texCache[key]) return texCache[key];
+  const cv = document.createElement("canvas"); cv.width = cv.height = 128; const g = cv.getContext("2d");
+  g.fillStyle = base; g.fillRect(0, 0, 128, 128);
+  const shade = (a) => `rgba(0,0,0,${a})`, lite = (a) => `rgba(255,255,255,${a})`;
+  if (kind === "plank") { for (let i = 0; i < 4; i++) { g.fillStyle = i % 2 ? shade(0.05) : lite(0.04); g.fillRect(0, i * 32, 128, 32); g.fillStyle = shade(0.18); g.fillRect(0, i * 32, 128, 2); g.fillRect(((i * 53) % 128), i * 32, 2, 32); } }
+  else if (kind === "tile") { g.fillStyle = shade(0.12); g.fillRect(0, 0, 128, 3); g.fillRect(0, 0, 3, 128); }
+  else if (kind === "checker") { g.fillStyle = "#3a3633"; g.fillRect(0, 0, 64, 64); g.fillRect(64, 64, 64, 64); }
+  else if (kind === "marble") { g.strokeStyle = shade(0.12); g.lineWidth = 1.5; for (let i = 0; i < 5; i++) { g.beginPath(); g.moveTo(0, i * 30 + 6); g.bezierCurveTo(40, i * 30 + 30, 80, i * 30 - 10, 128, i * 30 + 14); g.stroke(); } g.fillStyle = shade(0.08); g.fillRect(0, 0, 128, 2); g.fillRect(0, 0, 2, 128); }
+  else if (kind === "tatami") { g.fillStyle = "#3f6b3a"; g.fillRect(0, 0, 128, 6); g.fillRect(0, 64, 128, 6); for (let y = 8; y < 128; y += 4) { g.fillStyle = y % 8 ? shade(0.05) : lite(0.05); g.fillRect(0, y, 128, 2); } }
+  else if (kind === "panel") { for (let i = 0; i < 4; i++) { g.fillStyle = shade(0.2); g.fillRect(i * 32, 0, 2, 128); g.fillStyle = i % 2 ? shade(0.05) : lite(0.04); g.fillRect(i * 32 + 2, 0, 30, 128); } }
+  else if (kind === "brick") { g.fillStyle = "#e8dccb"; for (let r = 0; r < 4; r++) { g.fillRect(0, r * 32, 128, 3); for (let c = 0; c < 3; c++) g.fillRect(((r % 2) * 32 + c * 64) % 128, r * 32, 3, 32); } }
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.colorSpace = THREE.SRGBColorSpace;
+  return (texCache[key] = t);
+}
+const matCache = {};
+function surfMat(spec, rx, ry) {
+  if (!spec.tex) return mat(spec.c);
+  const key = spec.tex + spec.c + rx + ry;
+  return matCache[key] || (matCache[key] = new THREE.MeshStandardMaterial({ map: texOf(spec.tex, spec.c, rx, ry), roughness: 0.85 }));
+}
+const SEATS_K = ["chair", "stool", "armchair"], DESKS_K = ["desk", "deskWhite"], BEDS_K = ["bed", "bedDouble"];
 // 每層該有的樓梯：一樓只往上、二樓上下各一、頂樓只往下
 // 二樓分成走廊（上下樓梯都在這）和房間（沒有樓梯，從房門進出）
 function stairKinds(f, hall) { return f === 0 ? ["stairs"] : f === FLOORS.length - 1 ? ["stairsDown"] : hall ? ["stairs", "stairsDown"] : []; }
 // 三層樓：一樓客廳、二樓房間、三樓露臺
 const FLOORS = [
-  { floor: "#c99a68", wall: "#efe3cf", bg: "#d4ecf5", out: "garden" },
-  { floor: "#d8b08a", wall: "#f2e2e2", bg: "#f9dfcc", out: "sky" },
-  { floor: "#cfc3b0", wall: null, bg: "#bfe0f2" }
+  { floor: "oak", wall: "cream", bg: "#d4ecf5", out: "garden" },
+  { floor: "maple", wall: "rose", bg: "#f9dfcc", out: "sky" },
+  { floor: "stone", wall: null, bg: "#bfe0f2" }
 ];
 
 /* ===== 家具模型：原點在佔地中心、朝 +z ===== */
+// 掛牆的東西畫在格子後緣（貼著牆）、離地 0.7～1.1
+const onWall = (d) => -d / 2 + 0.03;
+const glow = (c, e, k) => mat(c, { emissive: e, emissiveIntensity: k || 0.6 });
+const BUILD = {
+  rugRound: (g, w) => { const a = cyl(w / 2 - 0.06, w / 2 - 0.06, 0.02, "#7fa6c9", 0, 0.01, 0, g, 32); a.castShadow = false; const b = cyl(w / 2 - 0.2, w / 2 - 0.2, 0.022, "#a9c6df", 0, 0.012, 0, g, 32); b.castShadow = false; },
+  runner: (g, w, d) => { box(w - 0.1, 0.02, d - 0.1, "#b04a3e", 0, 0.01, 0, g).castShadow = false; box(w - 0.24, 0.022, d - 0.24, "#d9a03a", 0, 0.012, 0, g).castShadow = false; },
+  monstera: (g) => { cyl(0.13, 0.1, 0.22, "#f2ece2", 0, 0.11, 0, g, 14); [[0, 0.62, 0.0, 0], [0.12, 0.5, 0.06, 0.9], [-0.12, 0.52, -0.04, -0.9], [0.05, 0.45, -0.13, 2.4], [-0.06, 0.42, 0.13, -2.2]].forEach(([x, y, z, a]) => { cyl(0.008, 0.008, y - 0.2, "#4f7a3a", x * 0.4, 0.2 + (y - 0.2) / 2, z * 0.4, g, 5); const l = sph(0.13, "#3f7a3f", x, y, z, g, 10, 6); l.scale.set(1, 0.2, 0.75); l.rotation.y = a; }); },
+  cactus: (g) => { cyl(0.11, 0.09, 0.16, "#c98f52", 0, 0.08, 0, g, 14); cyl(0.07, 0.07, 0.36, "#5f9a50", 0, 0.34, 0, g, 12); sph(0.07, "#5f9a50", 0, 0.52, 0, g, 12, 8); cyl(0.04, 0.04, 0.14, "#5f9a50", 0.1, 0.36, 0, g, 10); sph(0.04, "#f2a7b8", 0, 0.6, 0, g, 8, 6); },
+  hanger: (g, w, d, wood, dark) => { cyl(0.012, 0.012, 1.05, dark, 0, 0.52, -0.1, g, 6); box(0.24, 0.02, 0.02, dark, 0.1, 1.04, -0.1, g); cyl(0.003, 0.003, 0.25, "#3a3036", 0.2, 0.9, -0.1, g, 4); cyl(0.09, 0.07, 0.1, "#f2ece2", 0.2, 0.74, -0.1, g, 12); [[-0.06, 0.66], [0.06, 0.62], [0, 0.58]].forEach(([x, y]) => sph(0.06, "#6a9a52", 0.2 + x, y, -0.1, g, 8, 6)); cyl(0.12, 0.14, 0.03, dark, 0, 0.015, -0.1, g, 14); },
+  tree: (g) => { cyl(0.14, 0.11, 0.26, "#8a6040", 0, 0.13, 0, g, 14); cyl(0.025, 0.03, 0.6, "#7a5a3a", 0, 0.55, 0, g, 8); [[0, 1.0, 0, 0.2], [0.12, 0.88, 0.05, 0.15], [-0.12, 0.9, -0.03, 0.15], [0.02, 1.15, 0.02, 0.13]].forEach((p) => sph(p[3], "#4f8a45", p[0], p[1], p[2], g, 10, 8)); },
+  fridge: (g) => { box(0.4, 1.15, 0.38, "#eef2f3", 0, 0.575, 0, g); box(0.4, 0.01, 0.01, "#b8c2c6", 0, 0.78, 0.19, g); [0.95, 0.55].forEach((y) => box(0.02, 0.16, 0.02, "#9aa6ab", 0.15, y, 0.2, g)); box(0.08, 0.06, 0.005, "#f2a7b8", -0.08, 0.9, 0.193, g); },
+  coffee: (g, w, d, wood, dark) => { box(0.42, 0.5, 0.38, wood, 0, 0.25, 0, g); box(0.2, 0.26, 0.2, "#3a3036", 0, 0.63, -0.04, g); box(0.16, 0.04, 0.06, "#26232b", 0, 0.71, 0.08, g); cyl(0.035, 0.03, 0.06, "#f8f4ec", 0, 0.53, 0.07, g, 10); sph(0.012, glow("#ff6a5a", "#ff3a2a", 1), 0.06, 0.66, 0.065, g, 6, 4); },
+  fan: (g) => { cyl(0.13, 0.15, 0.03, "#eef2f3", 0, 0.015, 0, g, 16); cyl(0.015, 0.015, 0.7, "#cfd6d9", 0, 0.37, 0, g, 6); const h = new THREE.Group(); h.position.set(0, 0.76, 0.02); g.add(h); const ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.01, 6, 24), mat("#cfd6d9")); h.add(ring); sph(0.04, "#9cd0e8", 0, 0, 0, h, 8, 6); [0, 2.1, 4.2].forEach((a) => { const b = box(0.06, 0.14, 0.01, "#9cd0e8", Math.sin(a) * 0.08, Math.cos(a) * 0.08, 0.01, h); b.rotation.z = -a; }); },
+  speaker: (g) => { box(0.3, 0.62, 0.28, "#3a3036", 0, 0.31, 0, g); [0.44, 0.2].forEach((y, i) => cyl(i ? 0.1 : 0.06, i ? 0.1 : 0.06, 0.02, "#151515", 0, y, 0.14, g, 18).rotation.x = Math.PI / 2); },
+  painting: (g, w, d) => { const z = onWall(d); box(w - 0.2, 0.5, 0.03, "#8a5a38", 0, 0.95, z, g); box(w - 0.3, 0.4, 0.035, "#9cc6dc", 0, 0.95, z, g); box(w - 0.3, 0.16, 0.04, "#7aa860", 0, 0.83, z, g); sph(0.05, "#f7d35a", 0.25, 1.05, z + 0.02, g, 8, 6); },
+  frame: (g, w, d) => { const z = onWall(d); box(0.3, 0.36, 0.03, "#e8b93a", 0, 0.9, z, g); box(0.22, 0.28, 0.035, "#f2e2c8", 0, 0.9, z, g); sph(0.05, "#c98f6a", 0, 0.93, z + 0.02, g, 8, 6); box(0.12, 0.08, 0.04, "#5d7fa8", 0, 0.81, z, g); },
+  poster: (g, w, d) => { const z = onWall(d); box(0.32, 0.46, 0.015, "#f8f4ec", 0, 0.92, z, g); box(0.26, 0.2, 0.02, "#e07a5f", 0, 1.0, z, g); [0.82, 0.76].forEach((y) => box(0.22, 0.025, 0.02, "#3a3036", 0, y, z, g)); },
+  clock: (g, w, d) => { const z = onWall(d); const c = cyl(0.16, 0.16, 0.04, "#8a5a38", 0, 1.05, z + 0.01, g, 24); c.rotation.x = Math.PI / 2; const f = cyl(0.135, 0.135, 0.045, "#fffaf2", 0, 1.05, z + 0.012, g, 24); f.rotation.x = Math.PI / 2; box(0.012, 0.1, 0.05, "#26232b", 0, 1.09, z + 0.01, g); box(0.07, 0.012, 0.05, "#26232b", 0.035, 1.05, z + 0.01, g); },
+  deskWhite: (g, w, d) => { box(w - 0.06, 0.05, d - 0.08, "#f2efe8", 0, 0.5, 0, g); [-1, 1].forEach((a) => box(0.05, 0.5, d - 0.14, "#d9d3c8", a * (w / 2 - 0.08), 0.25, 0, g)); box(0.3, 0.02, 0.22, "#fffaf0", -0.15, 0.535, 0, g); cyl(0.05, 0.06, 0.02, "#7fa6c9", 0.3, 0.535, -0.05, g, 12); },
+  stool: (g, w, d, wood, dark) => { cyl(0.16, 0.16, 0.05, wood, 0, 0.32, 0, g, 18); [0, 2.1, 4.2].forEach((a) => { const l = cyl(0.018, 0.022, 0.32, dark, Math.sin(a) * 0.1, 0.15, Math.cos(a) * 0.1, g, 6); l.rotation.z = Math.sin(a) * 0.12; l.rotation.x = -Math.cos(a) * 0.12; }); },
+  armchair: (g) => { box(0.44, 0.22, 0.42, "#6a8f5a", 0, 0.11, 0, g); box(0.44, 0.34, 0.1, "#5a7a4a", 0, 0.36, -0.17, g); [-1, 1].forEach((s) => box(0.08, 0.3, 0.42, "#5a7a4a", s * 0.19, 0.18, 0, g)); box(0.3, 0.06, 0.3, "#7aa060", 0, 0.25, 0.03, g); },
+  shelfTall: (g, w, d, wood, dark) => { box(0.42, 1.4, 0.04, dark, 0, 0.7, -d / 2 + 0.08, g); [-1, 1].forEach((sd) => box(0.04, 1.4, 0.32, dark, sd * 0.2, 0.7, -0.02, g)); const cols = ["#c2453b", "#5d7fa8", "#6a8f5a", "#d9a03a", "#8a5a9a"]; [0.2, 0.55, 0.9, 1.25].forEach((y, r) => { box(0.38, 0.03, 0.3, wood, 0, y - 0.13, 0.0, g); for (let i = 0; i < 4; i++) { const h = 0.18 + ((i * 3 + r) % 3) * 0.02; box(0.07, h, 0.22, cols[(i + r) % 5], -0.13 + i * 0.085, y - 0.115 + h / 2, 0.0, g); } }); box(0.42, 0.04, 0.32, dark, 0, 1.4, -0.02, g); },
+  shelfLow: (g, w, d, wood, dark) => { box(w - 0.06, 0.5, d - 0.12, wood, 0, 0.25, 0, g); box(w - 0.12, 0.42, 0.02, dark, 0, 0.25, d / 2 - 0.07, g).visible = false; const cols = ["#c2453b", "#5d7fa8", "#6a8f5a", "#d9a03a", "#8a5a9a", "#e7a6a8"]; for (let i = 0; i < 8; i++) { const h = 0.16 + (i % 3) * 0.02; box(0.08, h, 0.2, cols[i % 6], -w / 2 + 0.15 + i * 0.1, 0.5 + h / 2, -0.02, g); } sph(0.06, "#6a9a52", w / 2 - 0.12, 0.56, 0, g, 8, 6); },
+  lampArc: (g, w, d, wood, dark) => { cyl(0.13, 0.15, 0.04, "#26232b", -0.12, 0.02, -0.1, g, 16); const arc = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.012, 6, 20, Math.PI * 0.7), mat("#cfd6d9")); arc.position.set(0.18, 0.75, -0.1); arc.rotation.z = Math.PI * 0.3; g.add(arc); cyl(0.012, 0.012, 0.75, "#cfd6d9", -0.12, 0.4, -0.1, g, 6); const sh = sph(0.11, glow("#fff1d0", "#8a6a30"), 0.22, 1.02, -0.1, g, 14, 8); sh.scale.y = 0.6; sh.castShadow = false; const l = new THREE.PointLight(0xffd59a, 0.6, 2.4, 2); l.position.set(0.22, 0.9, -0.1); g.add(l); },
+  coffeeTable: (g, w, d, wood, dark) => { box(w - 0.12, 0.04, d - 0.14, wood, 0, 0.3, 0, g); box(w - 0.2, 0.03, d - 0.2, dark, 0, 0.12, 0, g); [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => box(0.04, 0.3, 0.04, dark, a * (w / 2 - 0.1), 0.15, b * (d / 2 - 0.1), g)); cyl(0.06, 0.05, 0.08, "#f8f4ec", 0.2, 0.36, 0, g, 12); box(0.18, 0.03, 0.12, "#c2453b", -0.2, 0.335, 0, g); },
+  dining: (g, w, d, wood, dark) => { box(w - 0.1, 0.05, d - 0.3, wood, 0, 0.55, 0, g); [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => box(0.05, 0.55, 0.05, dark, a * (w / 2 - 0.12), 0.275, b * (d / 2 - 0.22), g)); [-1, 1].forEach((b) => { box(0.3, 0.04, 0.3, wood, 0, 0.3, b * (d / 2 - 0.12), g); box(0.3, 0.3, 0.04, wood, 0, 0.47, b * (d / 2 - 0.02), g); }); cyl(0.12, 0.1, 0.03, "#fffaf2", 0, 0.59, 0, g, 18); sph(0.05, "#e07a5f", 0, 0.62, 0, g, 8, 6); },
+  bedDouble: (g, w, d, wood, dark) => { box(w - 0.08, 0.22, d - 0.06, wood, 0, 0.11, 0, g); box(w - 0.14, 0.12, d - 0.16, "#f8f4ec", 0, 0.28, 0.02, g); box(w - 0.14, 0.05, d * 0.62, "#e7a6a8", 0, 0.35, d * 0.17, g); [-1, 1].forEach((s) => box(w * 0.36, 0.09, 0.26, "#fffaf2", s * w * 0.22, 0.38, -d / 2 + 0.24, g)); box(w - 0.08, 0.6, 0.06, dark, 0, 0.3, -d / 2 + 0.03, g); },
+  drawer: (g, w, d, wood, dark) => { box(0.42, 0.7, 0.38, wood, 0, 0.35, 0, g); [0.15, 0.36, 0.57].forEach((y) => { box(0.36, 0.17, 0.01, "#c79a68", 0, y, 0.19, g); sph(0.018, "#e8b93a", 0, y, 0.2, g, 6, 4); }); cyl(0.05, 0.04, 0.1, "#f2a7b8", 0.1, 0.75, 0, g, 10); },
+  curtain: (g, w, d) => { const z = onWall(d) + 0.04; box(w - 0.1, 0.02, 0.02, "#8a5a38", 0, 1.3, z, g); [-1, 1].forEach((s) => { const c = box(0.3, 1.0, 0.04, "#f2c4c8", s * (w / 2 - 0.22), 0.8, z, g); c.castShadow = false; }); },
+  curtainBlue: (g, w, d) => { const z = onWall(d) + 0.04; box(w - 0.1, 0.02, 0.02, "#8a5a38", 0, 1.3, z, g); [-1, 1].forEach((s) => { const c = box(0.3, 1.0, 0.04, "#7fa6c9", s * (w / 2 - 0.22), 0.8, z, g); c.castShadow = false; }); },
+  parasol: (g) => { cyl(0.12, 0.14, 0.05, "#cfd6d9", 0, 0.025, 0, g, 14); cyl(0.015, 0.015, 1.1, "#f8f4ec", 0, 0.6, 0, g, 6); const top = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.22, 8), mat("#e07a5f")); top.position.y = 1.15; top.castShadow = true; g.add(top); },
+  lounger: (g, w, d) => { box(0.38, 0.06, d - 0.2, "#f8f4ec", 0, 0.2, 0.08, g); const back = box(0.38, 0.06, 0.4, "#f8f4ec", 0, 0.33, -d / 2 + 0.2, g); back.rotation.x = 0.7; [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([a, b]) => box(0.03, 0.18, 0.03, "#cfd6d9", a * 0.16, 0.09, b * (d / 2 - 0.15), g)); box(0.36, 0.02, d - 0.3, "#7fa6c9", 0, 0.24, 0.1, g); },
+  flowerbed: (g, w, d, wood) => { box(w - 0.08, 0.2, d - 0.1, wood, 0, 0.1, 0, g); box(w - 0.16, 0.02, d - 0.18, "#6a4a30", 0, 0.2, 0, g); const fc = ["#f2a7b8", "#f7d35a", "#c9a0e8", "#ffffff", "#e07a5f"]; for (let i = 0; i < 8; i++) { const x = -w / 2 + 0.15 + i * (w - 0.3) / 7; cyl(0.006, 0.006, 0.14, "#4f7a3a", x, 0.27, (i % 2 ? 0.06 : -0.06), g, 4); sph(0.04, fc[i % 5], x, 0.35, (i % 2 ? 0.06 : -0.06), g, 8, 6); } },
+  catTree: (g, w, d, wood) => { box(0.42, 0.04, 0.42, "#e6d6bf", 0, 0.02, 0, g); cyl(0.05, 0.05, 1.0, "#d9c3a0", 0, 0.5, 0, g, 10); [[0.4, 0.1, 0.06], [0.75, -0.08, -0.05], [1.0, 0.0, 0.0]].forEach(([y, x, z]) => box(0.3, 0.04, 0.3, "#b98a5a", x, y, z, g)); sph(0.06, "#f2a7b8", 0.12, 0.3, 0.1, g, 8, 6); },
+  ball: (g) => { sph(0.09, "#e07a5f", 0, 0.09, 0, g, 12, 10); const b = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.012, 6, 16), mat("#fffaf2")); b.position.y = 0.09; g.add(b); },
+  xmasTree: (g) => { cyl(0.1, 0.12, 0.16, "#b04a3e", 0, 0.08, 0, g, 12); [[0.36, 0.3, 0.34], [0.64, 0.24, 0.3], [0.88, 0.17, 0.26]].forEach(([y, r, h]) => { const c = new THREE.Mesh(new THREE.ConeGeometry(r, h, 10), mat("#3f7a3f")); c.position.y = y; c.castShadow = true; g.add(c); }); sph(0.04, glow("#f7d35a", "#c09020", 1), 0, 1.04, 0, g, 8, 6); ["#e07a5f", "#7fa6c9", "#f7d35a", "#ffffff", "#c9a0e8"].forEach((c, i) => sph(0.022, glow(c, c, 0.5), Math.sin(i * 2.4) * (0.24 - i * 0.03), 0.3 + i * 0.12, Math.cos(i * 2.4) * (0.24 - i * 0.03), g, 6, 4)); const l = new THREE.PointLight(0xffd59a, 0.4, 2, 2); l.position.set(0, 0.7, 0.2); g.add(l); },
+  lights: (g, w, d) => { const z = onWall(d) + 0.02; const n = 9; for (let i = 0; i < n; i++) { const x = -w / 2 + 0.1 + i * (w - 0.2) / (n - 1), y = 1.25 - Math.sin(i / (n - 1) * Math.PI) * 0.12; sph(0.025, glow(["#f7d35a", "#f2a7b8", "#9cd0e8"][i % 3], ["#f7d35a", "#f2a7b8", "#9cd0e8"][i % 3], 1), x, y, z, g, 6, 4).castShadow = false; } },
+  pumpkin: (g) => { const p = sph(0.17, "#e8862a", 0, 0.15, 0, g, 14, 10); p.scale.y = 0.8; cyl(0.02, 0.025, 0.07, "#4f7a3a", 0, 0.3, 0, g, 6); [-0.06, 0.06].forEach((x) => box(0.04, 0.04, 0.02, glow("#ffd27a", "#ffa020", 1), x, 0.18, 0.165, g)); box(0.1, 0.025, 0.02, glow("#ffd27a", "#ffa020", 1), 0, 0.1, 0.165, g); const l = new THREE.PointLight(0xffa040, 0.3, 1.4, 2); l.position.set(0, 0.2, 0.25); g.add(l); }
+};
 function build(kind) {
   const g = new THREE.Group(), f = FURN[kind], w = f.w * T, d = f.d * T;
   const wood = "#b98a5a", dark = "#8a6040";
@@ -118,7 +230,7 @@ function build(kind) {
     for (let i = 0; i < 4; i++) { const z = d / 2 - 0.15 - i * (d - 0.3) / 3, y = 1.4 * (d / 2 - z) / d; box(0.03, 0.55, 0.03, dark, w / 2 - 0.05, y + 0.275, z, g); }
   } else if (kind === "beanbag") {
     const b = sph(0.22, "#e0904a", 0, 0.16, 0, g, 16, 12); b.scale.set(1, 0.75, 1);
-  }
+  } else if (BUILD[kind]) BUILD[kind](g, w, d, wood, dark);
   outline(g, 0.012);
   return g;
 }
@@ -126,17 +238,26 @@ function build(kind) {
 /* ===== 場景 ===== */
 let renderer, scene, camera, container, raf = 0, mounted = false, clock;
 let floor, gridLines, selBox, ghostOK = true;
-let state = { owner: null, guest: null, items: [], edit: false, floor: 0, locked: false, hall: false }, roomG = null, doorG = null, backG = null, leftG = null, clouds = [];
+let state = { owner: null, guest: null, items: [], edit: false, floor: 0, locked: false, hall: false, paint: "", tile: "" }, roomG = null, doorG = null, backG = null, leftG = null, clouds = [];
 let meshes = [], sel = -1, onChange = null, ownerSt = null, guestSt = null;
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hitP = new THREE.Vector3();
 
 function dims(it) { const f = FURN[it.k]; return it.r % 2 ? { w: f.d, d: f.w } : { w: f.w, d: f.d }; }
 function cellsOf(it) { const s = dims(it), out = []; for (let x = 0; x < s.w; x++) for (let z = 0; z < s.d; z++) out.push((it.x + x) + "," + (it.z + z)); return out; }
+const isWall = (k) => !!(FURN[k] && FURN[k].wall), RUGS_K = ["rug", "rugRound", "runner"];
+// 牆上不能掛的格子：門的位置
+function doorCells() { return state.floor === 0 ? ["0,6,3", "0,7,3"] : state.floor === 1 ? ["4,0,0", "5,0,0"] : []; }
 function fits(it, skip) {
-  const s = dims(it);
+  const s = dims(it), f = FURN[it.k];
   if (it.x < 0 || it.z < 0 || it.x + s.w > GW || it.z + s.d > GD) return false;
+  if (f.out && state.floor !== FLOORS.length - 1) return false;
+  if (f.wall) {
+    // 掛在後牆（朝房間）或左牆上；露臺沒有牆
+    if (!FLOORS[state.floor].wall || !((it.z === 0 && it.r === 0) || (it.x === 0 && it.r === 3))) return false;
+    const dc = doorCells(); if (cellsOf(it).some((c) => dc.indexOf(c + "," + it.r) >= 0)) return false;
+  }
   const used = {};
-  state.items.forEach((o, i) => { if (i !== skip) cellsOf(o).forEach((c) => { used[c] = 1; }); });
+  state.items.forEach((o, i) => { if (i !== skip && isWall(o.k) === !!f.wall && (!f.wall || o.r === it.r)) cellsOf(o).forEach((c) => { used[c] = 1; }); });
   return !cellsOf(it).some((c) => used[c]);
 }
 function worldOf(it) { const s = dims(it); return { x: -W / 2 + (it.x + s.w / 2) * T, z: -D / 2 + (it.z + s.d / 2) * T }; }
@@ -148,7 +269,7 @@ function cellAt(clientX, clientY) {
   return { x: Math.floor((hitP.x + W / 2) / T), z: Math.floor((hitP.z + D / 2) / T) };
 }
 function freeCells() {
-  const used = {}; state.items.forEach((o) => cellsOf(o).forEach((c) => { used[c] = 1; }));
+  const used = {}; state.items.forEach((o) => { if (!isWall(o.k)) cellsOf(o).forEach((c) => { used[c] = 1; }); });
   const out = []; for (let x = 0; x < GW; x++) for (let z = 0; z < GD; z++) if (!used[x + "," + z]) out.push({ x, z });
   return out;
 }
@@ -170,7 +291,7 @@ function buildWalls() {
   if (roomG) scene.remove(roomG);
   roomG = new THREE.Group(); scene.add(roomG);
   const F = FLOORS[state.floor] || FLOORS[0];
-  floor.material = mat(F.floor);
+  floor.material = surfMat(TILES[state.tile] || TILES[F.floor], GW / 2, GD / 2);
   if (scene.background) scene.background.set(F.bg);
   clouds = [];
   // 雲：記下原本的位置，每一幀左右飄、上下浮
@@ -201,7 +322,7 @@ function buildWalls() {
     return;
   }
   // 後牆、左牆各一組；鏡頭轉到牆後面時把那面牆藏起來，才看得到房間
-  const wallM = mat(F.wall);
+  const wallM = surfMat(PAINTS[state.paint] || PAINTS[F.wall], 4, 1);
   backG = new THREE.Group(); leftG = new THREE.Group(); roomG.add(backG, leftG);
   box(W + 0.12, 1.5, 0.1, wallM, 0, 0.75, -D / 2 - 0.05, backG).castShadow = false;
   box(0.1, 1.5, D, wallM, -W / 2 - 0.05, 0.75, 0, leftG).castShadow = false;
@@ -289,7 +410,7 @@ function dropPerson(st) { if (!st) return; scene.remove(st.c.root); if (st.pet) 
 function cellPos(c) { return new THREE.Vector3(-W / 2 + (c.x + 0.5) * T, 0, -D / 2 + (c.z + 0.5) * T); }
 function cellOfPos(p) { return { x: Math.max(0, Math.min(GW - 1, Math.floor((p.x + W / 2) / T))), z: Math.max(0, Math.min(GD - 1, Math.floor((p.z + D / 2) / T))) }; }
 // 能走的格子：地毯可以踩，其他家具擋路
-function blocked() { const u = {}; state.items.forEach((o) => { if (o.k !== "rug") cellsOf(o).forEach((c) => { u[c] = 1; }); }); return u; }
+function blocked() { const u = {}; state.items.forEach((o) => { if (RUGS_K.indexOf(o.k) < 0 && !isWall(o.k)) cellsOf(o).forEach((c) => { u[c] = 1; }); }); return u; }
 function findPath(from, to) {
   const bl = blocked(), key = (c) => c.x + "," + c.z, prev = {}, q = [from]; prev[key(from)] = null;
   while (q.length) {
@@ -333,8 +454,11 @@ function setPeople() {
 }
 
 /* ===== 點地板走過去、點家具做對應的事 ===== */
-const SEAT_H = { sofa: 0.3, chair: 0.34, beanbag: 0.26, bed: 0.42 };
-const ACT_OF = { stairs: "", stairsDown: "", sofa: "sit", chair: "sit", beanbag: "sit", bed: "sleep", shelf: "book", desk: "write", table: "mug", piano: "piano", tv: "watch", lamp: "lamp", plant: "water", wardrobe: "spin", petbed: "petbed", rug: "" };
+const SEAT_H = { sofa: 0.3, chair: 0.34, stool: 0.34, armchair: 0.3, beanbag: 0.26, lounger: 0.26, bed: 0.42, bedDouble: 0.42 };
+const ACT_OF = { stairs: "", stairsDown: "", sofa: "sit", chair: "sit", stool: "sit", armchair: "sit", beanbag: "sit", lounger: "sit", bed: "sleep", bedDouble: "sleep",
+  shelf: "book", shelfTall: "book", shelfLow: "book", desk: "write", deskWhite: "write", table: "mug", coffeeTable: "mug", dining: "mug", piano: "piano", tv: "watch",
+  lamp: "lamp", lampArc: "lamp", fridge: "lamp", coffee: "mug", fan: "lamp", speaker: "lamp", plant: "water", monstera: "water", cactus: "water", hanger: "water", tree: "water", flowerbed: "water",
+  wardrobe: "spin", drawer: "spin", petbed: "petbed", catTree: "petbed", ball: "petbed", xmasTree: "lamp", pumpkin: "lamp" };
 function frontAngle(it) { return -it.r * Math.PI / 2; }
 function goTo(st, cell, itemIdx) {
   const it = state.items[itemIdx];
@@ -350,7 +474,7 @@ function goTo(st, cell, itemIdx) {
     }));
     let best = null, bestLen = 1e9;
     cand.forEach((n) => { const pth = findPath(from, n); if (pth && pth.length + n.pri * 3 < bestLen) { bestLen = pth.length + n.pri * 3; best = pth; } });
-    if (it.k === "rug") best = findPath(from, cell);
+    if (RUGS_K.indexOf(it.k) >= 0) best = findPath(from, cell);
     if (!best) return false;
     st.path = best.map(cellPos);
     const w = worldOf(it);
@@ -358,7 +482,7 @@ function goTo(st, cell, itemIdx) {
     const last = st.path[st.path.length - 1];
     st.spot = { onto, face: SEAT_H[it.k] != null ? fa : Math.atan2(w.x - last.x, w.z - last.z), item: itemIdx, k: it.k };
     // 床：先背對床坐到床邊，再躺下去
-    if (it.k === "bed") { const dx = w.x - last.x, dz = w.z - last.z, dl = Math.hypot(dx, dz) || 1; st.spot.onto = new THREE.Vector3(last.x + dx / dl * 0.34, 0, last.z + dz / dl * 0.34); st.spot.face = Math.atan2(-dx, -dz); }
+    if (BEDS_K.indexOf(it.k) >= 0) { const dx = w.x - last.x, dz = w.z - last.z, dl = Math.hypot(dx, dz) || 1; st.spot.onto = new THREE.Vector3(last.x + dx / dl * 0.34, 0, last.z + dz / dl * 0.34); st.spot.face = Math.atan2(-dx, -dz); }
   } else {
     const pth = findPath(from, target); if (!pth) return false;
     st.path = pth.map(cellPos); st.spot = null;
@@ -373,7 +497,7 @@ function arrive(st) {
   // 坐上沙發、椅子、床：從旁邊的格子慢慢挪進去，不是瞬間移過去
   if (sp.onto) { st.hop = { from: st.pos.clone(), to: sp.onto.clone(), t: 0 }; st.pos.copy(sp.onto); }
   st.ry = sp.k === "bed" ? sp.face : sp.face; st.act = sp.deskSit ? "sitwrite" : ACT_OF[sp.k] || ""; st.item = sp.item; st.actAt = clock.elapsedTime;
-  if (sp.k === "lamp") { const m = meshes[sp.item]; m && m.traverse((o) => { if (o.isPointLight) o.visible = !o.visible; }); }
+  if (ACT_OF[sp.k] === "lamp") { const m = meshes[sp.item]; m && m.traverse((o) => { if (o.isPointLight) o.visible = !o.visible; }); }
   if (FURN[sp.k].fixed && st.climb) { startClimb(st, sp.item); return; }
   if (FURN[sp.k].fixed) { window.dispatchEvent(new CustomEvent("kaida-home-stairs", { detail: { floor: state.floor, dir: sp.k === "stairs" ? 1 : -1 } })); }
   if (sp.k === "petbed" && st.pet) { const w = worldOf(state.items[sp.item]); st.petBed = new THREE.Vector3(w.x, 0.05, w.z); }
@@ -397,7 +521,7 @@ function walkToDoor(st) {
 function sitDesk(i) {
   const st = guestSt || ownerSt, d = state.items[i]; if (!st || !d || st.climb) return false;
   const dc = cellsOf(d);
-  const ci = state.items.findIndex((o) => o.k === "chair" && cellsOf(o).some((k) => { const [x, z] = k.split(",").map(Number); return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => dc.indexOf((x + a) + "," + (z + b)) >= 0); }));
+  const ci = state.items.findIndex((o) => SEATS_K.indexOf(o.k) >= 0 && cellsOf(o).some((k) => { const [x, z] = k.split(",").map(Number); return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => dc.indexOf((x + a) + "," + (z + b)) >= 0); }));
   if (ci < 0) return goTo(st, cellOfPos(st.pos), i);
   if (!goTo(st, cellOfPos(st.pos), ci)) return false;
   const c = state.items[ci], cw = worldOf(c), dw = worldOf(d);
@@ -562,6 +686,7 @@ function frame() {
   // 鏡頭轉到牆外面就藏起那面牆
   if (backG) backG.visible = camera.position.z > -D / 2;
   if (leftG) leftG.visible = camera.position.x > -W / 2;
+  meshes.forEach((m, i) => { const it = state.items[i]; if (it && isWall(it.k)) m.visible = (it.r === 3 ? leftG : backG) ? (it.r === 3 ? leftG : backG).visible : false; });
   animPerson(ownerSt, dt, s, !state.edit && !!guestSt);
   animPerson(guestSt, dt, s, false);
   // 方格只在擺設、移動家具時出現
@@ -602,17 +727,21 @@ function pickItem(e) {
 function emitSel() { window.dispatchEvent(new CustomEvent("kaida-home-sel", { detail: { i: sel, k: sel >= 0 ? state.items[sel].k : "" } })); }
 function moveSelTo(cell, commit) {
   const it = state.items[sel]; if (!it || !cell) return false;
-  const s = dims(it), cand = { k: it.k, r: it.r, x: cell.x - Math.floor((s.w - 1) / 2), z: cell.z - Math.floor((s.d - 1) / 2) };
+  let r = it.r;
+  // 掛牆的東西：拖到哪面牆比較近就掛哪面
+  if (isWall(it.k)) r = cell.x < cell.z ? 3 : 0;
+  const s = dims({ k: it.k, r }), cand = { k: it.k, r, x: cell.x - Math.floor((s.w - 1) / 2), z: cell.z - Math.floor((s.d - 1) / 2) };
   cand.x = Math.max(0, Math.min(GW - s.w, cand.x)); cand.z = Math.max(0, Math.min(GD - s.d, cand.z));
+  if (isWall(it.k)) { if (r === 3) cand.x = 0; else cand.z = 0; }
   const ok = fits(cand, sel);
   if (commit) {
-    if (ok) { it.x = cand.x; it.z = cand.z; }
+    if (ok) { it.x = cand.x; it.z = cand.z; it.r = cand.r; }
     ghostOK = true; rebuildItems(); if (ok && onChange) onChange(state.items);
     return ok;
   }
   // 拖曳中：家具跟著手指，格子框綠色可以放、紅色放不下
   ghostOK = ok;
-  const p = worldOf(cand), m = meshes[sel]; m.position.x = p.x; m.position.z = p.z; m.position.y = 0.06;
+  const p = worldOf(cand), m = meshes[sel]; m.position.x = p.x; m.position.z = p.z; m.position.y = 0.06; m.rotation.y = -cand.r * Math.PI / 2;
   selBox.scale.set(s.w * T, s.d * T, 1); selBox.position.x = p.x; selBox.position.z = p.z; selBox.material.color.set(ok ? 0x4caf6a : 0xd9534f); selBox.visible = true;
   return ok;
 }
@@ -662,7 +791,7 @@ function bindInput(el) {
       const st = guestSt || ownerSt; if (!st || st.climb || !tapStart || Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 10) return;
       const i = pickItem(e), cell = cellAt(e.clientX, e.clientY);
       // 點書桌：先浮出「坐下」按鈕，按了才去坐
-      if (i >= 0 && state.items[i].k === "desk") { const w = worldOf(state.items[i]), v = new THREE.Vector3(w.x, 0.6, w.z).project(camera); window.dispatchEvent(new CustomEvent("kaida-home-desk", { detail: { i, x: (v.x + 1) / 2 * container.clientWidth, y: (1 - v.y) / 2 * container.clientHeight } })); return; }
+      if (i >= 0 && DESKS_K.indexOf(state.items[i].k) >= 0) { const w = worldOf(state.items[i]), v = new THREE.Vector3(w.x, 0.6, w.z).project(camera); window.dispatchEvent(new CustomEvent("kaida-home-desk", { detail: { i, x: (v.x + 1) / 2 * container.clientWidth, y: (1 - v.y) / 2 * container.clientHeight } })); return; }
       if (i >= 0) goTo(st, cell, i); else if (cell && cell.x >= 0 && cell.z >= 0 && cell.x < GW && cell.z < GD) { if (goTo(st, cell, -1)) { const c = cellPos(cell); ripple(scene, c.x, c.z); } else { const bl = blocked(); if (bl[cell.x + "," + cell.z]) { const j = state.items.findIndex((o) => cellsOf(o).indexOf(cell.x + "," + cell.z) >= 0); if (j >= 0) goTo(st, cell, j); } } }
       return;
     }
@@ -697,6 +826,7 @@ function set(o) {
   const peopleChanged = lk(o.owner) !== lk(state.owner) || lk(o.guest) !== lk(state.guest);
   const fl = Math.max(0, Math.min(FLOORS.length - 1, o.floor | 0)), hall = fl === 1 && !!o.hall, floorChanged = fl !== state.floor || hall !== state.hall;
   state.hall = hall;
+  const surfChanged = (o.paint || "") !== state.paint || (o.tile || "") !== state.tile; state.paint = o.paint || ""; state.tile = o.tile || "";
   state.owner = o.owner || null; state.guest = o.guest || null; state.edit = !!o.edit; state.floor = fl; state.locked = !!o.locked;
   if (doorG) { const lk = doorG.getObjectByName("padlock"); if (lk) lk.visible = state.locked; }
   state.items = (o.items || []).filter((it) => FURN[it.k]).map((it) => ({ k: it.k, x: it.x | 0, z: it.z | 0, r: (it.r | 0) % 4 }));
@@ -715,7 +845,7 @@ function set(o) {
   arriveDir = o.arrive | 0;
   if (!state.edit) sel = -1; else if (sel >= state.items.length) sel = -1;
   if (!mounted) { if (added && onChange) onChange(state.items); return; }
-  if (floorChanged) buildWalls();
+  if (floorChanged || surfChanged) buildWalls();
   if (peopleChanged || floorChanged) setPeople();
   rebuildItems(); emitSel();
   if (added && onChange) onChange(state.items);
@@ -726,7 +856,7 @@ function place(kind) {
   const cand = [];
   [0, 3, 1, 2].forEach((r) => { for (let x = 0; x < GW; x++) for (let z = 0; z < GD; z++) {
     const c = { k: kind, x, z, r }, s = dims(c);
-    const wall = z === 0 && r === 0 ? 0 : x === 0 && r === 3 ? 1 : kind === "rug" ? 2 : 3;
+    const wall = z === 0 && r === 0 ? 0 : x === 0 && r === 3 ? 1 : RUGS_K.indexOf(kind) >= 0 ? 2 : 3;
     const mid = Math.hypot(x + s.w / 2 - GW / 2, z + s.d / 2 - GD / 2);
     cand.push({ c, score: wall * 100 + (wall < 2 ? x + z : wall === 2 ? mid : -mid) });
   } });
@@ -738,6 +868,8 @@ function place(kind) {
 }
 function rotate() {
   const it = state.items[sel]; if (!it) return false;
+  // 掛牆的東西：轉一下就換到另一面牆
+  if (isWall(it.k)) { const c = it.r === 0 ? { k: it.k, r: 3, x: 0, z: Math.min(GD - FURN[it.k].w, it.x) } : { k: it.k, r: 0, z: 0, x: Math.min(GW - FURN[it.k].w, it.z) }; if (!fits(c, sel)) return false; Object.assign(it, c); rebuildItems(); if (onChange) onChange(state.items); return true; }
   // 原地轉 90 度；轉了放不下就在附近找位置，都不行就不轉
   const s0 = dims(it), cx = it.x + s0.w / 2, cz = it.z + s0.d / 2, r = (it.r + 1) % 4;
   const s1 = it.r % 2 ? { w: FURN[it.k].w, d: FURN[it.k].d } : { w: FURN[it.k].d, d: FURN[it.k].w };
@@ -761,5 +893,5 @@ function screenOf(kind) {
 function who() { const st = guestSt || ownerSt; return st ? { act: st.act, k: (state.items[st.item] || {}).k || "", walking: st.path.length, x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
 // 門在畫面上的位置（測試用）
 function doorAt() { if (!doorG || !doorG.parent || !doorG.parent.visible) return null; const v = new THREE.Vector3(0, 0.7, 0); doorG.localToWorld(v); v.project(camera); const r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
-window.KaidaHome = { sitDesk, doorAt, climb, pin: (map) => { pins = map; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
+window.KaidaHome = { PAINTS, TILES, sitDesk, doorAt, climb, pin: (map) => { pins = map; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
 window.dispatchEvent(new Event("kaida-home-ready"));
