@@ -95,12 +95,12 @@
     var bad = {}; CLASH.forEach(function (c) { if (c.indexOf(id) >= 0) c.forEach(function (x) { bad[x] = 1; }); });
     return list.filter(function (x) { return !bad[x]; }).concat(id).join(" ");
   }
-  // 成長：每累積 2 小時升一級；寵物在 10、50、100 小時各長大一階
+  // 成長：寵物在 10、50、100 小時各長大一階
   var PET_STAGES = [0, 10, 50, 100], PET_SCALE = [.72, .86, 1, 1.12];
   function growth(min) {
     var h = (min || 0) / 60, st = 0;
     PET_STAGES.forEach(function (x, i) { if (h >= x) st = i; });
-    return { lv: 1 + Math.floor(h / 2), stage: st, next: PET_STAGES[st + 1] || 0 };
+    return { stage: st, next: PET_STAGES[st + 1] || 0 };
   }
   function item(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
 
@@ -557,7 +557,7 @@
     var body = pose === "sofa" ? '<g transform="translate(0 -14)">' + character(m.look, "desk", { smile: true, noPet: true }) + '</g>'
                                : '<g class="' + (walking ? "walk" : "") + '">' + character(m.look, pose, { smile: true, petX: spot.x > 300 ? -22 : 22, noPet: walking }) + '</g>';
     var ty = pose === "sofa" ? -78 : -64;
-    return body + nameTag((m.lv ? "Lv" + m.lv + " " : "") + m.name, ty, m.me, "") + (m.bubble ? bubble(m.bubble, ty - 10) : "");
+    return body + nameTag(m.name, ty, m.me, "") + (m.bubble ? bubble(m.bubble, ty - 10) : "");
   }
 
   /*
@@ -596,7 +596,7 @@
           '<g transform="translate(0 -8)">' + character(m.look, "desk", { focus: true, lookDown: act !== "pc", glow: act === "pc", noPet: true }) + '</g>' +
           desk(act, true) +
           (m.look && m.look.pet ? pet(m.look.pet, 36, 8, m.look.ps, m.look.pm) : "") +
-          nameTag((m.lv ? "Lv" + m.lv + " " : "") + m.name, -72, m.me, "") + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
+          nameTag(m.name, -72, m.me, "") + (m.bubble ? bubble(m.bubble, -82) : "") + '</g>';
       }
       if (m && !focus) {
         var sp = SPOTS[spots[m.id]];
