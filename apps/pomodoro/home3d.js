@@ -121,7 +121,7 @@ function build(kind, down) {
 /* ===== 場景 ===== */
 let renderer, scene, camera, container, raf = 0, mounted = false, clock;
 let floor, gridLines, selBox, ghostOK = true;
-let state = { owner: null, guest: null, items: [], edit: false, floor: 0 }, roomG = null;
+let state = { owner: null, guest: null, items: [], edit: false, floor: 0, locked: false }, roomG = null, doorG = null;
 let meshes = [], sel = -1, onChange = null, ownerSt = null, guestSt = null;
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hitP = new THREE.Vector3();
 
@@ -198,6 +198,17 @@ function buildWalls() {
   box(W + 0.12, 0.1, 0.12, "#b98a5a", 0, 0.05, -D / 2 - 0.04, roomG).castShadow = false;
   box(0.12, 0.1, D, "#b98a5a", -W / 2 - 0.04, 0.05, 0, roomG).castShadow = false;
   // 窗戶
+  // 左牆上的門：一樓是大門、二樓是房門；鎖上時門把旁掛一個金色鎖頭
+  doorG = new THREE.Group(); doorG.position.set(-W / 2 + 0.02, 0, D / 2 - 0.75); doorG.rotation.y = Math.PI / 2; roomG.add(doorG);
+  const dc = state.floor === 0 ? "#8a5a3a" : "#c98f6a";
+  box(0.72, 1.2, 0.03, "#fffaf2", 0, 0.6, 0, doorG).castShadow = false;
+  box(0.62, 1.12, 0.05, dc, 0, 0.56, 0.01, doorG).castShadow = false;
+  [0.32, 0.8].forEach((y) => box(0.46, 0.3, 0.06, mat(dc, { emissive: "#000000" }), 0, y, 0.012, doorG).castShadow = false);
+  sph(0.03, "#e8b93a", 0.22, 0.56, 0.05, doorG, 10, 8);
+  const lk = new THREE.Group(); lk.position.set(0.22, 0.44, 0.06); doorG.add(lk); lk.name = "padlock";
+  box(0.09, 0.08, 0.03, "#e8b93a", 0, 0, 0, lk);
+  const sh = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.009, 6, 14, Math.PI), mat("#c99a2a")); sh.position.y = 0.04; lk.add(sh);
+  lk.visible = state.locked;
   const win = new THREE.Group(); win.position.set(0.6, 0.95, -D / 2 + 0.01); roomG.add(win);
   box(0.9, 0.7, 0.03, "#fffaf2", 0, 0, 0, win); box(0.8, 0.6, 0.035, mat("#bfe0f2", { emissive: "#6a98b8", emissiveIntensity: 0.35 }), 0, 0, 0.002, win);
   box(0.03, 0.6, 0.04, "#fffaf2", 0, 0, 0.004, win); box(0.8, 0.03, 0.04, "#fffaf2", 0, 0, 0.004, win);
@@ -332,8 +343,40 @@ function arrive(st) {
   if (sp.onto) st.pos.copy(sp.onto);
   st.ry = sp.k === "bed" ? sp.face : sp.face; st.act = ACT_OF[sp.k] || ""; st.item = sp.item; st.actAt = clock.elapsedTime;
   if (sp.k === "lamp") { const m = meshes[sp.item]; m && m.traverse((o) => { if (o.isPointLight) o.visible = !o.visible; }); }
+  if (sp.k === "stairs" && st.climb) { startClimb(st, sp.item); return; }
   if (sp.k === "stairs") { window.dispatchEvent(new CustomEvent("kaida-home-stairs", { detail: { floor: state.floor } })); }
   if (sp.k === "petbed" && st.pet) { const w = worldOf(state.items[sp.item]); st.petBed = new THREE.Vector3(w.x, 0.05, w.z); }
+}
+/* ===== 上下樓：走到樓梯口，一階一階爬上去（或往下走），畫面淡出再換樓層 ===== */
+function climb(dir, done) {
+  const st = guestSt || ownerSt, i = state.items.findIndex((o) => o.k === "stairs");
+  if (!st || i < 0 || state.edit || (st.climb && st.climb.on)) return false;
+  st.climb = { dir, done, on: false };
+  if (!goTo(st, cellOfPos(st.pos), i)) { st.climb = null; return false; }
+  if (!st.path.length) arrive(st);
+  return true;
+}
+function startClimb(st, idx) {
+  const it = state.items[idx], w = worldOf(it), fa = frontAngle(it), s = dims(it), len = (it.r % 2 ? s.w : s.d) * T;
+  const fx = Math.sin(fa), fz = Math.cos(fa), top = state.floor === FLOORS.length - 1;
+  const foot = new THREE.Vector3(w.x + fx * len / 2, 0, w.z + fz * len / 2), end = new THREE.Vector3(w.x - fx * (len / 2 - 0.2), 0, w.z - fz * (len / 2 - 0.2));
+  // 往上爬到樓梯頂；往下：頂樓走進樓梯口往下沉，二樓在樓梯口旁邊往下走
+  const h = st.climb.dir > 0 ? 1.4 : -1.4, to = st.climb.dir > 0 || top ? end : foot.clone().addScaledVector(new THREE.Vector3(fx, 0, fz), -0.05);
+  Object.assign(st.climb, { on: true, t: 0, from: st.pos.clone(), foot, to, h, dur: st.climb.dir > 0 || top ? 2.0 : 1.4, faded: false });
+  st.act = "climb"; st.ry = Math.atan2(to.x - st.pos.x, to.z - st.pos.z) || st.ry;
+  if (st.climb.dir < 0 && !top) st.ry = fa + Math.PI;
+}
+function climbStep(st, dt) {
+  const cl = st.climb; cl.t += dt;
+  const p = Math.min(1, cl.t / cl.dur), total = cl.from.distanceTo(cl.to) || 1, p0 = Math.min(0.9, cl.from.distanceTo(cl.foot) / total);
+  st.pos.x = cl.from.x + (cl.to.x - cl.from.x) * p; st.pos.z = cl.from.z + (cl.to.z - cl.from.z) * p;
+  const q = cl.dir < 0 && cl.to === cl.foot ? p : Math.max(0, (p - p0) / (1 - p0));
+  st.pos.y = cl.h * Math.floor(q * 7) / 7 + cl.h * ((q * 7) % 1) / 7 * 0.6;
+  if (p > 0.55 && !cl.faded) { cl.faded = true; renderer.domElement.style.opacity = "0"; }
+  if (p >= 1) {
+    st.climb = null; st.act = ""; st.pos.y = 0;
+    setTimeout(() => { cl.done && cl.done(); requestAnimationFrame(() => { renderer.domElement.style.opacity = "1"; }); }, 260);
+  }
 }
 function animPerson(st, dt, s, wander) {
   if (!st) return;
@@ -350,6 +393,7 @@ function animPerson(st, dt, s, wander) {
     if (dist < 0.02) { st.path.shift(); if (!st.path.length) arrive(st); }
     else { const step = Math.min(dist, dt * 1.6); st.pos.x += dx / dist * step; st.pos.z += dz / dist * step; st.ry = Math.atan2(dx, dz); walking = true; }
   }
+  if (st.climb && st.climb.on) { climbStep(st, dt); walking = true; }
   const c = st.c, act = walking ? "" : st.act, lie = act === "sleep";
   // 每一幀先站直，再擺姿勢
   c.hips.position.set(0, 0.36, 0); c.torso.rotation.set(0, 0, 0); c.head.rotation.set(0, 0, 0);
@@ -417,10 +461,27 @@ function animPerson(st, dt, s, wander) {
     if (P.userData.tail) P.userData.tail.rotation.z = Math.sin(s * (st.petBed ? 1 : 6)) * (st.petBed ? 0.15 : 0.5);
   }
 }
+// 點地板的漣漪：兩圈往外擴散、慢慢變淡，表示要走到這裡
+const ripples = [];
+function ripple(sc, x, z) {
+  for (let k = 0; k < 2; k++) {
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.07, 0.1, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, 0.02, z); m.renderOrder = 3; sc.add(m);
+    ripples.push({ m, sc, t: -k * 0.18 });
+  }
+}
+function tickRipples(dt) {
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i]; r.t += dt; const p = Math.max(0, r.t / 0.75);
+    r.m.visible = r.t >= 0; r.m.scale.setScalar(1 + p * 2.6); r.m.material.opacity = 0.9 * (1 - p);
+    if (p >= 1) { r.sc.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); ripples.splice(i, 1); }
+  }
+}
 function frame() {
   raf = requestAnimationFrame(frame);
   if (!container || !container.isConnected || container.offsetParent === null) return;
   const dt = Math.min(0.05, clock.getDelta()), s = clock.elapsedTime;
+  tickRipples(dt);
   animPerson(ownerSt, dt, s, !state.edit && !!guestSt);
   animPerson(guestSt, dt, s, false);
   // 方格只在擺設、移動家具時出現
@@ -429,7 +490,7 @@ function frame() {
   // 樓梯上的上下樓按鈕跟著樓梯走；擺設時收起來
   if (pinEl) {
     const it = state.items.find((o) => o.k === "stairs");
-    if (!it || state.edit) pinEl.hidden = true;
+    if (!it || state.edit || [ownerSt, guestSt].some((p) => p && p.climb)) pinEl.hidden = true;
     else {
       const w = worldOf(it), v = new THREE.Vector3(w.x, state.floor === FLOORS.length - 1 ? 0.35 : 0.9, w.z).project(camera);
       pinEl.hidden = false;
@@ -484,9 +545,14 @@ function bindInput(el) {
   el.addEventListener("pointerup", (e) => {
     if (!state.edit) {
       // 逛家模式：點地板走過去，點家具做對應的事（自己家動自己，去別人家動客人）
-      const st = guestSt || ownerSt; if (!st || !tapStart || Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 10) return;
+      if (doorG && doorG.parent && tapStart && Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) <= 10) {
+        const r = renderer.domElement.getBoundingClientRect();
+        ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera);
+        if (ray.intersectObject(doorG, true).length) { window.dispatchEvent(new CustomEvent("kaida-home-door", { detail: { floor: state.floor } })); return; }
+      }
+      const st = guestSt || ownerSt; if (!st || st.climb || !tapStart || Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 10) return;
       const i = pickItem(e), cell = cellAt(e.clientX, e.clientY);
-      if (i >= 0) goTo(st, cell, i); else if (cell && cell.x >= 0 && cell.z >= 0 && cell.x < GW && cell.z < GD) { if (!goTo(st, cell, -1)) { const bl = blocked(); if (bl[cell.x + "," + cell.z]) { const j = state.items.findIndex((o) => cellsOf(o).indexOf(cell.x + "," + cell.z) >= 0); if (j >= 0) goTo(st, cell, j); } } }
+      if (i >= 0) goTo(st, cell, i); else if (cell && cell.x >= 0 && cell.z >= 0 && cell.x < GW && cell.z < GD) { if (goTo(st, cell, -1)) { const c = cellPos(cell); ripple(scene, c.x, c.z); } else { const bl = blocked(); if (bl[cell.x + "," + cell.z]) { const j = state.items.findIndex((o) => cellsOf(o).indexOf(cell.x + "," + cell.z) >= 0); if (j >= 0) goTo(st, cell, j); } } }
       return;
     }
     if (!drag) return;
@@ -519,7 +585,8 @@ function set(o) {
   const lk = (x) => JSON.stringify(x && x.look || null);
   const peopleChanged = lk(o.owner) !== lk(state.owner) || lk(o.guest) !== lk(state.guest);
   const fl = Math.max(0, Math.min(FLOORS.length - 1, o.floor | 0)), floorChanged = fl !== state.floor;
-  state.owner = o.owner || null; state.guest = o.guest || null; state.edit = !!o.edit; state.floor = fl;
+  state.owner = o.owner || null; state.guest = o.guest || null; state.edit = !!o.edit; state.floor = fl; state.locked = !!o.locked;
+  if (doorG) { const lk = doorG.getObjectByName("padlock"); if (lk) lk.visible = state.locked; }
   state.items = (o.items || []).filter((it) => FURN[it.k]).map((it) => ({ k: it.k, x: it.x | 0, z: it.z | 0, r: (it.r | 0) % 4 }));
   // 每層都要有樓梯：沒有就自己擺一座（右後角優先）
   let added = false;
@@ -575,5 +642,7 @@ function screenOf(kind) {
   return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height };
 }
 function who() { const st = guestSt || ownerSt; return st ? { act: st.act, k: (state.items[st.item] || {}).k || "", walking: st.path.length, x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
-window.KaidaHome = { pin: (el) => { pinEl = el; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
+// 門在畫面上的位置（測試用）
+function doorAt() { if (!doorG || !doorG.parent) return null; const v = new THREE.Vector3(0, 0.7, 0); doorG.localToWorld(v); v.project(camera); const r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
+window.KaidaHome = { doorAt, climb, pin: (el) => { pinEl = el; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
 window.dispatchEvent(new Event("kaida-home-ready"));
