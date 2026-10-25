@@ -2350,6 +2350,7 @@ function update(members) {
     if (!st) st = addChar(m, i);
     const wasUp = st.m.up;
     st.m = m; st.tag.nm.textContent = tagText(m); if (st.tag.dnd.hidden === !!m.dnd) st.tag.dnd.hidden = !m.dnd;
+    if (!m.up) st.userGo = false;
     if (st.seat !== i) { st.seat = i; if (!m.up) { const p = seatPos(i); walkTo(st, p, "sit"); } }
     if (m.up && !wasUp) {
       // 起身：從椅子後面站起來，走去一個地方
@@ -2414,7 +2415,7 @@ function animChar(st, dt, now) {
       if (st.after === "sit") { const p = seatPos(st.seat); st.pos.set(p.x, 0, p.z); st.ry = SEATS[st.seat].ry; st.mode = "sit"; if (st.carry || st.sip) { st.carry = st.sip = false; st.emo = "drink"; st.emoT0 = now; if (st.m.up) st.resumeAt = now + 4000; } }
       else if (st.after === "chat") { st.mode = "chat"; if (st.m.me) window.dispatchEvent(new CustomEvent("kaida3d-arrive", { detail: { to: st.visTo } })); }
       else if (st.after === "coffee") { st.mode = "coffee"; st.ry = Math.PI; st.brewT0 = now; }
-      else { const sp = SPOTS[st.spot] || { ry: st.ry }; st.mode = "idle"; st.ry = sp.ry; st.waitUntil = now + 6000 + Math.random() * 8000; }
+      else { const sp = SPOTS[st.spot] || { ry: st.ry }; st.mode = "idle"; st.ry = sp.ry; st.waitUntil = now + (st.userGo ? 1e9 : 6000 + Math.random() * 8000); }
     } else {
       const dx = nxt.x - st.pos.x, dz = nxt.z - st.pos.z, d = Math.hypot(dx, dz), sp = 1.15 * dt;
       if (d <= sp) { st.pos.x = nxt.x; st.pos.z = nxt.z; st.path.shift(); }
@@ -2793,6 +2794,25 @@ function mount(el) {
       let best = 1e9; Object.values(chars).forEach((st) => { tmpV.set(st.pos.x, 0.9, st.pos.z).project(camera); const d = Math.hypot(tmpV.x - ndc.x, tmpV.y - ndc.y); if (d < best && d < 0.12) { best = d; id = st.m.id; } });
     }
     if (id) { window.dispatchEvent(new CustomEvent("kaida3d-pick", { detail: { id } })); return; }
+    // 起身後：點家具就走過去做對應的事（沙發坐、書櫃拿書…），點地板就走到那裡；點桌椅還是照舊問要不要坐回去
+    const me = Object.values(chars).find((st) => st.m.me);
+    if (me && me.m.up && !me.m.away && me.mode !== "chat") {
+      const onSeat = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
+      // 頭頂上的吊燈、燈串不算：只看手搆得到的高度
+      const hits = ray.intersectObjects(scene.children, true).filter((h) => { if (h.point.y > 1.8) return false; let o = h.object; while (o) { if (o.userData.cid || o.userData.outline) return false; o = o.parent; } return h.object.visible; });
+      const hit = hits[0];
+      if (!(onSeat && (!hit || onSeat.distance <= hit.distance + 0.01))) {
+        let best = -1;
+        if (hit && hit.point.y > 0.05) { let bd = 1.4; SPOTS.forEach((sp, i) => { if (reserved[i] && reserved[i] !== me.m.id) return; const d = Math.hypot(sp.x - hit.point.x, sp.z - hit.point.z); if (d < bd) { bd = d; best = i; } }); }
+        const fl = new THREE.Vector3(), onFloor = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), fl);
+        if (best >= 0 || onFloor) {
+          releaseSpot(me.m.id); me.userGo = true; me.emo = null;
+          if (best >= 0) { reserved[best] = me.m.id; me.spot = best; walkTo(me, SPOTS[best], "idle"); }
+          else { const [c0, r0] = cellOf(fl.x, fl.z), [c1, r1] = nearestFree(c0, r0), ok = c0 === c1 && r0 === r1 && Math.abs(fl.x - centerOf(c0, r0).x) <= GRID.cell && Math.abs(fl.z - centerOf(c0, r0).z) <= GRID.cell; me.spot = -1; walkTo(me, ok ? { x: fl.x, z: fl.z } : centerOf(c1, r1), "idle"); }
+          return;
+        }
+      }
+    }
     // 點到空的桌子或椅子：問要不要坐過去
     const seatHit = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
     let si = -1;
@@ -2853,6 +2873,9 @@ function rebuild() {
 }
 // 名牌下面的專注時間，index 每秒傳進來 { id: "00:25:13" }
 function times(map) { Object.keys(chars).forEach((id) => { const st = chars[id], v = map[id] || ""; if (st.tag.ft.textContent !== v) st.tag.ft.textContent = v; }); }
-window.KaidaScene3D = { times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
+// 世界座標在畫面上的位置；me() 回報自己的角色在做什麼（測試用）
+function proj(x, y, z) { const v = new THREE.Vector3(x, y, z).project(camera), r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
+function meState() { const st = Object.values(chars).find((c) => c.m.me); return st ? { mode: st.mode, spot: st.spot, pose: SPOTS[st.spot] ? SPOTS[st.spot].pose : "", x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
+window.KaidaScene3D = { proj, meState, spots: () => SPOTS.map((s) => ({ x: s.x, z: s.z, pose: s.pose, m: s.m || "" })), times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
 export { makeChar, makePet, mat, box, cyl, sph, outline };
