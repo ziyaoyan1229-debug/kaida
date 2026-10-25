@@ -2,7 +2,7 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025f"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025g"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
@@ -114,6 +114,62 @@ const FLOORS = [
 /* ===== 家具模型：原點在佔地中心、朝 +z ===== */
 // 掛牆的東西畫在格子後緣（貼著牆）、離地 0.7～1.1
 const onWall = (d) => -d / 2 + 0.03;
+function artPlane(g, kind, seed, w, h, x, y, z) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), artTex(kind, seed || 1)); m.position.set(x, y, z); g.add(m); return m; }
+// 畫廊：每一幅都用編號（seed）隨機畫出來，同一個編號永遠畫出同一幅
+const ART_K = ["painting", "frame", "poster"];
+function newSeed() { return 1 + Math.floor(Math.random() * 2147483646); }
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const PALS = [["#f2c4c8", "#e07a5f", "#3d405b", "#81b29a", "#f2cc8f"], ["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"], ["#cdb4db", "#ffc8dd", "#ffafcc", "#bde0fe", "#a2d2ff"], ["#606c38", "#283618", "#fefae0", "#dda15e", "#bc6c25"], ["#0b132b", "#1c2541", "#3a506b", "#5bc0be", "#f7d35a"], ["#f8f4ec", "#d62828", "#003049", "#fcbf49", "#2a2620"]];
+const artCache = {};
+function artTex(kind, seed) {
+  const key = kind + seed; if (artCache[key]) return artCache[key];
+  const R = rng(seed), pick = (a) => a[Math.floor(R() * a.length)], pal = pick(PALS);
+  const W2 = kind === "painting" ? 256 : 160, H2 = kind === "painting" ? 160 : 210;
+  const cv = document.createElement("canvas"); cv.width = W2; cv.height = H2; const g = cv.getContext("2d");
+  const style = kind === "frame" ? pick(["portrait", "flower", "land"]) : kind === "poster" ? pick(["blocks", "circles", "type", "wave"]) : pick(["land", "sea", "night", "blocks", "circles", "flower"]);
+  const fill = (c) => { g.fillStyle = c; };
+  if (style === "land" || style === "sea" || style === "night") {
+    const sky = g.createLinearGradient(0, 0, 0, H2); const night = style === "night";
+    sky.addColorStop(0, night ? "#0b132b" : pick(["#9cd0e8", "#f9dfcc", "#cfe8f7", "#ffd6a5"])); sky.addColorStop(1, night ? "#3a506b" : "#fffaf2");
+    g.fillStyle = sky; g.fillRect(0, 0, W2, H2);
+    fill(night ? "#f7f1d0" : pick(["#f7d35a", "#ffffff", "#e07a5f"])); g.beginPath(); g.arc(W2 * (0.2 + R() * 0.6), H2 * (0.18 + R() * 0.2), 10 + R() * 16, 0, 7); g.fill();
+    if (night) for (let i = 0; i < 30; i++) { fill("rgba(255,255,255," + (0.4 + R() * 0.6) + ")"); g.fillRect(R() * W2, R() * H2 * 0.6, 1.5, 1.5); }
+    const layers = 2 + Math.floor(R() * 3);
+    for (let l = 0; l < layers; l++) {
+      fill(style === "sea" && l === layers - 1 ? pick(["#2a9d8f", "#3a7ca5", "#5bc0be"]) : pal[(l + 1) % pal.length]);
+      const base = H2 * (0.5 + l * 0.15); g.beginPath(); g.moveTo(0, H2);
+      for (let x = 0; x <= W2; x += 8) g.lineTo(x, base + Math.sin(x / (20 + R() * 4) + l * 2 + seed % 7) * (6 + R() * 10));
+      g.lineTo(W2, H2); g.fill();
+    }
+  } else if (style === "blocks") {
+    fill(pal[0]); g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 7; i++) { fill(pal[1 + Math.floor(R() * 4)]); g.fillRect(R() * W2 * 0.8, R() * H2 * 0.8, 20 + R() * W2 * 0.5, 14 + R() * H2 * 0.4); }
+    fill("#2a2620"); for (let i = 0; i < 3; i++) { g.fillRect(R() * W2, 0, 4, H2); g.fillRect(0, R() * H2, W2, 4); }
+  } else if (style === "circles") {
+    fill(pal[0]); g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 9; i++) { fill(pal[1 + Math.floor(R() * 4)]); g.globalAlpha = 0.6 + R() * 0.4; g.beginPath(); g.arc(R() * W2, R() * H2, 8 + R() * 40, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+  } else if (style === "flower") {
+    fill(pick(["#fffaf2", "#f2e2c8", "#d6eadb"])); g.fillRect(0, 0, W2, H2);
+    fill("#c98f52"); g.fillRect(W2 / 2 - 18, H2 * 0.72, 36, H2 * 0.24);
+    for (let i = 0; i < 5; i++) { const x = W2 / 2 + (R() - 0.5) * W2 * 0.5, y = H2 * (0.25 + R() * 0.35); g.strokeStyle = "#4f7a3a"; g.lineWidth = 2; g.beginPath(); g.moveTo(W2 / 2, H2 * 0.74); g.lineTo(x, y); g.stroke(); fill(pal[1 + Math.floor(R() * 4)]); for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(x + Math.cos(k) * 7, y + Math.sin(k) * 7, 6, 0, 7); g.fill(); } fill("#f7d35a"); g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); }
+  } else if (style === "portrait") {
+    fill(pal[0]); g.fillRect(0, 0, W2, H2);
+    fill(pal[2]); g.beginPath(); g.ellipse(W2 / 2, H2 * 1.02, W2 * 0.42, H2 * 0.32, 0, 0, 7); g.fill();
+    fill(pick(["#f4c9a0", "#e0a878", "#b9805a", "#8d5a3b"])); g.beginPath(); g.arc(W2 / 2, H2 * 0.45, W2 * 0.22, 0, 7); g.fill();
+    fill(pick(["#2a2620", "#7a4a2a", "#d9a03a", "#c2453b"])); g.beginPath(); g.arc(W2 / 2, H2 * 0.38, W2 * 0.24, Math.PI, 0); g.fill();
+    fill("#2a2620"); [-1, 1].forEach((sd) => { g.beginPath(); g.arc(W2 / 2 + sd * 12, H2 * 0.47, 3, 0, 7); g.fill(); });
+    g.strokeStyle = "#2a2620"; g.lineWidth = 2; g.beginPath(); g.arc(W2 / 2, H2 * 0.52, 8, 0.2, Math.PI - 0.2); g.stroke();
+  } else if (style === "wave") {
+    for (let i = 0; i < 6; i++) { fill(pal[i % 5]); g.beginPath(); g.moveTo(0, H2); for (let x = 0; x <= W2; x += 6) g.lineTo(x, H2 * (i / 6) + Math.sin(x / 18 + i + R()) * 10); g.lineTo(W2, H2); g.fill(); }
+  } else {
+    fill(pal[0]); g.fillRect(0, 0, W2, H2); fill(pal[3]); g.fillRect(12, 12, W2 - 24, H2 * 0.5);
+    fill(pal[1]); g.beginPath(); g.arc(W2 / 2, H2 * 0.36, 26 + R() * 14, 0, 7); g.fill();
+    fill(pal[4] === pal[0] ? "#2a2620" : pal[4]); g.font = "bold 26px sans-serif"; g.textAlign = "center"; g.fillText(pick(["FOCUS", "READ", "DREAM", "CALM", "專注", "讀書", "加油"]), W2 / 2, H2 * 0.82);
+  }
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  return (artCache[key] = new THREE.MeshStandardMaterial({ map: t, roughness: 0.9, emissive: "#ffffff", emissiveMap: t, emissiveIntensity: 0.15 }));
+}
 const glow = (c, e, k) => mat(c, { emissive: e, emissiveIntensity: k || 0.6 });
 const BUILD = {
   rugRound: (g, w) => { const a = cyl(w / 2 - 0.06, w / 2 - 0.06, 0.02, "#7fa6c9", 0, 0.01, 0, g, 32); a.castShadow = false; const b = cyl(w / 2 - 0.2, w / 2 - 0.2, 0.022, "#a9c6df", 0, 0.012, 0, g, 32); b.castShadow = false; },
@@ -126,9 +182,10 @@ const BUILD = {
   coffee: (g, w, d, wood, dark) => { box(0.42, 0.5, 0.38, wood, 0, 0.25, 0, g); box(0.2, 0.26, 0.2, "#3a3036", 0, 0.63, -0.04, g); box(0.16, 0.04, 0.06, "#26232b", 0, 0.71, 0.08, g); cyl(0.035, 0.03, 0.06, "#f8f4ec", 0, 0.53, 0.07, g, 10); sph(0.012, glow("#ff6a5a", "#ff3a2a", 1), 0.06, 0.66, 0.065, g, 6, 4); },
   fan: (g) => { cyl(0.13, 0.15, 0.03, "#eef2f3", 0, 0.015, 0, g, 16); cyl(0.015, 0.015, 0.7, "#cfd6d9", 0, 0.37, 0, g, 6); const h = new THREE.Group(); h.position.set(0, 0.76, 0.02); g.add(h); const ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.01, 6, 24), mat("#cfd6d9")); h.add(ring); sph(0.04, "#9cd0e8", 0, 0, 0, h, 8, 6); [0, 2.1, 4.2].forEach((a) => { const b = box(0.06, 0.14, 0.01, "#9cd0e8", Math.sin(a) * 0.08, Math.cos(a) * 0.08, 0.01, h); b.rotation.z = -a; }); },
   speaker: (g) => { box(0.3, 0.62, 0.28, "#3a3036", 0, 0.31, 0, g); [0.44, 0.2].forEach((y, i) => cyl(i ? 0.1 : 0.06, i ? 0.1 : 0.06, 0.02, "#151515", 0, y, 0.14, g, 18).rotation.x = Math.PI / 2); },
-  painting: (g, w, d) => { const z = onWall(d); box(w - 0.2, 0.5, 0.03, "#8a5a38", 0, 0.95, z, g); box(w - 0.3, 0.4, 0.035, "#9cc6dc", 0, 0.95, z, g); box(w - 0.3, 0.16, 0.04, "#7aa860", 0, 0.83, z, g); sph(0.05, "#f7d35a", 0.25, 1.05, z + 0.02, g, 8, 6); },
-  frame: (g, w, d) => { const z = onWall(d); box(0.3, 0.36, 0.03, "#e8b93a", 0, 0.9, z, g); box(0.22, 0.28, 0.035, "#f2e2c8", 0, 0.9, z, g); sph(0.05, "#c98f6a", 0, 0.93, z + 0.02, g, 8, 6); box(0.12, 0.08, 0.04, "#5d7fa8", 0, 0.81, z, g); },
-  poster: (g, w, d) => { const z = onWall(d); box(0.32, 0.46, 0.015, "#f8f4ec", 0, 0.92, z, g); box(0.26, 0.2, 0.02, "#e07a5f", 0, 1.0, z, g); [0.82, 0.76].forEach((y) => box(0.22, 0.025, 0.02, "#3a3036", 0, y, z, g)); },
+  // 畫面貼在一片薄板的正面；框的顏色也跟著編號變
+  painting: (g, w, d, wood, dark, seed) => { const z = onWall(d), R = rng(seed + 7); box(w - 0.2, 0.52, 0.03, ["#8a5a38", "#e8b93a", "#2a2620", "#f8f4ec"][Math.floor(R() * 4)], 0, 0.95, z, g); artPlane(g, "painting", seed, w - 0.3, 0.42, 0, 0.95, z + 0.017); },
+  frame: (g, w, d, wood, dark, seed) => { const z = onWall(d), R = rng(seed + 7); box(0.3, 0.38, 0.03, ["#e8b93a", "#8a5a38", "#f8f4ec", "#c2453b"][Math.floor(R() * 4)], 0, 0.9, z, g); artPlane(g, "frame", seed, 0.22, 0.29, 0, 0.9, z + 0.017); },
+  poster: (g, w, d, wood, dark, seed) => { const z = onWall(d); box(0.34, 0.46, 0.012, "#f8f4ec", 0, 0.92, z, g); artPlane(g, "poster", seed, 0.3, 0.42, 0, 0.92, z + 0.008); },
   clock: (g, w, d) => { const z = onWall(d); const c = cyl(0.16, 0.16, 0.04, "#8a5a38", 0, 1.05, z + 0.01, g, 24); c.rotation.x = Math.PI / 2; const f = cyl(0.135, 0.135, 0.045, "#fffaf2", 0, 1.05, z + 0.012, g, 24); f.rotation.x = Math.PI / 2; box(0.012, 0.1, 0.05, "#26232b", 0, 1.09, z + 0.01, g); box(0.07, 0.012, 0.05, "#26232b", 0.035, 1.05, z + 0.01, g); },
   // 書桌椅組：後半格是書桌（有檯燈和書），前半格是椅子，坐上去面向書桌
   studyset: (g, w, d, wood, dark) => {
@@ -165,7 +222,7 @@ const BUILD = {
   lights: (g, w, d) => { const z = onWall(d) + 0.02; const n = 9; for (let i = 0; i < n; i++) { const x = -w / 2 + 0.1 + i * (w - 0.2) / (n - 1), y = 1.25 - Math.sin(i / (n - 1) * Math.PI) * 0.12; sph(0.025, glow(["#f7d35a", "#f2a7b8", "#9cd0e8"][i % 3], ["#f7d35a", "#f2a7b8", "#9cd0e8"][i % 3], 1), x, y, z, g, 6, 4).castShadow = false; } },
   pumpkin: (g) => { const p = sph(0.17, "#e8862a", 0, 0.15, 0, g, 14, 10); p.scale.y = 0.8; cyl(0.02, 0.025, 0.07, "#4f7a3a", 0, 0.3, 0, g, 6); [-0.06, 0.06].forEach((x) => box(0.04, 0.04, 0.02, glow("#ffd27a", "#ffa020", 1), x, 0.18, 0.165, g)); box(0.1, 0.025, 0.02, glow("#ffd27a", "#ffa020", 1), 0, 0.1, 0.165, g); const l = new THREE.PointLight(0xffa040, 0.3, 1.4, 2); l.position.set(0, 0.2, 0.25); g.add(l); }
 };
-function build(kind) {
+function build(kind, seed) {
   const g = new THREE.Group(), f = FURN[kind], w = f.w * T, d = f.d * T;
   const wood = "#b98a5a", dark = "#8a6040";
   if (kind === "bed") {
@@ -245,7 +302,7 @@ function build(kind) {
     for (let i = 0; i < 4; i++) { const z = d / 2 - 0.15 - i * (d - 0.3) / 3, y = 1.4 * (d / 2 - z) / d; box(0.03, 0.55, 0.03, dark, w / 2 - 0.05, y + 0.275, z, g); }
   } else if (kind === "beanbag") {
     const b = sph(0.22, "#e0904a", 0, 0.16, 0, g, 16, 12); b.scale.set(1, 0.75, 1);
-  } else if (BUILD[kind]) BUILD[kind](g, w, d, wood, dark);
+  } else if (BUILD[kind]) BUILD[kind](g, w, d, wood, dark, seed | 0);
   outline(g, 0.012);
   return g;
 }
@@ -398,7 +455,7 @@ function resize() {
 function rebuildItems() {
   meshes.forEach((m) => scene.remove(m)); meshes = [];
   state.items.forEach((it, i) => {
-    const g = build(it.k), p = worldOf(it);
+    const g = build(it.k, it.s), p = worldOf(it);
     g.position.set(p.x, 0, p.z); g.rotation.y = -it.r * Math.PI / 2; g.userData.idx = i;
     scene.add(g); meshes.push(g);
   });
@@ -855,7 +912,8 @@ function set(o) {
   const surfChanged = (o.paint || "") !== state.paint || (o.tile || "") !== state.tile; state.paint = o.paint || ""; state.tile = o.tile || "";
   state.owner = o.owner || null; state.guest = o.guest || null; state.edit = !!o.edit; state.floor = fl; state.locked = !!o.locked;
   if (doorG) { const lk = doorG.getObjectByName("padlock"); if (lk) lk.visible = state.locked; }
-  state.items = (o.items || []).filter((it) => FURN[it.k]).map((it) => ({ k: it.k, x: it.x | 0, z: it.z | 0, r: (it.r | 0) % 4 }));
+  state.items = (o.items || []).filter((it) => FURN[it.k]).map((it) => { const c = { k: it.k, x: it.x | 0, z: it.z | 0, r: (it.r | 0) % 4 }; if (ART_K.indexOf(it.k) >= 0) c.s = it.s | 0 || newSeed(); return c; });
+  const seeded = state.items.some((it, i) => it.s && !((o.items || [])[i] || {}).s);
   // 每層該有的樓梯：舊的頂樓樓梯改成樓梯口、多的拿掉、少的自己擺（右後角優先）
   let added = false;
   const want = stairKinds(fl, hall);
@@ -868,6 +926,7 @@ function set(o) {
     if (!c) for (let x = GW - 2; x >= 0 && !c; x--) for (let z = 0; z <= GD - 3 && !c; z++) { const t = { k, r: 0, x, z }; if (fits(t, -1)) c = t; }
     if (c) { state.items.push(c); added = true; }
   });
+  if (seeded && !o.guest) added = true; // 舊的畫還沒有編號：補上之後存起來，下次看到的是同一幅
   arriveDir = o.arrive | 0;
   if (!state.edit) sel = -1; else if (sel >= state.items.length) sel = -1;
   if (!mounted) { if (added && onChange) onChange(state.items); return; }
@@ -889,6 +948,7 @@ function place(kind) {
   cand.sort((a, b) => a.score - b.score);
   const ok = cand.find((o) => fits(o.c, -1));
   if (!ok) return false;
+  if (ART_K.indexOf(kind) >= 0) ok.c.s = newSeed();
   state.items.push(ok.c); sel = state.items.length - 1; rebuildItems(); emitSel(); if (onChange) onChange(state.items);
   return true;
 }
