@@ -247,8 +247,9 @@
   Social.prototype.online = function () { return !!(this.client && this.client.connected); };
 
   /* 團隊排行：每個人把自己這週的讀書分鐘放在 lb/<團隊>/<自己>（保留訊息），
-     團隊名稱放在team/<團隊>/info。看排行的人訂閱全部，自己算分數。 */
-  function Teams() { this.client = null; this.teams = {}; this.onUpdate = function () {}; this.pending = []; }
+     團隊名稱放在team/<團隊>/info。看排行的人訂閱全部，自己算分數。
+     需要審核的團隊：申請放在 team/<團隊>/req/<自己>，隊長的回覆放在 team/<團隊>/ok/<申請人>。 */
+  function Teams() { this.client = null; this.teams = {}; this.onUpdate = function () {}; this.onReply = function () {}; this.pending = []; }
   Teams.prototype.start = function () {
     if (!window.mqtt || this.client) return;
     var self = this;
@@ -256,24 +257,38 @@
       this.client = window.mqtt.connect(BROKER, { clientId: "kt_" + Math.random().toString(36).slice(2, 10), clean: true, keepalive: 30, reconnectPeriod: 6000, connectTimeout: 9000 });
     } catch (e) { this.client = null; return; }
     this.client.on("connect", function () {
-      self.client.subscribe([PREFIX + "lb/+/+", PREFIX + "team/+/info"], { qos: 1 });
+      self.client.subscribe([PREFIX + "lb/+/+", PREFIX + "team/+/info", PREFIX + "team/+/req/+", PREFIX + "team/+/ok/+"], { qos: 1 });
       var q = self.pending; self.pending = []; q.forEach(function (f) { f(); });
     });
     this.client.on("message", function (topic, payload) {
       var parts = topic.slice(PREFIX.length).split("/"), m = parse(payload);
       var tid = parts[1]; if (!/^[a-z0-9]{5}$/.test(tid || "")) return;
-      var tm = self.teams[tid] || (self.teams[tid] = { id: tid, name: "", members: {} });
-      if (parts[0] === "team" && parts[2] === "info") { if (m && typeof m.name === "string") tm.name = m.name.slice(0, 20); }
+      var tm = self.teams[tid] || (self.teams[tid] = { id: tid, name: "", members: {}, reqs: {} });
+      if (parts[0] === "team" && parts[2] === "info") { if (m && typeof m.name === "string") { tm.name = m.name.slice(0, 20); tm.mode = m.mode === "review" ? "review" : "open"; tm.owner = String(m.owner || "").slice(0, 40); } }
+      else if (parts[0] === "team" && parts[2] === "req" && parts[3]) { if (!m) delete tm.reqs[parts[3]]; else tm.reqs[parts[3]] = { n: String(m.n || "?").slice(0, 16), fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", ts: +m.ts || 0 }; }
+      else if (parts[0] === "team" && parts[2] === "ok" && parts[3]) { if (m) self.onReply(tid, parts[3], !!m.yes); }
       else if (parts[0] === "lb" && parts[2]) {
         if (!m) delete tm.members[parts[2]];
-        else tm.members[parts[2]] = { n: String(m.n || "?").slice(0, 16), fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", w: String(m.w || "").slice(0, 10), m: Math.max(0, Math.min(7 * 24 * 60, +m.m || 0)), tot: Math.max(0, Math.min(5e6, +m.tot || 0)), ts: +m.ts || 0 };
+        else tm.members[parts[2]] = { n: String(m.n || "?").slice(0, 16), fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", w: String(m.w || "").slice(0, 10), m: Math.max(0, Math.min(7 * 24 * 60, +m.m || 0)), tot: Math.max(0, Math.min(5e6, +m.tot || 0)), f: !!m.f, ts: +m.ts || 0 };
       }
       self.onUpdate();
     });
   };
   Teams.prototype.run = function (f) { if (this.client && this.client.connected) f(); else { this.pending.push(f); this.start(); } };
-  Teams.prototype.create = function (tid, name) {
-    var c = this; this.run(function () { c.client.publish(PREFIX + "team/" + tid + "/info", JSON.stringify({ name: name, ts: Date.now() }), { retain: true, qos: 1 }); });
+  Teams.prototype.create = function (tid, name, mode, owner) {
+    var c = this; this.run(function () { c.client.publish(PREFIX + "team/" + tid + "/info", JSON.stringify({ name: name, mode: mode === "review" ? "review" : "open", owner: owner || "", ts: Date.now() }), { retain: true, qos: 1 }); });
+  };
+  // 申請加入（entry 為空就是取消申請）
+  Teams.prototype.request = function (tid, uid, entry) {
+    var c = this; this.run(function () { c.client.publish(PREFIX + "team/" + tid + "/req/" + uid, entry ? JSON.stringify(Object.assign({ ts: Date.now() }, entry)) : "", { retain: true, qos: 1 }); });
+  };
+  // 隊長回覆：同意或拒絕，同時清掉申請；reply 為 null 就是清掉回覆
+  Teams.prototype.reply = function (tid, uid, yes) {
+    var c = this; if (this.teams[tid] && yes != null) delete this.teams[tid].reqs[uid];
+    this.run(function () {
+      c.client.publish(PREFIX + "team/" + tid + "/ok/" + uid, yes == null ? "" : JSON.stringify({ yes: !!yes, ts: Date.now() }), { retain: true, qos: 1 });
+      if (yes != null) c.client.publish(PREFIX + "team/" + tid + "/req/" + uid, "", { retain: true, qos: 1 });
+    });
   };
   Teams.prototype.publish = function (tid, uid, entry) {
     var c = this; entry.ts = Date.now();

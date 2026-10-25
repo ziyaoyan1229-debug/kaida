@@ -335,6 +335,16 @@
   .lb-row .tn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lb-row .sc { font-family: var(--f-mono); font-weight: 700; font-size: 18px; text-align: right; }
   .lb-row.mine { background: var(--sunk); border-radius: 10px; padding-left: 6px; padding-right: 6px; }
+  .lb-row.tview { cursor: pointer; }
+  .lb-row.tview:hover { background: color-mix(in srgb, var(--line) 35%, transparent); }
+  .on-dot, .off-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .on-dot { background: #4caf6a; box-shadow: 0 0 0 3px color-mix(in srgb, #4caf6a 25%, transparent); }
+  .off-dot { background: var(--line); }
+  .tm-mode { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .tm-mode button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 32px; color: inherit; }
+  .tm-mode button.on { background: var(--signal); border-color: var(--signal); color: var(--accent-ink); }
+  .team-view .tv-list { max-height: 46vh; overflow-y: auto; text-align: left; }
+  .mode-tag { white-space: nowrap; }
   .demo-tag { font-size: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 0 4px; color: var(--muted); font-weight: 400; margin-left: 4px; }
   .seg.themes button { flex: 1 1 30%; min-width: 96px; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; }
   .seg.themes .ti { font-size: 22px; line-height: 1; }
@@ -774,7 +784,10 @@
     zh: {
       "app.title": "番茄讀書會", "app.reload": "重新整理",
       "app.lede": "打開就能加入一間安靜的讀書房。同一間房的每個人都照同一個時鐘開始、一起休息，不用註冊。",
-      "tab.team": "團隊", "chip.set": "個人設定", "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "我的",
+      "tab.team": "團隊", "tm.modeH": "加入方式", "tm.modeOpen": "直接加入", "tm.modeReview": "需要審核", "tm.apply": "申請加入", "tm.applied": "已送出申請，等隊長同意", "tm.applyWait": "申請中，等隊長同意", "tm.cancelApply": "取消申請",
+      "tm.approved": "「{n}」同意你加入了！", "tm.rejected": "「{n}」這次沒有通過你的申請", "tm.reqH": "加入申請", "tm.ok": "同意", "tm.no": "拒絕", "tm.studyingN": "讀書中", "tm.reading": "讀書中",
+      "tm.inTeam": "你已經在「{n}」了，要先退出才能加入別隊。", "tm.demoNote": "這是示範團隊，不能加入。", "tm.cap": "{n}/30 人", "tm.tap": "點團隊可以看成員和狀態。", "tm.owner": "隊長", "tm.yours": "這是你的團隊", "tm.close": "關閉", "tm.view": "查看成員狀態", "tm.weekTot": "本週 {w} · 累積 {t}", "tm.noMem": "還沒有成員資料",
+      "chip.set": "個人設定", "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "我的",
       "rooms.how": "讀書房照「整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。",
       "room.hour.name": "整點房", "room.hour.desc": "25 分專注 · 5 分休息 · 每個 :00 和 :30 開始",
       "room.deep.name": "深度房", "room.deep.desc": "50 分專注 · 10 分休息 · 每個整點開始",
@@ -839,7 +852,7 @@
       "c.woodP": "專注就能拿小木頭，根據時間比例計算。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
       "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "tab.shop": "商店", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 根小木頭", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 根小木頭", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "tab.shop": "商店", "gift.welcome": "🎁 歡迎加入！送你一隻小雞夥伴和 50 根小木頭", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 根小木頭", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 根小木頭", "c.use": "換上", "c.boughtCol": "買了新顏色！",
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
@@ -872,7 +885,10 @@
     en: {
       "app.title": "Pomodoro Study Club", "app.reload": "Reload",
       "app.lede": "Join a quiet study room in one tap. Everyone in a room follows the same clock, so you focus and take breaks together. No sign-up.",
-      "tab.team": "Teams", "chip.set": "Profile", "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Me",
+      "tab.team": "Teams", "tm.modeH": "How people join", "tm.modeOpen": "Open", "tm.modeReview": "Approval needed", "tm.apply": "Ask to join", "tm.applied": "Request sent. Waiting for the captain.", "tm.applyWait": "Request pending", "tm.cancelApply": "Cancel request",
+      "tm.approved": "“{n}” accepted you!", "tm.rejected": "“{n}” didn't accept your request this time", "tm.reqH": "Join requests", "tm.ok": "Accept", "tm.no": "Decline", "tm.studyingN": "Studying now", "tm.reading": "studying",
+      "tm.inTeam": "You're already in “{n}”. Leave it first to join another team.", "tm.demoNote": "This is a demo team and can't be joined.", "tm.cap": "{n}/30", "tm.tap": "Tap a team to see its members and status.", "tm.owner": "captain", "tm.yours": "This is your team", "tm.close": "Close", "tm.view": "Member status", "tm.weekTot": "Week {w} · total {t}", "tm.noMem": "No member data yet",
+      "chip.set": "Profile", "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Me",
       "rooms.how": "Rooms run on the clock: the Half-hour room starts every :00 and :30 (25 min focus, 5 min break), the Deep room starts every hour (50 min focus, 10 min break). Anyone opening a room at the same moment sees the same countdown.",
       "room.hour.name": "Half-hour room", "room.hour.desc": "25 focus · 5 break · starts at :00 and :30",
       "room.deep.name": "Deep room", "room.deep.desc": "50 focus · 10 break · starts every hour",
@@ -937,7 +953,7 @@
       "c.woodP": "Focusing earns logs, based on how long you focus. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "tab.shop": "Shop", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 logs", "gift.n": "🎁 Thanks for studying with us! Here are {n} logs", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "tab.shop": "Shop", "gift.welcome": "🎁 Welcome! Here's a chick buddy and 50 logs", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 logs", "gift.n": "🎁 Thanks for studying with us! Here are {n} logs", "c.use": "Use", "c.boughtCol": "New color bought!",
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
@@ -1011,6 +1027,12 @@
   // 第二次禮物：目前已經在玩的人再送 100 根（每人一次）
   var gift100 = false;
   if (!data.gift100) { data.gift100 = true; if (oldPlayer) { data.wood += 100; gift100 = true; } K.save(STORE, data); }
+  // 新玩家見面禮：一隻小雞夥伴和 50 根小木頭（取好名字、存好角色時告訴他）
+  if (!data.welcome) {
+    data.welcome = true;
+    if (!oldPlayer) { if (data.owned.indexOf("chick") < 0) data.owned.push("chick"); if (!data.look.pet) data.look.pet = "chick"; data.wood += 50; data.fedAt = Date.now(); data.welcomeToast = true; }
+    K.save(STORE, data);
+  }
   // 熊貓下架：買過的退回 18 根小木頭
   if (data.owned.indexOf("panda") >= 0) { data.owned.splice(data.owned.indexOf("panda"), 1); data.wood += 18; }
   if (data.look.pet === "panda") data.look.pet = "";
@@ -1495,6 +1517,7 @@
     if (window.KaidaMusic) window.KaidaMusic.stop();
     session = null;
     document.body.classList.remove("pet-play");
+    if (data.team) teamSync();
     persist();
     releaseWake();
     document.title = t("app.title");
@@ -1533,11 +1556,14 @@
         if (p.focus && (current === "shop" || current === "char")) { show("session"); K.toast(t("lock.focus")); }
         if (current === "session") renderSays();
         pubMood();
+        if (typeof teamSync === "function") { teamSync.at = now; teamSync(); }
       }
       session.lastSeen = now;
       if (res.finished || now % 10000 < 1000) persist();
       if (current === "session") { renderSession(now, p); renderScene(); }
     }
+    // 團隊頁的「讀書中」靠每 2 分鐘回報一次
+    if (session && data.team && !data.team.sim && (!teamSync.at || now - teamSync.at > 120000)) { teamSync.at = now; teamSync(); }
     if (social) { if (!social.client && data.me.name) startSocial(); var sw = myWeek(); social.setState({ focus: myFocus(), k: weekKey(), m: sw.m, p: sw.p, s: streak() }); }
   }
 
@@ -1563,7 +1589,7 @@
     document.getElementById("tab-shop").setAttribute("aria-selected", v === "shop");
     if (v === "shop") renderShop();
     renderChip();
-    if (v === "team") { teamSync(); renderTeam(); }
+    if (v === "team") { if (teams) teams.start(); teamSync(); renderTeam(); }
     document.getElementById("tab-me").setAttribute("aria-selected", v === "me");
     if (v === "me") renderMe();
     if (v === "friends") { if (session) creditUntil(Date.now()); renderFriends(); }
@@ -2164,6 +2190,7 @@
       }
       paidColor = data.paidColor = { skin: L.skin, hair: L.hair };
       data.me.named = true; data.paidName = data.me.name;
+      if (data.welcomeToast) { data.welcomeToast = false; setTimeout(function () { K.toast(t("gift.welcome")); }, 1500); }
       persist(); syncMe(); if (!cost) K.toast(t("c.saved"));
       show("rooms"); window.scrollTo(0, 0); return;
     } else return;
@@ -2403,32 +2430,33 @@
 
   function myTotal() { var m = 0; Object.keys(data.days).forEach(function (k) { m += data.days[k].min || 0; }); return Math.floor(m); }
   function teamStats(tm) {
-    var wk = weekKey(), all = 0, tot = 0, week = 0;
+    var wk = weekKey(), all = 0, tot = 0, week = 0, on = 0;
     Object.keys(tm.members).forEach(function (id) {
-      var m = tm.members[id]; all++; tot += m.tot || 0;
+      var m = tm.members[id]; all++; tot += m.tot || 0; if (isStudying(m)) on++;
       if (m.w === wk) week += m.m;
     });
-    return { all: all, tot: tot, week: week };
+    return { all: all, tot: tot, week: week, on: on };
   }
+  function isStudying(m) { return !!m.f && Date.now() - (m.ts || 0) < 4 * 60000; }
   // 模擬公會：自己加上五個模擬室友，時數會跟著時間慢慢長
   var SIM_TEAM_H = [46, 38, 27, 19, 12];
   function simTeam() {
     var since = (Date.now() - (data.team.at || Date.now())) / 60000, wk = weekKey(), mem = {};
-    mem[data.me.id] = { n: data.me.name, fl: data.me.flag, w: wk, m: myWeek().m, tot: Math.max(0, myTotal() - data.team.base) };
-    BOTS.forEach(function (b, i) { var tot = SIM_TEAM_H[i] * 60 + Math.floor(since * (0.12 - i * 0.015)); mem[b.id] = { n: b.name, fl: b.fl, w: wk, m: Math.round(tot / 7), tot: tot }; });
-    return { name: data.team.name, members: mem };
+    mem[data.me.id] = { n: data.me.name, fl: data.me.flag, w: wk, m: myWeek().m, tot: Math.max(0, myTotal() - data.team.base), f: myFocus(), ts: Date.now() };
+    BOTS.forEach(function (b, i) { var tot = SIM_TEAM_H[i] * 60 + Math.floor(since * (0.12 - i * 0.015)); mem[b.id] = { n: b.name, fl: b.fl, w: wk, m: Math.round(tot / 7), tot: tot, f: (Math.floor(Date.now() / 600000) + i) % 3 !== 0, ts: Date.now() }; });
+    return { name: data.team.name, members: mem, mode: "open", owner: data.me.id, reqs: {} };
   }
   function teamOf(id) { return data.team && data.team.sim && id === data.team.id ? simTeam() : teams && teams.teams[id]; }
   function boardRows() {
     var rows = [];
-    if (data.team && data.team.sim) { var stS = teamStats(simTeam()); rows.push({ id: data.team.id, name: data.team.name, n: stS.all, tot: stS.tot, week: stS.week }); }
+    if (data.team && data.team.sim) { var stS = teamStats(simTeam()); rows.push({ id: data.team.id, name: data.team.name, n: stS.all, tot: stS.tot, week: stS.week, on: stS.on }); }
     if (teams) Object.keys(teams.teams).forEach(function (id) {
       var tm = teams.teams[id]; if (!tm.name) return;
       var st = teamStats(tm); if (!st.all) return;
-      rows.push({ id: id, name: tm.name, n: st.all, tot: st.tot, week: st.week });
+      rows.push({ id: id, name: tm.name, n: st.all, tot: st.tot, week: st.week, on: st.on, review: tm.mode === "review" });
     });
     if (rows.length < 5) DEMO_TEAMS.forEach(function (d, i) {
-      rows.push({ id: "demo" + i, demo: true, name: K.lang() === "en" ? d.en : d.name, n: d.n, tot: d.h * 60, week: Math.round(d.h * 60 / 9) });
+      rows.push({ id: "demo" + i, demo: true, name: K.lang() === "en" ? d.en : d.name, n: d.n, tot: d.h * 60, week: Math.round(d.h * 60 / 9), on: (d.n * 7 + Math.floor(Date.now() / 600000)) % Math.max(1, Math.ceil(d.n / 2)), review: i % 2 === 1 });
     });
     rows.sort(function (a, b) { return b.tot - a.tot || b.n - a.n; });
     return rows;
@@ -2436,10 +2464,56 @@
   function teamSync() {
     if (!teams || !data.team || data.team.sim || !data.me.name) return;
     if (data.team.base == null) data.team.base = myTotal();
-    teams.publish(data.team.id, data.me.id, { n: data.me.name, fl: data.me.flag, w: weekKey(), m: myWeek().m, tot: Math.max(0, myTotal() - data.team.base) });
+    teams.publish(data.team.id, data.me.id, { n: data.me.name, fl: data.me.flag, w: weekKey(), m: myWeek().m, tot: Math.max(0, myTotal() - data.team.base), f: myFocus() });
   }
   function hnum(min) { return String(Math.round(min / 6) / 10); }
   function hrs(min) { return (Math.round(min / 6) / 10) + (K.lang() === "en" ? " h" : " 小時"); }
+  var teamNewMode = "open", teamView = null;
+  function teamReqHtml(tm) {
+    if (!tm || tm.owner !== data.me.id || !tm.reqs) return "";
+    var ids = Object.keys(tm.reqs); if (!ids.length) return "";
+    return '<h4 style="margin:12px 0 4px">' + K.esc(t("tm.reqH")) + " (" + ids.length + ')</h4>' + ids.map(function (id) {
+      var r = tm.reqs[id];
+      return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn">' + (S.flag(r.fl) ? S.flag(r.fl) + " " : "") + K.esc(r.n) + '</span><span><button type="button" class="addf" data-treq="' + K.esc(id) + '" data-yes="1">' + K.esc(t("tm.ok")) + '</button><button type="button" class="addf" data-treq="' + K.esc(id) + '" data-yes="0">' + K.esc(t("tm.no")) + '</button></span></div>';
+    }).join("");
+  }
+  // 點排行榜上的團隊：看成員、讀書中人數、加入方式
+  function showTeam(id) {
+    teamView = id;
+    var rows = boardRows(), ri = rows.findIndex(function (r) { return r.id === id; }), row = rows[ri];
+    if (!row) { teamView = null; return; }
+    var tm = row.demo ? null : teamOf(id), review = tm ? tm.mode === "review" : !!row.review;
+    var mem = tm ? Object.keys(tm.members).map(function (k) { return Object.assign({ id: k }, tm.members[k]); }) : [];
+    mem.sort(function (a, b) { return (isStudying(b) - isStudying(a)) || (b.tot || 0) - (a.tot || 0); });
+    var full = mem.length >= TEAM_MAX && !(tm && tm.members[data.me.id]);
+    var act;
+    if (data.team && data.team.id === id) act = '<p class="small muted">' + K.esc(t("tm.yours")) + '</p>';
+    else if (row.demo) act = '<p class="small muted">' + K.esc(t("tm.demoNote")) + '</p>';
+    else if (data.team) act = '<p class="small muted">' + K.esc(t("tm.inTeam", { n: data.team.name })) + '</p>';
+    else if (full) act = '<p class="small muted">' + K.esc(t("tm.full")) + '</p>';
+    else if (data.teamApply && data.teamApply.id === id) act = '<p class="small muted">' + K.esc(t("tm.applyWait")) + '</p><button class="btn ghost block" type="button" data-tvact="cancel">' + K.esc(t("tm.cancelApply")) + '</button>';
+    else act = '<button class="btn block" type="button" data-tvact="join" data-id="' + K.esc(id) + '">' + K.esc(t(review ? "tm.apply" : "tm.join")) + '</button>';
+    var card = document.getElementById("modal-card"); card.className = "card team-view";
+    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(row.name) + '</h2>' +
+      '<p class="small muted" style="margin:0 0 10px"><span class="mode-tag">' + (review ? "🔒 " : "") + K.esc(t(review ? "tm.modeReview" : "tm.modeOpen")) + '</span> · ' + K.esc(t("tm.cap", { n: row.n })) + ' · ' + K.esc(t("tm.rank", { n: ri + 1 })) + '</p>' +
+      '<div class="stats" style="margin:0 0 10px"><div class="stat"><div class="n">' + hnum(row.tot) + '</div><div class="l">' + K.esc(t("tm.score")) + '</div></div>' +
+      '<div class="stat"><div class="n">' + hnum(row.week) + '</div><div class="l">' + K.esc(t("tm.total")) + '</div></div>' +
+      '<div class="stat"><div class="n">' + (row.on || 0) + '</div><div class="l">' + K.esc(t("tm.studyingN")) + '</div></div></div>' +
+      '<div class="tv-list">' + (mem.length ? mem.map(function (m) {
+        var on = isStudying(m);
+        return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn"' + (m.id === data.me.id ? ' style="font-weight:700"' : "") + '>' + (on ? '<span class="on-dot" title="' + K.esc(t("tm.reading")) + '"></span>' : '<span class="off-dot"></span>') + (S.flag(m.fl) ? S.flag(m.fl) + " " : "") + K.esc(m.n) +
+          (tm.owner === m.id ? '<span class="demo-tag">' + K.esc(t("tm.owner")) + '</span>' : "") + (on ? '<span class="small muted"> · ' + K.esc(t("tm.reading")) + '</span>' : "") + '</span>' +
+          '<span class="small muted">' + K.esc(t("tm.weekTot", { w: hrs(m.w === weekKey() ? m.m : 0), t: hrs(m.tot || 0) })) + '</span></div>';
+      }).join("") : '<p class="small muted">' + K.esc(t(row.demo ? "tm.demoNote" : "tm.noMem")) + '</p>') + '</div>' +
+      '<div style="margin-top:12px;display:grid;gap:8px">' + act + '<button class="btn ghost block" type="button" data-act="close-modal">' + K.esc(t("tm.close")) + '</button></div>';
+    document.getElementById("modal").hidden = false;
+  }
+  function applyTeam(id) {
+    var tm = teams.teams[id]; if (!tm) return;
+    data.teamApply = { id: id, name: tm.name }; persist();
+    teams.request(id, data.me.id, { n: data.me.name, fl: data.me.flag });
+    K.toast(t("tm.applied")); renderTeam();
+  }
   function renderTeam() {
     var el = document.getElementById("view-team"); if (!el) return;
     var html = "";
@@ -2448,7 +2522,9 @@
       html += '<div class="card room-card"><h3>' + K.esc(t("tm.joinH")) + '</h3><p class="small muted">' + K.esc(t("tm.joinP")) + '</p>' +
         '<div style="display:flex;gap:8px"><input type="text" id="tm-code" class="code-input" maxlength="5" autocomplete="off" autocapitalize="off" placeholder="abc12" style="flex:1;min-width:0;letter-spacing:.2em;font-size:22px" value="' + K.esc(teamJoinTry || "") + '"><button class="btn" type="button" data-tm="join">' + K.esc(t("tm.join")) + '</button></div></div>' +
         '<div class="card room-card"><h3>' + K.esc(t("tm.newH")) + '</h3><p class="small muted">' + K.esc(t("tm.newP")) + '</p>' +
-        '<div style="display:flex;gap:8px"><input type="text" id="tm-name" maxlength="20" placeholder="' + K.esc(t("tm.nameph")) + '" style="flex:1;min-width:0"><button class="btn" type="button" data-tm="create">' + K.esc(t("tm.create")) + '</button></div></div>' +
+        '<div style="display:flex;gap:8px"><input type="text" id="tm-name" maxlength="20" placeholder="' + K.esc(t("tm.nameph")) + '" style="flex:1;min-width:0"><button class="btn" type="button" data-tm="create">' + K.esc(t("tm.create")) + '</button></div>' +
+        '<div class="tm-mode" role="radiogroup" aria-label="' + K.esc(t("tm.modeH")) + '"><span class="small muted">' + K.esc(t("tm.modeH")) + '</span>' + ["open", "review"].map(function (m) { return '<button type="button" role="radio" aria-checked="' + (teamNewMode === m) + '" class="' + (teamNewMode === m ? "on" : "") + '" data-tmode="' + m + '">' + (m === "review" ? "🔒 " : "") + K.esc(t(m === "open" ? "tm.modeOpen" : "tm.modeReview")) + '</button>'; }).join("") + '</div></div>' +
+        (data.teamApply ? '<div class="card room-card"><h3>' + K.esc(data.teamApply.name) + '</h3><p class="small muted">' + K.esc(t("tm.applyWait")) + '</p><button class="btn ghost" type="button" data-tm="cancelApply">' + K.esc(t("tm.cancelApply")) + '</button></div>' : "") +
         '<div class="card room-card"><h3>' + K.esc(t("tm.simH")) + '</h3><p class="small muted">' + K.esc(t("tm.simP")) + '</p><button class="btn ghost block" type="button" data-tm="sim">' + K.esc(t("tm.simGo")) + '</button></div>';
     } else {
       var tm = teamOf(data.team.id), st = tm ? teamStats(tm) : { all: 1, tot: 0, week: 0 };
@@ -2462,26 +2538,35 @@
         '<div class="stat"><div class="n">' + st.all + '</div><div class="l">' + K.esc(t("tm.bonus")) + '</div></div></div>' +
         mem.map(function (m) { return '<div class="lb-row" style="grid-template-columns:1fr auto"><span class="tn" style="font-weight:' + (m.id === data.me.id ? 700 : 400) + '">' + K.esc(m.n) +
           (m.id === data.me.id ? "" : data.friends[m.id] ? '<span class="small muted"> · ' + K.esc(t("s.isFriend")) + '</span>' : data.reqOut[m.id] ? '<span class="small muted"> · ' + K.esc(t("f.reqWait")) + '</span>' : '<button type="button" class="addf" data-tfriend="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>') + '</span><span class="small">' + hrs(m.tot || 0) + '</span></div>'; }).join("") +
-        '<div class="btn-row" style="margin-top:12px">' + (data.team.sim ? "" : '<button class="btn" type="button" data-tm="invite">' + K.esc(t("tm.invite")) + '</button>') + '<button class="btn ghost" type="button" data-tm="quit">' + K.esc(t("tm.quit")) + '</button></div></div>';
+        teamReqHtml(tm) +
+        '<div class="btn-row" style="margin-top:12px">' + '<button class="btn ghost" type="button" data-tview="' + K.esc(data.team.id) + '">' + K.esc(t("tm.view")) + '</button>' + (data.team.sim ? "" : '<button class="btn" type="button" data-tm="invite">' + K.esc(t("tm.invite")) + '</button>') + '<button class="btn ghost" type="button" data-tm="quit">' + K.esc(t("tm.quit")) + '</button></div></div>';
     }
     var rows2 = boardRows().slice(0, 30);
-    html += '<div class="card room-card"><h3>' + K.esc(t("tm.boardH")) + '</h3><p class="small muted">' + K.esc(t("tm.boardP")) + '</p>' +
+    html += '<div class="card room-card"><h3>' + K.esc(t("tm.boardH")) + '</h3><p class="small muted">' + K.esc(t("tm.boardP")) + " " + K.esc(t("tm.tap")) + '</p>' +
       rows2.map(function (r, i) {
-        return '<div class="lb-row' + (data.team && r.id === data.team.id ? " mine" : "") + '"><span class="rk">' + (i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1) + '</span>' +
+        return '<div class="lb-row tview' + (data.team && r.id === data.team.id ? " mine" : "") + '" role="button" tabindex="0" data-tview="' + K.esc(r.id) + '"><span class="rk">' + (i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1) + '</span>' +
           '<div style="min-width:0"><div class="tn">' + K.esc(r.name) + (r.demo || (data.team && data.team.sim && r.id === data.team.id) ? '<span class="demo-tag">' + K.esc(t("tm.demo")) + '</span>' : "") + '</div>' +
-          '<div class="small muted">' + K.esc(t("tm.rowInfo", { n: r.n, h: hrs(r.week) })) + '</div></div>' +
+          '<div class="small muted">' + (r.review ? "🔒 " : "") + K.esc(t("tm.rowInfo", { n: r.n, h: hrs(r.week) })) + (r.on ? ' · <span class="on-dot" aria-label="' + K.esc(t("tm.reading")) + '"></span>' + r.on : "") + '</div></div>' +
           '<span class="sc">' + hrs(r.tot) + '</span></div>';
       }).join("") + '</div>';
     el.innerHTML = html;
   }
+  if (teams) teams.onReply = function (tid, uid, yes) {
+    if (uid !== data.me.id || !data.teamApply || data.teamApply.id !== tid) return;
+    var nm = data.teamApply.name; teams.reply(tid, uid, null);
+    if (yes && !data.team) { K.toast(t("tm.approved", { n: nm })); setTimeout(function () { finishJoinTeam(tid, true); }, 300); }
+    else { data.teamApply = null; persist(); K.toast(t("tm.rejected", { n: nm })); renderTeam(); }
+  };
   if (teams) teams.onUpdate = function () {
+    if (teamView && !document.getElementById("modal").hidden && document.getElementById("modal-card").classList.contains("team-view")) { clearTimeout(teams.mt); teams.mt = setTimeout(function () { if (teamView) showTeam(teamView); }, 200); }
     if (teamJoinTry && teams.teams[teamJoinTry] && teams.teams[teamJoinTry].name) finishJoinTeam(teamJoinTry);
     if (current === "team") { clearTimeout(teams.rt); teams.rt = setTimeout(function () { if (current === "team") softRender(renderTeam); }, 150); }
   };
-  function finishJoinTeam(id) {
+  function finishJoinTeam(id, approved) {
     var tm = teams.teams[id]; teamJoinTry = null;
     if (Object.keys(tm.members).length >= TEAM_MAX && !tm.members[data.me.id]) { K.toast(t("tm.full")); return; }
-    data.team = { id: id, name: tm.name, base: myTotal() }; persist(); teamSync(); K.toast(t("tm.joined", { n: tm.name })); renderTeam();
+    if (tm.mode === "review" && !approved && tm.owner !== data.me.id && !tm.members[data.me.id]) { applyTeam(id); return; }
+    data.team = { id: id, name: tm.name, base: myTotal() }; data.teamApply = null; persist(); teamSync(); K.toast(t("tm.joined", { n: tm.name })); renderTeam();
   }
   document.getElementById("view-team").addEventListener("click", function (e) {
     var fb = e.target.closest("[data-tfriend]");
@@ -2490,8 +2575,17 @@
       if (!mm || data.friends[fid] || fid === data.me.id) return;
       sendFriendReq(fid, String(mm.n).slice(0, 20)); return renderTeam();
     }
+    var tv = e.target.closest("[data-tview]"); if (tv) { showTeam(tv.dataset.tview); return; }
+    var md = e.target.closest("[data-tmode]"); if (md) { teamNewMode = md.dataset.tmode; renderTeam(); return; }
+    var rq = e.target.closest("[data-treq]");
+    if (rq && teams && data.team) {
+      var tmR = teams.teams[data.team.id], yes = rq.dataset.yes === "1";
+      if (yes && tmR && Object.keys(tmR.members).length >= TEAM_MAX) { K.toast(t("tm.full")); return; }
+      teams.reply(data.team.id, rq.dataset.treq, yes); renderTeam(); return;
+    }
     var b = e.target.closest("[data-tm]"); if (!b) return;
     var a = b.dataset.tm;
+    if (a === "cancelApply") { if (teams && data.teamApply) teams.request(data.teamApply.id, data.me.id, null); data.teamApply = null; persist(); renderTeam(); return; }
     if (a !== "invite" && a !== "quit" && needName()) return;
     if (a === "sim") { data.team = { id: "sim00", name: t("tm.simName"), base: myTotal(), sim: true, at: Date.now() }; persist(); K.toast(t("tm.joined", { n: data.team.name })); renderTeam(); return; }
     if (a === "quit" && data.team && data.team.sim) { data.team = null; persist(); renderTeam(); return; }
@@ -2500,7 +2594,7 @@
       var nm = (document.getElementById("tm-name").value || "").trim().slice(0, 20);
       if (!nm) { K.toast(t("tm.needName")); return; }
       var id = Math.random().toString(36).slice(2, 7).replace(/[^a-z0-9]/g, "x"); while (id.length < 5) id += "x";
-      teams.create(id, nm); data.team = { id: id, name: nm, base: myTotal() }; persist(); teamSync(); K.toast(t("tm.created")); renderTeam();
+      teams.create(id, nm, teamNewMode, data.me.id); if (data.teamApply) { teams.request(data.teamApply.id, data.me.id, null); data.teamApply = null; } data.team = { id: id, name: nm, base: myTotal() }; persist(); teamSync(); K.toast(t("tm.created")); renderTeam();
     } else if (a === "join") {
       var code = (document.getElementById("tm-code").value || "").trim().toLowerCase();
       if (!/^[a-z0-9]{5}$/.test(code)) { K.toast(t("tm.badCode")); return; }
@@ -2515,6 +2609,17 @@
     }
   });
   if (teams && data.team) { teams.start(); teamSync(); }
+  if (teams && data.teamApply) teams.start();
+  document.getElementById("view-team").addEventListener("keydown", function (e) { var tv = e.target.closest("[data-tview]"); if (tv && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showTeam(tv.dataset.tview); } });
+  document.getElementById("modal").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tvact]"); if (!b) return;
+    if (b.dataset.tvact === "cancel") { if (teams && data.teamApply) teams.request(data.teamApply.id, data.me.id, null); data.teamApply = null; persist(); renderTeam(); showTeam(teamView); return; }
+    if (needName()) return;
+    var id = b.dataset.id, tm = teams && teams.teams[id];
+    if (!tm) return;
+    this.hidden = true; teamView = null;
+    finishJoinTeam(id);
+  });
 
   // 打開別人的好友卡連結
   function readHash() {
