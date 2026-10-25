@@ -87,7 +87,10 @@
   .home-card p { margin: 2px 0 0; }
   .home-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .home-top h2 { margin: 0; font-size: 20px; }
-  .home-wrap { position: relative; height: min(62vh, 96vw); min-height: 300px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: #f3ece1; }
+  /* 家的畫面跟讀書房一樣大：左右貼齊螢幕、直式 1:1.3，寬螢幕 4:3 */
+  .home-wrap { position: relative; margin: 0 -16px; width: calc(100% + 32px); aspect-ratio: 1 / 1.3; max-height: 72vh; min-height: 300px; overflow: hidden; background: #f3ece1; touch-action: none; cursor: grab; }
+  @media (min-width: 520px) { .home-wrap { aspect-ratio: 4 / 3; } }
+  @media (min-width: 752px) { .home-wrap { margin: 0; width: 100%; border-radius: 14px; } }
   .home-wrap canvas { display: block; width: 100%; height: 100%; transition: opacity .25s; }
   .stair-btns { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 6px; z-index: 2; }
   .stair-btns button { width: 36px; height: 36px; border-radius: 11px; font: inherit; font-size: 15px; padding: 0; font-weight: 700; color: #2b2622; cursor: pointer;
@@ -704,7 +707,7 @@
 
   <section id="view-home" hidden>
     <div class="home-top"><button class="btn ghost" type="button" id="home-back" data-i18n="h.back" hidden>‹ 離開</button><h2 id="home-title"></h2><span class="home-fl" id="home-floor"></span></div>
-    <div class="home-wrap" id="home-3d"><button type="button" class="sit-btn" id="home-sit" hidden data-i18n="s.sit">坐下</button><div class="stair-btns" id="stair-up" hidden></div><div class="stair-btns" id="stair-down" hidden></div></div>
+    <div class="home-wrap" id="home-3d"><button type="button" class="sit-btn" id="home-sit" hidden data-i18n="s.sit">坐下</button><div class="stair-btns" id="stair-up" hidden></div><div class="stair-btns" id="stair-down" hidden></div><div class="stair-btns" id="door-lock" hidden></div></div>
     <p class="small muted" id="home-hint"></p>
     <div class="home-bar" id="home-bar"></div>
     <div id="home-store"></div>
@@ -805,11 +808,11 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261025c"></script>
-<script src="net.js?v=20261025c"></script>
-<script src="music.js?v=20261025c"></script>
-<script type="module" src="scene3d.js?v=20261025c" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261025c"></script>
+<script src="scene.js?v=20261025d"></script>
+<script src="net.js?v=20261025d"></script>
+<script src="music.js?v=20261025d"></script>
+<script type="module" src="scene3d.js?v=20261025d" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025d"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -822,7 +825,7 @@
       "tm.approved": "「{n}」同意你加入了！", "tm.rejected": "「{n}」這次沒有通過你的申請", "tm.reqH": "加入申請", "tm.ok": "同意", "tm.no": "拒絕", "tm.studyingN": "讀書中", "tm.reading": "讀書中",
       "tm.inTeam": "你已經在「{n}」了，要先退出才能加入別隊。", "tm.demoNote": "這是示範團隊，不能加入。", "tm.cap": "{n}/30 人", "tm.tap": "點團隊可以看成員和狀態。", "tm.owner": "隊長", "tm.yours": "這是你的團隊", "tm.close": "關閉", "tm.view": "查看成員狀態", "tm.weekTot": "本週 {w} · 累積 {t}", "tm.noMem": "還沒有成員資料",
       "chip.set": "個人設定", "h.card": "{n}的家", "h.cardP": "三層樓的家：一樓客廳、二樓房間、三樓露臺，已經擺了基本家具。用小木頭買更多，擺成你喜歡的樣子，還能邀請朋友來參觀。", "h.cardN": "三層樓，擺了 {k} 件家具",
-      "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "二樓房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人上不了二樓", "h.bedOpenT": "房間打開了，客人可以上二樓", "h.upTo": "上樓到{f}", "h.downTo": "下樓到{f}", "h.doorH": "一樓大門", "h.pinFirst": "歡迎回家！先幫一樓大門設一組 4 位數密碼，朋友來參觀要輸入這組密碼", "h.pinLater": "之後點一樓的門也可以設密碼", "h.doorGuest": "這是大門", "h.bedGuest": "這是房門", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
+      "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f1h": "2F 走廊", "h.hintHall": "點房門進房間。按門旁的鎖可以鎖上房間，客人就進不去。", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人進不去", "h.bedOpenT": "房間打開了，客人可以進去", "h.upTo": "上樓到{f}", "h.downTo": "下樓到{f}", "h.doorH": "一樓大門", "h.pinFirst": "歡迎回家！先幫一樓大門設一組 4 位數密碼，朋友來參觀要輸入這組密碼", "h.pinLater": "之後點一樓的門也可以設密碼", "h.doorGuest": "這是大門", "h.bedGuest": "這是房門", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
       "h.back": "‹ 離開", "h.shop": "🛒 買家具", "h.edit": "✏️ 擺設", "h.done": "✓ 完成", "h.rotate": "↻ 旋轉", "h.store": "📦 收起", "h.invite": "💌 邀請朋友", "h.lockOn": "🔓 開鎖", "h.lockOff": "🔒 鎖門",
       "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。按樓梯上的 ⬆ ⬇ 上下樓，點門可以鎖門。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
       "h.shopH": "家具商店", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
@@ -930,7 +933,7 @@
       "tm.approved": "“{n}” accepted you!", "tm.rejected": "“{n}” didn't accept your request this time", "tm.reqH": "Join requests", "tm.ok": "Accept", "tm.no": "Decline", "tm.studyingN": "Studying now", "tm.reading": "studying",
       "tm.inTeam": "You're already in “{n}”. Leave it first to join another team.", "tm.demoNote": "This is a demo team and can't be joined.", "tm.cap": "{n}/30", "tm.tap": "Tap a team to see its members and status.", "tm.owner": "captain", "tm.yours": "This is your team", "tm.close": "Close", "tm.view": "Member status", "tm.weekTot": "Week {w} · total {t}", "tm.noMem": "No member data yet",
       "chip.set": "Profile", "h.card": "{n}'s home", "h.cardP": "A three-floor home: living room, bedroom and a rooftop terrace, with the basics already in. Buy more with logs, arrange it your way and invite friends over.", "h.cardN": "3 floors, {k} pieces of furniture",
-      "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom upstairs is locked", "h.bedLockT": "Bedroom locked. Guests can't go to 2F.", "h.bedOpenT": "Bedroom open. Guests can go upstairs.", "h.upTo": "Up to {f}", "h.downTo": "Down to {f}", "h.doorH": "Front door", "h.pinFirst": "Welcome home! Set a 4-digit code for the front door. Friends need it to visit.", "h.pinLater": "You can set it later by tapping the front door", "h.doorGuest": "The front door", "h.bedGuest": "The bedroom door", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
+      "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f1h": "2F Hallway", "h.hintHall": "Tap the door to enter the bedroom. Tap the lock beside it to keep guests out.", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom is locked", "h.bedLockT": "Bedroom locked. Guests can't go in.", "h.bedOpenT": "Bedroom open. Guests can go in.", "h.upTo": "Up to {f}", "h.downTo": "Down to {f}", "h.doorH": "Front door", "h.pinFirst": "Welcome home! Set a 4-digit code for the front door. Friends need it to visit.", "h.pinLater": "You can set it later by tapping the front door", "h.doorGuest": "The front door", "h.bedGuest": "The bedroom door", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
       "h.back": "‹ Leave", "h.shop": "🛒 Furniture", "h.edit": "✏️ Arrange", "h.done": "✓ Done", "h.rotate": "↻ Rotate", "h.store": "📦 Put away", "h.invite": "💌 Invite", "h.lockOn": "🔓 Unlock", "h.lockOff": "🔒 Lock",
       "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap ⬆ ⬇ on the stairs to change floors, and tap a door to lock it.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
       "h.shopH": "Furniture shop", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
@@ -2488,9 +2491,11 @@
   // 三層樓：floors[0] 一樓客廳、[1] 二樓房間、[2] 三樓露臺；一開始就擺好基本家具
   var HOME_DEF = [
     [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "tv", x: 2, z: 0, r: 0 }, { k: "rug", x: 1, z: 2, r: 0 }, { k: "sofa", x: 1, z: 4, r: 2 }, { k: "table", x: 5, z: 3, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "lamp", x: 7, z: 0, r: 0 }],
-    [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "stairsDown", x: 8, z: 5, r: 0 }, { k: "bed", x: 0, z: 0, r: 0 }, { k: "wardrobe", x: 4, z: 0, r: 0 }, { k: "lamp", x: 2, z: 0, r: 0 }, { k: "rug", x: 3, z: 3, r: 0 }, { k: "petbed", x: 6, z: 0, r: 0 }],
+    [{ k: "bed", x: 0, z: 0, r: 0 }, { k: "wardrobe", x: 6, z: 0, r: 0 }, { k: "lamp", x: 2, z: 0, r: 0 }, { k: "rug", x: 3, z: 3, r: 0 }, { k: "petbed", x: 8, z: 0, r: 0 }],
     [{ k: "stairsDown", x: 8, z: 0, r: 0 }, { k: "desk", x: 2, z: 0, r: 0 }, { k: "chair", x: 2, z: 1, r: 2 }, { k: "shelf", x: 5, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "plant", x: 0, z: 7, r: 0 }, { k: "beanbag", x: 5, z: 4, r: 0 }]
   ];
+  // 二樓走廊：只有上樓梯、左邊的下樓梯口和房門（門在後牆中間）
+  var HALL = [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "stairsDown", x: 6, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "rug", x: 3, z: 4, r: 1 }];
   function homeDef(i) { return HOME_DEF[i].map(function (it) { return Object.assign({}, it); }); }
   data.home = data.home || { store: {} };
   if (!data.home.floors) {
@@ -2498,8 +2503,15 @@
     data.home.floors = [data.home.items && data.home.items.length ? data.home.items : homeDef(0), homeDef(1), homeDef(2)];
     delete data.home.items;
   }
-  var homeArrive = 0, homePinAsked = false, homeVisit = null, homeEdit = false, homeSel = -1, homeReady = false, homePubT = 0, pendingHome = null, homeFloor = 0;
-  function homeItems() { return data.home.floors[homeFloor]; }
+  // 房門搬到二樓後牆中間：原本預設擺在那裡的衣櫃、寵物窩往右挪
+  (function () {
+    var f1 = data.home.floors[1] || [];
+    var wd = f1.filter(function (it) { return it.k === "wardrobe" && it.x === 4 && it.z === 0 && !it.r; })[0], pb = f1.filter(function (it) { return it.k === "petbed" && it.x === 6 && it.z === 0; })[0];
+    if (wd && pb) { wd.x = 6; pb.x = 8; }
+  })();
+  var homeHall = false, homeArrive = 0, homePinAsked = false, homeVisit = null, homeEdit = false, homeSel = -1, homeReady = false, homePubT = 0, pendingHome = null, homeFloor = 0;
+  function inHall() { return homeFloor === 1 && homeHall; }
+  function homeItems() { return inHall() ? HALL : data.home.floors[homeFloor]; }
   function homeCount() { var n = 0; data.home.floors.forEach(function (f) { f.forEach(function (it) { if (it.k.indexOf("stairs") !== 0) n++; }); }); return n; }
   // 模擬好友的家：預先擺好的樣子
   var BOT_HOMES = [
@@ -2536,29 +2548,31 @@
     document.getElementById("home-title").textContent = t("h.card", { n: owner });
     document.getElementById("home-back").hidden = !vis;
     if (h && !homeReady) {
-      homeReady = h.mount(el); if (h.pin) h.pin({ stairs: document.getElementById("stair-up"), stairsDown: document.getElementById("stair-down") });
-      h.onChange(function (items) { if (homeVisit) return; data.home.floors[homeFloor] = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
+      homeReady = h.mount(el); if (h.pin) h.pin({ stairs: document.getElementById("stair-up"), stairsDown: document.getElementById("stair-down"), door: document.getElementById("door-lock") });
+      h.onChange(function (items) { if (homeVisit || inHall()) return; data.home.floors[homeFloor] = items.map(function (it) { return { k: it.k, x: it.x, z: it.z, r: it.r }; }); persist(); publishHome(); });
     }
     var lockedHere = homeFloor === 0 ? !!(vis ? vis.lock : data.home.lock) : homeFloor === 1 ? !!(vis ? vis.bl : data.home.bedLock) : false;
-    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: vis.floors[homeFloor] || [], edit: false, floor: homeFloor, locked: lockedHere, arrive: homeArrive } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, locked: lockedHere, arrive: homeArrive });
+    if (h) h.set(vis ? { owner: { look: vis.look }, guest: { look: homeLook() }, items: inHall() ? HALL : vis.floors[homeFloor] || [], edit: false, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive } : { owner: { look: homeLook() }, items: homeItems(), edit: homeEdit, floor: homeFloor, hall: homeHall, locked: lockedHere, arrive: homeArrive });
     homeArrive = 0;
     // 第一次進自己家：先設一樓大門的密碼
     if (!vis && !data.home.pinHash && !homePinAsked) { homePinAsked = true; setTimeout(function () { if (current === "home" && !homeVisit) setPin(true); }, 500); }
     renderHomeFloors(); renderHomeBar();
     // ⬆ 浮在上樓梯上、⬇ 浮在下樓梯口上
     document.getElementById("stair-up").innerHTML = homeFloor < 2 ? '<button type="button" data-hclimb="' + (homeFloor + 1) + '" aria-label="' + K.esc(t("h.upTo", { f: t("h.f" + (homeFloor + 1)) })) + '">⬆</button>' : "";
+    // 走廊房門旁的鎖：房主按一下就鎖上／打開
+    var bl = !!data.home.bedLock;
+    document.getElementById("door-lock").innerHTML = inHall() && !vis ? '<button type="button" data-hbedlock="1" aria-label="' + K.esc(t(bl ? "h.bedOn" : "h.bedOff")) + '">' + (bl ? "🔒" : "🔓") + '</button>' : "";
     document.getElementById("stair-down").innerHTML = homeFloor > 0 ? '<button type="button" data-hclimb="' + (homeFloor - 1) + '" aria-label="' + K.esc(t("h.downTo", { f: t("h.f" + (homeFloor - 1)) })) + '">⬇</button>' : "";
   }
   function bedLocked() { return homeVisit ? !!homeVisit.bl : false; }
   // 標題旁顯示現在在幾樓；上下樓只能走樓梯
   function renderHomeFloors() {
-    document.getElementById("home-floor").textContent = t("h.f" + homeFloor) + (homeFloor === 1 && (homeVisit ? homeVisit.bl : data.home.bedLock) ? " 🔒" : "");
+    document.getElementById("home-floor").textContent = t(inHall() ? "h.f1h" : "h.f" + homeFloor) + (homeFloor === 1 && (homeVisit ? homeVisit.bl : data.home.bedLock) ? " 🔒" : "");
   }
 
   function goFloor(i) {
     if (i === homeFloor) return;
-    if (i === 1 && bedLocked()) { K.toast(t("h.bedLocked")); return; }
-    homeFloor = i; homeSel = -1; renderHome();
+    homeFloor = i; homeHall = i === 1; homeSel = -1; homeEdit = false; renderHome();
   }
   // 門鎖：一樓大門用 4 位數密碼，二樓房門按一下就鎖
   function setPin(first) {
@@ -2575,8 +2589,12 @@
   window.addEventListener("kaida-home-door", function (e) {
     if (current !== "home" || homeEdit) return;
     var f = e.detail.floor;
-    if (homeVisit) { K.toast(t(f === 0 ? "h.doorGuest" : "h.bedGuest")); return; }
-    if (f === 1) return doorAct("bed");
+    // 二樓房門：走廊點門就進房間（客人遇到鎖著就進不去），房間裡點門回走廊
+    if (f === 1) {
+      if (e.detail.hall && bedLocked()) { K.toast(t("h.bedLocked")); return; }
+      homeHall = !e.detail.hall; homeArrive = 2; homeSel = -1; renderHome(); return;
+    }
+    if (homeVisit) { K.toast(t("h.doorGuest")); return; }
     var card = document.getElementById("modal-card"); card.className = "card";
     card.innerHTML = '<h2 style="margin:0 0 4px">🚪 ' + K.esc(t("h.doorH")) + '</h2><p class="small muted" style="margin:0 0 12px">' + K.esc(t(data.home.lock ? "h.locked" : "h.unlocked")) + '</p>' +
       '<button class="btn block" type="button" data-hdoor="lock">' + K.esc(t(data.home.lock ? "h.lockOn" : "h.lockOff")) + '</button>' +
@@ -2588,7 +2606,6 @@
   var climbing = false;
   function climbTo(i) {
     if (climbing || i === homeFloor) return;
-    if (i === 1 && bedLocked()) { K.toast(t("h.bedLocked")); return; }
     var h = H();
     var dir = i > homeFloor ? 1 : -1;
     if (!h || !h.climb || !h.climb(dir, function () { climbing = false; homeArrive = dir; goFloor(i); })) { homeArrive = dir; goFloor(i); return; }
@@ -2597,6 +2614,7 @@
   function renderHomeBar() {
     var bar = document.getElementById("home-bar"), hint = document.getElementById("home-hint"), st = document.getElementById("home-store");
     if (homeVisit) { hint.textContent = t("h.hintVisit", { n: homeVisit.n }); bar.innerHTML = ""; st.innerHTML = ""; return; }
+    if (inHall()) { hint.textContent = t("h.hintHall"); bar.innerHTML = '<button class="btn ghost" type="button" data-h="invite">' + K.esc(t("h.invite")) + '</button>'; st.innerHTML = ""; return; }
     hint.textContent = t(homeEdit ? "h.hintEdit" : "h.hintView");
     var b = function (act, label, cls) { return '<button class="btn ' + (cls || "ghost") + '" type="button" data-h="' + act + '">' + K.esc(t(label)) + '</button>'; };
     if (homeEdit) {
@@ -2853,6 +2871,7 @@
   document.getElementById("home-back").addEventListener("click", function () { show("friends"); });
   document.getElementById("view-home").addEventListener("click", function (e) {
     var hc = e.target.closest("[data-hclimb]"); if (hc) { climbTo(+hc.dataset.hclimb); return; }
+    if (e.target.closest("[data-hbedlock]")) { doorAct("bed"); return; }
     var hf = e.target.closest("[data-hfloor]"); if (hf) { climbing = false; goFloor(+hf.dataset.hfloor); return; }
     var hp = e.target.closest("[data-hput]");
     if (hp) { var k = hp.dataset.hput; if (!(data.home.store[k] > 0)) return; if (H().place(k)) { data.home.store[k]--; if (!data.home.store[k]) delete data.home.store[k]; persist(); } else K.toast(t("h.full")); renderHomeBar(); return; }
