@@ -2,7 +2,7 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, cap, outline } from "./scene3d.js?v=20261025l"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, cap, outline } from "./scene3d.js?v=20261025m"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
@@ -53,7 +53,7 @@ const FURN = {
   deskWhite: { w: 2, d: 1, price: 10, zh: "白書桌", en: "White desk", ic: "🗂️", cat: "desk" },
   studyset: { w: 2, d: 2, price: 18, zh: "書桌椅組", en: "Study set", ic: "📖", cat: "desk", study: true },
   chair: { w: 1, d: 1, price: 4, zh: "木椅", en: "Chair", ic: "🪑", cat: "chair" },
-  stool: { w: 1, d: 1, price: 3, zh: "圓凳", en: "Stool", ic: "🟤", cat: "chair" },
+  stool: { w: 1, d: 1, price: 3, zh: "圓凳", en: "Stool", ic: "🟤", cat: "desk" },
   armchair: { w: 1, d: 1, price: 10, zh: "單人沙發", en: "Armchair", ic: "💺", cat: "chair" },
   sofa: { w: 3, d: 1, price: 14, zh: "沙發", en: "Sofa", ic: "🛋️", cat: "chair" },
   beanbag: { w: 1, d: 1, price: 6, zh: "懶骨頭", en: "Beanbag", ic: "🟠", cat: "chair" },
@@ -124,7 +124,7 @@ function surfMat(spec, rx, ry) {
 const SEATS_K = ["chair", "stool", "armchair"], DESKS_K = ["desk", "deskWhite", "studyset"], BEDS_K = ["bed", "bedDouble"];
 // 每層該有的樓梯：一樓只往上、二樓上下各一、頂樓只往下
 // 二樓分成走廊（上下樓梯都在這）和房間（沒有樓梯，從房門進出）
-function stairKinds(f, hall) { return f === 0 ? ["stairs"] : f === FLOORS.length - 1 ? ["stairsDown"] : hall ? ["stairs", "stairsDown"] : []; }
+function stairKinds(f) { return f === 0 ? ["stairs"] : f === FLOORS.length - 1 ? ["stairsDown"] : ["stairs", "stairsDown"]; }
 // 三層樓：一樓客廳、二樓房間、三樓露臺
 const FLOORS = [
   { floor: "oak", wall: "cream", bg: "#d4ecf5", out: "garden" },
@@ -556,7 +556,7 @@ function dims(it) { const f = FURN[it.k]; return it.r % 2 ? { w: f.d, d: f.w } :
 function cellsOf(it) { const s = dims(it), out = []; for (let x = 0; x < s.w; x++) for (let z = 0; z < s.d; z++) out.push((it.x + x) + "," + (it.z + z)); return out; }
 const isWall = (k) => !!(FURN[k] && FURN[k].wall), RUGS_K = ["rug", "rugRound", "runner"];
 // 牆上不能掛的格子：門的位置
-function doorCells() { return state.floor === 0 ? ["0,6,3", "0,7,3"] : state.floor === 1 ? ["4,0,0", "5,0,0"] : []; }
+function doorCells() { return state.floor === 0 ? ["0,6,3", "0,7,3"] : []; }
 function fits(it, skip) {
   const s = dims(it), f = FURN[it.k];
   if (it.x < 0 || it.z < 0 || it.x + s.w > GW || it.z + s.d > GD) return false;
@@ -651,6 +651,8 @@ function buildWalls() {
   box(0.09, 0.08, 0.03, "#e8b93a", 0, 0, 0, lk);
   const sh = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.009, 6, 14, Math.PI), mat("#c99a2a")); sh.position.y = 0.04; lk.add(sh);
   lk.visible = state.locked;
+  // 二樓房間不鎖、沒有房門：上樓就直接在房間裡
+  if (state.floor !== 0) { doorG.parent.remove(doorG); doorG = null; }
   // 窗戶：走廊沒有窗；房間的窗在右邊（門在中間）
   if (state.floor === 1 && state.hall) return;
   const win = new THREE.Group(); win.position.set(state.floor === 1 ? 1.75 : 0.6, 0.95, -D / 2 + 0.01); backG.add(win);
@@ -1154,14 +1156,14 @@ function set(o) {
   const seeded = state.items.some((it, i) => it.s && !((o.items || [])[i] || {}).s);
   // 每層該有的樓梯：舊的頂樓樓梯改成樓梯口、多的拿掉、少的自己擺（右後角優先）
   let added = false;
-  const want = stairKinds(fl, hall);
+  const want = stairKinds(fl);
   state.items.forEach((it) => { if (it.k === "stairs" && want.indexOf("stairs") < 0) { it.k = "stairsDown"; added = true; } });
   state.items = state.items.filter((it, i) => { if (!FURN[it.k].fixed) return true; const keep = want.indexOf(it.k) >= 0 && state.items.findIndex((o) => o.k === it.k) === i; if (!keep) added = true; return keep; });
   want.forEach((k) => {
     if (state.items.some((it) => it.k === k)) return;
-    const tries = [{ x: GW - 2, z: 0 }, { x: GW - 2, z: GD - 3 }, { x: 0, z: GD - 3 }];
-    let c = tries.map((t) => ({ k, r: 0, x: t.x, z: t.z })).find((t) => fits(t, -1));
-    if (!c) for (let x = GW - 2; x >= 0 && !c; x--) for (let z = 0; z <= GD - 3 && !c; z++) { const t = { k, r: 0, x, z }; if (fits(t, -1)) c = t; }
+    // 靠後牆、從右邊開始找：樓梯口朝前，前面才走得到
+    let c = null;
+    for (let z = 0; z <= GD - 4 && !c; z++) for (let x = GW - 2; x >= 0 && !c; x--) { const t = { k, r: 0, x, z }; if (fits(t, -1)) c = t; }
     if (c) { state.items.push(c); added = true; }
   });
   if (seeded && !o.guest) added = true; // 舊的畫還沒有編號：補上之後存起來，下次看到的是同一幅
