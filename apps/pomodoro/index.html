@@ -704,7 +704,7 @@
 
   <section id="view-home" hidden>
     <div class="home-top"><button class="btn ghost" type="button" id="home-back" data-i18n="h.back" hidden>‹ 離開</button><h2 id="home-title"></h2><span class="home-fl" id="home-floor"></span></div>
-    <div class="home-wrap" id="home-3d"><div class="stair-btns" id="stair-up" hidden></div><div class="stair-btns" id="stair-down" hidden></div></div>
+    <div class="home-wrap" id="home-3d"><button type="button" class="sit-btn" id="home-sit" hidden data-i18n="s.sit">坐下</button><div class="stair-btns" id="stair-up" hidden></div><div class="stair-btns" id="stair-down" hidden></div></div>
     <p class="small muted" id="home-hint"></p>
     <div class="home-bar" id="home-bar"></div>
     <div id="home-store"></div>
@@ -805,11 +805,11 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js"></script>
-<script src="net.js"></script>
-<script src="music.js"></script>
-<script type="module" src="scene3d.js" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js"></script>
+<script src="scene.js?v=20261025c"></script>
+<script src="net.js?v=20261025c"></script>
+<script src="music.js?v=20261025c"></script>
+<script type="module" src="scene3d.js?v=20261025c" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261025c"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -2651,10 +2651,20 @@
   window.addEventListener("kaida-home-sel", function (e) { homeSel = e.detail.i; if (current === "home") renderHomeBar(); });
   window.addEventListener("kaida-home-blocked", function () { K.toast(t("h.blocked")); });
   window.addEventListener("kaida-home-ready", function () { if (current === "home") renderHome(); });
+  // 點書桌 → 浮出「坐下」→ 坐到書桌前的椅子上
+  var homeSit = document.getElementById("home-sit"), homeSitI = -1, homeSitT = 0;
+  function hideHomeSit() { homeSit.hidden = true; homeSitI = -1; clearTimeout(homeSitT); }
+  window.addEventListener("kaida-home-desk", function (e) {
+    var d = e.detail, wrap = document.getElementById("home-3d");
+    homeSitI = d.i; homeSit.style.left = Math.max(50, Math.min(wrap.clientWidth - 50, d.x)) + "px"; homeSit.style.top = Math.max(60, d.y) + "px";
+    homeSit.hidden = false; clearTimeout(homeSitT); homeSitT = setTimeout(hideHomeSit, 5000);
+  });
+  homeSit.addEventListener("click", function (e) { e.stopPropagation(); var i = homeSitI; hideHomeSit(); if (i >= 0 && H() && H().sitDesk) H().sitDesk(i); });
+  document.getElementById("home-3d").addEventListener("pointerdown", function (e) { if (e.target.tagName === "CANVAS") hideHomeSit(); });
   // 點樓梯走過去：上樓梯就上樓、樓梯口就下樓
   window.addEventListener("kaida-home-stairs", function (e) {
     if (current !== "home" || homeEdit) return;
-    climbTo(homeFloor + e.detail.dir);
+    climbTo(homeFloor + (e.detail.dir || (homeFloor === 0 ? 1 : -1)));
   });
 
   function teamStats(tm) {

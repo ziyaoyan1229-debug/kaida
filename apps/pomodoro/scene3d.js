@@ -2816,9 +2816,11 @@ function mount(el) {
     if (me && me.m.up && !me.m.away && me.mode !== "chat") {
       const onSeat = ray.intersectObjects(seatProps.flatMap((sp) => [sp.group, sp.chair]), true)[0];
       // 頭頂上的吊燈、燈串不算：只看手搆得到的高度
-      const hits = ray.intersectObjects(scene.children, true).filter((h) => { if (h.point.y > 1.8) return false; let o = h.object; while (o) { if (o.userData.cid || o.userData.outline) return false; o = o.parent; } return h.object.visible; });
+      const hits = ray.intersectObjects(scene.children, true).filter((h) => { if (h.point.y > 1.8 || !h.object.isMesh) return false; let o = h.object; while (o) { if (o.userData.cid || o.userData.outline) return false; o = o.parent; } return h.object.visible; });
       const hit = hits[0];
-      if (!(onSeat && (!hit || onSeat.distance <= hit.distance + 0.01))) {
+      // 點到書桌或椅子：交給下面的「坐下」按鈕
+      let onDesk = false; for (let o = hit && hit.object; o; o = o.parent) if (o.userData.seat != null) { onDesk = true; break; }
+      if (!onDesk && !(onSeat && !hit)) {
         let best = -1;
         if (hit && hit.point.y > 0.05) { let bd = 1.4; SPOTS.forEach((sp, i) => { if (reserved[i] && reserved[i] !== me.m.id) return; const d = Math.hypot(sp.x - hit.point.x, sp.z - hit.point.z); if (d < bd) { bd = d; best = i; } }); }
         const fl = new THREE.Vector3(), onFloor = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), fl);
@@ -2893,6 +2895,6 @@ function times(map) { Object.keys(chars).forEach((id) => { const st = chars[id],
 // 世界座標在畫面上的位置；me() 回報自己的角色在做什麼（測試用）
 function proj(x, y, z) { const v = new THREE.Vector3(x, y, z).project(camera), r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
 function meState() { const st = Object.values(chars).find((c) => c.m.me); return st ? { mode: st.mode, spot: st.spot, pose: SPOTS[st.spot] ? SPOTS[st.spot].pose : "", x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
-window.KaidaScene3D = { proj, meState, spots: () => SPOTS.map((s) => ({ x: s.x, z: s.z, pose: s.pose, m: s.m || "" })), times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
+window.KaidaScene3D = { seats: () => SEATS.map((s) => ({ x: s.x, z: s.z })), proj, meState, spots: () => SPOTS.map((s) => ({ x: s.x, z: s.z, pose: s.pose, m: s.m || "" })), times, mount, update, findPath, setTheme, setClassic, themes: Object.keys(THEMES), setBreak: (b) => { petPlay = !!b; }, setHour: (h) => { hourOverride = h; envNext = 0; }, cam: (r, y, p) => { camR = r; yaw = y; pitch = p; }, zoom: (z) => { setZoom(z); zoom = zoomT; }, focus: () => { focusMe = true; if (lastList) update(lastList); }, view: (z) => { focusZoom = z; focusMe = true; if (lastList) update(lastList); } };
 window.dispatchEvent(new Event("kaida3d-ready"));
 export { makeChar, makePet, mat, box, cyl, sph, outline };

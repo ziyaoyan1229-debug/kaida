@@ -2,7 +2,7 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js";
+import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025c"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
@@ -344,11 +344,23 @@ function goTo(st, cell, itemIdx) {
 function arrive(st) {
   const sp = st.spot; st.spot = null; if (!sp) return;
   if (sp.onto) st.pos.copy(sp.onto);
-  st.ry = sp.k === "bed" ? sp.face : sp.face; st.act = ACT_OF[sp.k] || ""; st.item = sp.item; st.actAt = clock.elapsedTime;
+  st.ry = sp.k === "bed" ? sp.face : sp.face; st.act = sp.deskSit ? "sitwrite" : ACT_OF[sp.k] || ""; st.item = sp.item; st.actAt = clock.elapsedTime;
   if (sp.k === "lamp") { const m = meshes[sp.item]; m && m.traverse((o) => { if (o.isPointLight) o.visible = !o.visible; }); }
   if (FURN[sp.k].fixed && st.climb) { startClimb(st, sp.item); return; }
   if (FURN[sp.k].fixed) { window.dispatchEvent(new CustomEvent("kaida-home-stairs", { detail: { floor: state.floor, dir: sp.k === "stairs" ? 1 : -1 } })); }
   if (sp.k === "petbed" && st.pet) { const w = worldOf(state.items[sp.item]); st.petBed = new THREE.Vector3(w.x, 0.05, w.z); }
+}
+// 按了書桌的「坐下」：書桌旁有椅子就坐上去寫字，沒有就站著寫
+function sitDesk(i) {
+  const st = guestSt || ownerSt, d = state.items[i]; if (!st || !d || st.climb) return false;
+  const dc = cellsOf(d);
+  const ci = state.items.findIndex((o) => o.k === "chair" && cellsOf(o).some((k) => { const [x, z] = k.split(",").map(Number); return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => dc.indexOf((x + a) + "," + (z + b)) >= 0); }));
+  if (ci < 0) return goTo(st, cellOfPos(st.pos), i);
+  if (!goTo(st, cellOfPos(st.pos), ci)) return false;
+  const c = state.items[ci], cw = worldOf(c), dw = worldOf(d);
+  st.spot.deskSit = true; st.spot.face = Math.atan2(dw.x - cw.x, dw.z - cw.z);
+  if (!st.path.length) arrive(st);
+  return true;
 }
 /* ===== 上下樓：走到樓梯口，一階一階爬上去（或往下走），畫面淡出再換樓層 ===== */
 function climb(dir, done) {
@@ -421,6 +433,10 @@ function animPerson(st, dt, s, wander) {
   } else if (act === "book") {
     c.arms.forEach((a, i) => { a.rotation.x = -1.25; a.rotation.z = (i ? -1 : 1) * 0.55; }); c.head.rotation.x = 0.38;
     const ph = (s % 3.2) / 0.7; c.book.userData.page.rotation.z = ph < 1 ? Math.PI * (1 - Math.cos(ph * Math.PI)) / 2 : 0;
+  } else if (act === "sitwrite") {
+    // 坐在書桌前的椅子上寫字
+    c.hips.position.y = SEAT_H.chair; c.legs.forEach((l) => { l.rotation.x = -1.45; });
+    c.torso.rotation.x = 0.22; c.head.rotation.x = 0.42; c.arms[0].rotation.x = -1.05; c.arms[1].rotation.x = -1.1 + Math.sin(s * 7) * 0.08;
   } else if (act === "write") {
     c.torso.rotation.x = 0.25; c.head.rotation.x = 0.4; c.arms[0].rotation.x = -1.0; c.arms[1].rotation.x = -1.05 + Math.sin(s * 7) * 0.08;
   } else if (act === "mug") {
@@ -452,7 +468,7 @@ function animPerson(st, dt, s, wander) {
     const P = st.pet;
     let tx, tz, ty = 0, rot = c.root.rotation.y;
     if (st.petBed) { tx = st.petBed.x; tz = st.petBed.z; ty = st.petBed.y; }
-    else { const off = new THREE.Vector3(0.32, 0, -0.1).applyAxisAngle(new THREE.Vector3(0, 1, 0), lie || act === "sit" ? st.ry + Math.PI : c.root.rotation.y); const base = lie || act === "sit" ? cellPos(cellOfPos(st.pos)) : st.pos; tx = base.x + off.x; tz = base.z + off.z; }
+    else { const off = new THREE.Vector3(0.32, 0, -0.1).applyAxisAngle(new THREE.Vector3(0, 1, 0), lie || act === "sit" || act === "sitwrite" ? st.ry + Math.PI : c.root.rotation.y); const base = lie || act === "sit" || act === "sitwrite" ? cellPos(cellOfPos(st.pos)) : st.pos; tx = base.x + off.x; tz = base.z + off.z; }
     // 寵物不要卡進家具裡：目標格被佔住就待在主人身邊的空格
     const pc = cellOfPos({ x: tx, z: tz }); if (!st.petBed && blocked()[pc.x + "," + pc.z]) { const p2 = st.path.length ? st.pos : cellPos(cellOfPos(st.pos)); tx = p2.x + 0.18; tz = p2.z + 0.18; }
     const mv = Math.hypot(tx - P.position.x, tz - P.position.z) > 0.05;
@@ -553,6 +569,8 @@ function bindInput(el) {
       }
       const st = guestSt || ownerSt; if (!st || st.climb || !tapStart || Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 10) return;
       const i = pickItem(e), cell = cellAt(e.clientX, e.clientY);
+      // 點書桌：先浮出「坐下」按鈕，按了才去坐
+      if (i >= 0 && state.items[i].k === "desk") { const w = worldOf(state.items[i]), v = new THREE.Vector3(w.x, 0.6, w.z).project(camera); window.dispatchEvent(new CustomEvent("kaida-home-desk", { detail: { i, x: (v.x + 1) / 2 * container.clientWidth, y: (1 - v.y) / 2 * container.clientHeight } })); return; }
       if (i >= 0) goTo(st, cell, i); else if (cell && cell.x >= 0 && cell.z >= 0 && cell.x < GW && cell.z < GD) { if (goTo(st, cell, -1)) { const c = cellPos(cell); ripple(scene, c.x, c.z); } else { const bl = blocked(); if (bl[cell.x + "," + cell.z]) { const j = state.items.findIndex((o) => cellsOf(o).indexOf(cell.x + "," + cell.z) >= 0); if (j >= 0) goTo(st, cell, j); } } }
       return;
     }
@@ -650,5 +668,5 @@ function screenOf(kind) {
 function who() { const st = guestSt || ownerSt; return st ? { act: st.act, k: (state.items[st.item] || {}).k || "", walking: st.path.length, x: +st.pos.x.toFixed(2), z: +st.pos.z.toFixed(2) } : null; }
 // 門在畫面上的位置（測試用）
 function doorAt() { if (!doorG || !doorG.parent) return null; const v = new THREE.Vector3(0, 0.7, 0); doorG.localToWorld(v); v.project(camera); const r = renderer.domElement.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height }; }
-window.KaidaHome = { doorAt, climb, pin: (map) => { pins = map; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
+window.KaidaHome = { sitDesk, doorAt, climb, pin: (map) => { pins = map; }, who, screenOf, mount, set, place, rotate, store, select, FURN, FLOORS, GW, GD, onChange: (cb) => { onChange = cb; } };
 window.dispatchEvent(new Event("kaida-home-ready"));
