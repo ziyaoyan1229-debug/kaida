@@ -2,7 +2,7 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025e"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, outline } from "./scene3d.js?v=20261025f"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
@@ -30,6 +30,7 @@ const FURN = {
   clock: { w: 1, d: 1, price: 6, zh: "掛鐘", en: "Wall clock", ic: "🕰️", cat: "gallery", wall: true },
   desk: { w: 2, d: 1, price: 10, zh: "木書桌", en: "Desk", ic: "🗃️", cat: "desk" },
   deskWhite: { w: 2, d: 1, price: 10, zh: "白書桌", en: "White desk", ic: "🗂️", cat: "desk" },
+  studyset: { w: 2, d: 2, price: 18, zh: "書桌椅組", en: "Study set", ic: "📖", cat: "desk", study: true },
   chair: { w: 1, d: 1, price: 4, zh: "木椅", en: "Chair", ic: "🪑", cat: "chair" },
   stool: { w: 1, d: 1, price: 3, zh: "圓凳", en: "Stool", ic: "🟤", cat: "chair" },
   armchair: { w: 1, d: 1, price: 10, zh: "單人沙發", en: "Armchair", ic: "💺", cat: "chair" },
@@ -99,7 +100,7 @@ function surfMat(spec, rx, ry) {
   const key = spec.tex + spec.c + rx + ry;
   return matCache[key] || (matCache[key] = new THREE.MeshStandardMaterial({ map: texOf(spec.tex, spec.c, rx, ry), roughness: 0.85 }));
 }
-const SEATS_K = ["chair", "stool", "armchair"], DESKS_K = ["desk", "deskWhite"], BEDS_K = ["bed", "bedDouble"];
+const SEATS_K = ["chair", "stool", "armchair"], DESKS_K = ["desk", "deskWhite", "studyset"], BEDS_K = ["bed", "bedDouble"];
 // 每層該有的樓梯：一樓只往上、二樓上下各一、頂樓只往下
 // 二樓分成走廊（上下樓梯都在這）和房間（沒有樓梯，從房門進出）
 function stairKinds(f, hall) { return f === 0 ? ["stairs"] : f === FLOORS.length - 1 ? ["stairsDown"] : hall ? ["stairs", "stairsDown"] : []; }
@@ -129,6 +130,20 @@ const BUILD = {
   frame: (g, w, d) => { const z = onWall(d); box(0.3, 0.36, 0.03, "#e8b93a", 0, 0.9, z, g); box(0.22, 0.28, 0.035, "#f2e2c8", 0, 0.9, z, g); sph(0.05, "#c98f6a", 0, 0.93, z + 0.02, g, 8, 6); box(0.12, 0.08, 0.04, "#5d7fa8", 0, 0.81, z, g); },
   poster: (g, w, d) => { const z = onWall(d); box(0.32, 0.46, 0.015, "#f8f4ec", 0, 0.92, z, g); box(0.26, 0.2, 0.02, "#e07a5f", 0, 1.0, z, g); [0.82, 0.76].forEach((y) => box(0.22, 0.025, 0.02, "#3a3036", 0, y, z, g)); },
   clock: (g, w, d) => { const z = onWall(d); const c = cyl(0.16, 0.16, 0.04, "#8a5a38", 0, 1.05, z + 0.01, g, 24); c.rotation.x = Math.PI / 2; const f = cyl(0.135, 0.135, 0.045, "#fffaf2", 0, 1.05, z + 0.012, g, 24); f.rotation.x = Math.PI / 2; box(0.012, 0.1, 0.05, "#26232b", 0, 1.09, z + 0.01, g); box(0.07, 0.012, 0.05, "#26232b", 0.035, 1.05, z + 0.01, g); },
+  // 書桌椅組：後半格是書桌（有檯燈和書），前半格是椅子，坐上去面向書桌
+  studyset: (g, w, d, wood, dark) => {
+    box(w - 0.06, 0.05, 0.42, wood, 0, 0.5, -0.27, g);
+    [-1, 1].forEach((a) => box(0.05, 0.5, 0.36, dark, a * (w / 2 - 0.08), 0.25, -0.27, g));
+    box(w - 0.2, 0.3, 0.03, dark, 0, 0.25, -0.46, g);
+    box(0.32, 0.02, 0.22, "#fffaf0", -0.05, 0.535, -0.22, g); box(0.06, 0.012, 0.012, "#c2453b", 0.06, 0.55, -0.2, g).rotation.y = 0.5;
+    [["#5d7fa8", 0], ["#c2453b", 0.05], ["#6a8f5a", 0.1]].forEach(([c, x]) => box(0.04, 0.18, 0.14, c, -w / 2 + 0.16 + x, 0.615, -0.36, g));
+    cyl(0.06, 0.07, 0.02, "#3a3036", w / 2 - 0.2, 0.535, -0.36, g, 12); cyl(0.01, 0.01, 0.22, "#3a3036", w / 2 - 0.2, 0.64, -0.36, g, 6);
+    const sh = cyl(0.04, 0.08, 0.08, glow("#f7d35a", "#8a6a20"), w / 2 - 0.2, 0.76, -0.32, g, 12); sh.castShadow = false;
+    const l = new THREE.PointLight(0xffd59a, 0.4, 1.6, 2); l.position.set(w / 2 - 0.2, 0.7, -0.25); g.add(l);
+    box(0.36, 0.04, 0.34, "#c8574a", 0, 0.3, 0.27, g);
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => box(0.04, 0.3, 0.04, dark, a * 0.15, 0.15, 0.27 + b * 0.14, g));
+    box(0.36, 0.34, 0.04, "#c8574a", 0, 0.49, 0.43, g);
+  },
   deskWhite: (g, w, d) => { box(w - 0.06, 0.05, d - 0.08, "#f2efe8", 0, 0.5, 0, g); [-1, 1].forEach((a) => box(0.05, 0.5, d - 0.14, "#d9d3c8", a * (w / 2 - 0.08), 0.25, 0, g)); box(0.3, 0.02, 0.22, "#fffaf0", -0.15, 0.535, 0, g); cyl(0.05, 0.06, 0.02, "#7fa6c9", 0.3, 0.535, -0.05, g, 12); },
   stool: (g, w, d, wood, dark) => { cyl(0.16, 0.16, 0.05, wood, 0, 0.32, 0, g, 18); [0, 2.1, 4.2].forEach((a) => { const l = cyl(0.018, 0.022, 0.32, dark, Math.sin(a) * 0.1, 0.15, Math.cos(a) * 0.1, g, 6); l.rotation.z = Math.sin(a) * 0.12; l.rotation.x = -Math.cos(a) * 0.12; }); },
   armchair: (g) => { box(0.44, 0.22, 0.42, "#6a8f5a", 0, 0.11, 0, g); box(0.44, 0.34, 0.1, "#5a7a4a", 0, 0.36, -0.17, g); [-1, 1].forEach((s) => box(0.08, 0.3, 0.42, "#5a7a4a", s * 0.19, 0.18, 0, g)); box(0.3, 0.06, 0.3, "#7aa060", 0, 0.25, 0.03, g); },
@@ -520,6 +535,14 @@ function walkToDoor(st) {
 // 按了書桌的「坐下」：書桌旁有椅子就坐上去寫字，沒有就站著寫
 function sitDesk(i) {
   const st = guestSt || ownerSt, d = state.items[i]; if (!st || !d || st.climb) return false;
+  if (d.k === "studyset") {
+    // 書桌椅組：走到前面，坐上椅子（佔地前半格中間）面向書桌
+    if (!goTo(st, cellOfPos(st.pos), i)) return false;
+    const w = worldOf(d), fa = frontAngle(d);
+    st.spot.onto = new THREE.Vector3(w.x + Math.sin(fa) * 0.27, 0, w.z + Math.cos(fa) * 0.27); st.spot.face = fa + Math.PI; st.spot.deskSit = true;
+    if (!st.path.length) arrive(st);
+    return true;
+  }
   const dc = cellsOf(d);
   const ci = state.items.findIndex((o) => SEATS_K.indexOf(o.k) >= 0 && cellsOf(o).some((k) => { const [x, z] = k.split(",").map(Number); return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => dc.indexOf((x + a) + "," + (z + b)) >= 0); }));
   if (ci < 0) return goTo(st, cellOfPos(st.pos), i);
@@ -789,9 +812,11 @@ function bindInput(el) {
         if (ray.intersectObject(doorG, true).length) { const st = guestSt || ownerSt; if (st && st.climb) return; walkToDoor(st); return; }
       }
       const st = guestSt || ownerSt; if (!st || st.climb || !tapStart || Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 10) return;
-      const i = pickItem(e), cell = cellAt(e.clientX, e.clientY);
+      let i = pickItem(e); const cell = cellAt(e.clientX, e.clientY);
+      // 點到家具佔的格子（家具中間的空隙）也算點到那件家具
+      if (i < 0 && cell) { const bl = blocked(); if (bl[cell.x + "," + cell.z]) i = state.items.findIndex((o) => RUGS_K.indexOf(o.k) < 0 && !isWall(o.k) && cellsOf(o).indexOf(cell.x + "," + cell.z) >= 0); }
       // 點書桌：先浮出「坐下」按鈕，按了才去坐
-      if (i >= 0 && DESKS_K.indexOf(state.items[i].k) >= 0) { const w = worldOf(state.items[i]), v = new THREE.Vector3(w.x, 0.6, w.z).project(camera); window.dispatchEvent(new CustomEvent("kaida-home-desk", { detail: { i, x: (v.x + 1) / 2 * container.clientWidth, y: (1 - v.y) / 2 * container.clientHeight } })); return; }
+      if (i >= 0 && DESKS_K.indexOf(state.items[i].k) >= 0) { const w = worldOf(state.items[i]), v = new THREE.Vector3(w.x, 0.6, w.z).project(camera); window.dispatchEvent(new CustomEvent("kaida-home-desk", { detail: { i, k: state.items[i].k, x: (v.x + 1) / 2 * container.clientWidth, y: (1 - v.y) / 2 * container.clientHeight } })); return; }
       if (i >= 0) goTo(st, cell, i); else if (cell && cell.x >= 0 && cell.z >= 0 && cell.x < GW && cell.z < GD) { if (goTo(st, cell, -1)) { const c = cellPos(cell); ripple(scene, c.x, c.z); } else { const bl = blocked(); if (bl[cell.x + "," + cell.z]) { const j = state.items.findIndex((o) => cellsOf(o).indexOf(cell.x + "," + cell.z) >= 0); if (j >= 0) goTo(st, cell, j); } } }
       return;
     }
