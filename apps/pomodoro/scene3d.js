@@ -2688,12 +2688,29 @@ function drawTV(t) {
   tvTex.needsUpdate = true;
 }
 
+// 點地板的漣漪：兩圈往外擴散、慢慢變淡，表示要走到這裡
+const ripples = [];
+function ripple(sc, x, z) {
+  for (let k = 0; k < 2; k++) {
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.07, 0.1, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, 0.02, z); m.renderOrder = 3; sc.add(m);
+    ripples.push({ m, sc, t: -k * 0.18 });
+  }
+}
+function tickRipples(dt) {
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i]; r.t += dt; const p = Math.max(0, r.t / 0.75);
+    r.m.visible = r.t >= 0; r.m.scale.setScalar(1 + p * 2.6); r.m.material.opacity = 0.9 * (1 - p);
+    if (p >= 1) { r.sc.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); ripples.splice(i, 1); }
+  }
+}
 function frame() {
   raf = requestAnimationFrame(frame);
   if (document.hidden) return;
   // 房間畫面沒顯示時（例如暫離）不畫圖，但人物照樣走動，回來時才看得到他慢慢走回座位
   if (!container.offsetParent) { const d0 = Math.min(0.05, clock.getDelta()), n0 = performance.now(); Object.values(chars).forEach((st) => animChar(st, d0, n0)); return; }
   const dt = Math.min(0.05, clock.getDelta()), now = performance.now(), t = now / 1000;
+  tickRipples(dt);
   fireMeshes.forEach((f, i) => { const k = 1 + Math.sin(t * (7 + i) + i) * 0.18 + Math.sin(t * 13 + i * 2) * 0.08; f.scale.set(1 - (k - 1) * 0.5, k, 1 - (k - 1) * 0.5); });
   fireLight.intensity = env.fire * (0.85 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23) * 0.05 + Math.random() * 0.05);
   tickParticles(embers, dt, { rate: 0.6, move: (a, i, d) => { a[i + 1] += d * 0.9; a[i] += d * 0.15; a[i + 2] += Math.sin(t * 3 + i) * d * 0.2; } });
@@ -2807,8 +2824,8 @@ function mount(el) {
         const fl = new THREE.Vector3(), onFloor = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), fl);
         if (best >= 0 || onFloor) {
           releaseSpot(me.m.id); me.userGo = true; me.emo = null;
-          if (best >= 0) { reserved[best] = me.m.id; me.spot = best; walkTo(me, SPOTS[best], "idle"); }
-          else { const [c0, r0] = cellOf(fl.x, fl.z), [c1, r1] = nearestFree(c0, r0), ok = c0 === c1 && r0 === r1 && Math.abs(fl.x - centerOf(c0, r0).x) <= GRID.cell && Math.abs(fl.z - centerOf(c0, r0).z) <= GRID.cell; me.spot = -1; walkTo(me, ok ? { x: fl.x, z: fl.z } : centerOf(c1, r1), "idle"); }
+          if (best >= 0) { reserved[best] = me.m.id; me.spot = best; walkTo(me, SPOTS[best], "idle"); ripple(scene, SPOTS[best].x, SPOTS[best].z); }
+          else { const [c0, r0] = cellOf(fl.x, fl.z), [c1, r1] = nearestFree(c0, r0), ok = c0 === c1 && r0 === r1 && Math.abs(fl.x - centerOf(c0, r0).x) <= GRID.cell && Math.abs(fl.z - centerOf(c0, r0).z) <= GRID.cell; me.spot = -1; const tg = ok ? { x: fl.x, z: fl.z } : centerOf(c1, r1); walkTo(me, tg, "idle"); ripple(scene, tg.x, tg.z); }
           return;
         }
       }
