@@ -2261,7 +2261,7 @@ function pickSpotPose(id, poses) {
 }
 function releaseSpot(id) { Object.keys(reserved).forEach((k) => { if (reserved[k] === id) delete reserved[k]; }); }
 
-function tagText(m) { return (m.lv ? "Lv" + m.lv + " " : "") + m.name; }
+function tagText(m) { return m.name; }
 // 專注模式（勿擾）：名字前面一個玻璃感的靜音符號
 const DND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke-width="1.6"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
 function addChar(m, seat) {
