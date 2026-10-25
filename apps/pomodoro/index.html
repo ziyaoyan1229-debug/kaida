@@ -77,6 +77,10 @@
   .switch input:checked + span::after { transform: translateX(20px); background: var(--accent-ink); }
   .switch input:focus-visible + span { outline: 2px solid var(--signal); outline-offset: 2px; }
 
+  /* 休息時 2D 畫面的寵物也會跳 */
+  body.pet-play svg .cat > g { animation: pethop .9s ease-in-out infinite; }
+  @keyframes pethop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
+  @media (prefers-reduced-motion: reduce) { body.pet-play svg .cat > g { animation: none; } }
   .grow { display: flex; gap: 14px; align-items: center; }
   .grow-pet { width: 76px; height: 90px; flex: none; }
   .grow-b { flex: 1; min-width: 0; }
@@ -87,10 +91,6 @@
   .grow-lv .linkbtn { margin-left: auto; background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; padding: 4px; }
   .grow-bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
   .grow-bar i { display: block; height: 100%; background: var(--signal); }
-  .books { display: grid; gap: 8px; margin-bottom: 12px; }
-  .book { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
-  .book-c { font-size: 26px; }
-  .books-next { margin: 0; }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
   .stat .n { font-family: var(--f-mono); font-size: 24px; font-weight: 600; line-height: 1.2; }
@@ -734,9 +734,6 @@
     </div>
     <h2 data-i18n="g.h">我的成長</h2>
     <div class="card grow" id="grow"></div>
-    <h2 data-i18n="b.h">我捐出的書</h2>
-    <p class="small muted" data-i18n="b.p" style="margin:-4px 0 8px">個人每累積 10、50、100 小時，之後每 100 小時，開發者就替你捐出一本書。</p>
-    <div class="books" id="books"></div>
     <div class="card motto" id="motto"></div>
     <h2 data-i18n="st.week">最近 7 天（分鐘）</h2>
     <div class="card"><div class="week" id="week"></div><p class="small muted" style="margin:8px 0 0" id="week-total"></p></div>
@@ -806,9 +803,7 @@
       "st.privacy": "紀錄只存在這個瀏覽器裡，不會上傳。換手機或清除瀏覽資料就會不見。",
       "g.h": "我的成長", "g.tot": "累積專注 {h}", "g.stage0": "寶寶", "g.stage1": "小朋友", "g.stage2": "長大了", "g.stage3": "進化",
       "g.next": "再讀 {h} 小時，{p}就會長大", "g.max": "{p}已經進化到最終型態了", "g.noPet": "到商店領養一隻寵物，牠會跟著你的讀書時數長大。",
-      "b.h": "我捐出的書", "b.p": "個人每累積 10、50、100 小時，之後每 100 小時，開發者就替你捐出一本書。",
-      "b.next": "再讀 {h} 小時，捐出下一本", "b.none": "還沒有捐出的書。讀滿 10 小時就有第一本。", "b.item": "累積 {h} 小時",
-      "b.got": "📚 累積 {h} 小時！開發者替你捐出一本《{t}》", "pet.up": "🎉 {p}長大了：{s}！",
+      "pet.up": "🎉 {p}長大了：{s}！",
       "lock.focus": "專注中不能逛商店或換裝，休息時再來", "feed.btn": "🍖 用 {n} 根木頭換飼料", "feed.done": "{p}吃得好開心", "feed.poor": "小木頭不夠，讀完一輪再來餵{p}",
       "feed.sadQuit": "這一輪只記錄已經專注的部分，{p}有點難過。下次讀完一整輪牠就會開心起來。", "feed.happyAgain": "讀完一整輪，{p}又開心起來了",
       "pet.name": "取名", "pet.namePrompt": "幫{p}取個名字（最多 10 個字）", "pet.hungry": "{p}已經 {d} 天沒吃東西了，休息時記得用木頭換飼料餵牠。",
@@ -906,9 +901,7 @@
       "st.privacy": "Your stats stay in this browser and are never uploaded. They're gone if you switch phones or clear browser data.",
       "g.h": "My growth", "g.tot": "{h} of focus in total", "g.stage0": "Baby", "g.stage1": "Kid", "g.stage2": "Grown", "g.stage3": "Evolved",
       "g.next": "{h} more hours until {p} grows", "g.max": "{p} has reached its final form", "g.noPet": "Adopt a pet in the shop and it will grow with your study hours.",
-      "b.h": "Books I donated", "b.p": "At 10, 50 and 100 hours, then every 100 hours, the developer donates a book for you.",
-      "b.next": "{h} more hours until the next book", "b.none": "No books yet. Your first one comes at 10 hours.", "b.item": "{h} hours",
-      "b.got": "📚 {h} hours! The developer donated “{t}” for you", "pet.up": "🎉 {p} grew up: {s}!",
+      "pet.up": "🎉 {p} grew up: {s}!",
       "lock.focus": "No shopping or dressing up during focus. Come back on your break.", "feed.btn": "🍖 Trade {n} logs for food", "feed.done": "{p} loved it", "feed.poor": "Not enough logs. Finish a round, then feed {p}.",
       "feed.sadQuit": "Only the focused part was logged, and {p} looks a little sad. Finish a full round next time to cheer it up.", "feed.happyAgain": "A full round done, {p} is happy again",
       "pet.name": "Name", "pet.namePrompt": "Name your {p} (up to 10 characters)", "pet.hungry": "{p} hasn't eaten for {d} days. Trade logs for food on your break.",
@@ -1501,6 +1494,7 @@
     clearInterval(sim.timer);
     if (window.KaidaMusic) window.KaidaMusic.stop();
     session = null;
+    document.body.classList.remove("pet-play");
     persist();
     releaseWake();
     document.title = t("app.title");
@@ -1997,6 +1991,8 @@
     var fill = document.getElementById("rb-fill");
     fill.style.width = (Math.max(0, Math.min(1, 1 - left / p.len)) * 100).toFixed(2) + "%";
     fill.classList.toggle("break", !p.focus);
+    document.body.classList.toggle("pet-play", !p.focus);
+    if (window.KaidaScene3D && window.KaidaScene3D.setBreak) window.KaidaScene3D.setBreak(!p.focus);
   }
 
   /* ===== 角色頁 ===== */
@@ -2207,11 +2203,6 @@
       (pk ? '<span class="grow-st">' + K.esc((petName() !== petKind() ? petKind() + " · " : "") + t("g.stage" + gr.stage)) + '</span><button type="button" class="linkbtn" data-petname="1">✏️ ' + K.esc(t("pet.name")) + '</button>' : "") + '</div>' +
       '<div class="grow-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div>' +
       '<p class="small muted">' + K.esc(t("g.tot", { h: hrs(tot) })) + '</p><p class="small">' + K.esc(note) + '</p></div>';
-    var bk = data.books || {}, ks = Object.keys(bk).map(Number).sort(function (a, b) { return a - b; });
-    var nx = '<p class="small muted books-next">' + K.esc(t("b.next", { h: Math.max(0.1, Math.ceil((nextBook(tot) - h) * 10) / 10) })) + '</p>';
-    document.getElementById("books").innerHTML = (ks.length ? ks.map(function (k) {
-      return '<div class="book"><div class="book-c" aria-hidden="true">📕</div><div><b>' + K.esc(bookTitle(k)) + '</b><div class="small muted">' + K.esc(t("b.item", { h: k })) + " · " + K.dayKey(new Date(bk[k])) + '</div></div></div>';
-    }).join("") : '<p class="small muted">' + K.esc(t("b.none")) + '</p>') + nx;
   }
   function renderMe() {
     renderMotto();
@@ -2388,11 +2379,7 @@
     { name: "Tokyo Study Club", en: "Tokyo Study Club", n: 5, h: 248 }, { name: "早起寫論文", en: "Early Thesis", n: 3, h: 131 },
     { name: "程式自學社", en: "Self-taught Coders", n: 7, h: 296 }
   ];
-  // 成長與捐書：寵物跟著累積時數長大；個人每到里程碑，開發者就捐一本書
-  var BOOK_TITLES = [["小王子", "The Little Prince"], ["夏綠蒂的網", "Charlotte's Web"], ["窗邊的小荳荳", "Totto-chan"], ["獅子、女巫、魔衣櫥", "The Lion, the Witch and the Wardrobe"], ["愛的教育", "Heart"], ["湯姆歷險記", "Tom Sawyer"], ["清秀佳人", "Anne of Green Gables"], ["祕密花園", "The Secret Garden"], ["柳林中的風聲", "The Wind in the Willows"], ["說不完的故事", "The Neverending Story"]];
-  function bookMarks(min) { var h = (min || 0) / 60, out = []; [10, 50, 100].forEach(function (x) { if (h >= x) out.push(x); }); for (var x = 200; x <= h; x += 100) out.push(x); return out; }
-  function nextBook(min) { var h = (min || 0) / 60; if (h < 10) return 10; if (h < 50) return 50; if (h < 100) return 100; return (Math.floor(h / 100) + 1) * 100; }
-  function bookTitle(h) { var i = h === 10 ? 0 : h === 50 ? 1 : h === 100 ? 2 : 1 + h / 100; return BOOK_TITLES[i % BOOK_TITLES.length][K.lang() === "en" ? 1 : 0]; }
+  // 成長：寵物跟著累積時數長大
   function petKind() { var it = data.look.pet && S.item(data.look.pet); return it ? it[K.lang() === "en" ? "en" : "zh"] : ""; }
   function petName() { return (data.petNames && data.petNames[data.look.pet]) || petKind(); }
   // 餓肚子：5 天沒餵會難過，7 天沒餵就離家出走，休息時用木頭換飼料就回來
@@ -2400,9 +2387,7 @@
   function ranAway() { return hungryDays() >= 7; }
   function myLook() { return ranAway() ? Object.assign({}, data.look, { pet: "" }) : data.look; }
   function checkGrowth(silent) {
-    if (!data.books) data.books = {};
     var tot = myTotal(), gr = S.growth(tot), msgs = [];
-    bookMarks(tot).forEach(function (h) { if (!data.books[h]) { data.books[h] = Date.now(); msgs.push(t("b.got", { h: h, t: bookTitle(h) })); } });
     if (data.petStage != null && gr.stage > data.petStage && data.look.pet) msgs.unshift(t("pet.up", { p: petName(), s: t("g.stage" + gr.stage) }));
     data.petStage = gr.stage;
     if (!silent) msgs.forEach(function (m, i) { setTimeout(function () { K.toast(m); }, 2600 * (i + 1)); });
