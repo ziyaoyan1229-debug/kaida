@@ -450,22 +450,22 @@ function makePet(kind, ps, pm) {
   if (kind === "chick") {
     const b = sph(0.14, col, 0, 0.14, 0, g); b.scale.set(1, 0.95, 1.05);
     const bk = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.06, 6), mat("#e0a830")); bk.rotation.x = Math.PI / 2; bk.position.set(0, 0.16, 0.15); g.add(bk);
-    [-0.05, 0.05].forEach((x) => sph(0.015, "#2f2622", x, 0.2, 0.12, g, 6, 6));
+    [-0.05, 0.05].forEach((x) => { sph(0.015, "#2f2622", x, 0.2, 0.12, g, 6, 6).userData.eye = 1; });
     tail = sph(0.05, col, 0, 0.18, -0.12, g, 8, 6); tail.scale.set(1, 0.6, 1);
-    [-0.1, 0.1].forEach((x) => { const w = sph(0.06, "#e8bf3a", x * 1.3, 0.13, 0, g, 8, 6); w.scale.set(0.4, 0.8, 1); });
+    [-0.1, 0.1].forEach((x) => { const w = sph(0.06, "#e8bf3a", x * 1.3, 0.13, 0, g, 8, 6); w.scale.set(0.4, 0.8, 1); w.userData.wing = 1; });
   } else {
     const c1 = sph(0.13, col, 0, 0.12, 0, g); c1.scale.set(0.9, 0.8, 1.3);
     const hd = sph(0.1, col, 0, 0.25, 0.14, g);
     if (kind === "panda") { [-0.06, 0.06].forEach((x) => { sph(0.035, "#2a2620", x, 0.34, 0.12, g, 8, 6); const p2 = sph(0.028, "#2a2620", x * 0.7, 0.26, 0.225, g, 8, 6); p2.scale.set(0.8, 1, 0.5); }); [-0.08, 0.08].forEach((x) => sph(0.05, "#2a2620", x, 0.06, 0.1, g, 8, 6)); c1.scale.set(1, 0.85, 1.25); }
-    else if (kind === "bunny") { [-0.035, 0.035].forEach((x) => { const e = cap(0.025, 0.14, "#fffdf8", g); e.position.set(x, 0.42, 0.12); e.rotation.z = x * 3; const inn = cap(0.012, 0.1, "#f2c4c8", g); inn.position.set(x, 0.42, 0.14); inn.rotation.z = x * 3; }); }
+    else if (kind === "bunny") { [-0.035, 0.035].forEach((x) => { const e = cap(0.025, 0.14, "#fffdf8", g); e.position.set(x, 0.42, 0.12); e.rotation.z = x * 3; const inn = cap(0.012, 0.1, "#f2c4c8", g); inn.position.set(x, 0.42, 0.14); inn.rotation.z = x * 3; e.userData.ear = inn.userData.ear = 1; }); }
     else if (kind === "hamster") { [-0.06, 0.06].forEach((x) => sph(0.035, "#f2c4c8", x, 0.33, 0.12, g, 8, 6)); c1.scale.set(1, 0.95, 1.1); hd.scale.set(1.1, 1, 1); const bl = sph(0.08, "#fff4e4", 0, 0.1, 0.08, g, 8, 6); bl.scale.set(1, 0.9, 0.8); }
-    else { [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, kind === "fox" ? 0.1 : 0.07, 4), mat(col)); e.position.set(x, 0.35, 0.14); g.add(e); }); }
+    else { [-0.05, 0.05].forEach((x) => { const e = new THREE.Mesh(new THREE.ConeGeometry(0.035, kind === "fox" ? 0.1 : 0.07, 4), mat(col)); e.position.set(x, 0.35, 0.14); e.userData.ear = 1; g.add(e); }); }
     if (kind === "fox") { const m2 = sph(0.055, "#fffdf8", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.9); }
     if (kind === "shiba") { const m2 = sph(0.06, "#fff4e4", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.8); }
     if (kind === "corgi") { const m2 = sph(0.06, "#fffaf2", 0, 0.22, 0.21, g, 8, 6); m2.scale.set(1.2, 0.8, 0.8); const ch = sph(0.08, "#fffaf2", 0, 0.12, 0.09, g, 8, 6); ch.scale.set(1, 1, 0.8); }
     if (kind === "calico") { sph(0.05, "#ee9a4a", -0.05, 0.31, 0.13, g, 8, 6); sph(0.045, "#3a3036", 0.05, 0.31, 0.13, g, 8, 6); sph(0.07, "#ee9a4a", 0.06, 0.18, -0.04, g, 8, 6); }
-    if (kind === "poodle") { [[0, 0.34, 0.12, 0.06], [-0.09, 0.22, 0.12, 0.05], [0.09, 0.22, 0.12, 0.05], [0, 0.16, -0.1, 0.07]].forEach((p) => sph(p[3], "#a46a3c", p[0], p[1], p[2], g, 8, 6)); }
-    if (kind !== "panda") [-0.04, 0.04].forEach((x) => sph(0.015, kind === "blackcat" ? "#e2b63a" : "#2f2622", x, 0.26, 0.23, g, 6, 6));
+    if (kind === "poodle") { [[0, 0.34, 0.12, 0.06], [-0.09, 0.22, 0.12, 0.05], [0.09, 0.22, 0.12, 0.05], [0, 0.16, -0.1, 0.07]].forEach((p) => { sph(p[3], "#a46a3c", p[0], p[1], p[2], g, 8, 6).userData.pom = 1; }); }
+    if (kind !== "panda") [-0.04, 0.04].forEach((x) => sph(0.015, kind === "blackcat" ? "#e2b63a" : "#2f2622", x, 0.26, 0.23, g, 6, 6).userData.eye = 1);
     if (kind === "bunny") { tail = sph(0.05, "#fffdf8", 0, 0.14, -0.17, g, 8, 6); }
     else if (kind === "shiba") { tail = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.022, 6, 12, Math.PI * 1.5), mat(col)); tail.position.set(0, 0.24, -0.15); tail.rotation.y = Math.PI / 2; g.add(tail); }
     else if (kind === "panda") { tail = sph(0.03, "#fffdf8", 0, 0.14, -0.16, g, 6, 6); }
@@ -474,6 +474,7 @@ function makePet(kind, ps, pm) {
     else { tail = cap(0.025, 0.18, col, g); tail.position.set(0, 0.22, -0.16); tail.rotation.x = -0.6; }
   }
   g.userData.tail = tail;
+  if (ps === 0 || ps === 1) petStage(g, kind, ps, tail);
   // 頭上的表情泡泡（休息時玩耍、專注時睡覺）
   const ic = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false })); ic.scale.set(0.24, 0.24, 1); ic.position.set(0, 0.66, 0); ic.visible = false; g.add(ic);
   g.userData.icon = ic; g.userData.pm = pm;
@@ -483,6 +484,59 @@ function makePet(kind, ps, pm) {
   if (pm === "happy") { const h = new THREE.Group(); [-1, 1].forEach((sd) => sph(0.032, "#f07a8a", sd * 0.026, 0.02, 0, h, 8, 6)); const tip = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.06, 8), mat("#f07a8a")); tip.rotation.z = Math.PI; tip.position.y = -0.02; h.add(tip); h.position.set(0.1, 0.46, 0.1); g.add(h); g.userData.heart = h; }
   if (pm === "sad") { const d = sph(0.022, mat("#7fb7e6", { roughness: 0.2 }), -0.07, 0.22, 0.24, g, 8, 6); d.scale.set(0.8, 1.3, 0.8); }
   return g;
+}
+
+/* 幼年、少年的造型：成年（現在的模型）改比例再加配件。
+   幼年頭大身小、眼睛圓、尾巴短，含奶嘴；少年比例介於中間，脖子綁領巾 */
+function petStage(g, kind, ps, tail) {
+  const baby = ps === 0;
+  const hs = baby ? 1.3 : 1.12, bs = baby ? 0.74 : 0.9;
+  const P = new THREE.Vector3(0, 0.25, 0.14);
+  const kids = g.children.slice();
+  if (kind === "chick") {
+    // 小雞沒有分頭身：整隻縮一點，眼睛放大
+    kids.forEach((o) => { if (o.userData.eye) o.scale.multiplyScalar(baby ? 1.5 : 1.2); });
+    if (baby) {
+      const shell = new THREE.Mesh(new THREE.SphereGeometry(0.16, 14, 8, 0, Math.PI * 2, Math.PI * 0.52, Math.PI * 0.48), mat("#fbf6ea", { side: THREE.DoubleSide }));
+      shell.position.y = 0.13; g.add(shell);
+      for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, t = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.05, 4), mat("#fbf6ea")); t.position.set(Math.sin(a) * 0.15, 0.13, Math.cos(a) * 0.15); g.add(t); }
+      kids.forEach((o) => { if (o.userData.wing) o.visible = false; });
+      if (tail) tail.visible = false;
+    } else {
+      [-0.03, 0.03].forEach((x, i) => { const f = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.08, 5), mat("#f2cc4a")); f.position.set(x, 0.31, 0.02); f.rotation.z = i ? -0.4 : 0.4; g.add(f); });
+    }
+    return;
+  }
+  kids.forEach((o) => {
+    const p = o.position;
+    if (o.userData.pom && (baby || p.y < 0.3)) { o.visible = false; return; }
+    if (p.y >= 0.2 && p.z >= 0.08) {
+      p.sub(P).multiplyScalar(hs).add(P.clone().multiplyScalar(bs));
+      o.scale.multiplyScalar(hs * (o.userData.eye ? (baby ? 1.35 : 1.15) : 1));
+      if (o.userData.ear && baby) { if (kind === "bunny") { o.rotation.x = -1.1; p.z -= 0.05; p.y -= 0.08; } else o.scale.multiplyScalar(0.75); }
+    } else {
+      p.multiplyScalar(bs); o.scale.multiplyScalar(bs * (o === tail && baby ? 0.6 : 1));
+    }
+  });
+  const hy = P.y * bs, hz = P.z * bs;
+  if (baby) {
+    // 奶嘴
+    const pc = new THREE.Group();
+    const sh = cyl(0.032, 0.032, 0.012, "#7fc4e8", 0, 0, 0, pc); sh.rotation.x = Math.PI / 2;
+    const rg = new THREE.Mesh(new THREE.TorusGeometry(0.018, 0.006, 6, 12), mat("#f2a0b4")); rg.position.z = 0.012; pc.add(rg);
+    pc.position.set(0, hy - 0.045 * hs, hz + 0.1 * hs); g.add(pc);
+  } else {
+    petScarf(g, hy - 0.09, hz - 0.02, 0.075, 1);
+    if (kind === "panda") { const b = cyl(0.012, 0.012, 0.22, "#7ab05a", 0.07, 0.12, 0.13, g); b.rotation.z = 0.5; [0.04, 0.1].forEach((y) => { const l = sph(0.025, "#8cc46a", 0.07 + y * 0.5, 0.12 + y, 0.13, g, 6, 4); l.scale.set(1.6, 0.4, 0.8); }); }
+    if (kind === "hamster") { const sd = sph(0.03, "#5a4a3e", 0, 0.11, 0.17, g, 8, 6); sd.scale.set(0.7, 1.2, 0.6); }
+  }
+}
+// 少年的紅色領巾：繞脖子一圈＋前面一個三角
+function petScarf(g, y, z, r, k) {
+  const sc = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.016, 6, 16), mat("#e0564a")); ring.rotation.x = Math.PI / 2 - 0.35; sc.add(ring);
+  const tri = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.07, 3), mat("#e0564a")); tri.rotation.x = Math.PI; tri.rotation.y = Math.PI / 6; tri.position.set(0, -0.04, r * 0.95); sc.add(tri);
+  sc.position.set(0, y, z); sc.scale.setScalar(k); g.add(sc);
 }
 
 /* ===== 書桌上的東西 ===== */

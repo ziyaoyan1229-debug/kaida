@@ -362,15 +362,39 @@
       '<path d="M-2.2 -6.8 C-.6 -6.6 .2 -4.8 -.4 -3.4 C-1 -2.4 -3.4 -2.4 -4 -3.4 C-4.6 -4.8 -3.8 -6.6 -2.2 -6.8 Z" fill="#5a4a3e" stroke="#2f2622" stroke-width=".3"/><path d="M-2.2 -6.4 v3.6 M-3.2 -5.8 q-.2 1.4 .2 2.4 M-1.2 -5.8 q.2 1.4 -.2 2.4" stroke="#f2ead8" stroke-width=".35" fill="none"/>' +
       '<ellipse cx="-4.4" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/><ellipse cx="0" cy="-4.6" rx="1.3" ry="1" fill="#f4c4c8" stroke="' + hl + '" stroke-width=".35"/>';
   }
+  // 熊貓：白身體、黑手腳、黑圓耳、眼圈
+  function pandaPet() {
+    var w = "#fffdf8", ws = "#e6ded2", wl = "#8a8278", k = "#2e2a28";
+    return '<ellipse cx="6.8" cy="-2.4" rx="1.6" ry="1.3" fill="' + w + '" stroke="' + wl + '" stroke-width=".45"/>' +
+      lit(BODY, w, ws, wl) + '<path d="M-7 -6.2 C-6.4 -9 -4 -10.2 -1 -10 L5 -9.8 C7.4 -9.2 8.6 -7.6 8.8 -6 C5 -7.2 -3 -7.4 -7 -6.2 Z" fill="' + k + '"/>' + paws(k, "#141210") +
+      '<circle cx="-7.8" cy="-18.6" r="2.5" fill="' + k + '"/><circle cx="3.4" cy="-18.6" r="2.5" fill="' + k + '"/>' +
+      lit(fluffPath(-2.2, -14, 7, 5.8), w, ws, wl) + shine(-5, -17, 2.2, .9) +
+      '<ellipse cx="-5" cy="-13.9" rx="1.9" ry="2.3" fill="' + k + '" transform="rotate(25 -5 -13.9)"/><ellipse cx=".6" cy="-13.9" rx="1.9" ry="2.3" fill="' + k + '" transform="rotate(-25 .6 -13.9)"/>' +
+      '<circle cx="-4.8" cy="-14.1" r=".85" fill="#fff"/><circle cx=".4" cy="-14.1" r=".85" fill="#fff"/><circle cx="-4.7" cy="-14" r=".5" fill="' + k + '"/><circle cx=".3" cy="-14" r=".5" fill="' + k + '"/>' +
+      petBlush(-7, 2.6, -11.8) + '<ellipse cx="-2.2" cy="-11.9" rx="1" ry=".7" fill="' + k + '"/><path d="M-2.2 -11.2 v.5 M-2.2 -10.7 q-.8 .7 -1.4 .1 M-2.2 -10.7 q.8 .7 1.4 .1" fill="none" stroke="' + k + '" stroke-width=".38" stroke-linecap="round"/>';
+  }
+  // 幼年：身體圓胖一點、含奶嘴（小雞是蛋殼）；少年：脖子綁紅領巾。成年就是原本的樣子
+  var PET_ANCHOR = { chick: [-1.15, -8.6, -7.4, .72], hamster: [-1.65, -8.3, -6, .75], fox: [-2.2, -8.8, -8.2, 1], bunny: [-2.4, -10.2, -8.6, 1] };
+  function petStage(kind, ps, art) {
+    var a = PET_ANCHOR[kind] || [-2.2, -10.6, -8.2, 1], x = a[0], k = a[3];
+    if (ps === 0) {
+      var s = '<g transform="translate(' + x + ' 0) scale(1.08 .9) translate(' + (-x) + ' 0)">' + art + '</g>';
+      if (kind === "chick") return s + '<path d="M-5.6 -3.2 l1.4 -1.6 1.2 1.4 1.4 -1.8 1.3 1.7 1.4 -1.6 1.3 1.6 1.4 -1.5 1 1.4 C4.2 -.6 2.4 .6 0 .6 C-2.6 .6 -4.8 -.4 -5.6 -3.2 Z" fill="#fbf6ea" stroke="#c8bca8" stroke-width=".4" stroke-linejoin="round"/>';
+      var my = a[1] * .9;
+      return s + '<g transform="translate(' + x + ' ' + my + ') scale(' + k + ')"><ellipse cx="0" cy="0" rx="2.2" ry="1.5" fill="#7fc4e8" stroke="#3f84ac" stroke-width=".35"/><circle cx="0" cy="0" r=".6" fill="#f2a0b4"/><circle cx="0" cy="1.7" r=".9" fill="none" stroke="#f2a0b4" stroke-width=".55"/></g>';
+    }
+    return art + '<g transform="translate(' + x + ' ' + a[2] + ') scale(' + k + ')"><path d="M-4.8 -.6 Q0 1 4.8 -.6 L0 4.4 Z" fill="#e0564a" stroke="#a83a30" stroke-width=".4" stroke-linejoin="round"/><circle cx="0" cy=".3" r=".9" fill="#c4463c"/><circle cx="-1" cy="1.8" r=".35" fill="#fff" opacity=".8"/><circle cx="1.1" cy="2.4" r=".3" fill="#fff" opacity=".8"/></g>';
+  }
   // ps：成長階段（0～3，沒給就是一般大小）；pm：心情 sad / happy
   function pet(kind, x, y, ps, pm) {
     var sc = PET_SCALE[ps != null ? ps : 2];
-    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ') scale(' + sc + ')"><ellipse cx="1" cy="0" rx="' + (kind === "chick" || kind === "hamster" ? 6.6 : 9.5) + '" ry="' + (kind === "chick" || kind === "hamster" ? 1.6 : 2.1) + '" fill="rgba(60,40,20,.18)"/>';
+    var g = '<g class="cat" transform="translate(' + x + ' ' + y + ') scale(' + sc + ')"><ellipse cx="1" cy="0" rx="' + (kind === "chick" || kind === "hamster" ? 6.6 : 9.5) + '" ry="' + (kind === "chick" || kind === "hamster" ? 1.6 : 2.1) + '" fill="rgba(60,40,20,.18)"/>', pre = g.length;
     if (kind === "cat") g += catPet("#f0a052", "#d07a32", "#9a5420", "#fff1de", "#7a8a3a", true);
     else if (kind === "blackcat") g += catPet("#3c3842", "#26232b", "#141218", "#5a5560", "#e2b63a", false);
     else if (kind === "calico") g += catPet("#fffaf2", "#e6dccc", "#a89a86", "#fffaf2", "#6a8a3a", false, true);
     else if (kind === "corgi") g += corgiPet();
     else if (kind === "poodle") g += poodlePet();
+    else if (kind === "panda") g += pandaPet();
     // 小雞和倉鼠比貓狗小一號
     else if (kind === "chick") g += '<g transform="scale(.72)">' + chickPet() + '</g>';
     else if (kind === "hamster") g += '<g transform="scale(.75)">' + hamsterPet() + '</g>';
@@ -407,6 +431,7 @@
         petEyes(-4.9, .5, -14.9, .95, "#c87a2a") + petBlush(-7, 2.6, -12.6) +
         '<ellipse cx="-2.2" cy="-9.8" rx="1.1" ry=".8" fill="' + INK + '"/><circle cx="-2.5" cy="-10.1" r=".3" fill="#fff" opacity=".8"/>';
     }
+    if (ps === 0 || ps === 1) g = g.slice(0, pre) + petStage(kind, ps, g.slice(pre));
     // 進化後頭上一顆閃亮星星；難過掉一滴淚；開心冒愛心
     if (ps === 3) g += '<path class="spark" d="M-2 -31 l1.3 2.6 2.8 .4 -2 2 .5 2.8 -2.6 -1.4 -2.6 1.4 .5 -2.8 -2 -2 2.8 -.4 Z" fill="#f2c94c" stroke="#c9952a" stroke-width=".4"/>';
     if (pm === "sad") g += '<path d="M-7.4 -13.4 q-1.4 2.4 0 3.2 q1.4 -.8 0 -3.2 Z" fill="#7fb7e6" stroke="#4a86c0" stroke-width=".3"/><path d="M-5.6 -9.6 q1.6 -1 3.2 0" stroke="#5a3a2a" stroke-width=".5" fill="none"/>';
