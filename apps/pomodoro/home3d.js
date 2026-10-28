@@ -2,7 +2,7 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, cap, outline } from "./scene3d.js?v=20261025o"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, cap, outline } from "./scene3d.js?v=20261028a"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
@@ -657,8 +657,9 @@ function build(kind, seed) {
     cyl(0.16, 0.16, 0.05, "#f2c4c8", 0, 0.04, 0, g, 18);
   } else if (kind === "stairsDown") {
     // 頂樓：地上一個往下的樓梯口，三面有欄杆
-    const hole = box(w - 0.06, 0.01, d - 0.06, "#5a4030", 0, 0.005, 0, g); hole.castShadow = false;
-    for (let i = 0; i < 5; i++) box(w - 0.2, 0.012, 0.06, "#8a6040", 0, 0.008, -d / 2 + 0.2 + i * (d - 0.4) / 4, g).castShadow = false;
+    // 洞口比地板高一點點，免得跟地板（或地磚花紋）疊在一起閃爍
+    const hole = box(w - 0.06, 0.016, d - 0.06, "#3a2a20", 0, 0.008, 0, g); hole.castShadow = false;
+    for (let i = 0; i < 5; i++) box(w - 0.2, 0.012, 0.06, i % 2 ? "#6a4a32" : "#7a5a3e", 0, 0.018, -d / 2 + 0.2 + i * (d - 0.4) / 4, g).castShadow = false;
     [-1, 1].forEach((sd) => { box(0.04, 0.04, d - 0.06, wood, sd * (w / 2 - 0.03), 0.55, 0, g); for (let i = 0; i < 4; i++) box(0.03, 0.55, 0.03, dark, sd * (w / 2 - 0.03), 0.275, -d / 2 + 0.06 + i * (d - 0.12) / 3, g); });
     box(w - 0.06, 0.04, 0.04, wood, 0, 0.55, -d / 2 + 0.03, g);
   } else if (kind === "stairs") {
@@ -746,7 +747,7 @@ function buildWalls() {
   } else if (F.out === "sky") {
     // 二樓外面：房子的外牆往下延伸，旁邊飄著雲，像在半空中
     const slab = box(W + 0.12, 0.5, D + 0.12, "#e7c8a6", 0, -0.26, 0, roomG); slab.castShadow = false;
-    box(W + 0.16, 0.06, D + 0.16, "#b98a5a", 0, -0.02, 0, roomG).castShadow = false;
+    box(W + 0.16, 0.06, D + 0.16, "#b98a5a", 0, -0.04, 0, roomG).castShadow = false; // 頂面要低於地板，不然會蓋住地板和下樓梯口
     cloud(W / 2 + 1.0, -0.2, 0.4, 0.3); cloud(-0.6, -0.35, D / 2 + 1.0, 0.36); cloud(W / 2 + 0.7, 0.3, D / 2 + 0.6, 0.2); cloud(-W / 2 - 0.4, 1.9, -D / 2 - 0.6, 0.25); cloud(1.6, 2.2, -D / 2 - 1.2, 0.3); cloud(-W / 2 - 1.2, 0.6, 0.8, 0.28);
   }
   if (!F.wall) {
