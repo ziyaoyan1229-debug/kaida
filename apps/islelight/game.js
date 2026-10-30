@@ -8,7 +8,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes } from "./art.js";
-import { buildTown } from "./town.js";
+import { buildTown, buildExtras, windmills } from "./town.js";
 
 const SAVE_KEY = "kaida-islelight-v1";
 const save = (() => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"); } catch (e) { return {}; } })();
@@ -35,7 +35,7 @@ scene.fog = new THREE.FogExp2(0x9cc4e4, 0.004);
 // 環境反射：讓石頭、玻璃、水面有一點周圍的光
 const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.3;
 initArt();
-const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 700);
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
@@ -106,8 +106,8 @@ const moonDisc = new THREE.Mesh(new THREE.CircleGeometry(7, 32), new THREE.MeshB
 moon.add(moonDisc); const moonGlow = glowSprite(0x8aa4ff, 60, moon);
 
 /* ===== 島 ===== */
-const R = (a) => 21 + 1.4 * Math.sin(3 * a + 0.5) + 0.9 * Math.sin(5 * a + 2) + 0.5 * Math.sin(7 * a);
-const RG = (a) => R(a) - 3.0;
+const R = (a) => 48 + 3.2 * Math.sin(3 * a + 0.5) + 2.0 * Math.sin(5 * a + 2) + 1.1 * Math.sin(7 * a) + 0.6 * Math.sin(11 * a + 1);
+const RG = (a) => R(a) - 4.0;
 function groundY(x, z) {
   const r = Math.hypot(x, z), a = Math.atan2(z, x), rr = R(a), rg = RG(a);
   if (r < rg) return 0.55;
@@ -123,7 +123,7 @@ function speckleTex(base, dots, n, size) {
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 function islandPart(r0, r1, h, topY, edge, color, tex) {
-  const g = new THREE.CylinderGeometry(r0, r1, h, 96, 3);
+  const g = new THREE.CylinderGeometry(r0, r1, h, 192, 3);
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), z = p.getZ(i), r = Math.hypot(x, z);
@@ -136,8 +136,8 @@ function islandPart(r0, r1, h, topY, edge, color, tex) {
   const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, map: tex, roughness: 0.95 }));
   m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
 }
-const sand = islandPart(21, 22.6, 1.4, 0.35, R, "#ecd6a2", speckleTex("#ffffff", ["#c9a86a", "#fff4d8", "#b8955a"], 900));
-const grass = islandPart(18, 18.4, 0.6, 0.55, RG, "#86b45e", speckleTex("#ffffff", ["#5f8f3e", "#a8cf74", "#4a7a32", "#c4dc8a"], 1600));
+const sand = islandPart(48, 49.8, 1.4, 0.35, R, "#ecd6a2", speckleTex("#ffffff", ["#c9a86a", "#fff4d8", "#b8955a"], 900));
+const grass = islandPart(44, 44.5, 0.6, 0.55, RG, "#86b45e", speckleTex("#ffffff", ["#5f8f3e", "#a8cf74", "#4a7a32", "#c4dc8a"], 1600));
 
 /* 海面：頂點著色器裡算波浪，太陽和燈光會在浪上反光 */
 const waterU = { uTime: { value: 0 } };
@@ -149,14 +149,14 @@ waterM.onBeforeCompile = (sh) => {
     .replace("#include <beginnormal_vertex>", "float e = .15; vec2 q = position.xy; vec3 objectNormal = normalize(vec3(-(wv(q+vec2(e,0.))-wv(q-vec2(e,0.)))/(2.*e), -(wv(q+vec2(0.,e))-wv(q-vec2(0.,e)))/(2.*e), 1.));\n#ifdef USE_TANGENT\nvec3 objectTangent = vec3( tangent.xyz );\n#endif")
     .replace("#include <begin_vertex>", "vec3 transformed = vec3(position.xy, wv(position.xy));");
 };
-const water = new THREE.Mesh(new THREE.PlaneGeometry(320, 320, 220, 220), waterM);
+const water = new THREE.Mesh(new THREE.PlaneGeometry(440, 440, 240, 240), waterM);
 water.rotation.x = -Math.PI / 2; water.receiveShadow = true; scene.add(water);
 // 岸邊浪花：沿著海岸一圈，一波一波往岸上推
 const foam = (() => {
-  const seg = 160, pos = [], tv = [], idx = [];
+  const seg = 320, pos = [], tv = [], idx = [];
   for (let i = 0; i <= seg; i++) {
     const a = i / seg * TAU, rr = R(a);
-    [[rr + 0.1, 0], [rr + 2.0, 1]].forEach(([r, t]) => { pos.push(Math.cos(a) * r, 0.04, Math.sin(a) * r); tv.push(t); });
+    [[rr + 0.1, 0], [rr + 2.6, 1]].forEach(([r, t]) => { pos.push(Math.cos(a) * r, 0.04, Math.sin(a) * r); tv.push(t); });
     if (i < seg) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
   }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("t", new THREE.Float32BufferAttribute(tv, 1)); g.setIndex(idx);
@@ -240,7 +240,7 @@ function addLamp(parent, x, y, z) {
   colliders.push({ x: w.x, z: w.z, r: 0.3 });
   return g;
 }
-const RING_R = 11, ROAD_W = 2.0;
+const RING_R = 11, RING2 = 30, ROAD_W = 2.0;
 const A = (deg) => deg * Math.PI / 180;
 const DOCK_T = Math.atan2(Math.cos(DOCK_A), Math.sin(DOCK_A)); // 碼頭在小鎮座標的方位（sin,cos）
 const outer = (deg, r) => [Math.sin(A(deg)) * (r || 14.3), Math.cos(A(deg)) * (r || 14.3), A(deg) + Math.PI];
@@ -250,30 +250,46 @@ const LAYOUT = [
   ["school", ...outer(165)], ["house", ...outer(200), 2], ["inn", ...outer(235)], ["house", ...outer(268), 3],
   ["chapel", ...outer(300)], ["konbini", ...outer(335)],
   ["bakery", ...inner(0)], ["bookstore", ...inner(90)], ["house", ...inner(180), 1], ["house", ...inner(270), 2],
+  // 外圈街區：貼著第二條環形路，內外各一排
+  ["inn", ...outer(20, 33.5)], ["house", ...outer(50, 33.5), 2], ["school", ...outer(80, 33.8)], ["house", ...outer(110, 33.5), 3],
+  ["cafe", ...outer(140, 33.5)], ["house", ...outer(170, 33.5), 0], ["library", ...outer(205, 34)], ["bakery", ...outer(240, 33.5)],
+  ["house", ...outer(275, 33.5), 1], ["chapel", ...outer(310, 33.8)], ["konbini", ...outer(345, 33.5)],
+  ["house", ...inner(35, 26.5), 3], ["bookstore", ...inner(95, 26.5)], ["house", ...inner(155, 26.5), 0], ["house", ...inner(215, 26.5), 2], ["cafe", ...inner(290, 26.5)],
 ];
-const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, ringR: RING_R, roadW: ROAD_W, y: 0.55, layout: LAYOUT, spokes: [A(45), A(135), A(225), A(315), DOCK_T] });
+const EXTRAS = [
+  ["pond", Math.sin(A(125)) * 40, Math.cos(A(125)) * 40, 3.2],
+  ["field", Math.sin(A(60)) * 40, Math.cos(A(60)) * 40, A(60), 7, 5, "wheat"], ["field", Math.sin(A(78)) * 41, Math.cos(A(78)) * 41, A(78), 5, 4, "cabbage"], ["field", Math.sin(A(42)) * 41, Math.cos(A(42)) * 41, A(42), 5, 4, "tomato"],
+  ["windmill", Math.sin(A(300)) * 40, Math.cos(A(300)) * 40, A(300) + Math.PI],
+  ["pond", Math.sin(A(235)) * 41, Math.cos(A(235)) * 41, 2.2],
+];
+const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, rings: [RING_R, RING2], roadW: ROAD_W, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT, spokes: [A(45), A(135), A(225), A(315), DOCK_T] });
+const extras = buildExtras(EXTRAS); extras.forEach((e) => { if (e && e.name) town.push(e); });
 function freeSpot(x, z, pad) { return colliders.every((c) => Math.hypot(c.x - x, c.z - z) > c.r + pad); }
 function onRoad(x, z, pad) {
-  const r = Math.hypot(x, z); if (Math.abs(r - RING_R) < ROAD_W / 2 + pad || r < 4.8 + pad) return true;
+  const r = Math.hypot(x, z); if (Math.abs(r - RING_R) < ROAD_W / 2 + pad || Math.abs(r - RING2) < ROAD_W / 2 + pad || r < 4.8 + pad) return true;
   const t = Math.atan2(x, z);
-  return [A(45), A(135), A(225), A(315), DOCK_T].some((sa) => { let d = Math.abs(((t - sa + Math.PI) % TAU + TAU) % TAU - Math.PI); return d * r < ROAD_W / 2 + pad && r < RING_R; });
+  return [A(45), A(135), A(225), A(315), DOCK_T].some((sa, i) => { let d = Math.abs(((t - sa + Math.PI) % TAU + TAU) % TAU - Math.PI); return d * r < ROAD_W / 2 + pad && (r < RING2 || i === 4); });
 }
-for (let i = 0, n = 0; i < 2000 && n < 34; i++) {
+const FOREST = [[A(190), A(270), 35, 44], [A(140), A(180), 36, 43]]; // 森林帶：角度範圍、半徑範圍
+function inForest(x, z) { const t = ((Math.atan2(x, z) % TAU) + TAU) % TAU, r = Math.hypot(x, z); return FOREST.some(([a0, a1, r0, r1]) => t > a0 && t < a1 && r > r0 && r < r1); }
+for (let i = 0, n = 0; i < 6000 && n < (HIGH ? 150 : 90); i++) {
   const a = rnd() * TAU, r = 5.5 + rnd() * (RG(a) - 6.5), x = Math.cos(a) * r, z = Math.sin(a) * r;
-  if (Math.abs(a - DOCK_A) < 0.2 || onRoad(x, z, 0.8) || !freeSpot(x, z, 1.3)) continue;
-  (n % 4 === 3 ? pineTree : roundTree)(x, z, 0.85 + rnd() * 0.5); n++;
+  const forest = inForest(x, z);
+  if (!forest && rnd() < 0.55) continue;
+  if (Math.abs(a - DOCK_A) < 0.12 || onRoad(x, z, 0.8) || !freeSpot(x, z, forest ? 0.9 : 1.4)) continue;
+  (forest ? (n % 3 ? pineTree : roundTree) : (n % 5 === 4 ? pineTree : roundTree))(x, z, 0.85 + rnd() * 0.6); n++;
 }
-for (let i = 0, n = 0; i < 600 && n < 14; i++) {
+for (let i = 0, n = 0; i < 1500 && n < 32; i++) {
   const a = rnd() * TAU, r = RG(a) + 0.6 + rnd() * 1.6, x = Math.cos(a) * r, z = Math.sin(a) * r;
   if (Math.abs(a - DOCK_A) < 0.3 || !freeSpot(x, z, 1.4)) continue;
   palm(x, z, 0.9 + rnd() * 0.35, rnd() * TAU); n++;
 }
-for (let i = 0, n = 0; i < 400 && n < 18; i++) {
+for (let i = 0, n = 0; i < 1000 && n < 44; i++) {
   const a = rnd() * TAU, r = R(a) - 0.4 + rnd() * 1.2, x = Math.cos(a) * r, z = Math.sin(a) * r;
   if (Math.abs(a - DOCK_A) < 0.25 || !freeSpot(x, z, 0.6)) continue;
   rock(x, z, 0.6 + rnd() * 1.0); n++;
 }
-grassTufts(scene, HIGH ? 2600 : 1200, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
+grassTufts(scene, HIGH ? 9000 : 3000, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
 smokes.forEach((s) => hideForAO.push(s.s));
 
 /* ===== 光源 ===== */
@@ -285,12 +301,12 @@ Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, n
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
 // 點光源先開好一池，蓋燈時拿來用，避免數量變動讓著色器重新編譯
 const POINTS = [];
-for (let i = 0; i < (HIGH ? 18 : 8); i++) { const l = new THREE.PointLight("#ffb860", 0, 8, 1.5); l.position.set(0, -50, 0); scene.add(l); POINTS.push({ l, used: false }); }
+for (let i = 0; i < (HIGH ? 20 : 8); i++) { const l = new THREE.PointLight("#ffb860", 0, 8, 1.5); l.position.set(0, -50, 0); scene.add(l); POINTS.push({ l, used: false }); }
 const SPOTS = [];
 for (let i = 0; i < 4; i++) { const l = new THREE.SpotLight("#e8f0ff", 0, 16, 0.24, 0.5, 1.2); l.position.set(0, -50, 0); scene.add(l); scene.add(l.target); SPOTS.push({ l, used: false }); }
 function takeLight(pool) { const s = pool.find((p) => !p.used); if (s) s.used = true; return s && s.l; }
 // 鎮上的路燈：離燈塔近的先拿到真的點光源
-townLamps.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, HIGH ? 8 : 3).forEach((l) => { l.light = takeLight(POINTS); if (l.light) { l.light.position.set(l.x, l.y + 1.95, l.z); l.light.distance = 7; } });
+townLamps.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, HIGH ? 10 : 3).forEach((l) => { l.light = takeLight(POINTS); if (l.light) { l.light.position.set(l.x, l.y + 1.95, l.z); l.light.distance = 7; } });
 
 /* ===== 光的建築：路燈、探照燈、篝火 ===== */
 const COST = { lamp: { wood: 2, oil: 0 }, search: { wood: 4, oil: 2 }, fire: { wood: 3, oil: 0 }, repair: { wood: 3, oil: 0 } };
@@ -349,9 +365,9 @@ function burst(p, color, n, sp) {
   }
 }
 const flies = [];
-for (let i = 0; i < 80; i++) {
+for (let i = 0; i < 160; i++) {
   const s = glowSprite(new THREE.Color(1.6, 2.2, 0.7), 0.22, scene); s.material.opacity = 0;
-  const a = Math.random() * TAU, r = 3 + Math.random() * 15;
+  const a = Math.random() * TAU, r = 3 + Math.random() * 42;
   flies.push({ s, x: Math.cos(a) * r, z: Math.sin(a) * r, y: 0.8 + Math.random() * 1.4, ph: Math.random() * 10, sp: 0.3 + Math.random() * 0.5 });
 }
 
@@ -359,13 +375,13 @@ for (let i = 0; i < 80; i++) {
 const motes = [], fogs = [], shafts = [];
 {
   const mm = new THREE.SpriteMaterial({ map: GLOW, color: new THREE.Color(2.2, 2.0, 1.5), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false });
-  for (let i = 0; i < (HIGH ? 260 : 100); i++) { const sp = new THREE.Sprite(mm.clone()); const k = 0.04 + Math.random() * 0.06; sp.scale.set(k, k, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.random() * 19; motes.push({ sp, x: Math.cos(a) * r, y: 0.8 + Math.random() * 4, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.15 + Math.random() * 0.3 }); }
+  for (let i = 0; i < (HIGH ? 600 : 200); i++) { const sp = new THREE.Sprite(mm.clone()); const k = 0.05 + Math.random() * 0.07; sp.scale.set(k, k, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * 46; motes.push({ sp, x: Math.cos(a) * r, y: 0.8 + Math.random() * 4, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.15 + Math.random() * 0.3 }); }
   const fm = new THREE.SpriteMaterial({ map: GLOW, color: new THREE.Color("#6f8f98"), depthWrite: false, transparent: true, opacity: 0, fog: false });
-  for (let i = 0; i < (HIGH ? 90 : 40); i++) { const sp = new THREE.Sprite(fm.clone()); const k = 5 + Math.random() * 6; sp.scale.set(k, k * 0.35, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.random() * 24; fogs.push({ sp, x: Math.cos(a) * r, y: 0.6 + Math.random() * 0.5, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.04 + Math.random() * 0.06, k: 0.16 + Math.random() * 0.16 }); }
+  for (let i = 0; i < (HIGH ? 220 : 80); i++) { const sp = new THREE.Sprite(fm.clone()); const k = 6 + Math.random() * 8; sp.scale.set(k, k * 0.35, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * 52; fogs.push({ sp, x: Math.cos(a) * r, y: 0.6 + Math.random() * 0.5, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.04 + Math.random() * 0.06, k: 0.16 + Math.random() * 0.16 }); }
   const sm = new THREE.ShaderMaterial({ uniforms: { uC: { value: new THREE.Color("#fff4d8") }, uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }",
     fragmentShader: "uniform vec3 uC; uniform float uA; varying vec2 vUv; void main(){ float a = smoothstep(0.,.25,vUv.x)*smoothstep(1.,.75,vUv.x) * pow(vUv.y,1.6) * uA; gl_FragColor = vec4(uC*a, a); }" });
-  for (let i = 0; i < 7; i++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(2 + (i % 3), 16), sm); pl.renderOrder = 3; scene.add(pl); hideForAO.push(pl); const a = i / 7 * TAU, r = 6 + (i % 2) * 7; shafts.push({ pl, base: new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r), m: sm }); }
+  for (let i = 0; i < 14; i++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(2 + (i % 3), 18), sm); pl.renderOrder = 3; scene.add(pl); hideForAO.push(pl); const a = i / 14 * TAU, r = 8 + (i % 3) * 13; shafts.push({ pl, base: new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r), m: sm }); }
 }
 
 /* ===== 角色 ===== */
@@ -433,7 +449,7 @@ function spawnFoe() {
   [-0.12, 0.12].forEach((ex) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), eyeM); e.position.set(ex, 0.52, 0.3); e.scale.y = 1.4; g.add(e); });
   const aura = glowSprite(new THREE.Color(0.5, 0.2, 1.1), 2.2, g, 0.5); aura.material.opacity = 0.7;
   const day = G.day;
-  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 1.05 + Math.min(day, 8) * 0.08, t: Math.random() * 10, lit: 0, dying: 0 };
+  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0 };
   f.g.position.set(x, -0.4, z); foes.push(f);
 }
 function killFoe(f, byTower) {
@@ -487,10 +503,10 @@ G.t = startT;
 // 開場先送兩盞燈：一盞在碼頭、一盞在燈塔前
 addBuild("lamp", dockLampAt.x, dockLampAt.z, true, 0.42);
 addBuild("lamp", 3.0, 6.8, true);
-for (let i = 0; i < 10; i++) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.7), Math.sin(a) * (R(a) - 0.7)); }
+for (let i = 0; i < 18; i++) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.7), Math.sin(a) * (R(a) - 0.7)); }
 
 /* ===== 鏡頭與操作 ===== */
-const camS = { yaw: 0.35, pitch: 0.8, dist: 26, x: 0, z: 5 };
+const camS = { yaw: 0.35, pitch: 0.8, dist: 34, x: 0, z: 5 };
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 function groundHit(cx, cy) {
   ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
@@ -504,7 +520,7 @@ cvs.addEventListener("pointermove", (e) => {
   const p = ptrs.get(e.pointerId);
   if (!p) { hover = groundHit(e.clientX, e.clientY); return; }
   const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
-  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) camS.dist = clamp(camS.dist * pinch / d, 9, 46); pinch = d; return; }
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) camS.dist = clamp(camS.dist * pinch / d, 9, 110); pinch = d; return; }
   if (!drag && Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 8) drag = "rot";
   if (drag === "rot") { camS.yaw -= dx * 0.008; camS.pitch = clamp(camS.pitch + dy * 0.004, 0.45, 1.3); }
   if (e.pointerType === "mouse") hover = groundHit(e.clientX, e.clientY);
@@ -518,7 +534,7 @@ function endPtr(e) {
   P.tx = Math.cos(a) * r; P.tz = Math.sin(a) * r; marker(P.tx, P.tz);
 }
 cvs.addEventListener("pointerup", endPtr); cvs.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); drag = null; });
-cvs.addEventListener("wheel", (e) => { e.preventDefault(); camS.dist = clamp(camS.dist * (1 + Math.sign(e.deltaY) * 0.08), 9, 46); }, { passive: false });
+cvs.addEventListener("wheel", (e) => { e.preventDefault(); camS.dist = clamp(camS.dist * (1 + Math.sign(e.deltaY) * 0.08), 9, 110); }, { passive: false });
 const keys = {};
 addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); });
 addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
@@ -618,7 +634,7 @@ function frame() {
   // 天空、太陽、月亮
   skyU.top.value.copy(E.top); skyU.bot.value.copy(E.bot); scene.fog.color.copy(E.bot).lerp(E.top, 0.25);
   // 白天一點薄霧、晚上濃霧（偏青綠），遠處的東西沉進霧裡
-  scene.fog.density = lerp(0.0045, 0.03, dark); if (dark > 0.5) scene.fog.color.lerp(tmpC.set("#142830"), (dark - 0.5) * 1.2);
+  scene.fog.density = lerp(0.0035, 0.022, dark); if (dark > 0.5) scene.fog.color.lerp(tmpC.set("#142830"), (dark - 0.5) * 1.2);
   scene.environmentIntensity = lerp(0.35, 0.1, dark);
   const sa = (h - 6) / 12 * Math.PI, sunDir = new THREE.Vector3(Math.cos(sa) * 0.9, Math.sin(sa), -0.45).normalize();
   const moonDir = new THREE.Vector3(-0.35, 0.55, -0.75).normalize();
@@ -642,6 +658,7 @@ function frame() {
   const shaftA = dayK * smooth(0.05, 0.25, sunDir.y) * (1 - smooth(0.5, 0.9, sunDir.y)) * 0.16 + dayK * 0.03;
   shafts.forEach((s) => { s.m.uniforms.uA.value = shaftA; s.pl.position.copy(s.base).addScaledVector(sunDir, 8); s.pl.lookAt(s.base.clone().addScaledVector(sunDir, 16)); s.pl.rotateX(Math.PI / 2); s.pl.rotateY(0.6); });
   tickSmoke(dt, 1);
+  windmills.forEach((h) => h.rotation.z += dt * 0.5);
   // 鎮上的路燈、招牌
   townLamps.forEach((l, i) => { const on = smooth(0.12 + (i % 5) * 0.05, 0.32 + (i % 5) * 0.05, dark); l.glow.material.opacity = on; l.pool.material.opacity = on * 0.35; if (l.light) l.light.intensity = on * 3.5; });
   M.lampGlass.emissiveIntensity = 0.08 + dark * 5;
@@ -726,7 +743,7 @@ function frame() {
   });
 
   // 漂流木：白天沿著海岸漂上來
-  if (G.started && !G.over && ph === "day" && (woodT += dt) > 3.2) { woodT = 0; if (items.filter((i) => i.kind === "wood").length < 9) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.6), Math.sin(a) * (R(a) - 0.6)); } }
+  if (G.started && !G.over && ph === "day" && (woodT += dt) > 1.6) { woodT = 0; if (items.filter((i) => i.kind === "wood").length < 22) { const a = Math.random() * TAU; if (Math.random() < 0.35) { for (let k = 0; k < 20; k++) { const fa = Math.random() * TAU, fr = 34 + Math.random() * 10, fx = Math.cos(fa) * fr, fz = Math.sin(fa) * fr; if (inForest(fx, fz) && freeSpot(fx, fz, 0.4)) { spawnWood(fx, fz); break; } } } else spawnWood(Math.cos(a) * (R(a) - 0.6), Math.sin(a) * (R(a) - 0.6)); } }
   for (let i = items.length - 1; i >= 0; i--) {
     const it = items[i]; it.t += dt;
     if (it.m) { it.m.rotation.y += dt * 2; it.m.position.y = 0.45 + Math.sin(now * 3 + i) * 0.08; }

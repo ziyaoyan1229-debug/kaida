@@ -197,23 +197,69 @@ function chapel(x, z, ry) {
 
 const KIND = { house, library, cafe, konbini, school, bookstore, bakery, inn, chapel };
 
-/* 街道：環形主街、放射路、中央廣場、噴泉 */
-function roads(ringR, roadW, y) {
+/* 街道：兩圈環形路、放射路、中央廣場 */
+function roads(rings, roadW, y) {
   const m = M.cobble; M.cobble.map.repeat.set(3, 3);
-  const ring = add(new THREE.RingGeometry(ringR - roadW / 2, ringR + roadW / 2, 128), m, 0, y + 0.01, 0, C.scene); ring.rotation.x = -Math.PI / 2; ring.castShadow = false;
+  const outerR = rings[rings.length - 1];
+  rings.forEach((ringR) => { const ring = add(new THREE.RingGeometry(ringR - roadW / 2, ringR + roadW / 2, 160), m, 0, y + 0.01, 0, C.scene); ring.rotation.x = -Math.PI / 2; ring.castShadow = false; });
   const plaza = add(new THREE.CircleGeometry(4.6, 48), m, 0, y + 0.01, 0, C.scene); plaza.rotation.x = -Math.PI / 2; plaza.castShadow = false;
-  C.spokes.forEach((a) => { const len = ringR - 4; const sp = add(new THREE.PlaneGeometry(roadW, len), m, Math.sin(a) * (ringR + 4) / 2, y + 0.012, Math.cos(a) * (ringR + 4) / 2, C.scene); sp.rotation.set(-Math.PI / 2, 0, -a); sp.castShadow = false; });
-  // 碼頭那條路一路通到沙灘
-  const da = C.spokes[C.spokes.length - 1]; const ext = add(new THREE.PlaneGeometry(roadW, 7), m, Math.sin(da) * (ringR + 3.5), y + 0.012, Math.cos(da) * (ringR + 3.5), C.scene); ext.rotation.set(-Math.PI / 2, 0, -da); ext.castShadow = false;
-  // 廣場：長椅、花圃、路燈（燈塔在正中央）
+  C.spokes.forEach((a) => { const len = outerR - 4; const sp = add(new THREE.PlaneGeometry(roadW, len), m, Math.sin(a) * (outerR + 4) / 2, y + 0.012, Math.cos(a) * (outerR + 4) / 2, C.scene); sp.rotation.set(-Math.PI / 2, 0, -a); sp.castShadow = false; });
+  // 碼頭那條路從外圈一路通到沙灘
+  const da = C.spokes[C.spokes.length - 1], len2 = C.coastR - outerR + 1; const ext = add(new THREE.PlaneGeometry(roadW, len2), m, Math.sin(da) * (outerR + len2 / 2), y + 0.012, Math.cos(da) * (outerR + len2 / 2), C.scene); ext.rotation.set(-Math.PI / 2, 0, -da); ext.castShadow = false;
+  // 廣場：長椅、花圃（燈塔在正中央）
   for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; const bx = Math.sin(a) * 3.3, bz = Math.cos(a) * 3.3; const g = new THREE.Group(); g.position.set(bx, y, bz); g.rotation.y = a; C.scene.add(g); box(1.1, 0.08, 0.35, M.wood, 0, 0.42, 0, g); box(1.1, 0.3, 0.06, M.wood, 0, 0.62, -0.17, g); [-0.45, 0.45].forEach((lx) => box(0.06, 0.42, 0.3, M.iron, lx, 0.21, 0, g)); C.colliders.push({ x: bx, z: bz, r: 0.5 }); }
   for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; const fx = Math.sin(a) * 3.4, fz = Math.cos(a) * 3.4; cyl(0.5, 0.45, 0.3, M.stoneLight, fx, y + 0.15, fz, C.scene, 10); flowers(C.scene, fx, fz, 0.35, 10, ["#f07a8a", "#ffd27a", "#f3efe6", "#c8a0e0"], y + 0.3); C.colliders.push({ x: fx, z: fz, r: 0.55 }); }
-  // 環形路兩側的路燈
-  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + Math.PI / 8; C.addLamp(C.scene, Math.sin(a) * (ringR + roadW / 2 + 0.5), y, Math.cos(a) * (ringR + roadW / 2 + 0.5)); }
+  // 路燈：每圈環形路外側一排
+  rings.forEach((ringR, ri) => { const n = ri ? 16 : 8; for (let i = 0; i < n; i++) { const a = i * TAU / n + Math.PI / n; C.addLamp(C.scene, Math.sin(a) * (ringR + roadW / 2 + 0.5), y, Math.cos(a) * (ringR + roadW / 2 + 0.5)); } });
 }
+
+/* ===== 郊外：池塘、農田、風車 ===== */
+export const windmills = [];
+function pond(x, z, r) {
+  const g = new THREE.Group(); g.position.set(x, 0.55, z); C.scene.add(g);
+  const w = add(new THREE.CircleGeometry(r, 32), mat("#3f8fa8", { roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.9 }), 0, 0.02, 0, g); w.rotation.x = -Math.PI / 2; w.castShadow = false;
+  const rim = add(new THREE.RingGeometry(r, r + 0.6, 32), mat("#c9b48a", { roughness: 1 }), 0, 0.015, 0, g); rim.rotation.x = -Math.PI / 2; rim.castShadow = false;
+  for (let i = 0; i < 18; i++) { const a = i / 18 * TAU, rr = r + 0.1 + (i % 3) * 0.2; cyl(0.015, 0.015, 0.7 + (i % 2) * 0.3, "#5f8f3e", Math.cos(a) * rr, 0.35, Math.sin(a) * rr, g, 4); if (i % 3 === 0) { const c = cyl(0.04, 0.04, 0.18, "#6a4a2a", Math.cos(a) * rr, 0.75, Math.sin(a) * rr, g, 6); } }
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + 0.4; const rk = add(new THREE.DodecahedronGeometry(0.25 + (i % 2) * 0.12, 1), M.stone, Math.cos(a) * (r + 0.5), 0.1, Math.sin(a) * (r + 0.5), g); rk.scale.y = 0.6; }
+  [[0.3, 0.2], [-0.5, -0.4], [0.1, -0.6]].forEach(([lx, lz]) => { const lp = add(new THREE.CircleGeometry(0.22, 12), mat("#4f8a3c"), lx * r, 0.03, lz * r, g); lp.rotation.x = -Math.PI / 2; lp.castShadow = false; sph(0.05, "#f8c0d0", lx * r, 0.08, lz * r, g, 8, 6); });
+  const dock = box(0.8, 0.06, 2.2, M.wood, 0, 0.12, r - 0.2, g); [0.5, 1.4].forEach((dz) => [-0.3, 0.3].forEach((dx) => cyl(0.04, 0.04, 0.5, FRAME, dx, -0.1, r - 1.3 + dz, g, 6)));
+  C.colliders.push({ x, z, r: r + 0.3 });
+  return g;
+}
+function field(x, z, ry, w, d, crop) {
+  const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g);
+  const soil = add(new THREE.PlaneGeometry(w, d), mat("#7a5a3a", { roughness: 1, polygonOffset: true, polygonOffsetFactor: -1 }), 0, 0.01, 0, g); soil.rotation.x = -Math.PI / 2; soil.castShadow = false;
+  const rows = Math.floor(d / 0.7), per = Math.floor(w / 0.45);
+  const geo = crop === "wheat" ? new THREE.ConeGeometry(0.08, 0.6, 5) : new THREE.SphereGeometry(0.16, 7, 5); if (crop === "wheat") geo.translate(0, 0.3, 0); else geo.translate(0, 0.14, 0);
+  const im = new THREE.InstancedMesh(geo, mat(crop === "wheat" ? "#d9b24a" : crop === "cabbage" ? "#7fb35a" : "#c8574a"), rows * per); im.castShadow = im.receiveShadow = true;
+  const Mx = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), pos = new THREE.Vector3(); let n = 0;
+  for (let r = 0; r < rows; r++) { box(w, 0.08, 0.3, "#6a4a2c", 0, 0.04, -d / 2 + 0.35 + r * 0.7, g); for (let i = 0; i < per; i++) { pos.set(-w / 2 + 0.25 + i * 0.45, 0.08, -d / 2 + 0.35 + r * 0.7); sc.setScalar(0.8 + ((r * 7 + i * 3) % 5) * 0.08); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), i); Mx.compose(pos, q, sc); im.setMatrixAt(n++, Mx); } }
+  im.count = n; g.add(im);
+  if (crop === "tomato") for (let r = 0; r < rows; r++) for (let i = 0; i < per; i += 2) cyl(0.015, 0.015, 0.5, FRAME, -w / 2 + 0.25 + i * 0.45, 0.3, -d / 2 + 0.35 + r * 0.7, g, 4);
+  fenceLine(g, -w / 2 - 0.3, d / 2 + 0.3, w / 2 + 0.3, d / 2 + 0.3, Math.round(w / 1.2)); fenceLine(g, -w / 2 - 0.3, -d / 2 - 0.3, w / 2 + 0.3, -d / 2 - 0.3, Math.round(w / 1.2));
+  fenceLine(g, -w / 2 - 0.3, -d / 2 - 0.3, -w / 2 - 0.3, d / 2 + 0.3, Math.round(d / 1.2)); fenceLine(g, w / 2 + 0.3, -d / 2 - 0.3, w / 2 + 0.3, d / 2 + 0.3, Math.round(d / 1.2));
+  // 稻草人
+  const sc2 = new THREE.Group(); sc2.position.set(w / 2 - 0.6, 0, -d / 2 + 0.6); g.add(sc2); cyl(0.04, 0.04, 1.4, FRAME, 0, 0.7, 0, sc2, 6); box(0.9, 0.05, 0.05, FRAME, 0, 1.1, 0, sc2); box(0.4, 0.5, 0.25, "#c8574a", 0, 1.0, 0, sc2); sph(0.16, "#e8c070", 0, 1.45, 0, sc2, 10, 8); cone(0.3, 0.2, "#c9b26a", 0, 1.62, 0, sc2, 10);
+  C.colliders.push({ x, z, r: Math.max(w, d) / 2 + 0.5 });
+  return g;
+}
+function windmill(x, z, ry) {
+  const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g);
+  box(3.2, 0.5, 3.2, M.stone, 0, 0.25, 0, g); cyl(1.1, 1.5, 4.6, M.stoneLight, 0, 2.8, 0, g, 12);
+  cyl(1.25, 1.25, 0.3, FRAME, 0, 5.2, 0, g, 12); const cap = cone(1.35, 1.4, "#6b4a3a", 0, 6.0, 0, g, 12);
+  doorFrame(g, 0.7, 1.4, 0, 1.45, 0, M.woodDark, FRAME); latticeWin(g, 0.45, 0.6, 0, 2.6, 1.33, 0, 2, 2, "#f3efe6", "#8a8278"); latticeWin(g, 0.4, 0.5, 0, 4.0, 1.18, 0, 2, 2, "#f3efe6");
+  const hub = new THREE.Group(); hub.position.set(0, 5.1, 1.5); g.add(hub); cyl(0.12, 0.12, 0.8, FRAME, 0, 0, 0, hub, 8).rotation.x = Math.PI / 2; sph(0.2, FRAME, 0, 0, 0.4, hub, 10, 8);
+  for (let i = 0; i < 4; i++) { const arm = new THREE.Group(); arm.rotation.z = i * Math.PI / 2; hub.add(arm); box(0.1, 3.4, 0.08, FRAME, 0, 1.7, 0.4, arm); const sail = box(0.9, 2.6, 0.02, "#f3efe6", 0.5, 2.0, 0.4, arm); for (let k = 0; k < 4; k++) box(0.9, 0.03, 0.04, FRAME, 0.5, 1.0 + k * 0.7, 0.42, arm); }
+  windmills.push(hub);
+  for (let i = 0; i < 5; i++) { const b = cyl(0.3, 0.3, 0.5, M.wood, 1.9 + (i % 3) * 0.65, 0.25 + Math.floor(i / 3) * 0.5, -1.2 + (i % 2) * 0.2, g, 10); b.rotation.x = 0; }
+  C.colliders.push({ x, z, r: 2.0 });
+  return { name: "風車", x, z, ry, door: { x: x + Math.sin(ry) * 2.5, z: z + Math.cos(ry) * 2.5 }, front: { x: x + Math.sin(ry) * 3.8, z: z + Math.cos(ry) * 3.8 }, r: 2 };
+}
+const EXTRA = { pond, field, windmill };
+export function buildExtras(list) { return list.map(([kind, ...args]) => EXTRA[kind](...args)); }
 
 export function buildTown(ctx) {
   C = ctx;
-  roads(ctx.ringR, ctx.roadW, ctx.y);
+  roads(ctx.rings, ctx.roadW, ctx.y);
   return ctx.layout.map(([kind, x, z, ry, ...rest]) => { const b = KIND[kind](x, z, ry, ...rest); b.kind = kind; return b; });
 }
