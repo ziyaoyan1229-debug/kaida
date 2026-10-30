@@ -500,7 +500,7 @@ function enterBuilding(b) {
     IN = { b, room }; moveActors(room.scene); renderPass.scene = room.scene; if (gtao) gtao.scene = room.scene;
     P.x = room.entry.x; P.z = room.entry.z; P.yaw = Math.PI; P.tx = null; petS.x = P.x + 0.6; petS.z = P.z + 0.3;
     camS.x = P.x; camS.z = P.z; camS.fyaw = 0; camS.cdNow = null; camS.free = 0; camS.fdistOut = camS.fdist; camS.fdist = Math.min(camS.fdist, 6);
-    $("build").style.display = "none"; setBuild(null); banner(b.name, "按 E 或點門口離開", 1800);
+    $("build").style.display = "none"; setBuild(null); banner(b.name, "按 E 或點門口離開", 1800); setTimeout(() => { if (IN && IN.b === b) renderShop(b); }, 500);
   });
 }
 function leaveBuilding() {
@@ -510,9 +510,43 @@ function leaveBuilding() {
     IN = null; moveActors(scene); renderPass.scene = scene; if (gtao) gtao.scene = scene;
     P.x = b.front.x; P.z = b.front.z; P.yaw = b.ry; P.tx = null; petS.x = P.x + Math.cos(b.ry) * 0.6; petS.z = P.z - Math.sin(b.ry) * 0.6;
     camS.x = P.x; camS.z = P.z; camS.fyaw = b.ry + Math.PI; camS.cdNow = null; camS.free = 0; if (camS.fdistOut) camS.fdist = camS.fdistOut;
-    $("build").style.display = "";
+    $("build").style.display = ""; $("shop").classList.remove("show");
   });
 }
+/* 室內商店：進建築後跳出面板，光晶（💎）和零件（🔩）換藍圖、升級、補給、buff */
+const SHOP = {
+  library: [
+    { id: "bp", name: "探照燈藍圖", desc: "解鎖探照燈，會自動瞄準黑影", cost: { cry: 6 }, once: () => G.bp.search, buy: () => { G.bp.search = true; } },
+    { id: "range", name: "燈塔鏡片 I：射程", desc: "光束射程 +5", cost: { cry: 10, parts: 2 }, once: () => G.up.range >= 1, buy: () => { G.up.range = 1; } },
+    { id: "bright", name: "燈塔燈芯 II：亮度", desc: "光束傷害 +50%", cost: { cry: 16, parts: 3 }, once: () => G.up.bright >= 1, buy: () => { G.up.bright = 1; } },
+  ],
+  cafe: [
+    { id: "coffee", name: "濃縮咖啡", desc: "今天移動速度 +30%", cost: { cry: 3 }, once: () => G.buff.speed, buy: () => { G.buff.speed = 1; } },
+    { id: "cake", name: "蜂蜜蛋糕", desc: "燈塔修復 +20", cost: { cry: 4 }, once: () => G.hp >= 100, buy: () => { G.hp = Math.min(100, G.hp + 20); } },
+  ],
+  konbini: [
+    { id: "oil", name: "燈油 ×1", desc: "探照燈的燃料", cost: { cry: 2 }, buy: () => { G.oil += 1; } },
+    { id: "wood", name: "木頭 ×2", desc: "從對岸運來的", cost: { cry: 2 }, buy: () => { G.wood += 2; } },
+    { id: "parts", name: "零件 ×1", desc: "燈塔升級用", cost: { cry: 8 }, buy: () => { G.parts += 1; } },
+  ],
+};
+SHOP.school = SHOP.bookstore = SHOP.library; SHOP.bakery = SHOP.inn = SHOP.cafe;
+const SHOP_TITLE = { library: "📚 圖書館：藍圖與燈塔升級", school: "📚 學校：藍圖與燈塔升級", bookstore: "📚 書店：藍圖與燈塔升級", cafe: "☕ 咖啡廳", bakery: "🥐 麵包店", inn: "🛏️ 旅店", konbini: "🏪 便利商店" };
+const costText = (c) => Object.entries(c).map(([k, v]) => ({ cry: "💎", parts: "🔩" }[k] + v)).join(" ");
+const canPay = (c) => Object.entries(c).every(([k, v]) => G[k] >= v);
+function renderShop(b) {
+  const list = SHOP[b.kind]; if (!list) { $("shop").classList.remove("show"); return; }
+  $("shop").querySelector("h3").textContent = SHOP_TITLE[b.kind] || b.name;
+  const ul = $("shop").querySelector("ul"); ul.innerHTML = "";
+  list.forEach((it) => {
+    const done = it.once && it.once(); const li = document.createElement("li");
+    li.innerHTML = `<div><b>${it.name}</b><small>${it.desc}</small></div><button ${done || !canPay(it.cost) ? "disabled" : ""}>${done ? "已擁有" : costText(it.cost)}</button>`;
+    li.querySelector("button").addEventListener("click", () => { if (done || !canPay(it.cost)) return; Object.entries(it.cost).forEach(([k, v]) => G[k] -= v); it.buy(); toastAt(P.x, P.z, it.name, "#ffe2a0", 1.4); renderShop(b); });
+    ul.appendChild(li);
+  });
+  $("shop").classList.add("show");
+}
+$("shopclose").addEventListener("click", () => $("shop").classList.remove("show"));
 let nearDoor = null;
 function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (SEA.on) { if (canLand) landBoat(); } else if (nearBoat) boardBoat(); else if (nearDoor) enterBuilding(nearDoor); }
 $("prompt").addEventListener("click", doorAction);
@@ -552,14 +586,19 @@ function spawnFoe(sx, sz, sea) {
   [-0.12, 0.12].forEach((ex) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), eyeM); e.position.set(ex, 0.52, 0.3); e.scale.y = 1.4; g.add(e); });
   const aura = glowSprite(new THREE.Color(0.5, 0.2, 1.1), 2.2, g, 0.5); aura.material.opacity = 0.7;
   const day = G.day;
-  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0, sea: !!sea };
-  f.g.position.set(x, -0.4, z); foes.push(f);
+  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.35, max: 2.2 + day * 0.35, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0, sea: !!sea, boss: sea === "boss" };
+  if (f.boss) { f.hp = f.max = 30 + day * 6; f.sp = 1.0; g.scale.setScalar(2.6); aura.scale.multiplyScalar(1.4); bm.emissive.set("#4a1a80"); f.sea = false; }
+  f.g.position.set(x, -0.4, z); foes.push(f); return f;
 }
 function killFoe(f, byTower) {
   f.dying = 0.001;
   const p = new THREE.Vector3(f.x, f.g.position.y + 0.5, f.z);
   if (byTower) burst(p, 0x8a5aff, 18, 1.8);
-  else { burst(p, 0xffd27a, 16, 1.6); if (Math.random() < 0.65) spawnShard(f.x, f.z); }
+  else {
+    burst(p, 0xffd27a, 16, 1.6); if (Math.random() < 0.65) spawnShard(f.x, f.z);
+    if (f.boss) { G.cry += 12; G.parts += 3; banner("魔王消散了", "光晶 +12，零件 +3"); burst(p, 0xffffff, 40, 3); }
+    else { G.cry += 1; G.lightKills++; }
+  }
 }
 
 /* ===== 時間與光影 ===== */
@@ -595,11 +634,15 @@ function envAt(h) {
 function darkAt(h) { return h >= 12 ? smooth(17.4, 19.8, h) : 1 - smooth(4.6, 6.6, h); }
 
 /* ===== 遊戲狀態 ===== */
-const G = { started: false, over: false, t: 0, day: 1, wood: 4, oil: 0, parts: 0, hp: 100, build: null, spawns: [], woodTimer: 0, shake: 0, lastPhase: "day" };
+const G = { started: false, over: false, won: false, t: 0, day: 1, wood: 4, oil: 0, parts: 0, cry: 0, bp: { search: false }, up: { range: 0, bright: 0 }, buff: { speed: 0, calm: 0 }, lightKills: 0, hp: 100, build: null, spawns: [], woodTimer: 0, shake: 0, lastPhase: "day" };
+// 難度曲線：前三夜教學坡度，之後每三夜一個小高峰，第 15 夜是魔王夜，過關後進無盡模式線性加碼
+const WEEKEND = [0, 6].includes(new Date().getDay());
+function nightCount(day) { if (day > 15) return 28 + (day - 15) * 3; return Math.round(4 + day * 1.6 + (day % 3 === 0 ? 2 + day * 0.3 : 0)); }
 function planNight() {
-  const n = 5 + G.day * 3, list = [];
+  const n = nightCount(G.day), list = [];
   for (let i = 0; i < n; i++) { const k = i / n; list.push(PH.night * (0.04 + 0.66 * k + Math.random() * 0.06)); }
   G.spawns = list.sort((a, b) => a - b);
+  G.boss = (WEEKEND || G.day === 15 || (G.day > 15 && G.day % 5 === 0)) ? PH.night * 0.45 : null; // 魔王出現的時間點
 }
 const startT = 0;
 G.t = startT;
@@ -651,7 +694,7 @@ function marker(x, z) { mk.position.set(x, groundY(x, z) + 0.05, z); mk.material
 
 /* 蓋東西 */
 let ghost = null;
-function canAfford(k) { return G.wood >= COST[k].wood && G.oil >= COST[k].oil; }
+function canAfford(k) { if (k === "search" && !G.bp.search) return false; return G.wood >= COST[k].wood && G.oil >= COST[k].oil; }
 function setBuild(k) {
   if (ghost) { scene.remove(ghost); ghost = null; }
   G.build = k;
@@ -679,6 +722,7 @@ function tryPlace(x, z) {
 document.querySelectorAll("#build button").forEach((b) => b.addEventListener("click", () => {
   if (!G.started || G.over) return;
   const k = b.dataset.b;
+  if (k === "search" && !G.bp.search) { tip("探照燈要先到圖書館解鎖藍圖（6 光晶）"); setTimeout(() => tip(""), 2200); return; }
   if (k === "repair") {
     if (G.hp >= 100) { tip("燈塔很健康，不用修"); setTimeout(() => tip(""), 1600); return; }
     if (!canAfford(k)) { tip("需要 3 塊木頭"); setTimeout(() => tip(""), 1600); return; }
@@ -734,9 +778,9 @@ function frame() {
   // 階段切換
   if (ph !== G.lastPhase && G.started && !G.over) {
     if (ph === "dusk") banner("太陽下山了", SEA.on ? "天快黑了，快回港！" : "燈要亮了，黑影快來了");
-    if (ph === "night") { planNight(); banner(`第 ${G.day} 夜`, "守住燈塔"); }
+    if (ph === "night") { planNight(); banner(`第 ${G.day} 夜`, G.day === 15 ? "最後一夜，魔王會來" : WEEKEND ? "週末，魔王會來" : "守住燈塔"); }
     if (ph === "dawn") { foes.forEach((f) => { if (!f.dying) killFoe(f, false); }); }
-    if (ph === "day") { G.day++; G.wood += 2; banner(`撐過了第 ${G.day - 1} 夜`, "天亮了，木頭 +2"); }
+    if (ph === "day") { G.day++; G.wood += 2; const bonus = 3 + Math.floor(G.lightKills / 4); G.cry += bonus; G.lightKills = 0; G.buff.speed = 0; G.buff.calm = 0; if (G.day === 16 && !G.won) { G.won = true; banner("守住了 15 個夜晚！", `燈塔的光沒有熄滅 · 進入無盡模式 · 光晶 +${bonus}`, 4500); if (!save.won) { save.won = true; persist(); } } else banner(`撐過了第 ${G.day - 1} 夜`, `天亮了，木頭 +2，光晶 +${bonus}`); }
     G.lastPhase = ph;
   }
 
@@ -782,7 +826,7 @@ function frame() {
   beamRig.rotation.y += dt * 0.55;
   beams.forEach((b) => b.material.uniforms.uOpacity.value = dark * 0.5);
   const by = beamRig.rotation.y;
-  beamSpot.intensity = dark * 140; beamSpot.target.position.set(Math.sin(by) * 18, 0, Math.cos(by) * 18);
+  beamSpot.intensity = dark * 140 * (1 + G.up.bright * 0.4); beams.forEach((b) => { b.scale.z = 1 + G.up.range * 0.28; b.scale.x = b.scale.y = 1 + G.up.bright * 0.15; }); beamSpot.target.position.set(Math.sin(by) * 18, 0, Math.cos(by) * 18);
   beamSpot.castShadow = HIGH && dark > 0.2;
 
   // 光的建築：天黑時一盞一盞亮起來
@@ -827,7 +871,7 @@ function frame() {
     boat.rotation.set(Math.sin(now * 1.1) * 0.03 + SEA.v * 0.012, SEA.yaw, Math.sin(now * 1.4) * 0.05);
     animWalk(player, 0, false);
   } else if (P.moving) {
-    const sp = 3.4; P.x += vx / vl * sp * dt; P.z += vz / vl * sp * dt;
+    const sp = 3.4 * (G.buff.speed ? 1.3 : 1); P.x += vx / vl * sp * dt; P.z += vz / vl * sp * dt;
     (IN ? IN.room.colliders : colliders).forEach((c) => { const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz), m = c.r + 0.22; if (d < m && d > 1e-4) { P.x = c.x + dx / d * m; P.z = c.z + dz / d * m; } });
     if (IN) { const hw = IN.room.w / 2 - 0.45, hd = IN.room.d / 2 - 0.45; P.x = clamp(P.x, -hw, hw); P.z = clamp(P.z, -hd, Math.abs(P.x) < 0.5 ? hd + 0.3 : hd); }
     else { const a = Math.atan2(P.z, P.x), r = Math.hypot(P.x, P.z), lim = R(a) - 0.3; if (r > lim) { P.x *= lim / r; P.z *= lim / r; } }
@@ -897,7 +941,7 @@ function frame() {
   }
 
   // 黑影
-  if (G.started && !G.over && ph === "night") { const nt = G.t - PH.day - PH.dusk; while (G.spawns.length && G.spawns[0] <= nt) { G.spawns.shift(); spawnFoe(); } }
+  if (G.started && !G.over && ph === "night") { const nt = G.t - PH.day - PH.dusk; while (G.spawns.length && G.spawns[0] <= nt) { G.spawns.shift(); spawnFoe(); } if (G.boss != null && nt >= G.boss) { G.boss = null; spawnFoe(null, null, "boss"); banner(WEEKEND ? "週末魔王之夜" : "魔王來了", "把燈塔光束和探照燈都對準它"); G.shake = 0.6; } }
   for (let i = foes.length - 1; i >= 0; i--) {
     const f = foes[i]; f.t += dt;
     if (f.dying) {
@@ -912,7 +956,7 @@ function frame() {
     const dp = Math.hypot(f.x - P.x, f.z - P.z); if (dp < 2.4 && dark > 0.4) light += 1.6 * (1.2 - dp / 2.4 * 0.5);
     const db = Math.hypot(f.x - SEA.bow.x, f.z - SEA.bow.z); if (db < 2.8 && dark > 0.4) light += 1.2 * (1.2 - db / 2.8 * 0.5);
     const fa = Math.atan2(f.x, f.z), fd = Math.hypot(f.x, f.z);
-    [by, by + Math.PI].forEach((ba) => { const df = Math.abs(((fa - ba + Math.PI) % TAU + TAU) % TAU - Math.PI); if (df < 0.16 && fd > 2 && fd < 17) light += 1.3 * dark; });
+    [by, by + Math.PI].forEach((ba) => { const df = Math.abs(((fa - ba + Math.PI) % TAU + TAU) % TAU - Math.PI); if (df < 0.16 && fd > 2 && fd < 17 + G.up.range * 5) light += 1.3 * dark * (1 + G.up.bright * 0.5); });
     if (fd < 2.1) light += 1.0;
     f.lit = lerp(f.lit, light > 0 ? 1 : 0, Math.min(1, dt * 10));
     f.hp -= light * dt;
@@ -930,7 +974,7 @@ function frame() {
     f.tips.forEach((t, j) => t.scale.y = 1 + Math.sin(f.t * 8 + j * 1.3) * 0.25);
     f.aura.material.opacity = 0.6 - f.lit * 0.4;
     if (f.sea && d < 1.5) { G.wood = Math.max(0, G.wood - 3); G.oil = Math.max(0, G.oil - 1); G.shake = 0.3; SEA.v *= 0.3; killFoe(f, true); toastAt(SEA.x, SEA.z, "船被撞！-3 🪵 -1 🛢️", "#ff9a8a", 1.4); continue; }
-    if (tx === 0 && tz === 0 && d < 1.7) { G.hp -= 6 + G.day; G.shake = 0.35; killFoe(f, true); toastAt(0, 0, `燈塔 -${6 + G.day}`, "#ff9a8a", 4); if (G.hp <= 0) { G.hp = 0; gameOver(); } }
+    if (tx === 0 && tz === 0 && d < (f.boss ? 3.2 : 1.7)) { const dmg = f.boss ? 25 : Math.min(16, 6 + G.day); G.hp -= dmg; G.shake = f.boss ? 0.8 : 0.35; killFoe(f, true); toastAt(0, 0, `燈塔 -${dmg}`, "#ff9a8a", 4); if (G.hp <= 0) { G.hp = 0; gameOver(); } }
   }
 
   // 螢火蟲
@@ -981,7 +1025,8 @@ function frame() {
     $("bar").firstElementChild.style.width = (prog * 100).toFixed(1) + "%";
     $("bar").firstElementChild.style.background = ph === "night" ? "linear-gradient(90deg,#8aa4ff,#c8d4ff)" : "";
     $("hpn").textContent = Math.ceil(G.hp); $("hp").firstElementChild.style.width = G.hp + "%";
-    $("wood").textContent = G.wood; $("oil").textContent = G.oil; $("parts").textContent = G.parts;
+    $("wood").textContent = G.wood; $("oil").textContent = G.oil; $("parts").textContent = G.parts; $("cry").textContent = G.cry;
+    $("searchlock").style.display = G.bp.search ? "none" : "";
     document.querySelectorAll("#build button").forEach((b) => b.classList.toggle("no", !canAfford(b.dataset.b)));
     $("skipbtn").style.display = G.started && ph === "day" && !IN ? "" : "none";
   }
@@ -991,5 +1036,5 @@ function frame() {
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(innerWidth, innerHeight); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe };
+window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND };
 frame();

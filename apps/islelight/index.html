@@ -51,6 +51,20 @@ canvas { display: block; touch-action: none; }
 #prompt.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
 #fade { position: fixed; inset: 0; background: #06080f; opacity: 0; pointer-events: none; transition: opacity .35s; z-index: 20; }
 #fade.on { opacity: 1; pointer-events: auto; }
+#build button { position: relative; }
+#build button i { position: absolute; top: -4px; right: -4px; font-style: normal; font-size: 13px; }
+#shop { position: fixed; right: 12px; top: 50%; transform: translate(12px, -50%); width: min(300px, calc(100vw - 24px)); padding: 12px 14px; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 5; }
+#shop.show { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
+#shop .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+#shop h3 { margin: 0; font-size: 15px; }
+#shop #shopclose { all: unset; cursor: pointer; padding: 2px 8px; opacity: .7; }
+#shop ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+#shop li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.08); }
+#shop li b { display: block; font-size: 14px; }
+#shop li small { display: block; font-size: 11.5px; opacity: .75; }
+#shop li button { all: unset; cursor: pointer; white-space: nowrap; padding: 6px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #3a2410; background: linear-gradient(180deg, #ffe2a0, #ffbf55); }
+#shop li button:disabled { opacity: .4; cursor: default; }
+@media (max-width: 420px) { #shop { top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 100px); transform: translate(12px, 0); } #shop.show { transform: translate(0, 0); } }
 #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(13,20,38,.35), rgba(13,20,38,.75)); transition: opacity .6s; }
 #overlay.hide { opacity: 0; pointer-events: none; }
 #card { max-width: 380px; width: 100%; padding: 22px 22px 18px; text-align: center; }
@@ -75,14 +89,14 @@ canvas { display: block; touch-action: none; }
 <div id="hud">
   <div id="clock" class="glass"><b id="day">第 1 天</b><span id="phase">早晨</span><div id="bar"><i></i></div></div>
   <div id="tower" class="glass"><span>🗼 燈塔 <b id="hpn">100</b></span><div id="hp"><i></i></div></div>
-  <div id="res" class="glass"><span>🪵 <b id="wood">0</b></span><span>🛢️ <b id="oil">0</b></span><span>🔩 <b id="parts">0</b></span></div>
+  <div id="res" class="glass"><span>🪵 <b id="wood">0</b></span><span>🛢️ <b id="oil">0</b></span><span>🔩 <b id="parts">0</b></span><span>💎 <b id="cry">0</b></span></div>
 </div>
 <button id="skipbtn" class="glass">快轉到夜晚 ⏩</button>
 <button id="quality" class="glass">畫質：高</button>
 <button id="cam" class="glass">視角：跟隨</button>
 <div id="build" class="glass">
   <button data-b="lamp"><span class="ic">🏮</span>路燈<small>🪵2</small></button>
-  <button data-b="search"><span class="ic">🔦</span>探照燈<small>🪵4 🛢️2</small></button>
+  <button data-b="search"><span class="ic">🔦</span>探照燈<small>🪵4 🛢️2</small><i id="searchlock">🔒</i></button>
   <button data-b="fire"><span class="ic">🔥</span>篝火<small>🪵3</small></button>
   <button data-b="repair"><span class="ic">🔧</span>修燈塔<small>🪵3</small></button>
 </div>
@@ -91,6 +105,7 @@ canvas { display: block; touch-action: none; }
 <div id="banner"></div>
 <button id="prompt" class="glass"></button>
 <div id="fade"></div>
+<div id="shop" class="glass"><div class="top"><h3></h3><button id="shopclose">✕</button></div><ul></ul></div>
 <div id="overlay">
   <div id="card" class="glass">
     <h1>漂流燈島</h1>
