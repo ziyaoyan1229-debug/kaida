@@ -688,6 +688,10 @@ function endPtr(e) {
   if (G.build) { tryPlace(hit.x, hit.z); return; }
   if (IN) { P.tx = hit.x; P.tz = hit.z; return; }
   if (SEA.on) { P.tx = hit.x; P.tz = hit.z; mk.position.set(hit.x, 0.14, hit.z); mk.material.opacity = 0.9; mk.scale.setScalar(1.4); return; }
+  // 點到建築門口附近：走過去並自動進門
+  let gb = null, gd = 3.2; town.forEach((b) => { const d = Math.hypot(hit.x - b.door.x, hit.z - b.door.z); if (d < gd) { gd = d; gb = b; } });
+  if (gb) { P.goDoor = gb; P.tx = gb.door.x; P.tz = gb.door.z; marker(P.tx, P.tz); tip(`走去 ${gb.name}…`); return; }
+  P.goDoor = null;
   const a = Math.atan2(hit.z, hit.x), r = Math.min(Math.hypot(hit.x, hit.z), R(a) - 0.3);
   P.tx = Math.cos(a) * r; P.tz = Math.sin(a) * r; marker(P.tx, P.tz);
 }
@@ -865,7 +869,7 @@ function frame() {
   if (keys.w || keys.arrowup) mz -= 1; if (keys.s || keys.arrowdown) mz += 1; if (keys.a || keys.arrowleft) mx -= 1; if (keys.d || keys.arrowright) mx += 1;
   let vx = 0, vz = 0;
   if (G.started && !G.over) {
-    if (mx || mz) { P.tx = null; const cy = camS.mode === "follow" ? camS.fyaw : camS.yaw; const c = Math.cos(cy), s = Math.sin(cy); vx = mx * c + mz * s; vz = -mx * s + mz * c; }
+    if (mx || mz) { P.tx = null; P.goDoor = null; const cy = camS.mode === "follow" ? camS.fyaw : camS.yaw; const c = Math.cos(cy), s = Math.sin(cy); vx = mx * c + mz * s; vz = -mx * s + mz * c; }
     else if (P.tx != null) { vx = P.tx - P.x; vz = P.tz - P.z; if (Math.hypot(vx, vz) < 0.08) { P.tx = null; vx = vz = 0; } }
   }
   const vl = Math.hypot(vx, vz); P.moving = vl > 0;
@@ -912,7 +916,8 @@ function frame() {
   lanternPool.position.set(P.x, SEA.on ? 0.1 : groundY(P.x, P.z) + 0.04, P.z); lanternPool.material.opacity = dark * 0.45;
   // 門口提示
   if (IN) { IN.room.tick(dt, dark, E.bot); if (IN.room.ceiling) IN.room.ceiling.visible = camS.mode === "follow"; if (IN.room.npcChar) { IN.room.npcChar.root.position.y = 0.55 + Math.sin(now * 2) * 0.01; animWalk(IN.room.npcChar, 0, false); } }
-  else if (!SEA.on) { nearDoor = null; let bd = 1.6; town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
+  else if (!SEA.on) { nearDoor = null; let bd = 2.3; town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
+  if (P.goDoor && !IN && !SEA.on) { const b = P.goDoor; if (Math.hypot(P.x - b.door.x, P.z - b.door.z) < 1.4) { P.goDoor = null; P.tx = null; tip(""); enterBuilding(b); } else if (P.tx == null) { P.goDoor = null; tip(""); } }
   nearBoat = !IN && !SEA.on && Math.hypot(P.x - SEA.x, P.z - SEA.z) < 2.6; canLand = SEA.on && Math.hypot(SEA.x - SEA.moor.x, SEA.z - SEA.moor.z) < 5;
   const pr = $("prompt"), want = IN ? (P.z > IN.room.exitZ - 0.9 ? "離開 ⏎" : "") : SEA.on ? (canLand ? "靠岸 ⏎" : "") : nearBoat ? "上船出海 ⏎" : nearDoor ? `進入 ${nearDoor.name} ⏎` : "";
   if (pr.dataset.t !== want) { pr.dataset.t = want; pr.textContent = want; pr.classList.toggle("show", !!want && G.started); }
@@ -1044,7 +1049,7 @@ function frame() {
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(Math.round(innerWidth * 0.6), Math.round(innerHeight * 0.6)); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND, BAKE: () => BAKE, renderer, QL };
+window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND, BAKE: () => BAKE, renderer, QL, THREE, camera };
 player.root.userData.noBake = pet.userData.noBake = true; tower.userData.noBake = beamRig.userData.noBake = true; grass.userData.noBake = sand.userData.noBake = true;
 const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
 // 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）
