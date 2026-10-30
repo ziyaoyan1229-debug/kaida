@@ -121,7 +121,7 @@ export function lampPost(parent, x, y, z) {
 }
 // 一叢叢草：InstancedMesh，避開建築與道路
 export function grassTufts(parent, n, col, sampler) {
-  const geo = new THREE.ConeGeometry(0.05, 0.22, 4); geo.translate(0, 0.1, 0);
+  const geo = new THREE.ConeGeometry(0.1, 0.11, 5); geo.translate(0, 0.05, 0);
   const im = new THREE.InstancedMesh(geo, mat(col), n); im.receiveShadow = true; const Mx = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), e = new THREE.Euler();
   let i = 0, tries = 0;
   while (i < n && tries++ < n * 20) { const p = sampler(); if (!p) continue; e.set((rnd() - 0.5) * 0.4, rnd() * TAU, (rnd() - 0.5) * 0.4); q.setFromEuler(e); s.setScalar(0.7 + rnd() * 0.8); Mx.compose(p, q, s); im.setMatrixAt(i++, Mx); }

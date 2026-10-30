@@ -173,8 +173,8 @@ const colliders = []; // { x, z, r }
 const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
 const windowM = new THREE.MeshStandardMaterial({ color: "#3a2a1a", emissive: "#ffae4a", emissiveIntensity: 0.1, roughness: 0.4 });
 const housePools = [];
-function roundTree(x, z, s) { const t = tree(scene, x, groundY(x, z), z, s, ["green", "green", "dark", "autumn"][Math.floor(rnd() * 4)]); colliders.push({ x, z, r: 0.4 * s }); return t; }
-function pineTree(x, z, s) { const t = pine(scene, x, groundY(x, z), z, s); colliders.push({ x, z, r: 0.4 * s }); return t; }
+function roundTree(x, z, s) { const t = tree(scene, x, groundY(x, z), z, s, ["green", "green", "dark", "autumn"][Math.floor(rnd() * 4)]); colliders.push({ x, z, r: 0.4 * s, cr: 1.2 * s }); return t; }
+function pineTree(x, z, s) { const t = pine(scene, x, groundY(x, z), z, s); colliders.push({ x, z, r: 0.4 * s, cr: 1.0 * s }); return t; }
 function palm(x, z, s, lean) {
   const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.scale.setScalar(s); g.rotation.y = lean; scene.add(g);
   let px = 0, py = 0;
@@ -506,7 +506,9 @@ addBuild("lamp", 3.0, 6.8, true);
 for (let i = 0; i < 18; i++) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.7), Math.sin(a) * (R(a) - 0.7)); }
 
 /* ===== 鏡頭與操作 ===== */
-const camS = { yaw: 0.35, pitch: 0.8, dist: 34, x: 0, z: 5 };
+const camS = { yaw: 0.35, pitch: 0.8, dist: 34, x: 0, z: 5, mode: save.cam || "follow", fyaw: 0.2, fpitch: 0.3, fdist: 7.5, free: 0 };
+const camLimits = () => camS.mode === "follow" ? { dmin: 4, dmax: 16, pmin: 0.08, pmax: 0.95 } : { dmin: 9, dmax: 110, pmin: 0.45, pmax: 1.3 };
+function setCamMode(m) { camS.mode = m; save.cam = m; persist(); $("cam").textContent = m === "follow" ? "視角：跟隨" : "視角：俯視"; }
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 function groundHit(cx, cy) {
   ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
@@ -520,9 +522,9 @@ cvs.addEventListener("pointermove", (e) => {
   const p = ptrs.get(e.pointerId);
   if (!p) { hover = groundHit(e.clientX, e.clientY); return; }
   const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
-  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) camS.dist = clamp(camS.dist * pinch / d, 9, 110); pinch = d; return; }
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) { const L = camLimits(); if (camS.mode === "follow") camS.fdist = clamp(camS.fdist * pinch / d, L.dmin, L.dmax); else camS.dist = clamp(camS.dist * pinch / d, L.dmin, L.dmax); } pinch = d; return; }
   if (!drag && Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 8) drag = "rot";
-  if (drag === "rot") { camS.yaw -= dx * 0.008; camS.pitch = clamp(camS.pitch + dy * 0.004, 0.45, 1.3); }
+  if (drag === "rot") { const L = camLimits(); if (camS.mode === "follow") { camS.fyaw -= dx * 0.008; camS.fpitch = clamp(camS.fpitch + dy * 0.004, L.pmin, L.pmax); camS.free = 2.5; } else { camS.yaw -= dx * 0.008; camS.pitch = clamp(camS.pitch + dy * 0.004, L.pmin, L.pmax); } }
   if (e.pointerType === "mouse") hover = groundHit(e.clientX, e.clientY);
 });
 function endPtr(e) {
@@ -534,9 +536,9 @@ function endPtr(e) {
   P.tx = Math.cos(a) * r; P.tz = Math.sin(a) * r; marker(P.tx, P.tz);
 }
 cvs.addEventListener("pointerup", endPtr); cvs.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); drag = null; });
-cvs.addEventListener("wheel", (e) => { e.preventDefault(); camS.dist = clamp(camS.dist * (1 + Math.sign(e.deltaY) * 0.08), 9, 110); }, { passive: false });
+cvs.addEventListener("wheel", (e) => { e.preventDefault(); const L = camLimits(), k = 1 + Math.sign(e.deltaY) * 0.08; if (camS.mode === "follow") camS.fdist = clamp(camS.fdist * k, L.dmin, L.dmax); else camS.dist = clamp(camS.dist * k, L.dmin, L.dmax); }, { passive: false });
 const keys = {};
-addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); });
+addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); if (e.key.toLowerCase() === "v" && !e.repeat) setCamMode(camS.mode === "follow" ? "top" : "follow"); });
 addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
 const mk = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.3, 24), new THREE.MeshBasicMaterial({ color: 0xffe2a0, transparent: true, opacity: 0, depthWrite: false }));
 mk.rotation.x = -Math.PI / 2; scene.add(mk);
@@ -582,6 +584,8 @@ document.querySelectorAll("#build button").forEach((b) => b.addEventListener("cl
 $("skipbtn").addEventListener("click", () => { if (G.started && phaseAt(G.t) === "day") G.t = PH.day - 0.01; });
 $("quality").addEventListener("click", () => { save.quality = HIGH ? "low" : "high"; persist(); location.reload(); });
 $("quality").textContent = "畫質：" + (HIGH ? "高" : "省電");
+$("cam").addEventListener("click", () => setCamMode(camS.mode === "follow" ? "top" : "follow"));
+setCamMode(camS.mode);
 
 /* 提示文字 */
 const v3 = new THREE.Vector3();
@@ -704,7 +708,7 @@ function frame() {
   if (keys.w || keys.arrowup) mz -= 1; if (keys.s || keys.arrowdown) mz += 1; if (keys.a || keys.arrowleft) mx -= 1; if (keys.d || keys.arrowright) mx += 1;
   let vx = 0, vz = 0;
   if (G.started && !G.over) {
-    if (mx || mz) { P.tx = null; const c = Math.cos(camS.yaw), s = Math.sin(camS.yaw); vx = mx * c + mz * s; vz = -mx * s + mz * c; }
+    if (mx || mz) { P.tx = null; const cy = camS.mode === "follow" ? camS.fyaw : camS.yaw; const c = Math.cos(cy), s = Math.sin(cy); vx = mx * c + mz * s; vz = -mx * s + mz * c; }
     else if (P.tx != null) { vx = P.tx - P.x; vz = P.tz - P.z; if (Math.hypot(vx, vz) < 0.08) { P.tx = null; vx = vz = 0; } }
   }
   const vl = Math.hypot(vx, vz); P.moving = vl > 0;
@@ -796,11 +800,31 @@ function frame() {
   if (ghost) { const p = hover; if (p) { ghost.visible = true; ghost.position.set(p.x, groundY(p.x, p.z), p.z); const ok = placeOk(p.x, p.z) && canAfford(G.build); ghost.traverse((o) => { if (o.isMesh && o.material.color) o.material.opacity = ok ? 0.55 : 0.25; }); } }
 
   // 鏡頭跟著玩家
-  camS.x = lerp(camS.x, P.x, Math.min(1, dt * 3)); camS.z = lerp(camS.z, P.z, Math.min(1, dt * 3));
-  const cd = camS.dist * clamp(1.15 / camera.aspect, 1, 1.9);
-  const cp = Math.cos(camS.pitch), shake = G.shake > 0 ? (G.shake -= dt, G.shake * 0.4) : 0;
-  camera.position.set(camS.x + Math.sin(camS.yaw) * cp * cd + (Math.random() - 0.5) * shake, Math.sin(camS.pitch) * cd + 0.5, camS.z + Math.cos(camS.yaw) * cp * cd + (Math.random() - 0.5) * shake);
-  camera.lookAt(camS.x, 0.8, camS.z);
+  camS.x = lerp(camS.x, P.x, Math.min(1, dt * (camS.mode === "follow" ? 6 : 3))); camS.z = lerp(camS.z, P.z, Math.min(1, dt * (camS.mode === "follow" ? 6 : 3)));
+  const shake = G.shake > 0 ? (G.shake -= dt, G.shake * 0.4) : 0;
+  if (camS.mode === "follow") {
+    // 劍盾式：鏡頭在人物後上方，走動時慢慢轉到背後；拖曳後幾秒內不自動回正
+    if (camS.free > 0) camS.free -= dt;
+    else if (P.moving) { let d = ((P.yaw + Math.PI - camS.fyaw + Math.PI) % TAU + TAU) % TAU - Math.PI; camS.fyaw += d * Math.min(1, dt * 0.9); }
+    let cd = camS.fdist * clamp(1.0 / camera.aspect, 1, 1.5); const cp = Math.cos(camS.fpitch);
+    // 鏡頭碰到房子或樹就往前拉，不要穿牆
+    { const dx = Math.sin(camS.fyaw) * cp, dz = Math.cos(camS.fyaw) * cp; let best = cd;
+      for (const c of colliders) { if (c.r < 0.38) continue; const rr = (c.cr || c.r) + 0.12, ox = camS.x - c.x, oz = camS.z - c.z;
+        const bq = ox * dx + oz * dz, cq = ox * ox + oz * oz - rr * rr; if (cq < 0) continue; const disc = bq * bq - cq; if (disc < 0) continue;
+        const t = -bq - Math.sqrt(disc); if (t > 0 && t < best) best = Math.max(2.2, t); }
+      camS.cdNow = camS.cdNow == null ? best : (best < camS.cdNow ? best : lerp(camS.cdNow, best, Math.min(1, dt * 4))); cd = camS.cdNow; }
+    const gy = groundY(camS.x, camS.z);
+    let cx = camS.x + Math.sin(camS.fyaw) * cp * cd, cz = camS.z + Math.cos(camS.fyaw) * cp * cd, cy = gy + 0.9 + Math.sin(camS.fpitch) * cd;
+    // 不要鑽到地面或海面下
+    cy = Math.max(cy, groundY(cx, cz) + 0.9, 0.9);
+    camera.position.set(cx + (Math.random() - 0.5) * shake, cy, cz + (Math.random() - 0.5) * shake);
+    camera.lookAt(camS.x - Math.sin(camS.fyaw) * 0.6, gy + 1.0, camS.z - Math.cos(camS.fyaw) * 0.6);
+  } else {
+    const cd = camS.dist * clamp(1.15 / camera.aspect, 1, 1.9);
+    const cp = Math.cos(camS.pitch);
+    camera.position.set(camS.x + Math.sin(camS.yaw) * cp * cd + (Math.random() - 0.5) * shake, Math.sin(camS.pitch) * cd + 0.5, camS.z + Math.cos(camS.yaw) * cp * cd + (Math.random() - 0.5) * shake);
+    camera.lookAt(camS.x, 0.8, camS.z);
+  }
 
   // 介面
   if ((hudT += dt) > 0.1) {
@@ -821,5 +845,5 @@ function frame() {
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(innerWidth, innerHeight); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; } };
+window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode };
 frame();

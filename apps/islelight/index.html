@@ -56,6 +56,7 @@ canvas { display: block; touch-action: none; }
 #card button { all: unset; cursor: pointer; display: inline-block; padding: 11px 34px; border-radius: 999px; font-size: 16px; font-weight: 700; color: #3a2410; background: linear-gradient(180deg, #ffe2a0, #ffbf55); box-shadow: 0 0 24px rgba(255, 190, 80, .55); }
 #card .best { margin-top: 10px; font-size: 12px; opacity: .7; }
 #skipbtn { position: fixed; right: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+#cam { position: fixed; left: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 96px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
 #quality { position: fixed; left: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
 @media (max-width: 420px) {
   #build { gap: 4px; padding: 6px; }
@@ -74,6 +75,7 @@ canvas { display: block; touch-action: none; }
 </div>
 <button id="skipbtn" class="glass">快轉到夜晚 ⏩</button>
 <button id="quality" class="glass">畫質：高</button>
+<button id="cam" class="glass">視角：跟隨</button>
 <div id="build" class="glass">
   <button data-b="lamp"><span class="ic">🏮</span>路燈<small>🪵2</small></button>
   <button data-b="search"><span class="ic">🔦</span>探照燈<small>🪵4 🛢️2</small></button>
@@ -88,7 +90,7 @@ canvas { display: block; touch-action: none; }
     <h1>漂流燈島</h1>
     <p class="sub">守住燈塔的光，撐過每一個夜晚</p>
     <ul>
-      <li>點地面走路，拖曳轉視角，雙指或滾輪縮放</li>
+      <li>WASD 或點地面走路，拖曳轉視角，滾輪縮放，V 切換跟隨／俯視</li>
       <li>白天到海邊撿漂流木 🪵，打倒黑影會掉燈油 🛢️</li>
       <li>天黑前蓋路燈、探照燈、篝火，光照到的黑影會消散</li>
       <li>你手上的提燈也能驅散黑影，燈塔被摸到就會受損</li>
