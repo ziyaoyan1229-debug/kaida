@@ -8,6 +8,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { makeInterior, ROOM_OF } from "./interior.js";
+import { bakeStatic } from "./bake.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
 import { buildTown, buildExtras, windmills } from "./town.js";
 
@@ -21,9 +22,12 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const smooth = (a, b, v) => { const k = clamp((v - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
 
 /* ===== 畫面 ===== */
-let HIGH = save.quality !== "low";
+// 畫質三級：高（含環境光遮蔽、2x 解析度）、中（關環境光遮蔽、1.5x）、省電（1x、少光源少粒子）。第一次開會自動量測幀率挑一級
+const QL = ["high", "mid", "low"].includes(save.quality) ? save.quality : "high";
+let HIGH = QL !== "low"; const ULTRA = QL === "high";
+const Q = { dpr: { high: 2, mid: 1.5, low: 1 }[QL], lights: { high: 20, mid: 12, low: 8 }[QL], lampLights: { high: 10, mid: 6, low: 3 }[QL], trees: { high: 230, mid: 200, low: 120 }[QL], grass: { high: 9000, mid: 7000, low: 3000 }[QL], motes: { high: 600, mid: 400, low: 200 }[QL], fogs: { high: 150, mid: 90, low: 50 }[QL] };
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, HIGH ? 2 : 1));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q.dpr));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -45,9 +49,9 @@ composer.addPass(bloom);
 // 環境光遮蔽：角落、屋簷下自然變暗。粒子和光暈在算 AO 時要先藏起來，不然會變成一塊塊方形
 const hideForAO = [];
 let gtao = null;
-if (HIGH) {
-  gtao = new GTAOPass(scene, camera, innerWidth, innerHeight); gtao.output = GTAOPass.OUTPUT.Default; gtao.blendIntensity = 0.85;
-  gtao.updateGtaoMaterial({ radius: 0.5, distanceExponent: 1, thickness: 1, scale: 1.1, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
+if (ULTRA) {
+  gtao = new GTAOPass(scene, camera, Math.round(innerWidth * 0.6), Math.round(innerHeight * 0.6)); gtao.output = GTAOPass.OUTPUT.Default; gtao.blendIntensity = 0.85;
+  gtao.updateGtaoMaterial({ radius: 0.5, distanceExponent: 1, thickness: 1, scale: 1.1, samples: 8, distanceFallOff: 1, screenSpaceRadius: false });
   gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, radiusExponent: 1, rings: 2, samples: 12 });
   const gr = gtao.render.bind(gtao); gtao.render = (...a) => { hideForAO.forEach((o) => o.visible = false); gr(...a); hideForAO.forEach((o) => o.visible = true); };
   composer.addPass(gtao);
@@ -94,7 +98,7 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), new THREE.Shad
   vertexShader: "varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }",
   fragmentShader: "uniform vec3 top; uniform vec3 bot; uniform vec3 sunDir; uniform vec3 sunC; uniform float sunA; varying vec3 vP; void main(){ float h = clamp(vP.y * 1.6 + .08, 0., 1.); vec3 c = mix(bot, top, pow(h, .7)); float s = max(dot(vP, normalize(sunDir)), 0.); c += sunC * (pow(s, 600.) * 6. + pow(s, 12.) * .35) * sunA; gl_FragColor = vec4(c, 1.); }",
 }));
-scene.add(sky);
+sky.userData.noBake = true; scene.add(sky);
 const stars = (() => {
   const n = 700, p = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) { const a = Math.random() * TAU, y = 0.08 + Math.random() * 0.92, r = Math.sqrt(1 - y * y); p.set([Math.cos(a) * r * 280, y * 280, Math.sin(a) * r * 280], i * 3); }
@@ -151,7 +155,7 @@ waterM.onBeforeCompile = (sh) => {
     .replace("#include <begin_vertex>", "vec3 transformed = vec3(position.xy, wv(position.xy));");
 };
 const water = new THREE.Mesh(new THREE.PlaneGeometry(440, 440, 240, 240), waterM);
-water.rotation.x = -Math.PI / 2; water.receiveShadow = true; scene.add(water);
+water.rotation.x = -Math.PI / 2; water.receiveShadow = true; water.userData.noBake = true; scene.add(water);
 // 岸邊浪花：沿著海岸一圈，一波一波往岸上推
 const foam = (() => {
   const seg = 320, pos = [], tv = [], idx = [];
@@ -231,7 +235,7 @@ const dockLampAt = new THREE.Vector3(), boatRef = {};
 
 /* ===== 船與出海打撈 ===== */
 // 船停在碼頭旁，按 E 上船就能開出去；海上漂著木箱、油桶、沉船殘骸，靠近自動打撈
-const boat = new THREE.Group(); scene.add(boat);
+const boat = new THREE.Group(); boat.userData.noBake = true; scene.add(boat);
 const SEA = { on: false, v: 0, yaw: 0, x: 0, z: 0, moor: null, lamp: null, glow: null, pool: null, bow: new THREE.Vector3(), spawnT: 0, foeT: 0 };
 (() => {
   const w = new THREE.Vector3(); boatRef.o.parent.updateMatrixWorld(true); boatRef.o.getWorldPosition(w); boatRef.o.parent.remove(boatRef.o);
@@ -258,7 +262,7 @@ function spawnFlotsam() {
   else if (kind === "barrel") { const b = cyl(0.26, 0.26, 0.62, "#2f3e5a", 0, 0.12, 0, g, 12); b.rotation.z = Math.PI / 2; [-0.2, 0.2].forEach((x) => { const r = cyl(0.275, 0.275, 0.05, M.iron, x, 0.12, 0, g, 12); r.rotation.z = Math.PI / 2; }); sph(0.07, new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 1.7, 0.6) }), 0.32, 0.12, 0, g, 8, 6); }
   else { [[0, 0.05, 0, 0.3], [0.2, 0.1, 0.25, -0.5], [-0.25, 0.0, -0.1, 1.2]].forEach(([x, y, z, ry]) => { const pl = box(1.1, 0.06, 0.22, "#6a4a32", x, y, z, g); pl.rotation.y = ry; pl.rotation.z = (ry - 0.3) * 0.1; }); cyl(0.2, 0.2, 0.06, M.brass, 0.1, 0.2, 0.1, g, 8); for (let i = 0; i < 6; i++) { const t = i / 6 * TAU; box(0.08, 0.06, 0.08, M.brass, 0.1 + Math.cos(t) * 0.22, 0.2, 0.1 + Math.sin(t) * 0.22, g); } }
   outline(g, 0.015);
-  flotsam.push({ kind, g, x, z, t: Math.random() * 10, drift: Math.random() * TAU });
+  g.userData.noBake = true; flotsam.push({ kind, g, x, z, t: Math.random() * 10, drift: Math.random() * TAU });
 }
 for (let i = 0; i < 10; i++) spawnFlotsam();
 let nearBoat = false, canLand = false;
@@ -337,7 +341,7 @@ function onRoad(x, z, pad) { if (Math.hypot(x, z) < 4.8 + pad) return true; retu
 function inTall(x, z) { return TALL.some(([tx, tz, w, d]) => Math.abs(x - tx) < w / 2 + 0.3 && Math.abs(z - tz) < d / 2 + 0.3); }
 const FOREST = [[-46, -46, -13, -24], [13, -46, 46, -24], [-46, 26, -19, 46], [27, 30, 46, 46]]; // 森林：x0, z0, x1, z1
 function inForest(x, z) { return FOREST.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1); }
-for (let i = 0, n = 0; i < 8000 && n < (HIGH ? 230 : 120); i++) {
+for (let i = 0, n = 0; i < 8000 && n < Q.trees; i++) {
   const a = rnd() * TAU, r = 5.5 + rnd() * (RG(a) - 6.5), x = Math.cos(a) * r, z = Math.sin(a) * r;
   const forest = inForest(x, z);
   if (!forest && rnd() < 0.7) continue;
@@ -354,7 +358,7 @@ for (let i = 0, n = 0; i < 1000 && n < 44; i++) {
   if (Math.abs(a - DOCK_A) < 0.25 || !freeSpot(x, z, 0.6)) continue;
   rock(x, z, 0.6 + rnd() * 1.0); n++;
 }
-grassTufts(scene, HIGH ? 9000 : 3000, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || inTall(x, z) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
+grassTufts(scene, Q.grass, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || inTall(x, z) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
 smokes.forEach((s) => hideForAO.push(s.s));
 
 /* ===== 光源 ===== */
@@ -366,12 +370,12 @@ Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, n
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
 // 點光源先開好一池，蓋燈時拿來用，避免數量變動讓著色器重新編譯
 const POINTS = [];
-for (let i = 0; i < (HIGH ? 20 : 8); i++) { const l = new THREE.PointLight("#ffb860", 0, 8, 1.5); l.position.set(0, -50, 0); scene.add(l); POINTS.push({ l, used: false }); }
+for (let i = 0; i < Q.lights; i++) { const l = new THREE.PointLight("#ffb860", 0, 8, 1.5); l.position.set(0, -50, 0); scene.add(l); POINTS.push({ l, used: false }); }
 const SPOTS = [];
 for (let i = 0; i < 4; i++) { const l = new THREE.SpotLight("#e8f0ff", 0, 16, 0.24, 0.5, 1.2); l.position.set(0, -50, 0); scene.add(l); scene.add(l.target); SPOTS.push({ l, used: false }); }
 function takeLight(pool) { const s = pool.find((p) => !p.used); if (s) s.used = true; return s && s.l; }
 // 鎮上的路燈：離燈塔近的先拿到真的點光源
-townLamps.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, HIGH ? 10 : 3).forEach((l) => { l.light = takeLight(POINTS); if (l.light) { l.light.position.set(l.x, l.y + 1.95, l.z); l.light.distance = 7; } });
+townLamps.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, Q.lampLights).forEach((l) => { l.light = takeLight(POINTS); if (l.light) { l.light.position.set(l.x, l.y + 1.95, l.z); l.light.distance = 7; } });
 
 /* ===== 光的建築：路燈、探照燈、篝火 ===== */
 const COST = { lamp: { wood: 2, oil: 0 }, search: { wood: 4, oil: 2 }, fire: { wood: 3, oil: 0 }, repair: { wood: 3, oil: 0 } };
@@ -401,7 +405,7 @@ function buildModel(kind) {
   return g;
 }
 function addBuild(kind, x, z, free, y) {
-  const g = buildModel(kind); g.position.set(x, y != null ? y : groundY(x, z), z); scene.add(g);
+  const g = buildModel(kind); g.position.set(x, y != null ? y : groundY(x, z), z); g.userData.noBake = true; scene.add(g);
   const b = { kind, g, x, z, on: 0, flick: Math.random() * 10 };
   const col = kind === "fire" ? "#ff8a3a" : kind === "search" ? "#cfe0ff" : "#ffb860";
   b.glow = glowSprite(new THREE.Color(col).multiplyScalar(kind === "search" ? 1.6 : 2.2), kind === "fire" ? 2.6 : 1.4, g, g.userData.h);
@@ -429,20 +433,24 @@ function burst(p, color, n, sp) {
     sparks.push({ s, v: new THREE.Vector3(Math.cos(a) * sp * u, 1 + Math.random() * sp * 1.4, Math.sin(a) * sp * u), life: 0.7 + Math.random() * 0.6, t: 0, k });
   }
 }
-const flies = [];
-for (let i = 0; i < 160; i++) {
-  const s = glowSprite(new THREE.Color(1.6, 2.2, 0.7), 0.22, scene); s.material.opacity = 0;
-  const a = Math.random() * TAU, r = 3 + Math.random() * 42;
-  flies.push({ s, x: Math.cos(a) * r, z: Math.sin(a) * r, y: 0.8 + Math.random() * 1.4, ph: Math.random() * 10, sp: 0.3 + Math.random() * 0.5 });
+// 粒子（螢火蟲、光塵）用 Points：幾百顆只算一個 draw call，亮度寫在頂點色
+function makePoints(n, size, base) {
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3)); geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  const m = new THREE.PointsMaterial({ map: GLOW, size, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true, sizeAttenuation: true, fog: false });
+  const pts = new THREE.Points(geo, m); pts.frustumCulled = false; pts.userData.noBake = true; scene.add(pts); hideForAO.push(pts);
+  return { pts, pos: geo.attributes.position, col: geo.attributes.color, base };
 }
+const flies = [], fliesP = makePoints(160, 0.5, new THREE.Color(1.6, 2.2, 0.7));
+for (let i = 0; i < 160; i++) { const a = Math.random() * TAU, r = 3 + Math.random() * 42; flies.push({ x: Math.cos(a) * r, z: Math.sin(a) * r, y: 0.8 + Math.random() * 1.4, ph: Math.random() * 10, sp: 0.3 + Math.random() * 0.5 }); }
 
 /* ===== 氛圍：早晨的光塵與光束、夜晚的地面濃霧 ===== */
 const motes = [], fogs = [], shafts = [];
 {
   const mm = new THREE.SpriteMaterial({ map: GLOW, color: new THREE.Color(2.2, 2.0, 1.5), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false });
-  for (let i = 0; i < (HIGH ? 600 : 200); i++) { const sp = new THREE.Sprite(mm.clone()); const k = 0.05 + Math.random() * 0.07; sp.scale.set(k, k, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * 46; motes.push({ sp, x: Math.cos(a) * r, y: 0.8 + Math.random() * 4, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.15 + Math.random() * 0.3 }); }
+  for (let i = 0; i < Q.motes; i++) { const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * 46; motes.push({ k: 0.6 + Math.random() * 0.8, x: Math.cos(a) * r, y: 0.8 + Math.random() * 4, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.15 + Math.random() * 0.3 }); }
+  motes.P = makePoints(motes.length, 0.26, new THREE.Color(2.2, 2.0, 1.5)); mm.dispose();
   const fm = new THREE.SpriteMaterial({ map: GLOW, color: new THREE.Color("#6f8f98"), depthWrite: false, transparent: true, opacity: 0, fog: false });
-  for (let i = 0; i < (HIGH ? 220 : 80); i++) { const sp = new THREE.Sprite(fm.clone()); const k = 6 + Math.random() * 8; sp.scale.set(k, k * 0.35, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * 52; fogs.push({ sp, x: Math.cos(a) * r, y: 0.6 + Math.random() * 0.5, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.04 + Math.random() * 0.06, k: 0.16 + Math.random() * 0.16 }); }
+  for (let i = 0; i < Q.fogs; i++) { const sp = new THREE.Sprite(fm.clone()); const k = 6 + Math.random() * 8; sp.scale.set(k, k * 0.35, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * 52; fogs.push({ sp, x: Math.cos(a) * r, y: 0.6 + Math.random() * 0.5, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.04 + Math.random() * 0.06, k: 0.16 + Math.random() * 0.16 }); }
   const sm = new THREE.ShaderMaterial({ uniforms: { uC: { value: new THREE.Color("#fff4d8") }, uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }",
     fragmentShader: "uniform vec3 uC; uniform float uA; varying vec2 vUv; void main(){ float a = smoothstep(0.,.25,vUv.x)*smoothstep(1.,.75,vUv.x) * pow(vUv.y,1.6) * uA; gl_FragColor = vec4(uC*a, a); }" });
@@ -475,7 +483,7 @@ const LOOKS = [
   { g: "boy", skin: 2, hair: 0, top: "turtle", legs: "jeans" }, { g: "girl", skin: 4, hair: 3, style: "bob", top: "plaid", legs: "khaki", hat: "bucket" },
 ];
 const villagers = town.map((b, i) => {
-  const c = makeChar(LOOKS[i % LOOKS.length]); c.root.scale.setScalar(0.62); scene.add(c.root);
+  const c = makeChar(LOOKS[i % LOOKS.length]); c.root.scale.setScalar(0.62); c.root.userData.noBake = true; scene.add(c.root);
   return { c, home: { x: b.front.x, z: b.front.z }, door: { x: b.door.x, z: b.door.z }, x: b.front.x, z: b.front.z, tx: b.front.x, tz: b.front.z, wait: Math.random() * 3, walk: 0, yaw: 0, inside: 0 };
 });
 /* ===== 進出建築 ===== */
@@ -563,13 +571,13 @@ function spawnWood(x, z) {
   const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.rotation.y = Math.random() * TAU; scene.add(g);
   const l = cyl(0.08, 0.1, 0.7, "#9a7048", 0, 0.1, 0, g, 7); l.rotation.z = Math.PI / 2; cyl(0.04, 0.05, 0.25, "#8a6040", 0.12, 0.18, 0.08, g, 6).rotation.x = 0.9;
   outline(g, 0.015); pop(g);
-  items.push({ kind: "wood", g, x, z, t: 0 });
+  g.userData.noBake = true; items.push({ kind: "wood", g, x, z, t: 0 });
 }
 function spawnShard(x, z) {
   const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); scene.add(g);
   const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.16), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 1.8, 0.6) })); m.position.y = 0.45; g.add(m);
   glowSprite(new THREE.Color(1.4, 0.9, 0.3), 1.1, g, 0.45);
-  items.push({ kind: "oil", g, x, z, t: 0, m });
+  g.userData.noBake = true; items.push({ kind: "oil", g, x, z, t: 0, m });
 }
 
 /* ===== 黑影 ===== */
@@ -689,7 +697,7 @@ const keys = {};
 addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); if (e.key.toLowerCase() === "v" && !e.repeat) setCamMode(camS.mode === "follow" ? "top" : "follow"); if (e.key.toLowerCase() === "e" && !e.repeat && G.started) doorAction(); });
 addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
 const mk = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.3, 24), new THREE.MeshBasicMaterial({ color: 0xffe2a0, transparent: true, opacity: 0, depthWrite: false }));
-mk.rotation.x = -Math.PI / 2; scene.add(mk);
+mk.rotation.x = -Math.PI / 2; mk.userData.noBake = true; scene.add(mk);
 function marker(x, z) { mk.position.set(x, groundY(x, z) + 0.05, z); mk.material.opacity = 0.9; mk.scale.setScalar(1.4); }
 
 /* 蓋東西 */
@@ -731,8 +739,8 @@ document.querySelectorAll("#build button").forEach((b) => b.addEventListener("cl
   setBuild(G.build === k ? null : k);
 }));
 $("skipbtn").addEventListener("click", () => { if (G.started && phaseAt(G.t) === "day") G.t = PH.day - 0.01; });
-$("quality").addEventListener("click", () => { save.quality = HIGH ? "low" : "high"; persist(); location.reload(); });
-$("quality").textContent = "畫質：" + (HIGH ? "高" : "省電");
+$("quality").addEventListener("click", () => { save.quality = { high: "mid", mid: "low", low: "high" }[QL]; save.autoq = true; persist(); location.reload(); });
+$("quality").textContent = "畫質：" + { high: "高", mid: "中", low: "省電" }[QL];
 $("cam").addEventListener("click", () => setCamMode(camS.mode === "follow" ? "top" : "follow"));
 setCamMode(camS.mode);
 
@@ -806,7 +814,7 @@ function frame() {
 
   // 粒子：光塵白天飄、光束在太陽低角度最明顯、地面霧夜晚起
   const dayK = 1 - dark;
-  motes.forEach((m) => { m.ph += dt * m.v; m.sp.position.set(m.x + Math.sin(m.ph * 1.3) * 0.6, m.y + Math.sin(m.ph * 0.9) * 0.4 + ((m.ph * 0.15) % 1.5), m.z + Math.cos(m.ph) * 0.6); m.sp.material.opacity = dayK * (0.3 + 0.7 * Math.max(0, Math.sin(m.ph * 4.1 + m.x))); });
+  { const P = motes.P, pa = P.pos.array, ca = P.col.array, b = P.base; motes.forEach((m, i) => { m.ph += dt * m.v; pa[i * 3] = m.x + Math.sin(m.ph * 1.3) * 0.6; pa[i * 3 + 1] = m.y + Math.sin(m.ph * 0.9) * 0.4 + ((m.ph * 0.15) % 1.5); pa[i * 3 + 2] = m.z + Math.cos(m.ph) * 0.6; const o = dayK * m.k * (0.3 + 0.7 * Math.max(0, Math.sin(m.ph * 4.1 + m.x))); ca[i * 3] = b.r * o; ca[i * 3 + 1] = b.g * o; ca[i * 3 + 2] = b.b * o; }); P.pos.needsUpdate = P.col.needsUpdate = true; P.pts.visible = dayK > 0.01; }
   fogs.forEach((f) => { f.ph += dt * f.v; f.sp.position.set(f.x + Math.sin(f.ph) * 2, f.y + Math.sin(f.ph * 1.7) * 0.1, f.z + Math.cos(f.ph * 0.8) * 1.6); f.sp.material.opacity = dark * f.k; });
   const shaftA = dayK * smooth(0.05, 0.25, sunDir.y) * (1 - smooth(0.5, 0.9, sunDir.y)) * 0.16 + dayK * 0.03;
   shafts.forEach((s) => { s.m.uniforms.uA.value = shaftA; s.pl.position.copy(s.base).addScaledVector(sunDir, 8); s.pl.lookAt(s.base.clone().addScaledVector(sunDir, 16)); s.pl.rotateX(Math.PI / 2); s.pl.rotateY(0.6); });
@@ -978,7 +986,7 @@ function frame() {
   }
 
   // 螢火蟲
-  flies.forEach((fl) => { fl.ph += dt * fl.sp; fl.s.position.set(fl.x + Math.sin(fl.ph * 1.3) * 0.8, fl.y + Math.sin(fl.ph * 2.1) * 0.25, fl.z + Math.cos(fl.ph) * 0.8); fl.s.material.opacity = dark * (0.4 + 0.6 * Math.max(0, Math.sin(fl.ph * 3.1))); });
+  { const P = fliesP, pa = P.pos.array, ca = P.col.array, b = P.base; flies.forEach((fl, i) => { fl.ph += dt * fl.sp; pa[i * 3] = fl.x + Math.sin(fl.ph * 1.3) * 0.8; pa[i * 3 + 1] = fl.y + Math.sin(fl.ph * 2.1) * 0.25; pa[i * 3 + 2] = fl.z + Math.cos(fl.ph) * 0.8; const o = dark * (0.4 + 0.6 * Math.max(0, Math.sin(fl.ph * 3.1))); ca[i * 3] = b.r * o; ca[i * 3 + 1] = b.g * o; ca[i * 3 + 2] = b.b * o; }); P.pos.needsUpdate = P.col.needsUpdate = true; P.pts.visible = dark > 0.01; }
   // 火花
   for (let i = sparks.length - 1; i >= 0; i--) { const s = sparks[i]; s.t += dt; s.v.y -= dt * 1.2; s.s.position.addScaledVector(s.v, dt); const k = 1 - s.t / s.life; s.s.material.opacity = Math.max(0, k); s.s.scale.setScalar(s.k * (0.4 + k * 0.6)); if (s.t >= s.life) { scene.remove(s.s); s.s.material.dispose(); sparks.splice(i, 1); } }
 
@@ -1033,8 +1041,15 @@ function frame() {
 
   composer.render();
 }
-addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(innerWidth, innerHeight); });
+addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(Math.round(innerWidth * 0.6), Math.round(innerHeight * 0.6)); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND };
+window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND, BAKE: () => BAKE, renderer, QL };
+player.root.userData.noBake = pet.userData.noBake = true; tower.userData.noBake = beamRig.userData.noBake = true; grass.userData.noBake = sand.userData.noBake = true;
+const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
+// 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）
+if (!save.autoq) {
+  let n = 0, t0 = 0; const probe = () => { const t = performance.now(); if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); save.autoq = true; if (fps < 22 && QL !== "low") save.quality = "low"; else if (fps < 40 && QL === "high") save.quality = "mid"; persist(); if (save.quality && save.quality !== QL) location.reload(); } };
+  setTimeout(() => requestAnimationFrame(probe), 2500);
+}
 frame();

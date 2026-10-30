@@ -254,7 +254,7 @@ function windmill(x, z, ry) {
   box(3.2, 0.5, 3.2, M.stone, 0, 0.25, 0, g); cyl(1.1, 1.5, 4.6, M.stoneLight, 0, 2.8, 0, g, 12);
   cyl(1.25, 1.25, 0.3, FRAME, 0, 5.2, 0, g, 12); const cap = cone(1.35, 1.4, "#6b4a3a", 0, 6.0, 0, g, 12);
   doorFrame(g, 0.7, 1.4, 0, 1.45, 0, M.woodDark, FRAME); latticeWin(g, 0.45, 0.6, 0, 2.6, 1.33, 0, 2, 2, "#f3efe6", "#8a8278"); latticeWin(g, 0.4, 0.5, 0, 4.0, 1.18, 0, 2, 2, "#f3efe6");
-  const hub = new THREE.Group(); hub.position.set(0, 5.1, 1.5); g.add(hub); cyl(0.12, 0.12, 0.8, FRAME, 0, 0, 0, hub, 8).rotation.x = Math.PI / 2; sph(0.2, FRAME, 0, 0, 0.4, hub, 10, 8);
+  const hub = new THREE.Group(); hub.position.set(0, 5.1, 1.5); hub.userData.noBake = true; g.add(hub); cyl(0.12, 0.12, 0.8, FRAME, 0, 0, 0, hub, 8).rotation.x = Math.PI / 2; sph(0.2, FRAME, 0, 0, 0.4, hub, 10, 8);
   for (let i = 0; i < 4; i++) { const arm = new THREE.Group(); arm.rotation.z = i * Math.PI / 2; hub.add(arm); box(0.1, 3.4, 0.08, FRAME, 0, 1.7, 0.4, arm); const sail = box(0.9, 2.6, 0.02, "#f3efe6", 0.5, 2.0, 0.4, arm); for (let k = 0; k < 4; k++) box(0.9, 0.03, 0.04, FRAME, 0.5, 1.0 + k * 0.7, 0.42, arm); }
   windmills.push(hub);
   for (let i = 0; i < 5; i++) { const b = cyl(0.3, 0.3, 0.5, M.wood, 1.9 + (i % 3) * 0.65, 0.25 + Math.floor(i / 3) * 0.5, -1.2 + (i % 2) * 0.2, g, 10); b.rotation.x = 0; }

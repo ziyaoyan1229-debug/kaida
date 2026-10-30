@@ -154,7 +154,7 @@ export function signPost(parent, x, z, ry, texts, y0) {
 }
 // 炊煙：幾顆慢慢上升變大的半透明球，game.js 每格呼叫 tickSmoke
 export const smokes = [];
-export function smoke(parent, x, y, z) { for (let i = 0; i < 6; i++) { const s = sph(0.12, new THREE.MeshStandardMaterial({ color: "#e8e4dc", transparent: true, opacity: 0.3, roughness: 1 }), x, y, z, parent, 8, 6); s.castShadow = s.receiveShadow = false; s.userData.noAO = true; smokes.push({ s, x, y, z, t: i / 6 }); } }
+export function smoke(parent, x, y, z) { for (let i = 0; i < 6; i++) { const s = sph(0.12, new THREE.MeshStandardMaterial({ color: "#e8e4dc", transparent: true, opacity: 0.3, roughness: 1 }), x, y, z, parent, 8, 6); s.castShadow = s.receiveShadow = false; s.userData.noAO = true; s.userData.noBake = true; smokes.push({ s, x, y, z, t: i / 6 }); } }
 export function tickSmoke(dt, k0) { smokes.forEach((s) => { s.t = (s.t + dt * 0.18) % 1; const k = s.t; s.s.position.set(s.x + Math.sin(k * 6 + s.y) * 0.25 * k, s.y + k * 1.6, s.z + Math.cos(k * 5) * 0.2 * k); s.s.scale.setScalar(0.6 + k * 2.2); s.s.material.opacity = 0.3 * (1 - k) * Math.min(1, k * 6) * (k0 == null ? 1 : k0); }); }
 // 招牌：canvas 文字，晚上會發光
 export const signMats = [];
