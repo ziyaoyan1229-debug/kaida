@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>漂流燈島 人物風格樣板</title>
+<style>html,body{margin:0;height:100%;background:#cfe3f2;overflow:hidden;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif}canvas{display:block}
+.lbl{position:fixed;transform:translate(-50%,0);background:rgba(20,30,50,.75);color:#fff;padding:6px 12px;border-radius:999px;font-size:15px;font-weight:700;white-space:nowrap;pointer-events:none}
+.lbl small{display:block;font-weight:400;font-size:11px;opacity:.85}</style>
+<script type="importmap">{ "imports": { "three": "../pomodoro/vendor/three.module.min.js", "three/addons/": "./vendor/" } }</script>
+</head>
+<body>
+<script type="module">
+import { THREE, makeChar } from "./chars.js";
+import { STYLES } from "./charstyles.js";
+import { STYLES2 } from "./charstyles2.js";
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color("#cfe3f2");
+const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.1, 100);
+const sun = new THREE.DirectionalLight("#fff2dc", 2.6); sun.position.set(4, 7, 5); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -8, right: 8, top: 6, bottom: -4, near: 1, far: 30 }); sun.shadow.bias = -0.0004; scene.add(sun);
+scene.add(new THREE.HemisphereLight("#dfeeff", "#8a7a60", 0.9));
+const fill = new THREE.DirectionalLight("#bcd4ff", 0.5); fill.position.set(-5, 3, -2); scene.add(fill);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: "#9cc47a", roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const SET2 = [
+  ["A 第五人格", "上一批及格的那個", () => STYLES.gothic({})],
+  ["F 日系動漫", "大眼睛、分綹髮、制服百褶裙、雙馬尾", () => STYLES2.anime({})],
+  ["G 蒸汽龐克探險家", "護目鏡報童帽、皮背心、背包掛提燈", () => STYLES2.steam({})],
+  ["H 奇幻魔女", "尖帽、披風、長裙、法杖", () => STYLES2.witch({})],
+  ["I 皮克斯風", "圓潤比例、大眼虹膜、捲髮眼鏡", () => STYLES2.pixar({})],
+  ["J 和風浪人", "和服羽織、腰帶、斗笠、刀", () => STYLES2.kimono({})],
+  ["K 發條機器人", "金屬板、發光眼、背後發條", () => STYLES2.robot({})],
+];
+const LIST1 = [
+  ["目前 Q 版", "番茄讀書會原有小人", () => { const c = makeChar({ g: "girl", skin: 0, hair: 1, style: "long", top: "hoodie", legs: "jeans", hat: "beanie" }); return c; }],
+  ["A 第五人格", "哥德、細長手腳、禮帽長外套", () => STYLES.gothic({})],
+  ["B 吉卜力寫實比例", "六頭身、柔和色、草帽", () => STYLES.ghibli({ g: "girl", hat: "straw", shirt: "#f3efe6", skirt: "#c8574a" })],
+  ["C 低多邊形", "切面感、不描邊、色彩飽和", () => STYLES.lowpoly({})],
+  ["D 方塊人", "全方塊、像素臉", () => STYLES.voxel({ hat: "#c8574a" })],
+  ["E 紙片人", "薄片＋手繪臉", () => STYLES.paper({})],
+];
+const params = new URLSearchParams(location.search); const focus = params.get("focus"); const LIST = params.get("set") === "2" ? SET2 : LIST1;
+const chars = [], gap = 1.5;
+LIST.forEach(([name, sub, mk], i) => {
+  const c = mk(); c.root.position.set((i - (LIST.length - 1) / 2) * gap, 0, 0); scene.add(c.root);
+  const el = document.createElement("div"); el.className = "lbl"; el.innerHTML = `${name}<small>${sub}</small>`; document.body.appendChild(el);
+  chars.push({ c, el, name });
+});
+const v = new THREE.Vector3();
+function frame() {
+  const t = performance.now() / 1000;
+  chars.forEach(({ c }, i) => { const w = t * 6 + i; const s = Math.sin(w); c.legs[0].rotation.x = s * 0.6; c.legs[1].rotation.x = -s * 0.6; c.arms[0].rotation.x = -s * 0.45; c.arms[1].rotation.x = s * 0.45; c.hips.position.y = (c.hipY || 0.36) + Math.abs(Math.cos(w)) * 0.03; if (c.key) c.key.rotation.z = t * 3; c.root.rotation.y = focus != null ? Math.sin(t * 0.6) * 0.35 : 0.1; });
+  if (focus != null && params.get("zoom")) { const c = chars[+focus].c; const hp = new THREE.Vector3(); c.head.getWorldPosition(hp); camera.position.set(hp.x + 0.25, hp.y + 0.05, hp.z + 0.95); camera.lookAt(hp.x, hp.y - 0.02, hp.z); }
+  else if (focus != null) { const c = chars[+focus].c; const box = new THREE.Box3().setFromObject(c.root); const h = box.max.y; camera.position.set(c.root.position.x + 0.5, h * 0.62, c.root.position.z + h * 1.9); camera.lookAt(c.root.position.x, h * 0.52, c.root.position.z); }
+  else { camera.position.set(0, 1.5, 9.5); camera.lookAt(0, 0.75, 0); }
+  renderer.render(scene, camera);
+  chars.forEach(({ c, el }, i) => { v.set(c.root.position.x, -0.02, c.root.position.z + 0.4).project(camera); el.style.left = (v.x * 0.5 + 0.5) * innerWidth + "px"; el.style.top = (-v.y * 0.5 + 0.5) * innerHeight + 8 + "px"; el.style.display = focus != null && +focus !== i ? "none" : ""; });
+  requestAnimationFrame(frame);
+}
+frame();
+window.__lab = { chars, scene, renderer, camera };
+</script>
+</body>
+</html>
