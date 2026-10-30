@@ -74,8 +74,13 @@ canvas { display: block; touch-action: none; }
 #card button { all: unset; cursor: pointer; display: inline-block; padding: 11px 34px; border-radius: 999px; font-size: 16px; font-weight: 700; color: #3a2410; background: linear-gradient(180deg, #ffe2a0, #ffbf55); box-shadow: 0 0 24px rgba(255, 190, 80, .55); }
 #card .best { margin-top: 10px; font-size: 12px; opacity: .7; }
 #skipbtn { position: fixed; right: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
-#cam { position: fixed; left: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 96px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
-#quality { position: fixed; left: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+#quality { position: fixed; right: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 96px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+#cam { position: fixed; right: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 130px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+#map { position: fixed; left: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); width: 132px; height: 132px; border-radius: 50%; border: 2px solid rgba(255,250,240,.45); box-shadow: 0 4px 18px rgba(0,0,0,.35); pointer-events: none; }
+#stick { position: fixed; left: 18px; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 100px); width: 124px; height: 124px; border-radius: 50%; background: rgba(255,250,240,.12); border: 1px solid rgba(255,250,240,.35); display: none; touch-action: none; z-index: 6; }
+#stick i { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: rgba(255,250,240,.55); box-shadow: 0 2px 10px rgba(0,0,0,.3); pointer-events: none; }
+body.touch #stick { display: block; }
+@media (max-width: 420px) { #map { width: 104px; height: 104px; } }
 @media (max-width: 420px) {
   #build { gap: 4px; padding: 6px; }
   #build button { min-width: 64px; padding: 6px 4px; font-size: 12px; white-space: nowrap; }
@@ -93,6 +98,8 @@ canvas { display: block; touch-action: none; }
 </div>
 <button id="skipbtn" class="glass">快轉到夜晚 ⏩</button>
 <button id="quality" class="glass">畫質：高</button>
+<canvas id="map"></canvas>
+<div id="stick"><i></i></div>
 <button id="cam" class="glass">視角：跟隨</button>
 <div id="build" class="glass">
   <button data-b="lamp"><span class="ic">🏮</span>路燈<small>🪵2</small></button>
@@ -111,10 +118,10 @@ canvas { display: block; touch-action: none; }
     <h1>漂流燈島</h1>
     <p class="sub">守住燈塔的光，撐過每一個夜晚</p>
     <ul>
-      <li>WASD 或點地面走路，點建築門口會自動進去，拖曳轉視角，V 切換跟隨／俯視</li>
+      <li>電腦 WASD 走路、滑鼠拖曳轉視角；手機用左下角搖桿，拖曳畫面轉視角。點建築門口會自動進去</li>
       <li>白天撿漂流木 🪵，或到碼頭上船出海打撈木箱、油桶 🛢️、零件 🔩</li>
       <li>天黑前蓋路燈、探照燈、篝火，光照到的黑影會消散</li>
-      <li>你手上的提燈也能驅散黑影，燈塔被摸到就會受損</li>
+      <li>你手上的探照燈照到的黑影會消散；走到燈塔門口可以登上瞭望台，小地圖會顯示全島黑影</li>
     </ul>
     <button id="start">開始守夜</button>
     <div class="best" id="best"></div>

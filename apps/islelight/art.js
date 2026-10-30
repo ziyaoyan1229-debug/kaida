@@ -90,7 +90,13 @@ export function doorFrame(g, w, h, x, z, ry, col, frame, opt) {
 export function ivy(g, x, y, z, ry, n, col) { const I = new THREE.Group(); I.position.set(x, y, z); I.rotation.y = ry; g.add(I); col = col || ["#3f7a30", "#4f8a3c", "#5f9a44"]; for (let i = 0; i < n; i++) { const t = i / n, px = Math.sin(t * 9) * 0.35, py = t * 1.6; const l = sph(0.09 + rnd() * 0.05, col[i % col.length], px, py, 0.05, I, 8, 6); l.scale.set(1, 0.7, 0.5); } }
 export function flowerBox(g, x, y, z, ry, w) { const B = new THREE.Group(); B.position.set(x, y, z); B.rotation.y = ry; g.add(B); box(w, 0.2, 0.22, M.wood, 0, 0, 0.11, B); box(w + 0.04, 0.04, 0.26, FRAME, 0, 0.1, 0.11, B); const n = Math.max(3, Math.round(w / 0.15)); for (let i = 0; i < n; i++) { const fx = -w / 2 + 0.07 + i * (w - 0.14) / (n - 1); sph(0.07, "#5f9a44", fx, 0.14, 0.11, B, 8, 6); sph(0.055, ["#f06a7a", "#ffd24a", "#f8f0e8", "#d08ae0", "#ff8a5a"][i % 5], fx, 0.24, 0.1, B, 8, 6); } }
 export function flowers(parent, cx, cz, r, n, cols, y0) { for (let i = 0; i < n; i++) { const a = rnd() * TAU, d = rnd() * r; const x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d; cyl(0.012, 0.012, 0.22, "#4f7a32", x, (y0 || 0) + 0.11, z, parent, 4); sph(0.045, cols[i % cols.length], x, (y0 || 0) + 0.24, z, parent, 8, 6); } }
-export function fenceLine(parent, x0, z0, x1, z1, posts, col, y0) { y0 = y0 || 0; col = col || "#a08a6a"; for (let i = 0; i <= posts; i++) { const k = i / posts, x = x0 + (x1 - x0) * k, z = z0 + (z1 - z0) * k; box(0.08, 0.62, 0.08, col, x, y0 + 0.31, z, parent); cone(0.06, 0.08, col, x, y0 + 0.66, z, parent, 4); } const len = Math.hypot(x1 - x0, z1 - z0), a = Math.atan2(x1 - x0, z1 - z0); [0.2, 0.46].forEach((y) => { const r = box(0.04, 0.07, len, col, (x0 + x1) / 2, y0 + y, (z0 + z1) / 2, parent); r.rotation.y = a; }); }
+export function fenceLine(parent, x0, z0, x1, z1, posts, col, y0) {
+  // y0 可以是數字，也可以是 (x,z)=>地面高度 的函式：柱子各自落在地面上，橫桿跟著坡度傾斜
+  const yf = typeof y0 === "function" ? y0 : () => (y0 || 0); col = col || "#a08a6a";
+  for (let i = 0; i <= posts; i++) { const k = i / posts, x = x0 + (x1 - x0) * k, z = z0 + (z1 - z0) * k, y = yf(x, z); box(0.08, 0.62, 0.08, col, x, y + 0.31, z, parent); cone(0.06, 0.08, col, x, y + 0.66, z, parent, 4); }
+  const len = Math.hypot(x1 - x0, z1 - z0), a = Math.atan2(x1 - x0, z1 - z0), ya = yf(x0, z0), yb = yf(x1, z1), dy = yb - ya;
+  [0.2, 0.46].forEach((y) => { const r = box(0.04, 0.07, Math.hypot(len, dy), col, (x0 + x1) / 2, (ya + yb) / 2 + y, (z0 + z1) / 2, parent); r.rotation.order = "YXZ"; r.rotation.set(-Math.atan2(dy, len), a, 0); });
+}
 // 樹：分枝樹幹＋很多層扁葉叢，顏色隨機偏移
 export function tree(parent, x, y, z, s, kind) {
   const t = new THREE.Group(); t.position.set(x, y, z); t.scale.setScalar(s); t.rotation.y = rnd() * TAU; parent.add(t);

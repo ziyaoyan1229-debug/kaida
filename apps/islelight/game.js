@@ -9,6 +9,8 @@ import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { makeInterior, ROOM_OF } from "./interior.js";
 import { bakeStatic } from "./bake.js";
+import { WIND, grassField, tallGrassField, flowerField, leafTree, bush, makeClouds, tickClouds, makeMountains } from "./foliage.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
 import { buildTown, buildExtras, windmills } from "./town.js";
 
@@ -40,7 +42,7 @@ scene.fog = new THREE.FogExp2(0x9cc4e4, 0.004);
 // 環境反射：讓石頭、玻璃、水面有一點周圍的光
 const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.3;
 initArt();
-const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 700);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 700);
 
 const composer = new EffectComposer(renderer);
 const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
@@ -56,6 +58,13 @@ if (ULTRA) {
   const gr = gtao.render.bind(gtao); gtao.render = (...a) => { hideForAO.forEach((o) => o.visible = false); gr(...a); hideForAO.forEach((o) => o.visible = true); };
   composer.addPass(gtao);
 }
+// 色彩分級：飽和一點、對比一點、白天偏暖、邊角壓暗，整體像一張畫
+const gradePass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uVig: { value: 0.32 }, uSat: { value: 1.14 }, uWarm: { value: 0 }, uContrast: { value: 1.07 } },
+  vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
+  fragmentShader: "uniform sampler2D tDiffuse; uniform float uVig, uSat, uWarm, uContrast; varying vec2 vUv; void main(){ vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(.2126, .7152, .0722)); c.rgb = mix(vec3(l), c.rgb, uSat); c.rgb = max((c.rgb - .18) * uContrast + .18, 0.); c.rgb *= vec3(1. + uWarm * .07, 1. + uWarm * .025, 1. - uWarm * .06); vec2 d = vUv - .5; c.rgb *= 1. - uVig * smoothstep(.3, 1., dot(d, d) * 2.4); gl_FragColor = c; }",
+});
+composer.addPass(gradePass);
 composer.addPass(new OutputPass());
 
 function glowTexture() {
@@ -113,9 +122,20 @@ moon.add(moonDisc); const moonGlow = glowSprite(0x8aa4ff, 60, moon);
 /* ===== 島 ===== */
 const R = (a) => 48 + 3.2 * Math.sin(3 * a + 0.5) + 2.0 * Math.sin(5 * a + 2) + 1.1 * Math.sin(7 * a) + 0.6 * Math.sin(11 * a + 1);
 const RG = (a) => R(a) - 4.0;
+/* 地形起伏：燈塔在島中央的高台上，主街往碼頭一路下坡；西北是森林山脊，其他地方是緩緩起伏的草坡。海灘一圈保持平坦 */
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const gbump = (x, z, cx, cz, s) => Math.exp(-((x - cx) * (x - cx) + (z - cz) * (z - cz)) / (s * s));
+function hill(x, z) {
+  const r = Math.hypot(x, z), a = Math.atan2(z, x), rg = RG(a);
+  const fade = 1 - sstep(rg - 8, rg - 1.5, r);
+  if (fade <= 0) return 0;
+  const h = 2.4 * (1 - sstep(5.5, 17, r)) + 3.4 * gbump(x, z, -27, -25, 12) + 1.5 * gbump(x, z, 26, -7, 11) + 1.3 * gbump(x, z, -21, 19, 9) + 1.2 * gbump(x, z, 15, 31, 8) + 0.9 * gbump(x, z, -8, 34, 7)
+    + 0.75 + 0.45 * Math.sin(x * 0.23 + 1) * Math.sin(z * 0.19) + 0.3 * Math.sin(x * 0.11 - z * 0.14);
+  return h * fade;
+}
 function groundY(x, z) {
   const r = Math.hypot(x, z), a = Math.atan2(z, x), rr = R(a), rg = RG(a);
-  if (r < rg) return 0.55;
+  if (r < rg) return 0.55 + hill(x, z);
   if (r < rg + 0.35) return lerp(0.55, 0.35, (r - rg) / 0.35);
   if (r < rr) return 0.35;
   if (r < rr + 1.6) return 0.35 - (r - rr) / 1.6 * 1.4;
@@ -127,8 +147,8 @@ function speckleTex(base, dots, n, size) {
   for (let i = 0; i < n; i++) { g.fillStyle = dots[i % dots.length]; g.globalAlpha = 0.25 + Math.random() * 0.45; const s = 1 + Math.random() * 3; g.fillRect(Math.random() * c.width, Math.random() * c.height, s, s); }
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-function islandPart(r0, r1, h, topY, edge, color, tex) {
-  const g = new THREE.CylinderGeometry(r0, r1, h, 192, 3);
+function islandPart(r0, r1, h, topY, edge, color, tex, open) {
+  const g = new THREE.CylinderGeometry(r0, r1, h, 192, 3, !!open);
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), z = p.getZ(i), r = Math.hypot(x, z);
@@ -142,7 +162,17 @@ function islandPart(r0, r1, h, topY, edge, color, tex) {
   m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
 }
 const sand = islandPart(48, 49.8, 1.4, 0.35, R, "#ecd6a2", speckleTex("#ffffff", ["#c9a86a", "#fff4d8", "#b8955a"], 900));
-const grass = islandPart(44, 44.5, 0.6, 0.55, RG, "#86b45e", speckleTex("#ffffff", ["#5f8f3e", "#a8cf74", "#4a7a32", "#c4dc8a"], 1600));
+const grassTex = speckleTex("#ffffff", ["#5f8f3e", "#a8cf74", "#4a7a32", "#c4dc8a"], 1600);
+const grassSkirt = islandPart(44, 44.5, 0.6, 0.55, RG, "#86b45e", grassTex, true);
+// 草地本體：極座標網格，每個頂點照 groundY 抬高，邊緣剛好接在草地側壁上
+const grass = (() => {
+  const NR = 90, NS = 192, pos = [], uv = [], idx = [];
+  for (let i = 0; i <= NR; i++) for (let j = 0; j < NS; j++) { const a = j / NS * TAU, r = RG(a) * i / NR, x = Math.cos(a) * r, z = Math.sin(a) * r; pos.push(x, groundY(x, z), z); uv.push(x / 4, z / 4); }
+  for (let i = 0; i < NR; i++) for (let j = 0; j < NS; j++) { const j1 = (j + 1) % NS, a = i * NS + j, b = i * NS + j1, c = (i + 1) * NS + j, d = (i + 1) * NS + j1; idx.push(a, b, c, b, d, c); }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+  if (g.attributes.normal.getY(NS * 40) < 0) { for (let i = 0; i < idx.length; i += 3) { const t = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = t; } g.setIndex(idx); g.computeVertexNormals(); }
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: "#86b45e", map: grassTex, roughness: 0.95 })); m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
+})();
 
 /* 海面：頂點著色器裡算波浪，太陽和燈光會在浪上反光 */
 const waterU = { uTime: { value: 0 } };
@@ -178,7 +208,7 @@ const colliders = []; // { x, z, r }
 const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
 const windowM = new THREE.MeshStandardMaterial({ color: "#3a2a1a", emissive: "#ffae4a", emissiveIntensity: 0.1, roughness: 0.4 });
 const housePools = [];
-function roundTree(x, z, s) { const t = tree(scene, x, groundY(x, z), z, s, ["green", "green", "dark", "autumn"][Math.floor(rnd() * 4)]); colliders.push({ x, z, r: 0.4 * s, cr: 1.2 * s }); return t; }
+function roundTree(x, z, s) { const t = leafTree(scene, x, groundY(x, z), z, s, ["green", "green", "green", "dark", "autumn"][Math.floor(rnd() * 5)]); colliders.push({ x, z, r: 0.4 * s, cr: 1.2 * s }); return t; }
 function pineTree(x, z, s) { const t = pine(scene, x, groundY(x, z), z, s); colliders.push({ x, z, r: 0.4 * s, cr: 1.0 * s }); return t; }
 function palm(x, z, s, lean) {
   const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.scale.setScalar(s); g.rotation.y = lean; scene.add(g);
@@ -191,7 +221,8 @@ function palm(x, z, s, lean) {
 function rock(x, z, s) { const r = rockE(scene, x, groundY(x, z), z, s); outline(r, 0.015); colliders.push({ x, z, r: 0.35 * s }); }
 
 /* 燈塔 */
-const tower = new THREE.Group(); scene.add(tower); tower.position.y = 0.55;
+const TY = groundY(0, 0);
+const tower = new THREE.Group(); scene.add(tower); tower.position.y = TY;
 cyl(1.4, 1.55, 0.5, "#cfc6b4", 0, 0.25, 0, tower, 24);
 cyl(0.78, 1.12, 4.6, "#f8f4ec", 0, 2.8, 0, tower, 28);
 [1.6, 3.4].forEach((y) => { const k = (y - 0.5) / 4.6; cyl(lerp(1.12, 0.78, k + 0.08) + 0.02, lerp(1.12, 0.78, k - 0.08) + 0.02, 0.62, "#d0524a", 0, y, 0, tower, 28); });
@@ -201,16 +232,24 @@ for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; cyl(0.02, 0.02, 0.4, "#3a
 const lampGlassM = new THREE.MeshStandardMaterial({ color: "#fff2c8", emissive: "#ffcf6a", emissiveIntensity: 0.3, roughness: 0.2, transparent: true, opacity: 0.85 });
 const lampGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.85, 20), lampGlassM); lampGlass.position.y = 5.65; tower.add(lampGlass);
 const roofC = new THREE.Mesh(new THREE.ConeGeometry(0.78, 0.7, 20), mat("#d0524a")); roofC.position.y = 6.42; roofC.castShadow = true; tower.add(roofC);
-sph(0.1, "#3a3440", 0, 6.82, 0, tower, 8, 6);
+const roofKnob = sph(0.1, "#3a3440", 0, 6.82, 0, tower, 8, 6);
 box(0.5, 0.85, 0.1, "#6a4a32", 0, 0.92, 1.08, tower).rotation.x = -0.08;
 [[0.85, 2.3], [-0.6, 3.6]].forEach(([a, y]) => { const r0 = lerp(1.12, 0.78, (y - 0.5) / 4.6); const w = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.32), windowM); w.position.set(Math.sin(a) * (r0 + 0.01), y, Math.cos(a) * (r0 + 0.01)); w.rotation.y = a; tower.add(w); });
 outline(tower, 0.025);
 colliders.push({ x: 0, z: 0, r: 1.6 });
+box(0.62, 1.15, 0.14, "#4a3426", 0, 0.98, 1.06, tower); box(0.08, 0.08, 0.06, "#d8b060", 0.2, 0.95, 1.14, tower);
+/* 登上燈塔頂：站在瞭望台上，小地圖會顯示全島的黑影 */
+let ONTOP = false;
+const TOP_Y = TY + 5.22;
+const playerY = () => ONTOP ? TOP_Y : groundY(P.x, P.z);
+let nearTower = false;
+function climbTower() { fadeTo(() => { ONTOP = true; P.x = 0; P.z = 0.86; P.yaw = 0; P.tx = null; P.goDoor = null; camS.x = 0; camS.z = 0.86; camS.fyaw = Math.PI; camS.cdNow = null; camS.free = 0; banner("燈塔瞭望台", "小地圖上看得到島上所有黑影", 2600); }); }
+function descendTower() { fadeTo(() => { ONTOP = false; P.x = 0; P.z = 2.3; P.yaw = 0; P.tx = null; camS.x = 0; camS.z = 2.3; camS.fyaw = Math.PI; camS.cdNow = null; camS.free = 0; }); }
 const towerGlow = glowSprite(new THREE.Color(1.8, 1.3, 0.6), 5, tower, 5.65);
 const towerLight = new THREE.PointLight("#ffc870", 0, 14, 1.4); towerLight.position.y = 5.65; tower.add(towerLight);
 const towerPool = lightPool("#ffcf80", 5.5, scene, 0.58);
 // 兩道旋轉光束
-const beamRig = new THREE.Group(); beamRig.position.y = 6.2; scene.add(beamRig);
+const beamRig = new THREE.Group(); beamRig.position.y = TY + 5.65; scene.add(beamRig);
 const beams = [0, Math.PI].map((a) => {
   const g = new THREE.Group(); g.rotation.y = a; beamRig.add(g);
   const c = beamCone(26, 3.4, "#ffe2a0"); c.rotation.x = 0.16; g.add(c);
@@ -333,8 +372,8 @@ const TALL = [[-13, 14.5, 7, 4.5, 0], [-16, 25, 6, 5, 0.3], [-24, 11, 5, 5, -0.2
 const SIGNS = [[2.3, 5.2, A(200), ["主街", "碼頭 ⇣"]], [-2.3, -5.2, A(20), ["住宅區", "鐘樓 ⇡"]], [-2.6, 21.3, A(150), ["⇠ 池塘", "西野原"]], [2.6, 17, A(-150), ["農田 ⇢"]], [-23, -13.1, A(60), ["⇠ 風車", "森林"]], [23, -17, A(-100), ["小池塘 ⇢"]]];
 const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
 const extras = buildExtras(EXTRAS); extras.forEach((e) => { if (e && e.name) town.push(e); });
-TALL.forEach(([x, z, w, d, ry]) => tallGrass(scene, x, z, w, d, ry));
-SIGNS.forEach(([x, z, ry, texts]) => { signPost(scene, x, z, ry, texts); colliders.push({ x, z, r: 0.2 }); });
+TALL.forEach(([x, z, w, d, ry]) => tallGrassField(scene, x, z, w, d, ry, groundY));
+SIGNS.forEach(([x, z, ry, texts]) => { signPost(scene, x, z, ry, texts, groundY(x, z)); colliders.push({ x, z, r: 0.2 }); });
 function freeSpot(x, z, pad) { return colliders.every((c) => Math.hypot(c.x - x, c.z - z) > c.r + pad); }
 function segDist(x, z, r) { const dx = r.x1 - r.x0, dz = r.z1 - r.z0, l2 = dx * dx + dz * dz; const t = clamp(((x - r.x0) * dx + (z - r.z0) * dz) / l2, 0, 1); return Math.hypot(x - r.x0 - dx * t, z - r.z0 - dz * t); }
 function onRoad(x, z, pad) { if (Math.hypot(x, z) < 4.8 + pad) return true; return ROADS.some((r) => segDist(x, z, r) < r.w / 2 + pad); }
@@ -358,7 +397,11 @@ for (let i = 0, n = 0; i < 1000 && n < 44; i++) {
   if (Math.abs(a - DOCK_A) < 0.25 || !freeSpot(x, z, 0.6)) continue;
   rock(x, z, 0.6 + rnd() * 1.0); n++;
 }
-grassTufts(scene, Q.grass, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || inTall(x, z) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
+grassField(scene, Math.round(Q.grass * 0.7), () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || inTall(x, z) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, groundY(x, z), z); });
+// 路邊：野花與灌木，沿著道路兩側長
+flowerField(scene, HIGH ? 1400 : 500, () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (!onRoad(x, z, 2.6) || onRoad(x, z, 0.5) || inTall(x, z) || !freeSpot(x, z, 0.25)) return null; return new THREE.Vector3(x, groundY(x, z), z); });
+for (let i = 0, n = 0; i < 3000 && n < (HIGH ? 130 : 60); i++) { const a = rnd() * TAU, r = 5 + rnd() * (RG(a) - 6), x = Math.cos(a) * r, z = Math.sin(a) * r; if (!onRoad(x, z, 2.0) || onRoad(x, z, 1.0) || inTall(x, z) || !freeSpot(x, z, 0.9)) continue; bush(scene, x, groundY(x, z), z, 0.7 + rnd() * 0.6, rnd() < 0.15 ? "autumn" : "green"); colliders.push({ x, z, r: 0.45 }); n++; }
+const clouds = makeClouds(scene, HIGH ? 16 : 8), mountains = makeMountains(scene);
 smokes.forEach((s) => hideForAO.push(s.s));
 
 /* ===== 光源 ===== */
@@ -454,7 +497,7 @@ const motes = [], fogs = [], shafts = [];
   const sm = new THREE.ShaderMaterial({ uniforms: { uC: { value: new THREE.Color("#fff4d8") }, uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }",
     fragmentShader: "uniform vec3 uC; uniform float uA; varying vec2 vUv; void main(){ float a = smoothstep(0.,.25,vUv.x)*smoothstep(1.,.75,vUv.x) * pow(vUv.y,1.6) * uA; gl_FragColor = vec4(uC*a, a); }" });
-  for (let i = 0; i < 14; i++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(2 + (i % 3), 18), sm); pl.renderOrder = 3; scene.add(pl); hideForAO.push(pl); const a = i / 14 * TAU, r = 8 + (i % 3) * 13; shafts.push({ pl, base: new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r), m: sm }); }
+  for (let i = 0; i < 14; i++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(2 + (i % 3), 18), sm); pl.renderOrder = 3; scene.add(pl); hideForAO.push(pl); const a = i / 14 * TAU, r = 8 + (i % 3) * 13; shafts.push({ pl, base: new THREE.Vector3(Math.cos(a) * r, groundY(Math.cos(a) * r, Math.sin(a) * r) - 0.5, Math.sin(a) * r), m: sm }); }
 }
 
 /* ===== 角色 ===== */
@@ -468,6 +511,12 @@ cyl(0.075, 0.075, 0.025, "#3a3440", 0, 0.065, 0, lantern, 6);
 const lanternGlow = glowSprite(new THREE.Color(1.3, 0.85, 0.4), 0.9, lantern);
 const lanternLight = new THREE.PointLight("#ffc070", 0, 6, 1.5); scene.add(lanternLight);
 const lanternPool = lightPool("#ffc070", 2.6, scene);
+// 手持探照燈：從提燈射出一道光錐，照到的黑影會被溶掉
+const TORCH = { len: 7.5, ang: 0.3 };
+const torchCone = beamCone(TORCH.len, Math.tan(TORCH.ang) * TORCH.len, "#ffe6b0"); scene.add(torchCone);
+const torchSpot = new THREE.SpotLight("#ffe6b0", 0, 10, TORCH.ang + 0.1, 0.55, 1.2); scene.add(torchSpot); scene.add(torchSpot.target);
+torchSpot.castShadow = HIGH; torchSpot.shadow.mapSize.set(1024, 1024); torchSpot.shadow.bias = -0.0005; torchSpot.shadow.camera.near = 0.3; torchSpot.shadow.camera.far = 12;
+const torchDir = new THREE.Vector3(), torchPos = new THREE.Vector3();
 player.root.scale.setScalar(0.62);
 const pet = makePet("shiba", 2); outline(pet, 0.012); pet.scale.multiplyScalar(0.85); scene.add(pet);
 const P = { x: 0.5, z: 6.5, yaw: 0, tx: null, tz: null, moving: false, walk: 0 };
@@ -500,7 +549,7 @@ function roomFor(b) {
   }
   return rooms[key];
 }
-function moveActors(to) { [player.root, pet, lanternLight, lanternPool].forEach((o) => { if (o.parent) o.parent.remove(o); to.add(o); }); }
+function moveActors(to) { [player.root, pet, lanternLight, lanternPool, torchCone, torchSpot, torchSpot.target].forEach((o) => { if (o.parent) o.parent.remove(o); to.add(o); }); }
 function enterBuilding(b) {
   if (IN || G.over) return;
   const room = roomFor(b);
@@ -556,7 +605,7 @@ function renderShop(b) {
 }
 $("shopclose").addEventListener("click", () => $("shop").classList.remove("show"));
 let nearDoor = null;
-function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (SEA.on) { if (canLand) landBoat(); } else if (nearBoat) boardBoat(); else if (nearDoor) enterBuilding(nearDoor); }
+function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (SEA.on) { if (canLand) landBoat(); } else if (ONTOP) descendTower(); else if (nearTower) climbTower(); else if (nearBoat) boardBoat(); else if (nearDoor) enterBuilding(nearDoor); }
 $("prompt").addEventListener("click", doorAction);
 function animWalk(c, walk, moving) {
   const s = moving ? Math.sin(walk) : 0;
@@ -624,9 +673,9 @@ const KEYS = [
   [0, "#081028", "#1e3262", "#9ab4ff", 0.4, 0.17, "#12304e", 0.75],
   [4.5, "#0a1030", "#2a3260", "#9ab4ff", 0.3, 0.14, "#143452", 0.7],
   [5.6, "#2a3a78", "#f09a7a", "#ff9a6a", 0.8, 0.45, "#2a5a7a", 0.6],
-  [7, "#5a94d8", "#ffd9b0", "#ffd2a0", 2.4, 0.85, "#2f8aa4", 0.3],
-  [12, "#3a7cd4", "#c4e4ff", "#fff6e6", 3.1, 1.05, "#2a92b0", 0.22],
-  [16, "#4a80c8", "#ffe2b8", "#ffe0b0", 2.6, 0.9, "#2f8aa4", 0.28],
+  [7, "#3f7fd0", "#ffd9b0", "#ffd2a0", 2.4, 0.85, "#2f8aa4", 0.3],
+  [12, "#2862c4", "#bfe0ff", "#fff6e6", 3.1, 1.05, "#2a92b0", 0.22],
+  [16, "#3670c0", "#ffe2b8", "#ffe0b0", 2.6, 0.9, "#2f8aa4", 0.28],
   [17.6, "#3a4a8a", "#ff8a4a", "#ff7a3a", 1.8, 0.6, "#3a6a8a", 0.5],
   [19, "#1c1f4c", "#b0506a", "#ff5a4a", 0.6, 0.35, "#1a3550", 0.8],
   [20.5, "#0a1230", "#22386a", "#9ab4ff", 0.4, 0.17, "#12304e", 0.75],
@@ -660,7 +709,7 @@ addBuild("lamp", 3.0, 6.8, true);
 for (let i = 0; i < 18; i++) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.7), Math.sin(a) * (R(a) - 0.7)); }
 
 /* ===== 鏡頭與操作 ===== */
-const camS = { yaw: 0.35, pitch: 0.8, dist: 34, x: 0, z: 5, mode: save.cam || "follow", fyaw: 0.2, fpitch: 0.3, fdist: 7.5, free: 0 };
+const camS = { yaw: 0.35, pitch: 0.8, dist: 34, x: 0, z: 5, mode: save.cam || "follow", fyaw: 0.2, fpitch: 0.2, fdist: 6.2, free: 0 };
 const camLimits = () => camS.mode === "follow" ? { dmin: 4, dmax: 16, pmin: 0.08, pmax: 0.95 } : { dmin: 9, dmax: 110, pmin: 0.45, pmax: 1.3 };
 function setCamMode(m) { camS.mode = m; save.cam = m; persist(); $("cam").textContent = m === "follow" ? "視角：跟隨" : "視角：俯視"; }
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
@@ -697,6 +746,45 @@ function endPtr(e) {
 }
 cvs.addEventListener("pointerup", endPtr); cvs.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); drag = null; });
 cvs.addEventListener("wheel", (e) => { e.preventDefault(); const L = camLimits(), k = 1 + Math.sign(e.deltaY) * 0.08; if (camS.mode === "follow") camS.fdist = clamp(camS.fdist * k, L.dmin, L.dmax); else camS.dist = clamp(camS.dist * k, L.dmin, L.dmax); }, { passive: false });
+/* 手機虛擬搖桿：左下角，拖多遠走多快；電腦用 WASD／方向鍵＋滑鼠 */
+const stick = $("stick"), knob = stick.firstElementChild, JOY = { x: 0, z: 0, id: null };
+if (matchMedia("(pointer: coarse)").matches) document.body.classList.add("touch");
+function joyMove(e) { const r = stick.getBoundingClientRect(), R0 = r.width / 2; let dx = e.clientX - (r.left + R0), dy = e.clientY - (r.top + R0); const d = Math.hypot(dx, dy), m = Math.min(d, R0 * 0.72); if (d > 0) { dx *= m / d; dy *= m / d; } knob.style.transform = `translate(${dx}px, ${dy}px)`; const k = Math.min(1, m / (R0 * 0.55)); JOY.x = d > 3 ? dx / m * k : 0; JOY.z = d > 3 ? dy / m * k : 0; }
+const joyEnd = (e) => { if (e.pointerId !== JOY.id) return; JOY.id = null; JOY.x = JOY.z = 0; knob.style.transform = ""; };
+stick.addEventListener("pointerdown", (e) => { e.preventDefault(); JOY.id = e.pointerId; stick.setPointerCapture(e.pointerId); joyMove(e); });
+stick.addEventListener("pointermove", (e) => { if (e.pointerId === JOY.id) joyMove(e); });
+stick.addEventListener("pointerup", joyEnd); stick.addEventListener("pointercancel", joyEnd); stick.addEventListener("lostpointercapture", joyEnd);
+
+/* 左上角小地圖：島形、路、房子、燈塔、你和船。黑影只畫你附近的；站上燈塔頂就全部畫出來 */
+const mapC = $("map"), mapG = mapC.getContext("2d"), MAPS = 132, MAPR = 60; mapC.width = mapC.height = MAPS * 2;
+const mX = (x) => MAPS + x * (MAPS / MAPR), mZ = (z) => MAPS + z * (MAPS / MAPR), mS = MAPS / MAPR;
+const mapBase = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = MAPS * 2; const g = c.getContext("2d");
+  g.fillStyle = "rgba(18,40,66,.6)"; g.beginPath(); g.arc(MAPS, MAPS, MAPS - 1, 0, TAU); g.fill();
+  const ring = (fn, col) => { g.fillStyle = col; g.beginPath(); for (let i = 0; i <= 180; i++) { const a = i / 180 * TAU, r = fn(a); i ? g.lineTo(mX(Math.cos(a) * r), mZ(Math.sin(a) * r)) : g.moveTo(mX(Math.cos(a) * r), mZ(Math.sin(a) * r)); } g.closePath(); g.fill(); };
+  ring(R, "#e6d4a2"); ring(RG, "#79ad55");
+  // 高地畫深一點，看得出山坡
+  for (let i = 0; i < 2600; i++) { const a = rnd() * TAU, r = Math.sqrt(rnd()) * 46, x = Math.cos(a) * r, z = Math.sin(a) * r; const h = hill(x, z); if (h > 1.6) { g.fillStyle = `rgba(40,90,40,${Math.min(0.5, (h - 1.6) * 0.18)})`; g.fillRect(mX(x) - 2, mZ(z) - 2, 4, 4); } }
+  EXTRAS.forEach((e) => { if (e[0] === "pond") { g.fillStyle = "#4aa0c8"; g.beginPath(); g.arc(mX(e[1]), mZ(e[2]), e[3] * mS, 0, TAU); g.fill(); } else if (e[0] === "field") { const [, x, z, ry, w, d, crop] = e; g.save(); g.translate(mX(x), mZ(z)); g.rotate(-ry); g.fillStyle = crop === "wheat" ? "#d9b24a" : crop === "cabbage" ? "#8fbf60" : "#c8705a"; g.fillRect(-w * mS / 2, -d * mS / 2, w * mS, d * mS); g.restore(); } });
+  ROADS.forEach((r) => { g.strokeStyle = r.kind === "dirt" ? "#c9a97a" : "#d8d2c6"; g.lineWidth = Math.max(2, r.w * mS); g.lineCap = "round"; g.beginPath(); g.moveTo(mX(r.x0), mZ(r.z0)); g.lineTo(mX(r.x1), mZ(r.z1)); g.stroke(); });
+  g.fillStyle = "#d8d2c6"; g.beginPath(); g.arc(MAPS, MAPS, 4.6 * mS, 0, TAU); g.fill();
+  town.forEach((b) => { const s = Math.max(3, b.r * 1.5 * mS); g.save(); g.translate(mX(b.x), mZ(b.z)); g.rotate(-b.ry); g.fillStyle = b.kind === "house" ? "#d9655a" : b.kind === "chapel" ? "#8a6ab0" : b.name === "風車" ? "#8a7a68" : "#c08a52"; g.fillRect(-s / 2, -s / 2, s, s); g.restore(); });
+  g.fillStyle = "#ffffff"; g.beginPath(); g.arc(MAPS, MAPS, 3, 0, TAU); g.fill(); g.strokeStyle = "#d0524a"; g.lineWidth = 2; g.stroke();
+  return c;
+})();
+function drawMap() {
+  const g = mapG; g.clearRect(0, 0, MAPS * 2, MAPS * 2); g.drawImage(mapBase, 0, 0);
+  const clampM = (x, z) => { const d = Math.hypot(x, z), lim = MAPR - 3; return d > lim ? [x * lim / d, z * lim / d] : [x, z]; };
+  builds.forEach((b) => { g.fillStyle = b.kind === "fire" ? "#ff9a4a" : "#ffd27a"; g.fillRect(mX(b.x) - 1.5, mZ(b.z) - 1.5, 3, 3); });
+  if (SEA.on) flotsam.forEach((f) => { const [x, z] = clampM(f.x, f.z); g.fillStyle = "#f0e0b0"; g.fillRect(mX(x) - 1.5, mZ(z) - 1.5, 3, 3); });
+  const pulse = 0.65 + 0.35 * Math.sin(performance.now() / 180);
+  foes.forEach((f) => { if (f.dying) return; if (!ONTOP && Math.hypot(f.x - P.x, f.z - P.z) > 14) return; const [x, z] = clampM(f.x, f.z); g.fillStyle = f.boss ? `rgba(200,90,255,${pulse})` : `rgba(255,70,70,${pulse})`; g.beginPath(); g.arc(mX(x), mZ(z), f.boss ? 5 : 3, 0, TAU); g.fill(); });
+  if (!SEA.on) { const [x, z] = clampM(SEA.x, SEA.z); g.fillStyle = "#c8574a"; g.beginPath(); g.arc(mX(x), mZ(z), 3, 0, TAU); g.fill(); }
+  if (!ONTOP) { g.strokeStyle = "rgba(255,240,200,.35)"; g.lineWidth = 1; g.beginPath(); g.arc(mX(P.x), mZ(P.z), 14 * mS, 0, TAU); g.stroke(); }
+  const [px, pz] = clampM(P.x, P.z); g.save(); g.translate(mX(px), mZ(pz)); g.rotate(Math.atan2(Math.sin(P.yaw), -Math.cos(P.yaw)) + Math.PI); g.fillStyle = "#fff6d0"; g.strokeStyle = "#3a2410"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(0, -7); g.lineTo(5, 5); g.lineTo(0, 2.5); g.lineTo(-5, 5); g.closePath(); g.fill(); g.stroke(); g.restore();
+  if (ONTOP) { g.fillStyle = "rgba(255,255,255,.85)"; g.font = "bold 13px sans-serif"; g.textAlign = "center"; g.fillText("瞭望中：全島黑影", MAPS, MAPS * 2 - 10); }
+}
+
 const keys = {};
 addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); if (e.key.toLowerCase() === "v" && !e.repeat) setCamMode(camS.mode === "follow" ? "top" : "follow"); if (e.key.toLowerCase() === "e" && !e.repeat && G.started) doorAction(); });
 addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
@@ -778,7 +866,7 @@ function gameOver() {
 const clock = new THREE.Clock();
 const DBG = { speed: 1 };
 let hudT = 0, woodT = 0, now = 0;
-const tmpC = new THREE.Color();
+const tmpC = new THREE.Color(), tmpC2 = new THREE.Color();
 function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), 0.05) * DBG.speed; now += dt;
@@ -806,6 +894,8 @@ function frame() {
   const useMoon = sunDir.y < 0.08;
   const ld = useMoon ? moonDir : sunDir;
   skyU.sunDir.value.copy(sunDir); skyU.sunC.value.copy(E.sunC); skyU.sunA.value = smooth(-0.1, 0.05, sunDir.y);
+  tickClouds(clouds, dt, tmpC.copy(E.bot).lerp(tmpC2.set("#ffffff"), 0.55 - dark * 0.35), 0.95 - dark * 0.55); mountains.m.color.copy(E.bot).lerp(tmpC2.set("#3a5070"), 0.55 + dark * 0.3);
+  gradePass.uniforms.uWarm.value = (1 - dark) * 0.6; gradePass.uniforms.uSat.value = 1.14 - dark * 0.1; WIND.value = now;
   sun.position.copy(ld).multiplyScalar(40).add(sun.target.position.set(camS.x, 0, camS.z)); sun.position.y = Math.max(sun.position.y, 6);
   sun.color.copy(E.sunC); sun.intensity = E.sun * (useMoon ? 1 : smooth(0.02, 0.15, sunDir.y));
   hemi.intensity = E.hemi; hemi.color.copy(E.top).lerp(tmpC.set("#ffffff"), 0.5); hemi.groundColor.set("#5a4a32").multiplyScalar(0.6 + 0.4 * (1 - dark));
@@ -819,7 +909,7 @@ function frame() {
   // 粒子：光塵白天飄、光束在太陽低角度最明顯、地面霧夜晚起
   const dayK = 1 - dark;
   { const P = motes.P, pa = P.pos.array, ca = P.col.array, b = P.base; motes.forEach((m, i) => { m.ph += dt * m.v; pa[i * 3] = m.x + Math.sin(m.ph * 1.3) * 0.6; pa[i * 3 + 1] = m.y + Math.sin(m.ph * 0.9) * 0.4 + ((m.ph * 0.15) % 1.5); pa[i * 3 + 2] = m.z + Math.cos(m.ph) * 0.6; const o = dayK * m.k * (0.3 + 0.7 * Math.max(0, Math.sin(m.ph * 4.1 + m.x))); ca[i * 3] = b.r * o; ca[i * 3 + 1] = b.g * o; ca[i * 3 + 2] = b.b * o; }); P.pos.needsUpdate = P.col.needsUpdate = true; P.pts.visible = dayK > 0.01; }
-  fogs.forEach((f) => { f.ph += dt * f.v; f.sp.position.set(f.x + Math.sin(f.ph) * 2, f.y + Math.sin(f.ph * 1.7) * 0.1, f.z + Math.cos(f.ph * 0.8) * 1.6); f.sp.material.opacity = dark * f.k; });
+  fogs.forEach((f) => { f.ph += dt * f.v; const fx = f.x + Math.sin(f.ph) * 2, fz = f.z + Math.cos(f.ph * 0.8) * 1.6; f.sp.position.set(fx, Math.max(groundY(fx, fz), 0) + f.y - 0.5 + Math.sin(f.ph * 1.7) * 0.1, fz); f.sp.material.opacity = dark * f.k; });
   const shaftA = dayK * smooth(0.05, 0.25, sunDir.y) * (1 - smooth(0.5, 0.9, sunDir.y)) * 0.16 + dayK * 0.03;
   shafts.forEach((s) => { s.m.uniforms.uA.value = shaftA; s.pl.position.copy(s.base).addScaledVector(sunDir, 8); s.pl.lookAt(s.base.clone().addScaledVector(sunDir, 16)); s.pl.rotateX(Math.PI / 2); s.pl.rotateY(0.6); });
   tickSmoke(dt, 1);
@@ -831,9 +921,11 @@ function frame() {
   // 窗戶、燈塔
   windowM.emissiveIntensity = 0.05 + dark * 3.2; M.win.emissiveIntensity = 0.05 + dark * 3.0; M.winCool.emissiveIntensity = 0.05 + dark * 2.2;
   housePools.forEach((p) => p.material.opacity = dark * 0.55);
-  lampGlassM.emissiveIntensity = 0.3 + dark * 4;
-  towerGlow.material.opacity = 0.1 + dark * 0.8; towerGlow.scale.setScalar(2.5 + dark * 3 + Math.sin(now * 3) * 0.15);
-  towerLight.intensity = dark * 7;
+  lampGlass.visible = roofC.visible = roofKnob.visible = !ONTOP; // 站在瞭望台時燈室會擋住整個視線，先隱藏，只留欄杆
+  const topK = ONTOP ? 0.12 : 1; // 站在瞭望台時燈室就在眼前，把泛光壓低免得整個畫面白掉
+  lampGlassM.emissiveIntensity = (0.3 + dark * 4) * topK;
+  towerGlow.material.opacity = (0.1 + dark * 0.8) * topK; towerGlow.scale.setScalar(2.5 + dark * 3 + Math.sin(now * 3) * 0.15);
+  towerLight.intensity = dark * 7 * topK;
   towerPool.material.opacity = dark * 0.3;
   beamRig.rotation.y += dt * 0.55;
   beams.forEach((b) => b.material.uniforms.uOpacity.value = dark * 0.5);
@@ -867,6 +959,7 @@ function frame() {
   // 玩家移動
   let mx = 0, mz = 0;
   if (keys.w || keys.arrowup) mz -= 1; if (keys.s || keys.arrowdown) mz += 1; if (keys.a || keys.arrowleft) mx -= 1; if (keys.d || keys.arrowright) mx += 1;
+  if (JOY.id != null) { mx += JOY.x; mz += JOY.z; }
   let vx = 0, vz = 0;
   if (G.started && !G.over) {
     if (mx || mz) { P.tx = null; P.goDoor = null; const cy = camS.mode === "follow" ? camS.fyaw : camS.yaw; const c = Math.cos(cy), s = Math.sin(cy); vx = mx * c + mz * s; vz = -mx * s + mz * c; }
@@ -883,14 +976,15 @@ function frame() {
     boat.rotation.set(Math.sin(now * 1.1) * 0.03 + SEA.v * 0.012, SEA.yaw, Math.sin(now * 1.4) * 0.05);
     animWalk(player, 0, false);
   } else if (P.moving) {
-    const sp = 3.4 * (G.buff.speed ? 1.3 : 1); P.x += vx / vl * sp * dt; P.z += vz / vl * sp * dt;
-    (IN ? IN.room.colliders : colliders).forEach((c) => { const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz), m = c.r + 0.22; if (d < m && d > 1e-4) { P.x = c.x + dx / d * m; P.z = c.z + dz / d * m; } });
+    const sp = 3.4 * (G.buff.speed ? 1.3 : 1) * Math.min(1, vl); P.x += vx / vl * sp * dt; P.z += vz / vl * sp * dt;
+    (IN ? IN.room.colliders : ONTOP ? [] : colliders).forEach((c) => { const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz), m = c.r + 0.22; if (d < m && d > 1e-4) { P.x = c.x + dx / d * m; P.z = c.z + dz / d * m; } });
     if (IN) { const hw = IN.room.w / 2 - 0.45, hd = IN.room.d / 2 - 0.45; P.x = clamp(P.x, -hw, hw); P.z = clamp(P.z, -hd, Math.abs(P.x) < 0.5 ? hd + 0.3 : hd); }
+    else if (ONTOP) { const r = Math.hypot(P.x, P.z) || 0.86, rr = clamp(r, 0.76, 0.96); P.x *= rr / r; P.z *= rr / r; }
     else { const a = Math.atan2(P.z, P.x), r = Math.hypot(P.x, P.z), lim = R(a) - 0.3; if (r > lim) { P.x *= lim / r; P.z *= lim / r; } }
     const wy = Math.atan2(vx, vz); let d = ((wy - P.yaw + Math.PI) % TAU + TAU) % TAU - Math.PI; P.yaw += d * Math.min(1, dt * 12);
     P.walk += dt * 11;
   }
-  if (!SEA.on) { player.root.position.set(P.x, groundY(P.x, P.z), P.z); player.root.rotation.y = P.yaw; animWalk(player, P.walk, P.moving); }
+  if (!SEA.on) { player.root.position.set(P.x, playerY(), P.z); player.root.rotation.y = P.yaw; animWalk(player, P.walk, P.moving); }
   player.arms[1].rotation.z = -0.25;
   // 船：停泊或航行都隨浪起伏；船燈晚上亮
   boat.position.set(SEA.x, -0.05 + Math.sin(now * 1.6) * 0.05, SEA.z);
@@ -912,14 +1006,19 @@ function frame() {
   // 提燈
   const lanternOn = 0.25 + dark * 0.75;
   lanternGlow.material.opacity = dark; lanternGlass.visible = true;
-  lantern.getWorldPosition(v3); lanternLight.position.copy(v3); lanternLight.intensity = dark * 2.5;
-  lanternPool.position.set(P.x, SEA.on ? 0.1 : groundY(P.x, P.z) + 0.04, P.z); lanternPool.material.opacity = dark * 0.45;
+  lantern.getWorldPosition(v3); lanternLight.position.copy(v3); lanternLight.intensity = dark * 1.5;
+  // 探照燈：跟著面向，晚上才看得到光束
+  torchDir.set(Math.sin(P.yaw), -0.08, Math.cos(P.yaw)).normalize(); torchPos.copy(v3);
+  torchCone.position.copy(torchPos); torchCone.rotation.set(0, P.yaw, 0); torchCone.rotateX(0.08); torchCone.material.uniforms.uOpacity.value = dark * 0.5;
+  torchSpot.position.copy(torchPos); torchSpot.target.position.copy(torchPos).addScaledVector(torchDir, 6); torchSpot.intensity = dark * 55;
+  lanternPool.position.set(P.x + torchDir.x * 3.2, SEA.on ? 0.1 : ONTOP ? TOP_Y + 0.02 : groundY(P.x, P.z) + 0.04, P.z + torchDir.z * 3.2); lanternPool.rotation.z = -P.yaw; lanternPool.scale.set(1.1, 2.0, 1); lanternPool.material.opacity = dark * 0.4;
   // 門口提示
   if (IN) { IN.room.tick(dt, dark, E.bot); if (IN.room.ceiling) IN.room.ceiling.visible = camS.mode === "follow"; if (IN.room.npcChar) { IN.room.npcChar.root.position.y = 0.55 + Math.sin(now * 2) * 0.01; animWalk(IN.room.npcChar, 0, false); } }
-  else if (!SEA.on) { nearDoor = null; let bd = 2.3; town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
+  else if (!SEA.on) { nearDoor = null; let bd = 2.3; if (!ONTOP) town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
+  nearTower = !IN && !SEA.on && !ONTOP && Math.hypot(P.x, P.z - 1.6) < 1.5;
   if (P.goDoor && !IN && !SEA.on) { const b = P.goDoor; if (Math.hypot(P.x - b.door.x, P.z - b.door.z) < 1.4) { P.goDoor = null; P.tx = null; tip(""); enterBuilding(b); } else if (P.tx == null) { P.goDoor = null; tip(""); } }
   nearBoat = !IN && !SEA.on && Math.hypot(P.x - SEA.x, P.z - SEA.z) < 2.6; canLand = SEA.on && Math.hypot(SEA.x - SEA.moor.x, SEA.z - SEA.moor.z) < 5;
-  const pr = $("prompt"), want = IN ? (P.z > IN.room.exitZ - 0.9 ? "離開 ⏎" : "") : SEA.on ? (canLand ? "靠岸 ⏎" : "") : nearBoat ? "上船出海 ⏎" : nearDoor ? `進入 ${nearDoor.name} ⏎` : "";
+  const pr = $("prompt"), want = IN ? (P.z > IN.room.exitZ - 0.9 ? "離開 ⏎" : "") : SEA.on ? (canLand ? "靠岸 ⏎" : "") : ONTOP ? "下燈塔 ⏎" : nearTower ? "登上燈塔 ⏎" : nearBoat ? "上船出海 ⏎" : nearDoor ? `進入 ${nearDoor.name} ⏎` : "";
   if (pr.dataset.t !== want) { pr.dataset.t = want; pr.textContent = want; pr.classList.toggle("show", !!want && G.started); }
   if (!SEA.on) {
   // 寵物跟著
@@ -966,7 +1065,7 @@ function frame() {
     // 被光照到：受傷、變慢、閃白
     let light = 0;
     builds.forEach((b) => { if (b.on < 0.4) return; const d = Math.hypot(f.x - b.x, f.z - b.z); if (b.kind === "search") { if (b.target === f) light += DPS.search * b.on; } else if (d < RANGE[b.kind]) light += DPS[b.kind] * b.on * (1.2 - d / RANGE[b.kind] * 0.5); });
-    const dp = Math.hypot(f.x - P.x, f.z - P.z); if (dp < 2.4 && dark > 0.4) light += 1.6 * (1.2 - dp / 2.4 * 0.5);
+    const dp = Math.hypot(f.x - P.x, f.z - P.z); if (dark > 0.4) { const ang = Math.abs(((Math.atan2(f.x - P.x, f.z - P.z) - P.yaw + Math.PI) % TAU + TAU) % TAU - Math.PI); if (dp < 1.3 || (dp < TORCH.len && ang < TORCH.ang + 0.6 / Math.max(dp, 1))) light += 2.2 * (1.2 - dp / TORCH.len * 0.6); }
     const db = Math.hypot(f.x - SEA.bow.x, f.z - SEA.bow.z); if (db < 2.8 && dark > 0.4) light += 1.2 * (1.2 - db / 2.8 * 0.5);
     const fa = Math.atan2(f.x, f.z), fd = Math.hypot(f.x, f.z);
     [by, by + Math.PI].forEach((ba) => { const df = Math.abs(((fa - ba + Math.PI) % TAU + TAU) % TAU - Math.PI); if (df < 0.16 && fd > 2 && fd < 17 + G.up.range * 5) light += 1.3 * dark * (1 + G.up.bright * 0.5); });
@@ -1013,7 +1112,8 @@ function frame() {
         const t = -bq - Math.sqrt(disc); if (t > 0 && t < best) best = Math.max(2.0, t); }
       best /= Math.max(cp, 0.3);
       camS.cdNow = camS.cdNow == null ? best : (best < camS.cdNow ? best : lerp(camS.cdNow, best, Math.min(1, dt * 4))); cd = camS.cdNow; }
-    const gy = groundY(camS.x, camS.z);
+    const gy = ONTOP ? TOP_Y : groundY(camS.x, camS.z);
+    if (ONTOP) { camS.fpitch = clamp(camS.fpitch, 0.05, 0.3); cd = Math.min(cd, 3.6); }
     let cx = camS.x + Math.sin(camS.fyaw) * cp * cd, cz = camS.z + Math.cos(camS.fyaw) * cp * cd, cy = gy + 0.9 + Math.sin(camS.fpitch) * cd;
     // 不要鑽到地面或海面下
     cy = Math.max(cy, groundY(cx, cz) + 0.9, 0.9);
@@ -1025,13 +1125,14 @@ function frame() {
     const cd = camS.dist * clamp(1.15 / camera.aspect, 1, 1.9);
     const cp = Math.cos(camS.pitch);
     const cdd = IN ? Math.min(cd, 12) : cd;
-    camera.position.set(camS.x + Math.sin(camS.yaw) * cp * cdd + (Math.random() - 0.5) * shake, Math.sin(camS.pitch) * cdd + 0.5, camS.z + Math.cos(camS.yaw) * cp * cdd + (Math.random() - 0.5) * shake);
-    camera.lookAt(camS.x, 0.8, camS.z);
+    const gy = IN ? 0.55 : groundY(camS.x, camS.z);
+    camera.position.set(camS.x + Math.sin(camS.yaw) * cp * cdd + (Math.random() - 0.5) * shake, Math.sin(camS.pitch) * cdd + gy, camS.z + Math.cos(camS.yaw) * cp * cdd + (Math.random() - 0.5) * shake);
+    camera.lookAt(camS.x, gy + 0.3, camS.z);
   }
 
   // 介面
   if ((hudT += dt) > 0.1) {
-    hudT = 0;
+    hudT = 0; drawMap();
     $("day").textContent = `第 ${G.day} ${ph === "night" || ph === "dusk" ? "夜" : "天"}`;
     $("phase").textContent = { day: h < 10 ? "早晨" : h < 14 ? "中午" : "下午", dusk: "黃昏", night: "夜晚 · 黑影 " + foes.filter((f) => !f.dying).length, dawn: "黎明" }[ph];
     const prog = ph === "day" ? G.t / PH.day : ph === "dusk" ? (G.t - PH.day) / PH.dusk : ph === "night" ? (G.t - PH.day - PH.dusk) / PH.night : 1;
@@ -1049,7 +1150,7 @@ function frame() {
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(Math.round(innerWidth * 0.6), Math.round(innerHeight * 0.6)); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND, BAKE: () => BAKE, renderer, QL, THREE, camera };
+window.__islelight = { G, P, camS, foes, items, DBG, climbTower, descendTower, isTop: () => ONTOP, JOY, drawMap, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND, BAKE: () => BAKE, renderer, QL, THREE, camera };
 player.root.userData.noBake = pet.userData.noBake = true; tower.userData.noBake = beamRig.userData.noBake = true; grass.userData.noBake = sand.userData.noBake = true;
 const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
 // 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）

@@ -5,7 +5,11 @@ import { M, FRAME, add, cone, torus, tileRoof, flatRoof, latticeWin, doorFrame, 
 
 let C = null; // 由 game.js 傳進來：scene、lightPool、housePools、colliders、groundY、addLamp
 
-function start(x, z, ry, r) { const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g); C.colliders.push({ x, z, r }); return g; }
+/* 地形有起伏：建築放在佔地範圍內最高的地面上，下面墊一塊草皮平台（像山坡上整出來的宅基地），坡下那側就看得到平台邊 */
+function topY(x, z, r) { let y = C.groundY(x, z); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; y = Math.max(y, C.groundY(x + Math.cos(a) * r, z + Math.sin(a) * r)); } return y; }
+const TERRACE = mat("#7fae58", { roughness: 1 });
+function terrace(g, w, d, round) { const t = round ? cyl(w / 2, w / 2 + 0.35, 3, TERRACE, 0, -1.52, 0, g, 28) : box(w, 3, d, TERRACE, 0, -1.52, 0, g); t.castShadow = false; t.receiveShadow = true; return t; }
+function start(x, z, ry, r) { const g = new THREE.Group(); g.position.set(x, topY(x, z, r * 0.8), z); g.rotation.y = ry; C.scene.add(g); terrace(g, r * 2 + 0.6, r * 2 + 0.6); C.colliders.push({ x, z, r }); return g; }
 function timber(g, w, h, d, y, zf) {
   // 木骨架：直樑、斜撐、橫樑，貼在正面
   const n = Math.max(3, Math.round(w / 0.75)); for (let i = 0; i <= n; i++) box(0.1, h, 0.08, FRAME, -w / 2 + i * w / n, y, zf + 0.03, g);
@@ -201,16 +205,20 @@ const KIND = { house, library, cafe, konbini, school, bookstore, bakery, inn, ch
 function roads(y) {
   const m = M.cobble; M.cobble.map.repeat.set(3, 3);
   const dirt = mat("#c6a77a", { roughness: 1 });
+  y = C.groundY(0, 0);
   const plaza = add(new THREE.CircleGeometry(4.6, 48), m, 0, y + 0.01, 0, C.scene); plaza.rotation.x = -Math.PI / 2; plaza.castShadow = false;
   // 路段：{ x0, z0, x1, z1, w, kind: "cobble" | "dirt" }。石板街兩旁有路燈，土路（野外路線）兩旁有圍欄
   C.roads.forEach((r) => {
     const dx = r.x1 - r.x0, dz = r.z1 - r.z0, len = Math.hypot(dx, dz), a = Math.atan2(dx, dz), nx = Math.cos(a), nz = -Math.sin(a);
-    const pl = add(new THREE.PlaneGeometry(r.w, len + r.w * 0.9), r.kind === "dirt" ? dirt : m, (r.x0 + r.x1) / 2, y + (r.kind === "dirt" ? 0.011 : 0.012), (r.z0 + r.z1) / 2, C.scene); pl.rotation.set(-Math.PI / 2, 0, -a); pl.castShadow = false;
+    // 路面切成很多小段，每個頂點貼著地形，路就會跟著坡度上上下下
+    const pg = new THREE.PlaneGeometry(r.w, len + r.w * 0.9, 2, Math.max(2, Math.ceil(len / 1.0))); pg.rotateZ(-a); pg.rotateX(-Math.PI / 2); pg.translate((r.x0 + r.x1) / 2, 0, (r.z0 + r.z1) / 2);
+    { const p = pg.attributes.position, off = r.kind === "dirt" ? 0.025 : 0.03; for (let i = 0; i < p.count; i++) p.setY(i, C.groundY(p.getX(i), p.getZ(i)) + off); pg.computeVertexNormals(); }
+    const pl = add(pg, r.kind === "dirt" ? dirt : m, 0, 0, 0, C.scene); pl.castShadow = false;
     if (r.kind === "dirt") {
       // 圍欄：每段 6 格、留 3 格缺口，從路口 2 格後開始
-      for (let side = -1; side <= 1; side += 2) { const off = r.w / 2 + 0.55; let t = 2.2; while (t + 3 < len - 1) { const t1 = Math.min(t + 6, len - 1.2); fenceLine(C.scene, r.x0 + dx / len * t + nx * off * side, r.z0 + dz / len * t + nz * off * side, r.x0 + dx / len * t1 + nx * off * side, r.z0 + dz / len * t1 + nz * off * side, Math.max(1, Math.round((t1 - t) / 1.3)), "#a08a6a", y); t = t1 + 3; } }
+      for (let side = -1; side <= 1; side += 2) { const off = r.w / 2 + 0.55; let t = 2.2; while (t + 3 < len - 1) { const t1 = Math.min(t + 6, len - 1.2); fenceLine(C.scene, r.x0 + dx / len * t + nx * off * side, r.z0 + dz / len * t + nz * off * side, r.x0 + dx / len * t1 + nx * off * side, r.z0 + dz / len * t1 + nz * off * side, Math.max(1, Math.round((t1 - t) / 1.3)), "#a08a6a", C.groundY); t = t1 + 3; } }
     } else if (!r.noLamp) {
-      for (let t = 3.5, k = 0; t < len - 1.5; t += 7, k++) { const side = k % 2 ? 1 : -1, off = r.w / 2 + 0.6; C.addLamp(C.scene, r.x0 + dx / len * t + nx * off * side, y, r.z0 + dz / len * t + nz * off * side); }
+      for (let t = 3.5, k = 0; t < len - 1.5; t += 7, k++) { const side = k % 2 ? 1 : -1, off = r.w / 2 + 0.6; { const lx = r.x0 + dx / len * t + nx * off * side, lz = r.z0 + dz / len * t + nz * off * side; C.addLamp(C.scene, lx, C.groundY(lx, lz), lz); } }
     }
   });
   // 廣場：長椅、花圃（燈塔在正中央）
@@ -222,7 +230,7 @@ function roads(y) {
 /* ===== 郊外：池塘、農田、風車 ===== */
 export const windmills = [];
 function pond(x, z, r) {
-  const g = new THREE.Group(); g.position.set(x, 0.55, z); C.scene.add(g);
+  const g = new THREE.Group(); g.position.set(x, topY(x, z, r + 0.6), z); C.scene.add(g); terrace(g, r * 2 + 1.6, 0, true);
   const w = add(new THREE.CircleGeometry(r, 32), mat("#3f8fa8", { roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.9 }), 0, 0.02, 0, g); w.rotation.x = -Math.PI / 2; w.castShadow = false;
   const rim = add(new THREE.RingGeometry(r, r + 0.6, 32), mat("#c9b48a", { roughness: 1 }), 0, 0.015, 0, g); rim.rotation.x = -Math.PI / 2; rim.castShadow = false;
   for (let i = 0; i < 18; i++) { const a = i / 18 * TAU, rr = r + 0.1 + (i % 3) * 0.2; cyl(0.015, 0.015, 0.7 + (i % 2) * 0.3, "#5f8f3e", Math.cos(a) * rr, 0.35, Math.sin(a) * rr, g, 4); if (i % 3 === 0) { const c = cyl(0.04, 0.04, 0.18, "#6a4a2a", Math.cos(a) * rr, 0.75, Math.sin(a) * rr, g, 6); } }
@@ -233,7 +241,7 @@ function pond(x, z, r) {
   return g;
 }
 function field(x, z, ry, w, d, crop) {
-  const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g);
+  const g = new THREE.Group(); g.position.set(x, topY(x, z, Math.max(w, d) / 2 + 0.3), z); g.rotation.y = ry; C.scene.add(g); terrace(g, w + 1.2, d + 1.2);
   const soil = add(new THREE.PlaneGeometry(w, d), mat("#7a5a3a", { roughness: 1, polygonOffset: true, polygonOffsetFactor: -1 }), 0, 0.01, 0, g); soil.rotation.x = -Math.PI / 2; soil.castShadow = false;
   const rows = Math.floor(d / 0.7), per = Math.floor(w / 0.45);
   const geo = crop === "wheat" ? new THREE.ConeGeometry(0.08, 0.6, 5) : new THREE.SphereGeometry(0.16, 7, 5); if (crop === "wheat") geo.translate(0, 0.3, 0); else geo.translate(0, 0.14, 0);
@@ -250,7 +258,7 @@ function field(x, z, ry, w, d, crop) {
   return g;
 }
 function windmill(x, z, ry) {
-  const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g);
+  const g = new THREE.Group(); g.position.set(x, topY(x, z, 2.0), z); g.rotation.y = ry; C.scene.add(g); terrace(g, 4.6, 0, true);
   box(3.2, 0.5, 3.2, M.stone, 0, 0.25, 0, g); cyl(1.1, 1.5, 4.6, M.stoneLight, 0, 2.8, 0, g, 12);
   cyl(1.25, 1.25, 0.3, FRAME, 0, 5.2, 0, g, 12); const cap = cone(1.35, 1.4, "#6b4a3a", 0, 6.0, 0, g, 12);
   doorFrame(g, 0.7, 1.4, 0, 1.45, 0, M.woodDark, FRAME); latticeWin(g, 0.45, 0.6, 0, 2.6, 1.33, 0, 2, 2, "#f3efe6", "#8a8278"); latticeWin(g, 0.4, 0.5, 0, 4.0, 1.18, 0, 2, 2, "#f3efe6");

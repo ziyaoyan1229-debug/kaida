@@ -27,7 +27,9 @@ export function bakeStatic(scene) {
         if (!g.attributes.normal) g.computeVertexNormals();
         if (!g.attributes.uv) g.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(n * 2), 2));
         if (plain) { const c = new Float32Array(n * 3), col = m.color; for (let i = 0; i < n; i++) { c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b; } g.setAttribute("color", new THREE.BufferAttribute(c, 3)); }
-        let grp = groups.get(key); if (!grp) { grp = { mat: plain ? VC : m, geos: [], cast: false, recv: false, plain }; groups.set(key, grp); }
+        const wantColor = plain || !!m.vertexColors;
+        if (wantColor && !plain && !g.attributes.color) { const c = new Float32Array(n * 3).fill(1); g.setAttribute("color", new THREE.BufferAttribute(c, 3)); }
+        let grp = groups.get(key); if (!grp) { grp = { mat: plain ? VC : m, geos: [], cast: false, recv: false, plain, wantColor }; groups.set(key, grp); }
         grp.geos.push(g); grp.cast = grp.cast || o.castShadow; grp.recv = grp.recv || o.receiveShadow;
         doomed.push(o);
       }
@@ -39,7 +41,7 @@ export function bakeStatic(scene) {
   let meshes = 0, tris = 0;
   groups.forEach((grp) => {
     const total = grp.geos.reduce((s, g) => s + g.attributes.position.count, 0);
-    const pos = new Float32Array(total * 3), nor = new Float32Array(total * 3), uv = new Float32Array(total * 2), col = grp.plain ? new Float32Array(total * 3) : null;
+    const pos = new Float32Array(total * 3), nor = new Float32Array(total * 3), uv = new Float32Array(total * 2), col = grp.wantColor ? new Float32Array(total * 3) : null;
     let off = 0;
     grp.geos.forEach((g) => { const n = g.attributes.position.count; pos.set(g.attributes.position.array, off * 3); nor.set(g.attributes.normal.array, off * 3); uv.set(g.attributes.uv.array, off * 2); if (col) col.set(g.attributes.color.array, off * 3); off += n; g.dispose(); });
     const geo = new THREE.BufferGeometry();

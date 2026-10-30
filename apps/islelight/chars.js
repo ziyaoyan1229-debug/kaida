@@ -42,7 +42,7 @@ const OUTLINE_M = new THREE.MeshBasicMaterial({ color: 0x2a1d16, side: THREE.Bac
 const tmpBox = new THREE.Box3(), tmpSize = new THREE.Vector3();
 function outline(root, t) {
   const list = [];
-  root.traverse((o) => { if (o.isMesh && !o.material.isMeshBasicMaterial && !o.material.transparent && !o.material.wireframe) list.push(o); });
+  root.traverse((o) => { if (o.isMesh && !o.userData.noOutline && !o.material.isMeshBasicMaterial && !o.material.transparent && !o.material.wireframe && !o.material.alphaTest) list.push(o); });
   list.forEach((o) => {
     const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
     if (g.boundingSphere.radius < 0.05) return; // 眼睛、嘴巴這些小東西不描
