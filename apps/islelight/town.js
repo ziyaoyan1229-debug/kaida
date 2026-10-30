@@ -1,224 +1,219 @@
-/* 漂流燈島的小鎮建築：圖書館、咖啡廳、便利商店、學校、書店、麵包店、神社、木屋、和室、民宅
-   每棟都是程式畫的方塊模型，主題照番茄讀書會的各種讀書房；窗戶晚上會亮，門口有光暈 */
+/* 漂流燈島的小鎮建築（歐風石屋風格）：民宅、圖書館、咖啡廳、便利商店、學校、書店、麵包店、旅店、鐘樓
+   每棟由 art.js 的零件拼起來：石基、灰泥、木骨架、木瓦屋頂、木格窗、花箱、藤蔓、招牌；窗戶晚上會亮，門口有光暈 */
 import { THREE, mat, box, cyl, sph, outline } from "./chars.js";
+import { M, FRAME, add, cone, torus, tileRoof, flatRoof, latticeWin, doorFrame, ivy, flowerBox, flowers, fenceLine, signBoard, smoke, tree, TAU } from "./art.js";
 
-const TAU = Math.PI * 2;
-let C = null; // 由 game.js 傳進來：scene、windowM、lightPool、housePools、colliders、groundY
+let C = null; // 由 game.js 傳進來：scene、lightPool、housePools、colliders、groundY、addLamp
 
-function signTex(text, bg, fg, w, h) {
-  const c = document.createElement("canvas"); c.width = w || 256; c.height = h || 96; const g = c.getContext("2d");
-  g.fillStyle = bg; g.fillRect(0, 0, c.width, c.height);
-  g.fillStyle = fg; g.font = `bold ${Math.floor(c.height * 0.56)}px "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillText(text, c.width / 2, c.height / 2 + 2);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+function start(x, z, ry, r) { const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g); C.colliders.push({ x, z, r }); return g; }
+function timber(g, w, h, d, y, zf) {
+  // 木骨架：直樑、斜撐、橫樑，貼在正面
+  const n = Math.max(3, Math.round(w / 0.75)); for (let i = 0; i <= n; i++) box(0.1, h, 0.08, FRAME, -w / 2 + i * w / n, y, zf + 0.03, g);
+  [[-w / 2 + w / n / 2, 1], [w / 2 - w / n / 2, -1]].forEach(([bx, sd]) => { const b = box(0.08, h * 0.7, 0.06, FRAME, bx, y, zf + 0.03, g); b.rotation.z = sd * 0.6; });
+  box(w + 0.1, 0.1, 0.08, FRAME, 0, y + h / 2, zf + 0.03, g); box(w + 0.1, 0.1, 0.08, FRAME, 0, y - h / 2, zf + 0.03, g);
 }
-const signMats = {};
-// 招牌：白天普通、晚上自己發光
-function sign(g, text, bg, fg, w, x, y, z, ry) {
-  const key = text + bg; if (!signMats[key]) { const t = signTex(text, bg, fg); signMats[key] = new THREE.MeshStandardMaterial({ map: t, emissive: "#ffffff", emissiveMap: t, emissiveIntensity: 0, roughness: 0.6 }); C.signs.push(signMats[key]); }
-  const h = w * 0.375;
-  const s = new THREE.Mesh(new THREE.PlaneGeometry(w, h), signMats[key]); s.position.set(x, y, z); s.rotation.y = ry || 0; g.add(s);
-  const bk = box(w + 0.08, h + 0.08, 0.05, "#3a3440", x, y, z - 0.03, g); bk.rotation.y = ry || 0;
-  return s;
+function pools(g, w, d) { const p = C.lightPool("#ffb060", Math.max(w, d) * 0.8, g, 0.03); p.position.z = d / 2 + 0.7; C.housePools.push(p); }
+function finish(g, w, d, name, x, z, ry, frontPad) {
+  pools(g, w, d);
+  const dz = d / 2 + (frontPad || 0) + 0.9;
+  return { name, x, z, ry, door: { x: x + Math.sin(ry) * dz, z: z + Math.cos(ry) * dz }, front: { x: x + Math.sin(ry) * (dz + 1.3), z: z + Math.cos(ry) * (dz + 1.3) }, r: Math.max(w, d) / 2 + 0.3 };
 }
-function win(g, w, h, x, y, z, ry, frame) {
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), C.windowM); m.position.set(x, y, z); m.rotation.y = ry || 0; g.add(m);
-  if (frame !== false) { const f = box(w + 0.08, h + 0.08, 0.03, frame || "#f3efe6", x, y, z, g); f.rotation.y = ry || 0; f.position.add(new THREE.Vector3(Math.sin(ry || 0), 0, Math.cos(ry || 0)).multiplyScalar(-0.02)); }
-  return m;
-}
-function door(g, w, h, x, y, z, col) { box(w, h, 0.06, col || "#6a4a32", x, y + h / 2, z, g); sph(0.03, "#e8b93a", x + w * 0.3, y + h * 0.5, z + 0.04, g, 8, 6); }
-function gableRoof(g, w, d, h, y, col, overhang) {
-  const o = overhang || 0.2, sh = new THREE.Shape(); sh.moveTo(-w / 2 - o, 0); sh.lineTo(w / 2 + o, 0); sh.lineTo(0, h); sh.closePath();
-  const rg = new THREE.ExtrudeGeometry(sh, { depth: d + o * 2, bevelEnabled: false }); rg.translate(0, 0, -(d + o * 2) / 2);
-  const rf = new THREE.Mesh(rg, mat(col)); rf.position.y = y; rf.castShadow = rf.receiveShadow = true; g.add(rf); return rf;
-}
-function pools(g, w, d) {
-  const p = C.lightPool("#ffb060", Math.max(w, d) * 0.9, g, 0.03); p.position.z = d / 2 + 0.6; C.housePools.push(p);
-}
-function start(x, z, ry, r) {
-  const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; C.scene.add(g);
-  C.colliders.push({ x, z, r });
-  return g;
-}
-function finish(g, w, d, name, x, z, ry) {
-  outline(g, 0.02); pools(g, w, d);
-  const dz = d / 2 + 0.9;
-  return { name, x, z, ry, door: { x: x + Math.sin(ry) * dz, z: z + Math.cos(ry) * dz }, front: { x: x + Math.sin(ry) * (dz + 1.2), z: z + Math.cos(ry) * (dz + 1.2) }, r: Math.max(w, d) / 2 + 0.3 };
+const PAL = [["#f0e2c8", "#6b4a3a", "#55392c"], ["#e8dcd0", "#5a6a7a", "#44525e"], ["#f2dcc4", "#8a4a3a", "#6a3a2a"], ["#e6e4dc", "#4a6a5a", "#3a5446"]];
+
+/* 民宅：石基、灰泥木骨架、木瓦、閣樓窗、煙囪 */
+function house(x, z, ry, v) {
+  const [wallC, roofC, roofC2] = PAL[v % PAL.length]; const W = 2.8, D = 2.2, g = start(x, z, ry, 1.9);
+  box(W + 0.2, 0.9, D + 0.2, M.stone, 0, 0.45, 0, g); box(W, 1.3, D, mat(wallC, { map: null }), 0, 1.55, 0, g);
+  box(W + 0.15, 0.08, D + 0.15, FRAME, 0, 0.9, 0, g); timber(g, W, 1.3, D, 1.55, D / 2);
+  [-0.8, 0.8].forEach((bz) => box(0.08, 1.3, 0.1, FRAME, W / 2 + 0.03, 1.55, bz, g));
+  tileRoof(g, W + 0.2, D + 0.1, 1.25, 2.2, roofC, roofC2, 8, 12, "shingle", 0.35);
+  if (v % 2) { const dor = new THREE.Group(); dor.position.set(0.5, 2.6, 0.7); g.add(dor); box(0.7, 0.6, 0.8, mat(wallC), 0, 0.3, 0, dor); tileRoof(dor, 0.7, 0.7, 0.4, 0.6, roofC, roofC2, 3, 5, "shingle", 0.12); latticeWin(dor, 0.4, 0.36, 0, 0.3, 0.41, 0, 2, 2, FRAME); }
+  box(0.4, 1.3, 0.4, M.stone, -0.8, 3.1, -0.5, g); box(0.52, 0.1, 0.52, "#5a5048", -0.8, 3.78, -0.5, g); smoke(g, -0.8, 3.9, -0.5);
+  doorFrame(g, 0.65, 1.3, 0.7, D / 2 + 0.11, 0, M.woodDark, FRAME);
+  latticeWin(g, 0.55, 0.65, -0.7, 0.6, D / 2 + 0.11, 0, 2, 2, "#f3efe6", "#8a8278", "#c8574a", { shutters: "#3f6a5a", flowers: true });
+  latticeWin(g, 0.5, 0.6, -0.7, 1.7, D / 2 + 0.05, 0, 2, 2, FRAME, "#8a7a6a", "#f3e4c8"); latticeWin(g, 0.5, 0.6, 0.7, 1.7, D / 2 + 0.05, 0, 2, 2, FRAME, "#8a7a6a", "#f3e4c8");
+  latticeWin(g, 0.55, 0.65, W / 2 + 0.11, 0.6, 0.2, Math.PI / 2, 2, 2, "#f3efe6", "#8a8278", "#c8574a", { shutters: "#3f6a5a" });
+  ivy(g, -W / 2 + 0.1, 0.2, D / 2 + 0.12, 0, 22);
+  for (let i = 0; i < 6; i++) { const l = cyl(0.07, 0.07, 0.5, M.wood, -W / 2 - 0.35, 0.08 + Math.floor(i / 3) * 0.14, -0.4 + (i % 3) * 0.15, g, 7); l.rotation.z = Math.PI / 2; }
+  return finish(g, W, D, "民宅", x, z, ry);
 }
 
-/* 民宅 */
-function house(x, z, ry, wall, roof) {
-  const w = 1.9, d = 1.6, g = start(x, z, ry, 1.35);
-  box(w, 1.35, d, wall, 0, 0.675, 0, g); box(w + 0.1, 0.12, d + 0.1, "#8a6a4a", 0, 0.06, 0, g);
-  gableRoof(g, d, w, 0.95, 1.35, roof).rotation.y = Math.PI / 2;
-  box(0.3, 0.7, 0.3, "#9a8a7a", 0.45, 1.85, 0.3, g);
-  door(g, 0.44, 0.78, 0, 0, d / 2 + 0.01);
-  [[-0.6, 0.85, d / 2 + 0.005, 0], [0.6, 0.85, d / 2 + 0.005, 0], [w / 2 + 0.005, 0.8, 0, Math.PI / 2], [-w / 2 - 0.005, 0.8, 0, -Math.PI / 2]].forEach(([wx, wy, wz, wr]) => win(g, 0.42, 0.42, wx, wy, wz, wr));
-  return finish(g, w, d, "民宅", x, z, ry);
-}
-
-/* 圖書館：石造、柱廊、拱窗、平頂 */
+/* 圖書館：石造兩層、柱廊、拱窗、圓頂、門口階梯 */
 function library(x, z, ry) {
-  const w = 4.6, d = 2.8, g = start(x, z, ry, 2.6);
-  box(w, 2.3, d, "#e6dcc8", 0, 1.15, 0, g); box(w + 0.3, 0.2, d + 0.3, "#b8ae9a", 0, 0.1, 0, g);
-  box(w + 0.4, 0.22, d + 0.4, "#b8ae9a", 0, 2.41, 0, g); box(w - 0.6, 0.5, d - 0.6, "#d8cfbc", 0, 2.75, 0, g);
-  const dome = sph(0.9, "#5f8a6a", 0, 3.0, 0, g, 20, 12); dome.scale.y = 0.6;
-  [-1.6, -0.55, 0.55, 1.6].forEach((cx) => cyl(0.14, 0.16, 2.1, "#f3efe6", cx, 1.15, d / 2 + 0.35, g, 10));
-  box(w, 0.25, 0.7, "#e6dcc8", 0, 2.25, d / 2 + 0.3, g);
-  [-1.1, 1.1].forEach((cx) => { win(g, 0.6, 1.0, cx, 1.2, d / 2 + 0.01, 0); const arch = cyl(0.33, 0.33, 0.04, "#f3efe6", cx, 1.7, d / 2 + 0.005, g, 16); arch.rotation.x = Math.PI / 2; win(g, 0.58, 0.3, cx, 1.68, d / 2 + 0.012, 0, false); });
-  door(g, 0.7, 1.3, 0, 0, d / 2 + 0.01, "#4a3a2a");
-  [-0.9, 0.9].forEach((cz) => [1, -1].forEach((s) => win(g, 0.5, 0.8, s * (w / 2 + 0.005), 1.2, cz, s * Math.PI / 2)));
-  sign(g, "圖書館", "#2f4a3a", "#f3efe6", 1.6, 0, 2.1, d / 2 + 0.66);
-  // 門口階梯
-  box(2.2, 0.12, 0.5, "#c8c0b0", 0, 0.06, d / 2 + 0.25, g); box(2.4, 0.1, 0.5, "#b8ae9a", 0, 0.0, d / 2 + 0.65, g);
-  return finish(g, w, d + 0.8, "圖書館", x, z, ry);
+  const W = 5.2, D = 3.2, g = start(x, z, ry, 3.0);
+  box(W, 3.2, D, M.stoneLight, 0, 1.6, 0, g); box(W + 0.4, 0.25, D + 0.4, M.stone, 0, 0.12, 0, g);
+  box(W + 0.3, 0.2, D + 0.3, M.stone, 0, 1.6, 0, g);
+  flatRoof(g, W, D, 3.2, M.stone);
+  const dome = sph(1.1, mat("#5f8a7a", { roughness: 0.5, metalness: 0.2 }), 0, 3.6, 0, g, 24, 14); dome.scale.y = 0.65; cyl(1.15, 1.15, 0.3, M.stoneLight, 0, 3.55, 0, g, 24); sph(0.1, M.brass, 0, 4.35, 0, g, 8, 6);
+  // 柱廊
+  [-1.9, -0.65, 0.65, 1.9].forEach((cx) => { cyl(0.16, 0.18, 2.6, M.stoneLight, cx, 1.45, D / 2 + 0.5, g, 12); box(0.42, 0.14, 0.42, M.stoneLight, cx, 2.8, D / 2 + 0.5, g); box(0.4, 0.1, 0.4, M.stone, cx, 0.2, D / 2 + 0.5, g); });
+  box(W, 0.35, 0.9, M.stoneLight, 0, 3.0, D / 2 + 0.45, g); const ped = new THREE.Mesh(new THREE.ExtrudeGeometry((() => { const s = new THREE.Shape(); s.moveTo(-2.7, 0); s.lineTo(2.7, 0); s.lineTo(0, 0.9); s.closePath(); return s; })(), { depth: 0.95, bevelEnabled: false }), M.stoneLight); ped.position.set(0, 3.17, D / 2 + 0.0); ped.castShadow = ped.receiveShadow = true; g.add(ped);
+  [-1.3, 1.3].forEach((cx) => latticeWin(g, 0.7, 1.2, cx, 1.0, D / 2 + 0.01, 0, 2, 3, "#f3efe6", "#8a8278", null, { arch: true }));
+  [-1.3, 0, 1.3].forEach((cx) => latticeWin(g, 0.6, 0.8, cx, 2.45, D / 2 + 0.01, 0, 2, 2, "#f3efe6", "#8a8278"));
+  doorFrame(g, 0.9, 1.6, 0, D / 2 + 0.01, 0, M.woodDark, FRAME, { arch: true, step: false });
+  [-1.0, 1.0].forEach((cz) => [1, -1].forEach((s) => { latticeWin(g, 0.6, 1.0, s * (W / 2 + 0.01), 1.0, cz, s * Math.PI / 2, 2, 3, "#f3efe6", "#8a8278", null, { arch: true }); latticeWin(g, 0.5, 0.7, s * (W / 2 + 0.01), 2.45, cz, s * Math.PI / 2, 2, 2, "#f3efe6", "#8a8278"); }));
+  signBoard(g, "圖書館", "#2f4a3a", "#f3efe6", 1.8, 0, 2.05, D / 2 + 0.06);
+  // 階梯、石獅燈柱
+  [0, 1, 2].forEach((i) => box(3.2 + i * 0.3, 0.12, 0.45, M.stoneLight, 0, 0.3 - i * 0.12, D / 2 + 1.0 + i * 0.4, g));
+  [-1.9, 1.9].forEach((cx) => { cyl(0.22, 0.26, 0.9, M.stone, cx, 0.45, D / 2 + 1.5, g, 8); const l = C.addLamp(g, cx, 0.9, D / 2 + 1.5); });
+  ivy(g, W / 2 + 0.05, 0.1, -1.4, Math.PI / 2, 18);
+  return finish(g, W, D, "圖書館", x, z, ry, 1.5);
 }
 
-/* 咖啡廳：紅磚、條紋雨棚、大窗、戶外座位 */
+/* 咖啡廳：紅磚一樓、灰泥二樓、條紋雨棚、大窗、戶外座位 */
 function cafe(x, z, ry) {
-  const w = 2.8, d = 2.3, g = start(x, z, ry, 1.9);
-  box(w, 1.7, d, "#a8604a", 0, 0.85, 0, g); box(w + 0.1, 0.1, d + 0.1, "#6a4a3a", 0, 0.05, 0, g);
-  box(w + 0.2, 0.18, d + 0.2, "#5a3a2a", 0, 1.79, 0, g); box(0.3, 0.6, 0.3, "#5a4a44", -0.9, 2.1, -0.5, g);
+  const W = 3.4, D = 2.6, g = start(x, z, ry, 2.3);
+  box(W + 0.2, 0.5, D + 0.2, M.stone, 0, 0.25, 0, g); box(W, 1.3, D, M.brick, 0, 1.15, 0, g); box(W, 1.2, D, M.plasterWarm, 0, 2.4, 0, g); box(W + 0.15, 0.1, D + 0.15, FRAME, 0, 1.8, 0, g);
+  timber(g, W, 1.2, D, 2.4, D / 2);
+  tileRoof(g, W + 0.2, D + 0.1, 1.1, 3.0, "#6b4a3a", "#55392c", 7, 13, "shingle", 0.35);
+  cyl(0.18, 0.2, 1.0, M.brick, 1.0, 3.6, -0.6, g, 8); smoke(g, 1.0, 4.1, -0.6);
   // 雨棚
-  const aw = new THREE.Group(); aw.position.set(0, 1.35, d / 2 + 0.35); aw.rotation.x = 0.35; g.add(aw);
-  for (let i = 0; i < 7; i++) box(0.4, 0.04, 0.7, i % 2 ? "#f3efe6" : "#c8574a", -1.2 + i * 0.4, 0, 0, aw);
-  win(g, 1.3, 0.8, -0.55, 0.9, d / 2 + 0.01, 0, "#3a2a1a"); door(g, 0.55, 1.15, 0.85, 0, d / 2 + 0.01, "#3a2a1a");
-  win(g, 0.6, 0.6, w / 2 + 0.005, 1.0, 0.2, Math.PI / 2, "#3a2a1a");
-  sign(g, "☕ 咖啡", "#3a2418", "#ffd9a0", 1.3, -0.3, 1.9, d / 2 + 0.12);
-  // 戶外桌椅、盆栽
-  cyl(0.3, 0.3, 0.04, "#f3efe6", -0.9, 0.6, d / 2 + 1.0, g, 12); cyl(0.04, 0.05, 0.6, "#3a3440", -0.9, 0.3, d / 2 + 1.0, g, 6);
-  [-1.35, -0.45].forEach((cx) => { box(0.3, 0.04, 0.3, "#3f7a5a", cx, 0.42, d / 2 + 1.0, g); cyl(0.03, 0.03, 0.42, "#3a3440", cx, 0.21, d / 2 + 1.0, g, 5); });
-  cyl(0.18, 0.14, 0.3, "#c8744a", 1.2, 0.15, d / 2 + 0.55, g, 10); sph(0.26, "#5f9a44", 1.2, 0.5, d / 2 + 0.55, g, 10, 8);
-  return finish(g, w, d + 1.2, "咖啡廳", x, z, ry);
+  const aw = new THREE.Group(); aw.position.set(0, 1.7, D / 2 + 0.45); aw.rotation.x = 0.35; g.add(aw);
+  for (let i = 0; i < 9; i++) box(0.38, 0.03, 0.85, i % 2 ? "#f3efe6" : "#c8574a", -1.52 + i * 0.38, 0, 0, aw); [-1.6, 1.6].forEach((ax) => cyl(0.02, 0.02, 0.9, M.iron, ax, -0.02, 0, aw, 6).rotation.x = Math.PI / 2);
+  latticeWin(g, 1.5, 0.9, -0.65, 1.05, D / 2 + 0.01, 0, 3, 2, FRAME, "#8a7a6a"); doorFrame(g, 0.7, 1.4, 1.0, D / 2 + 0.01, 0, M.woodDark, FRAME, { glass: true });
+  [-0.9, 0.9].forEach((cx) => latticeWin(g, 0.55, 0.65, cx, 2.4, D / 2 + 0.05, 0, 2, 2, FRAME, "#8a7a6a", "#f3e4c8", { flowers: true }));
+  latticeWin(g, 0.7, 0.7, W / 2 + 0.01, 1.05, 0.2, Math.PI / 2, 2, 2, FRAME, "#8a7a6a");
+  signBoard(g, "☕ 燈島咖啡", "#3a2418", "#ffd9a0", 1.6, -0.4, 2.0, D / 2 + 0.08);
+  signBoard(g, "咖啡", "#3a2418", "#ffd9a0", 0.6, W / 2 + 0.3, 2.3, D / 2 - 0.2, Math.PI / 2, true);
+  // 戶外桌椅、盆栽、黑板
+  [[-1.2, 1.2], [-0.2, 1.4]].forEach(([tx, tz]) => { cyl(0.3, 0.3, 0.04, "#f3efe6", tx, 0.62, D / 2 + tz, g, 12); cyl(0.04, 0.05, 0.6, M.iron, tx, 0.3, D / 2 + tz, g, 6); cyl(0.045, 0.03, 0.09, "#f8f4ec", tx + 0.08, 0.69, D / 2 + tz, g, 10); [-0.45, 0.45].forEach((cx) => { box(0.3, 0.04, 0.3, "#3f7a5a", tx + cx, 0.44, D / 2 + tz, g); cyl(0.03, 0.03, 0.44, M.iron, tx + cx, 0.22, D / 2 + tz, g, 5); box(0.3, 0.3, 0.04, "#3f7a5a", tx + cx, 0.6, D / 2 + tz + (cx < 0 ? -0.14 : 0.14), g); }); });
+  cyl(0.2, 0.16, 0.32, "#c8744a", 1.45, 0.16, D / 2 + 0.7, g, 10); sph(0.3, "#5f9a44", 1.45, 0.55, D / 2 + 0.7, g, 10, 8);
+  const bb = box(0.5, 0.7, 0.04, "#2a2a2a", -1.55, 0.4, D / 2 + 0.45, g); bb.rotation.set(-0.2, 0.4, 0); box(0.56, 0.76, 0.03, M.wood, -1.55, 0.4, D / 2 + 0.43, g).rotation.set(-0.2, 0.4, 0);
+  return finish(g, W, D, "咖啡廳", x, z, ry, 1.0);
 }
 
-/* 便利商店：白色平頂、整面玻璃、三色條紋 */
+/* 便利商店：石基、白牆、平頂、整面玻璃、三色條紋 */
 function konbini(x, z, ry) {
-  const w = 3.2, d = 2.2, g = start(x, z, ry, 2.0);
-  box(w, 1.8, d, "#f6f3ea", 0, 0.9, 0, g); box(w + 0.1, 0.1, d + 0.1, "#9a968c", 0, 0.05, 0, g);
-  box(w + 0.3, 0.3, d + 0.3, "#f6f3ea", 0, 1.95, 0, g);
-  [["#3f7a8a", -0.1], ["#e8b93a", 0], ["#c8574a", 0.1]].forEach(([c, dy]) => box(w + 0.32, 0.1, d + 0.32, c, 0, 1.95 + dy, 0, g));
-  const glass = win(g, w - 0.4, 1.2, 0, 0.85, d / 2 + 0.01, 0, "#8a8680"); glass.userData.bright = 1; C.brightWins.push(glass);
-  [-0.9, 0, 0.9].forEach((cx) => box(0.05, 1.25, 0.02, "#8a8680", cx, 0.85, d / 2 + 0.03, g));
-  box(0.55, 1.1, 0.02, "#4a6a8a", 0.5, 0.55, d / 2 + 0.03, g).material = mat("#aac8e0", { transparent: true, opacity: 0.4 });
-  sign(g, "便利商店", "#2a6a5a", "#ffffff", 1.8, 0, 2.35, 0.2);
-  // 門口的冰箱和垃圾桶
-  box(0.5, 0.9, 0.4, "#3a6a8a", -1.35, 0.45, d / 2 + 0.5, g); cyl(0.18, 0.16, 0.5, "#4a4a50", 1.5, 0.25, d / 2 + 0.5, g, 10);
-  return finish(g, w, d + 0.6, "便利商店", x, z, ry);
+  const W = 3.6, D = 2.6, g = start(x, z, ry, 2.3);
+  box(W + 0.2, 0.4, D + 0.2, M.stone, 0, 0.2, 0, g); box(W, 1.9, D, M.plasterCool, 0, 1.35, 0, g);
+  flatRoof(g, W, D, 2.3, M.stoneLight);
+  box(W + 0.5, 0.36, 0.5, "#f6f3ea", 0, 2.5, D / 2 + 0.2, g); [["#3f7a8a", 0.12], ["#e8b93a", 0], ["#c8574a", -0.12]].forEach(([c, dy]) => box(W + 0.52, 0.11, 0.52, c, 0, 2.5 + dy, D / 2 + 0.2, g));
+  const glass = latticeWin(g, W - 0.5, 1.4, 0, 1.2, D / 2 + 0.01, 0, 4, 1, "#8a8680", null, null, { cool: true }); glass.userData.bright = 1;
+  doorFrame(g, 0.7, 1.5, 0.9, D / 2 + 0.02, 0, M.winCool, "#8a8680", { step: false });
+  signBoard(g, "便利商店", "#2a6a5a", "#ffffff", 1.9, 0, 2.5, D / 2 + 0.47);
+  latticeWin(g, 0.7, 0.7, W / 2 + 0.01, 1.3, 0.2, Math.PI / 2, 2, 2, "#8a8680", null, null, { cool: true });
+  // 門口冰箱、垃圾桶、腳踏車架
+  box(0.5, 1.0, 0.45, "#3a6a8a", -1.45, 0.5, D / 2 + 0.5, g); add(new THREE.PlaneGeometry(0.4, 0.8), M.winCool, -1.45, 0.55, D / 2 + 0.73, g).castShadow = false; cyl(0.18, 0.16, 0.5, "#4a4a50", 1.65, 0.25, D / 2 + 0.5, g, 10);
+  for (let i = 0; i < 3; i++) { torus(0.2, 0.015, M.iron, W / 2 + 0.5, 0.25, -0.6 + i * 0.5, g, 16).rotation.y = Math.PI / 2; }
+  C.addLamp(g, -1.9, 0, D / 2 + 1.1);
+  return finish(g, W, D, "便利商店", x, z, ry, 0.6);
 }
 
-/* 學校：兩層樓、鐘塔、旗桿 */
+/* 學校：兩層紅磚、鐘塔、旗桿、拱門 */
 function school(x, z, ry) {
-  const w = 5.2, d = 2.4, g = start(x, z, ry, 2.9);
-  box(w, 2.6, d, "#f3e2c4", 0, 1.3, 0, g); box(w + 0.1, 0.12, d + 0.1, "#8a7a5a", 0, 0.06, 0, g);
-  gableRoof(g, d, w, 0.8, 2.6, "#8a4a3a").rotation.y = Math.PI / 2;
+  const W = 6.0, D = 2.8, g = start(x, z, ry, 3.4);
+  box(W + 0.2, 0.5, D + 0.2, M.stone, 0, 0.25, 0, g); box(W, 2.9, D, M.brick, 0, 1.95, 0, g);
+  box(W + 0.15, 0.1, D + 0.15, M.stoneLight, 0, 1.9, 0, g);
+  tileRoof(g, W + 0.2, D + 0.1, 1.1, 3.4, "#55392c", "#443024", 7, 20, "shingle", 0.35);
   // 鐘塔
-  box(1.0, 1.4, 1.0, "#f3e2c4", 0, 3.3, 0, g); const ct = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.8, 4), mat("#8a4a3a")); ct.position.y = 4.4; ct.rotation.y = Math.PI / 4; ct.castShadow = true; g.add(ct);
-  const clock = cyl(0.3, 0.3, 0.04, "#fffdf8", 0, 3.5, 0.52, g, 20); clock.rotation.x = Math.PI / 2; box(0.03, 0.22, 0.02, "#3a3440", 0, 3.58, 0.55, g); box(0.16, 0.03, 0.02, "#3a3440", 0.06, 3.5, 0.55, g);
-  for (let f = 0; f < 2; f++) [-1.9, -1.1, 1.1, 1.9].forEach((cx) => win(g, 0.5, 0.6, cx, 0.85 + f * 1.15, d / 2 + 0.01, 0));
-  [-0.6, 0.6].forEach((cz) => [1, -1].forEach((s) => win(g, 0.5, 0.6, s * (w / 2 + 0.005), 0.85, cz, s * Math.PI / 2)));
-  door(g, 0.8, 1.3, 0, 0, d / 2 + 0.01, "#5a3a2a"); win(g, 0.8, 0.5, 0, 1.95, d / 2 + 0.01, 0);
-  sign(g, "燈島小學", "#4a3a2a", "#ffe2a0", 1.6, 0, 2.45, d / 2 + 0.05);
-  // 旗桿
-  cyl(0.03, 0.03, 3.2, "#d8d4cc", 2.2, 1.6, d / 2 + 1.0, g, 6); box(0.5, 0.32, 0.02, "#c8574a", 2.47, 3.0, d / 2 + 1.0, g);
-  return finish(g, w, d + 0.8, "學校", x, z, ry);
+  box(1.2, 1.8, 1.2, M.brick, 0, 4.3, 0, g); box(1.4, 0.12, 1.4, M.stoneLight, 0, 5.25, 0, g); const ct = cone(0.95, 1.0, "#55392c", 0, 5.8, 0, g, 4); ct.rotation.y = Math.PI / 4; sph(0.08, M.brass, 0, 6.35, 0, g, 8, 6);
+  const clock = cyl(0.36, 0.36, 0.04, "#fffdf8", 0, 4.55, 0.62, g, 24); clock.rotation.x = Math.PI / 2; torus(0.36, 0.03, M.brass, 0, 4.55, 0.63, g, 24).rotation.x = 0; box(0.03, 0.26, 0.02, "#3a3440", 0, 4.64, 0.66, g); box(0.2, 0.03, 0.02, "#3a3440", 0.08, 4.55, 0.66, g);
+  [-1, 1].forEach((sd) => { const bw = add(new THREE.PlaneGeometry(0.4, 0.6), M.win, sd * 0.61, 4.4, 0, g); bw.rotation.y = sd * Math.PI / 2; bw.castShadow = false; torus(0.2, 0.03, FRAME, sd * 0.62, 4.7, 0, g, 16, Math.PI).rotation.y = sd * Math.PI / 2; });
+  for (let f = 0; f < 2; f++) [-2.3, -1.4, 1.4, 2.3].forEach((cx) => latticeWin(g, 0.55, 0.75, cx, 1.05 + f * 1.3, D / 2 + 0.01, 0, 2, 3, "#f3efe6", "#d8d0c0"));
+  [-0.9, 0.9].forEach((cz) => [1, -1].forEach((s) => latticeWin(g, 0.55, 0.75, s * (W / 2 + 0.01), 1.05, cz, s * Math.PI / 2, 2, 3, "#f3efe6", "#d8d0c0")));
+  doorFrame(g, 1.0, 1.7, 0, D / 2 + 0.01, 0, M.woodDark, "#d8d0c0", { arch: true, step: false }); latticeWin(g, 0.9, 0.6, 0, 2.5, D / 2 + 0.01, 0, 3, 2, "#f3efe6", "#d8d0c0");
+  signBoard(g, "燈島小學", "#4a3a2a", "#ffe2a0", 1.8, 0, 3.05, D / 2 + 0.08);
+  [0, 1].forEach((i) => box(2.0 + i * 0.4, 0.12, 0.4, M.stoneLight, 0, 0.3 - i * 0.12, D / 2 + 0.3 + i * 0.4, g));
+  cyl(0.03, 0.03, 3.6, "#d8d4cc", 2.6, 1.8, D / 2 + 1.2, g, 6); box(0.55, 0.36, 0.02, "#c8574a", 2.9, 3.4, D / 2 + 1.2, g); sph(0.05, M.brass, 2.6, 3.62, D / 2 + 1.2, g, 8, 6);
+  // 操場邊的長椅、樹
+  box(1.1, 0.06, 0.35, M.wood, -2.6, 0.45, D / 2 + 1.2, g); [-0.45, 0.45].forEach((lx) => box(0.06, 0.42, 0.3, M.iron, -2.6 + lx, 0.22, D / 2 + 1.2, g));
+  return finish(g, W, D, "學校", x, z, ry, 1.0);
 }
 
-/* 書店：窄而高、門口堆書 */
+/* 書店：窄高三層、凸窗、門口書堆 */
 function bookstore(x, z, ry) {
-  const w = 2.2, d = 2.0, g = start(x, z, ry, 1.6);
-  box(w, 2.4, d, "#5a7a9a", 0, 1.2, 0, g); box(w + 0.1, 0.1, d + 0.1, "#3a4a5a", 0, 0.05, 0, g);
-  box(w + 0.2, 0.15, d + 0.2, "#3a4a5a", 0, 2.47, 0, g); gableRoof(g, w, d, 0.6, 2.55, "#3f5a7a", 0.1);
-  win(g, 1.0, 0.9, -0.35, 0.85, d / 2 + 0.01, 0, "#f3efe6"); door(g, 0.5, 1.1, 0.65, 0, d / 2 + 0.01, "#2a3a4a");
-  win(g, 0.5, 0.5, -0.5, 1.85, d / 2 + 0.01, 0); win(g, 0.5, 0.5, 0.5, 1.85, d / 2 + 0.01, 0);
-  sign(g, "📚 書店", "#f3efe6", "#2a3a4a", 1.1, 0, 1.4, d / 2 + 0.12);
-  // 門口一疊書
-  [["#c8574a", 0], ["#e8b93a", 0.08], ["#3f7a5a", 0.16], ["#7a5a9a", 0.24]].forEach(([c, y], i) => { const b = box(0.36, 0.08, 0.26, c, -0.85, 0.04 + y, d / 2 + 0.5, g); b.rotation.y = i * 0.25; });
-  return finish(g, w, d + 0.5, "書店", x, z, ry);
+  const W = 2.6, D = 2.2, g = start(x, z, ry, 1.9);
+  box(W + 0.2, 0.5, D + 0.2, M.stone, 0, 0.25, 0, g); box(W, 2.9, D, mat("#5a7a9a"), 0, 1.95, 0, g);
+  box(W + 0.15, 0.08, D + 0.15, FRAME, 0, 1.8, 0, g); box(W + 0.15, 0.08, D + 0.15, FRAME, 0, 2.9, 0, g);
+  tileRoof(g, W, D, 0.8, 3.4, "#3f5a7a", "#2f4660", 6, 10, "shingle", 0.3);
+  // 凸窗
+  const bay = new THREE.Group(); bay.position.set(-0.6, 1.0, D / 2); g.add(bay); box(1.2, 1.0, 0.4, mat("#5a7a9a"), 0, 0, 0.2, bay); latticeWin(bay, 0.8, 0.75, 0, 0, 0.41, 0, 3, 2, "#f3efe6", "#8a8278"); [-1, 1].forEach((sd) => latticeWin(bay, 0.3, 0.75, sd * 0.61, 0, 0.2, sd * Math.PI / 2, 1, 2, "#f3efe6")); box(1.3, 0.08, 0.5, FRAME, 0, 0.55, 0.2, bay); box(1.3, 0.1, 0.5, FRAME, 0, -0.55, 0.2, bay);
+  doorFrame(g, 0.65, 1.4, 0.75, D / 2 + 0.01, 0, M.woodDark, FRAME, { glass: true });
+  [-0.6, 0.6].forEach((cx) => latticeWin(g, 0.5, 0.65, cx, 2.3, D / 2 + 0.05, 0, 2, 2, "#f3efe6", "#8a8278", "#f3e4c8"));
+  latticeWin(g, 0.5, 0.65, W / 2 + 0.01, 1.1, 0.1, Math.PI / 2, 2, 2, "#f3efe6", "#8a8278");
+  signBoard(g, "📚 書店", "#f3efe6", "#2a3a4a", 1.2, 0.3, 2.0, D / 2 + 0.08);
+  signBoard(g, "書", "#f3efe6", "#2a3a4a", 0.5, W / 2 + 0.28, 2.3, D / 2 - 0.3, Math.PI / 2, true);
+  [["#c8574a", 0], ["#e8b93a", 0.08], ["#3f7a5a", 0.16], ["#7a5a9a", 0.24], ["#3f5a7a", 0.32]].forEach(([c, y], i) => { const b = box(0.36, 0.08, 0.26, c, -1.5, 0.04 + y, D / 2 + 0.5, g); b.rotation.y = i * 0.25; });
+  box(0.9, 0.5, 0.3, M.wood, 1.5, 0.25, D / 2 + 0.45, g); [0, 1, 2, 3, 4].forEach((i) => box(0.12, 0.3, 0.2, ["#c8574a", "#e8b93a", "#3f7a5a", "#7a5a9a", "#f3efe6"][i], 1.2 + i * 0.15, 0.65, D / 2 + 0.45, g));
+  return finish(g, W, D, "書店", x, z, ry, 0.6);
 }
 
-/* 麵包店：粉牆、圓窗、煙囪冒煙 */
+/* 麵包店：粉牆、圓窗、大煙囪、窗台麵包 */
 function bakery(x, z, ry) {
-  const w = 2.5, d = 2.1, g = start(x, z, ry, 1.75);
-  box(w, 1.6, d, "#f6d8c8", 0, 0.8, 0, g); box(w + 0.1, 0.1, d + 0.1, "#a07a6a", 0, 0.05, 0, g);
-  gableRoof(g, w, d, 1.0, 1.6, "#c8886a"); cyl(0.2, 0.2, 0.8, "#8a6a5a", 0.7, 2.2, -0.3, g, 8);
-  const rw = cyl(0.35, 0.35, 0.03, "#ffffff", -0.55, 1.0, d / 2 + 0.01, g, 20); rw.rotation.x = Math.PI / 2; const rwin = new THREE.Mesh(new THREE.CircleGeometry(0.3, 20), C.windowM); rwin.position.set(-0.55, 1.0, d / 2 + 0.03); g.add(rwin);
-  door(g, 0.5, 1.1, 0.6, 0, d / 2 + 0.01, "#8a5a4a");
-  sign(g, "🥐 麵包", "#fff4e0", "#a0603a", 1.1, 0, 1.75, d / 2 + 0.12);
-  // 窗台的麵包籃
-  box(0.5, 0.2, 0.3, "#c8a070", -0.55, 0.55, d / 2 + 0.18, g); [[-0.68, 0.7], [-0.52, 0.72], [-0.4, 0.68]].forEach(([bx, by]) => sph(0.08, "#e0a860", bx, by, d / 2 + 0.2, g, 8, 6));
-  return finish(g, w, d + 0.5, "麵包店", x, z, ry);
+  const W = 3.0, D = 2.3, g = start(x, z, ry, 2.0);
+  box(W + 0.2, 0.5, D + 0.2, M.stone, 0, 0.25, 0, g); box(W, 1.6, D, mat("#f6d8c8"), 0, 1.3, 0, g); timber(g, W, 1.6, D, 1.3, D / 2);
+  tileRoof(g, W + 0.2, D + 0.1, 1.2, 2.1, "#c8886a", "#a06a50", 8, 12, "shingle", 0.35);
+  box(0.5, 1.6, 0.5, M.brick, 0.8, 2.9, -0.4, g); box(0.62, 0.1, 0.62, "#5a5048", 0.8, 3.72, -0.4, g); smoke(g, 0.8, 3.85, -0.4);
+  const rw = new THREE.Group(); rw.position.set(-0.7, 1.35, D / 2 + 0.01); g.add(rw); add(new THREE.CircleGeometry(0.38, 24), M.win, 0, 0, 0, rw).castShadow = false; torus(0.38, 0.05, "#fbfaf4", 0, 0, 0.01, rw, 28); box(0.74, 0.03, 0.03, "#fbfaf4", 0, 0, 0.03, rw); box(0.03, 0.74, 0.03, "#fbfaf4", 0, 0, 0.03, rw);
+  doorFrame(g, 0.65, 1.35, 0.75, D / 2 + 0.01, 0, mat("#8a5a4a"), FRAME, { glass: true });
+  latticeWin(g, 0.55, 0.6, W / 2 + 0.01, 1.2, 0.2, Math.PI / 2, 2, 2, "#fbfaf4", "#8a8278", "#f3e4c8", { flowers: true });
+  signBoard(g, "🥐 麵包坊", "#fff4e0", "#a0603a", 1.4, 0, 2.15, D / 2 + 0.08);
+  // 窗台麵包籃、門口小桌
+  box(0.7, 0.22, 0.3, M.wood, -0.7, 0.8, D / 2 + 0.2, g); [[-0.9, 0.95], [-0.7, 0.97], [-0.5, 0.93], [-0.8, 1.02], [-0.6, 1.02]].forEach(([bx, by]) => { const b = sph(0.09, "#e0a860", bx, by, D / 2 + 0.22, g, 8, 6); b.scale.set(1.3, 0.8, 1); });
+  cyl(0.28, 0.28, 0.04, "#f3efe6", -1.5, 0.62, D / 2 + 0.9, g, 12); cyl(0.04, 0.05, 0.6, M.iron, -1.5, 0.3, D / 2 + 0.9, g, 6); cyl(0.1, 0.1, 0.03, "#fbf6ea", -1.5, 0.66, D / 2 + 0.9, g, 10); sph(0.06, "#e0a860", -1.5, 0.72, D / 2 + 0.9, g, 8, 6);
+  return finish(g, W, D, "麵包店", x, z, ry, 0.8);
 }
 
-/* 神社：鳥居、小本殿、石燈籠 */
-function shrine(x, z, ry) {
-  const w = 2.4, d = 2.0, g = start(x, z, ry, 1.6);
-  box(2.2, 0.3, 1.8, "#c8c0b0", 0, 0.15, 0, g); box(1.5, 1.1, 1.2, "#6a3a2a", 0, 0.85, 0, g);
-  box(1.0, 0.6, 1.0, "#5a3a2a", 0, 1.1, 0.72, g);
-  gableRoof(g, 2.2, 1.6, 0.7, 1.4, "#3a3a44", 0.1); box(2.6, 0.08, 0.12, "#3a3a44", 0, 1.42, 0.9, g);
-  [-0.55, 0.55].forEach((cx) => cyl(0.06, 0.06, 1.1, "#c8574a", cx, 0.85, 0.65, g, 8));
-  box(0.5, 0.5, 0.05, "#e8b93a", 0, 0.85, 0.63, g); cyl(0.05, 0.05, 0.3, "#f3efe6", 0, 1.25, 0.66, g, 6);
-  // 鳥居
-  const ty = 0, tz = d / 2 + 1.4;
-  [-0.9, 0.9].forEach((cx) => cyl(0.09, 0.11, 2.0, "#c8574a", cx, 1.0, tz, g, 10));
-  box(2.5, 0.16, 0.2, "#c8574a", 0, 2.05, tz, g).rotation.z = 0; box(2.1, 0.1, 0.14, "#c8574a", 0, 1.7, tz, g); box(0.1, 0.35, 0.1, "#c8574a", 0, 1.87, tz, g);
-  // 石燈籠
-  [-1.3, 1.3].forEach((cx) => { cyl(0.1, 0.12, 0.6, "#9a968c", cx, 0.3, tz - 0.6, g, 6); box(0.3, 0.3, 0.3, "#9a968c", cx, 0.75, tz - 0.6, g); const l = box(0.2, 0.2, 0.02, "#ffe2a0", cx, 0.75, tz - 0.44, g); l.material = C.windowM; const cap = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.2, 4), mat("#8a8680")); cap.position.set(cx, 1.0, tz - 0.6); cap.rotation.y = Math.PI / 4; g.add(cap); });
-  sign(g, "⛩ 燈島神社", "#f3efe6", "#8a3a32", 1.3, 0, 0.5, tz + 0.7);
-  return finish(g, w, d + 2.6, "神社", x, z, ry);
+/* 旅店：三層、陽台、吊掛招牌、拱門馬車道 */
+function inn(x, z, ry) {
+  const W = 4.4, D = 3.0, g = start(x, z, ry, 2.8);
+  box(W + 0.2, 1.1, D + 0.2, M.stone, 0, 0.55, 0, g); box(W, 2.5, D, M.plaster, 0, 2.35, 0, g);
+  box(W + 0.15, 0.08, D + 0.15, FRAME, 0, 1.1, 0, g); box(W + 0.15, 0.08, D + 0.15, FRAME, 0, 2.3, 0, g); timber(g, W, 1.2, D, 1.7, D / 2); timber(g, W, 1.2, D, 2.95, D / 2);
+  tileRoof(g, W + 0.2, D + 0.1, 1.5, 3.6, "#6b4a3a", "#55392c", 9, 16, "shingle", 0.4);
+  [[-1.2, 0.5], [1.2, 0.5]].forEach(([dx, dz]) => { const dor = new THREE.Group(); dor.position.set(dx, 4.0, 0.9); g.add(dor); box(0.7, 0.6, 0.8, M.plaster, 0, 0.3, 0, dor); tileRoof(dor, 0.7, 0.7, 0.4, 0.6, "#6b4a3a", "#55392c", 3, 5, "shingle", 0.12); latticeWin(dor, 0.4, 0.36, 0, 0.3, 0.41, 0, 2, 2, FRAME); });
+  box(0.45, 1.4, 0.45, M.stone, -1.6, 4.4, -0.6, g); box(0.58, 0.1, 0.58, "#5a5048", -1.6, 5.13, -0.6, g); smoke(g, -1.6, 5.25, -0.6);
+  // 陽台
+  box(W - 0.6, 0.1, 0.7, M.wood, 0, 2.3, D / 2 + 0.35, g); for (let i = 0; i < 12; i++) box(0.04, 0.5, 0.04, FRAME, -W / 2 + 0.45 + i * (W - 0.9) / 11, 2.6, D / 2 + 0.68, g); box(W - 0.55, 0.05, 0.05, FRAME, 0, 2.86, D / 2 + 0.68, g); [-1, 1].forEach((sd) => { const br = box(0.06, 0.06, 0.8, FRAME, sd * (W / 2 - 0.5), 1.95, D / 2 + 0.3, g); br.rotation.x = -0.7; });
+  flowerBox(g, 0, 2.38, D / 2 + 0.7, 0, 1.6);
+  doorFrame(g, 1.0, 1.6, 0, D / 2 + 0.11, 0, M.woodDark, FRAME, { arch: true });
+  [-1.4, 1.4].forEach((cx) => latticeWin(g, 0.6, 0.7, cx, 0.8, D / 2 + 0.11, 0, 2, 2, "#f3efe6", "#8a8278", "#c8574a", { shutters: "#6b4a3a" }));
+  [-1.4, 0, 1.4].forEach((cx) => { latticeWin(g, 0.55, 0.65, cx, 1.75, D / 2 + 0.05, 0, 2, 2, FRAME, "#8a7a6a", "#f3e4c8"); latticeWin(g, 0.55, 0.65, cx, 3.0, D / 2 + 0.05, 0, 2, 2, FRAME, "#8a7a6a", "#f3e4c8"); });
+  [-1, 1].forEach((s) => [-0.9, 0.9].forEach((cz) => latticeWin(g, 0.55, 0.65, s * (W / 2 + 0.05), 1.75, cz, s * Math.PI / 2, 2, 2, FRAME, "#8a7a6a", "#f3e4c8")));
+  signBoard(g, "燈島旅店", "#3a2a1a", "#ffd27a", 1.5, 0, 1.75, D / 2 + 0.08);
+  const post = new THREE.Group(); post.position.set(W / 2 + 0.6, 0, D / 2 + 0.3); g.add(post); cyl(0.05, 0.06, 2.0, FRAME, 0, 1.0, 0, post, 7); box(0.7, 0.05, 0.05, FRAME, -0.3, 1.9, 0, post); signBoard(post, "🛏 旅店", "#3a2a1a", "#ffd27a", 0.6, -0.4, 1.55, 0, 0, true);
+  ivy(g, -W / 2 - 0.05, 0.2, 0.8, -Math.PI / 2, 24);
+  for (let i = 0; i < 2; i++) { cyl(0.16, 0.14, 0.4, M.wood, 1.9 + i * 0.4, 0.2, D / 2 + 0.6, g, 10); sph(0.22, "#4f8a3c", 1.9 + i * 0.4, 0.55, D / 2 + 0.6, g, 10, 8); }
+  return finish(g, W, D, "旅店", x, z, ry, 0.9);
 }
 
-/* 木屋：圓木牆、石煙囪 */
-function cabin(x, z, ry) {
-  const w = 2.4, d = 2.0, g = start(x, z, ry, 1.7);
-  for (let i = 0; i < 7; i++) { const c = cyl(0.12, 0.12, w, i % 2 ? "#a07a4a" : "#8a6a3e", 0, 0.14 + i * 0.22, d / 2, g, 8); c.rotation.z = Math.PI / 2; const c2 = cyl(0.12, 0.12, w, i % 2 ? "#a07a4a" : "#8a6a3e", 0, 0.14 + i * 0.22, -d / 2, g, 8); c2.rotation.z = Math.PI / 2; const c3 = cyl(0.12, 0.12, d + 0.24, i % 2 ? "#8a6a3e" : "#a07a4a", w / 2, 0.14 + i * 0.22, 0, g, 8); c3.rotation.x = Math.PI / 2; const c4 = cyl(0.12, 0.12, d + 0.24, i % 2 ? "#8a6a3e" : "#a07a4a", -w / 2, 0.14 + i * 0.22, 0, g, 8); c4.rotation.x = Math.PI / 2; }
-  box(w - 0.1, 1.6, d - 0.1, "#8a6a3e", 0, 0.8, 0, g);
-  gableRoof(g, w, d, 0.9, 1.6, "#5a3a2a"); box(0.4, 1.0, 0.4, "#9a968c", -0.7, 2.0, -0.4, g);
-  win(g, 0.5, 0.45, -0.6, 0.95, d / 2 + 0.13, 0); door(g, 0.5, 1.05, 0.55, 0, d / 2 + 0.13, "#4a2a1a");
-  // 柴堆
-  for (let i = 0; i < 6; i++) { const l = cyl(0.08, 0.08, 0.5, "#a07a4a", w / 2 + 0.35, 0.08 + Math.floor(i / 3) * 0.16, -0.5 + (i % 3) * 0.17, g, 6); l.rotation.z = Math.PI / 2; }
-  return finish(g, w, d + 0.3, "木屋", x, z, ry);
+/* 鐘樓小教堂：尖塔、彩繪玫瑰窗 */
+function chapel(x, z, ry) {
+  const W = 2.6, D = 3.6, g = start(x, z, ry, 2.3);
+  box(W + 0.2, 0.5, D + 0.2, M.stone, 0, 0.25, 0, g); box(W, 2.6, D, M.stoneLight, 0, 1.8, 0, g);
+  tileRoof(g, W, D - 0.1, 1.6, 3.1, "#55606e", "#434d58", 10, 14, "shingle", 0.25);
+  // 塔
+  box(1.2, 4.2, 1.2, M.stoneLight, 0, 2.6, D / 2 - 0.5, g); box(1.4, 0.15, 1.4, M.stone, 0, 4.75, D / 2 - 0.5, g);
+  const sp = cone(0.85, 2.2, "#55606e", 0, 5.9, D / 2 - 0.5, g, 4); sp.rotation.y = Math.PI / 4; sph(0.06, M.brass, 0, 7.05, D / 2 - 0.5, g, 8, 6); box(0.04, 0.5, 0.04, M.brass, 0, 7.3, D / 2 - 0.5, g); box(0.3, 0.04, 0.04, M.brass, 0, 7.4, D / 2 - 0.5, g);
+  [0, 1, 2, 3].forEach((i) => { const a = i * Math.PI / 2; const w = latticeWin(g, 0.35, 0.7, Math.sin(a) * 0.61, 4.0, D / 2 - 0.5 + Math.cos(a) * 0.61, a, 1, 2, FRAME, null, null, { arch: true }); });
+  cyl(0.12, 0.16, 0.25, M.brass, 0, 4.0, D / 2 - 0.5, g, 10);
+  // 玫瑰窗、拱門、側窗
+  const rose = new THREE.Group(); rose.position.set(0, 2.1, D / 2 + 0.11); g.add(rose); add(new THREE.CircleGeometry(0.42, 24), M.winCool, 0, 0, 0, rose).castShadow = false; torus(0.42, 0.05, M.stoneLight, 0, 0, 0.01, rose, 28); for (let i = 0; i < 6; i++) { const sp2 = box(0.03, 0.8, 0.03, M.stoneLight, 0, 0, 0.03, rose); sp2.rotation.z = i * Math.PI / 6; }
+  doorFrame(g, 0.8, 1.5, 0, D / 2 + 0.11, 0, M.woodDark, M.stoneLight, { arch: true });
+  [-1, 1].forEach((s) => [-1.0, 0.0, 1.0].forEach((cz) => latticeWin(g, 0.4, 1.0, s * (W / 2 + 0.01), 1.6, cz, s * Math.PI / 2, 1, 3, M.stoneLight, null, null, { arch: true, cool: true })));
+  [0, 1].forEach((i) => box(1.8 + i * 0.4, 0.12, 0.4, M.stoneLight, 0, 0.3 - i * 0.12, D / 2 + 0.3 + i * 0.4, g));
+  ivy(g, W / 2 + 0.05, 0.1, -1.0, Math.PI / 2, 24);
+  return finish(g, W, D, "鐘樓", x, z, ry, 0.9);
 }
 
-/* 和室：灰瓦屋頂、紙門、緣側 */
-function washitsu(x, z, ry) {
-  const w = 3.0, d = 2.2, g = start(x, z, ry, 2.0);
-  box(w, 0.35, d + 0.6, "#8a6a4a", 0, 0.17, 0.2, g); box(w - 0.2, 1.4, d, "#f3e8d0", 0, 1.05, 0, g);
-  [-1.3, -0.45, 0.45, 1.3].forEach((cx) => box(0.12, 1.4, 0.12, "#5a3a2a", cx, 1.05, d / 2, g));
-  gableRoof(g, w + 0.4, d + 0.6, 0.7, 1.75, "#5a5a66", 0.3);
-  // 紙門（晚上透光）
-  [-0.9, 0.0, 0.9].forEach((cx) => { const p = win(g, 0.7, 1.1, cx, 0.95, d / 2 + 0.01, 0, "#5a3a2a"); [0.3, 0.6].forEach((fy) => box(0.7, 0.02, 0.02, "#5a3a2a", cx, 0.4 + fy, d / 2 + 0.03, g)); box(0.02, 1.1, 0.02, "#5a3a2a", cx, 0.95, d / 2 + 0.03, g); });
-  // 紅燈籠
-  [-1.5, 1.5].forEach((cx) => { const l = sph(0.16, "#c8574a", cx, 1.55, d / 2 + 0.3, g, 10, 8); l.scale.y = 1.3; l.material = C.lanternM; cyl(0.01, 0.01, 0.2, "#3a3440", cx, 1.85, d / 2 + 0.3, g, 4); });
-  // 石頭小徑
-  [0.2, 0.7, 1.2].forEach((sz, i) => cyl(0.22, 0.22, 0.05, "#9a968c", (i % 2 ? 0.15 : -0.15), 0.02, d / 2 + 0.6 + sz, g, 8));
-  return finish(g, w, d + 1.6, "和室", x, z, ry);
-}
+const KIND = { house, library, cafe, konbini, school, bookstore, bakery, inn, chapel };
 
-const KIND = { house, library, cafe, konbini, school, bookstore, bakery, shrine, cabin, washitsu };
-
-/* 街道：環形主街＋四條放射路、中央廣場 */
-function roads(ringR, roadW) {
-  const stone = (() => {
-    const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d");
-    g.fillStyle = "#b9ae9c"; g.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 160; i++) { g.fillStyle = ["#a89d8b", "#c5bbab", "#9e9383"][i % 3]; g.globalAlpha = 0.6; const s = 14 + Math.random() * 18; g.fillRect(Math.random() * 256, Math.random() * 256, s, s * 0.7); }
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 10); t.colorSpace = THREE.SRGBColorSpace; return t;
-  })();
-  const m = new THREE.MeshStandardMaterial({ map: stone, color: "#d8d0c0", roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
-  const ring = new THREE.Mesh(new THREE.RingGeometry(ringR - roadW / 2, ringR + roadW / 2, 96), m); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.56; ring.receiveShadow = true; C.scene.add(ring);
-  const plaza = new THREE.Mesh(new THREE.CircleGeometry(3.4, 40), m); plaza.rotation.x = -Math.PI / 2; plaza.position.y = 0.56; plaza.receiveShadow = true; C.scene.add(plaza);
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; const sp = new THREE.Mesh(new THREE.PlaneGeometry(roadW, ringR - 3), m); sp.rotation.x = -Math.PI / 2; sp.rotation.z = -a; sp.position.set(Math.sin(a) * (ringR + 3) / 2, 0.565, Math.cos(a) * (ringR + 3) / 2); sp.rotation.set(-Math.PI / 2, 0, -a); sp.receiveShadow = true; C.scene.add(sp); }
-  // 廣場的花圃和長椅
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; const bx = Math.sin(a) * 2.6, bz = Math.cos(a) * 2.6; const g = new THREE.Group(); g.position.set(bx, 0.56, bz); g.rotation.y = a; C.scene.add(g); box(1.0, 0.08, 0.35, "#a07a52", 0, 0.42, 0, g); box(1.0, 0.3, 0.06, "#a07a52", 0, 0.62, -0.17, g); [-0.4, 0.4].forEach((lx) => box(0.06, 0.42, 0.3, "#3a3440", lx, 0.21, 0, g)); outline(g, 0.015); C.colliders.push({ x: bx, z: bz, r: 0.45 }); }
-  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + Math.PI / 8; const fx = Math.sin(a) * 2.9, fz = Math.cos(a) * 2.9; const pot = cyl(0.28, 0.22, 0.3, "#b8644a", fx, 0.71, fz, C.scene, 10); outline(pot, 0.012); for (let k = 0; k < 5; k++) { const fa = k / 5 * TAU; sph(0.07, ["#f07a8a", "#ffd27a", "#f3efe6", "#c8a0e0"][i % 4], fx + Math.cos(fa) * 0.12, 0.92, fz + Math.sin(fa) * 0.12, C.scene, 6, 5); } sph(0.1, "#5f9a44", fx, 0.86, fz, C.scene, 8, 6); }
+/* 街道：環形主街、放射路、中央廣場、噴泉 */
+function roads(ringR, roadW, y) {
+  const m = M.cobble; M.cobble.map.repeat.set(3, 3);
+  const ring = add(new THREE.RingGeometry(ringR - roadW / 2, ringR + roadW / 2, 128), m, 0, y + 0.01, 0, C.scene); ring.rotation.x = -Math.PI / 2; ring.castShadow = false;
+  const plaza = add(new THREE.CircleGeometry(4.6, 48), m, 0, y + 0.01, 0, C.scene); plaza.rotation.x = -Math.PI / 2; plaza.castShadow = false;
+  C.spokes.forEach((a) => { const len = ringR - 4; const sp = add(new THREE.PlaneGeometry(roadW, len), m, Math.sin(a) * (ringR + 4) / 2, y + 0.012, Math.cos(a) * (ringR + 4) / 2, C.scene); sp.rotation.set(-Math.PI / 2, 0, -a); sp.castShadow = false; });
+  // 碼頭那條路一路通到沙灘
+  const da = C.spokes[C.spokes.length - 1]; const ext = add(new THREE.PlaneGeometry(roadW, 7), m, Math.sin(da) * (ringR + 3.5), y + 0.012, Math.cos(da) * (ringR + 3.5), C.scene); ext.rotation.set(-Math.PI / 2, 0, -da); ext.castShadow = false;
+  // 廣場：長椅、花圃、路燈（燈塔在正中央）
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; const bx = Math.sin(a) * 3.3, bz = Math.cos(a) * 3.3; const g = new THREE.Group(); g.position.set(bx, y, bz); g.rotation.y = a; C.scene.add(g); box(1.1, 0.08, 0.35, M.wood, 0, 0.42, 0, g); box(1.1, 0.3, 0.06, M.wood, 0, 0.62, -0.17, g); [-0.45, 0.45].forEach((lx) => box(0.06, 0.42, 0.3, M.iron, lx, 0.21, 0, g)); C.colliders.push({ x: bx, z: bz, r: 0.5 }); }
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; const fx = Math.sin(a) * 3.4, fz = Math.cos(a) * 3.4; cyl(0.5, 0.45, 0.3, M.stoneLight, fx, y + 0.15, fz, C.scene, 10); flowers(C.scene, fx, fz, 0.35, 10, ["#f07a8a", "#ffd27a", "#f3efe6", "#c8a0e0"], y + 0.3); C.colliders.push({ x: fx, z: fz, r: 0.55 }); }
+  // 環形路兩側的路燈
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + Math.PI / 8; C.addLamp(C.scene, Math.sin(a) * (ringR + roadW / 2 + 0.5), y, Math.cos(a) * (ringR + roadW / 2 + 0.5)); }
 }
 
 export function buildTown(ctx) {
-  C = ctx; C.signs = []; C.brightWins = [];
-  C.lanternM = new THREE.MeshStandardMaterial({ color: "#c8574a", emissive: "#ff6a4a", emissiveIntensity: 0.1, roughness: 0.6 });
-  roads(ctx.ringR, 1.6);
-  const out = [];
-  ctx.layout.forEach(([kind, x, z, ry, ...rest]) => out.push(KIND[kind](x, z, ry, ...rest)));
-  return out;
+  C = ctx;
+  roads(ctx.ringR, ctx.roadW, ctx.y);
+  return ctx.layout.map(([kind, x, z, ry, ...rest]) => { const b = KIND[kind](x, z, ry, ...rest); b.kind = kind; return b; });
 }

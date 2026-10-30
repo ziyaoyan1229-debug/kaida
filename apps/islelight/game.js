@@ -5,6 +5,10 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes } from "./art.js";
+import { buildTown } from "./town.js";
 
 const SAVE_KEY = "kaida-islelight-v1";
 const save = (() => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"); } catch (e) { return {}; } })();
@@ -27,13 +31,26 @@ renderer.toneMappingExposure = 1;
 document.body.prepend(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x9cc4e4, 34, 110);
+scene.fog = new THREE.FogExp2(0x9cc4e4, 0.004);
+// 環境反射：讓石頭、玻璃、水面有一點周圍的光
+const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.3;
+initArt();
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 500);
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.8, 0.55, 0.85);
 composer.addPass(bloom);
+// 環境光遮蔽：角落、屋簷下自然變暗。粒子和光暈在算 AO 時要先藏起來，不然會變成一塊塊方形
+const hideForAO = [];
+let gtao = null;
+if (HIGH) {
+  gtao = new GTAOPass(scene, camera, innerWidth, innerHeight); gtao.output = GTAOPass.OUTPUT.Default; gtao.blendIntensity = 0.85;
+  gtao.updateGtaoMaterial({ radius: 0.5, distanceExponent: 1, thickness: 1, scale: 1.1, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
+  gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, radiusExponent: 1, rings: 2, samples: 12 });
+  const gr = gtao.render.bind(gtao); gtao.render = (...a) => { hideForAO.forEach((o) => o.visible = false); gr(...a); hideForAO.forEach((o) => o.visible = true); };
+  composer.addPass(gtao);
+}
 composer.addPass(new OutputPass());
 
 function glowTexture() {
@@ -47,14 +64,14 @@ const GLOW = glowTexture();
 function glowSprite(color, size, parent, y) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }));
   s.scale.set(size, size, 1); s.position.y = y || 0; s.userData.base = new THREE.Color(color);
-  if (parent) parent.add(s);
+  if (parent) parent.add(s); hideForAO.push(s);
   return s;
 }
 // 地上的光暈：假裝燈光照亮一圈地面，不用每盞燈都算陰影
 function lightPool(color, r, parent, y) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2), new THREE.MeshBasicMaterial({ map: GLOW, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
   m.rotation.x = -Math.PI / 2; m.position.y = y || 0.03; m.renderOrder = 1;
-  if (parent) parent.add(m);
+  if (parent) parent.add(m); hideForAO.push(m);
   return m;
 }
 // 體積光束：錐尖在原點、往 +z 延伸，越靠近燈越亮，邊緣淡掉
@@ -66,7 +83,7 @@ function beamCone(len, radius, color) {
     fragmentShader: "uniform vec3 uColor; uniform float uOpacity; varying float vY; varying vec3 vN; varying vec3 vV; void main(){ float e = pow(abs(dot(vN, vV)), 1.6); float a = pow(vY, 1.4) * e * uOpacity; gl_FragColor = vec4(uColor, a); }",
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
   });
-  const o = new THREE.Mesh(g, m); o.renderOrder = 2; return o;
+  const o = new THREE.Mesh(g, m); o.renderOrder = 2; hideForAO.push(o); return o;
 }
 
 /* ===== 天空 ===== */
@@ -89,8 +106,8 @@ const moonDisc = new THREE.Mesh(new THREE.CircleGeometry(7, 32), new THREE.MeshB
 moon.add(moonDisc); const moonGlow = glowSprite(0x8aa4ff, 60, moon);
 
 /* ===== 島 ===== */
-const R = (a) => 11 + 0.8 * Math.sin(3 * a + 0.5) + 0.5 * Math.sin(5 * a + 2) + 0.3 * Math.sin(7 * a);
-const RG = (a) => R(a) - 2.2;
+const R = (a) => 21 + 1.4 * Math.sin(3 * a + 0.5) + 0.9 * Math.sin(5 * a + 2) + 0.5 * Math.sin(7 * a);
+const RG = (a) => R(a) - 3.0;
 function groundY(x, z) {
   const r = Math.hypot(x, z), a = Math.atan2(z, x), rr = R(a), rg = RG(a);
   if (r < rg) return 0.55;
@@ -119,8 +136,8 @@ function islandPart(r0, r1, h, topY, edge, color, tex) {
   const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, map: tex, roughness: 0.95 }));
   m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
 }
-const sand = islandPart(11, 12.6, 1.4, 0.35, R, "#ecd6a2", speckleTex("#ffffff", ["#c9a86a", "#fff4d8", "#b8955a"], 900));
-const grass = islandPart(8.8, 9.15, 0.6, 0.55, RG, "#86b45e", speckleTex("#ffffff", ["#5f8f3e", "#a8cf74", "#4a7a32", "#c4dc8a"], 1600));
+const sand = islandPart(21, 22.6, 1.4, 0.35, R, "#ecd6a2", speckleTex("#ffffff", ["#c9a86a", "#fff4d8", "#b8955a"], 900));
+const grass = islandPart(18, 18.4, 0.6, 0.55, RG, "#86b45e", speckleTex("#ffffff", ["#5f8f3e", "#a8cf74", "#4a7a32", "#c4dc8a"], 1600));
 
 /* 海面：頂點著色器裡算波浪，太陽和燈光會在浪上反光 */
 const waterU = { uTime: { value: 0 } };
@@ -132,14 +149,14 @@ waterM.onBeforeCompile = (sh) => {
     .replace("#include <beginnormal_vertex>", "float e = .15; vec2 q = position.xy; vec3 objectNormal = normalize(vec3(-(wv(q+vec2(e,0.))-wv(q-vec2(e,0.)))/(2.*e), -(wv(q+vec2(0.,e))-wv(q-vec2(0.,e)))/(2.*e), 1.));\n#ifdef USE_TANGENT\nvec3 objectTangent = vec3( tangent.xyz );\n#endif")
     .replace("#include <begin_vertex>", "vec3 transformed = vec3(position.xy, wv(position.xy));");
 };
-const water = new THREE.Mesh(new THREE.PlaneGeometry(260, 260, 200, 200), waterM);
+const water = new THREE.Mesh(new THREE.PlaneGeometry(320, 320, 220, 220), waterM);
 water.rotation.x = -Math.PI / 2; water.receiveShadow = true; scene.add(water);
 // 岸邊浪花：沿著海岸一圈，一波一波往岸上推
 const foam = (() => {
   const seg = 160, pos = [], tv = [], idx = [];
   for (let i = 0; i <= seg; i++) {
     const a = i / seg * TAU, rr = R(a);
-    [[rr + 0.1, 0], [rr + 1.5, 1]].forEach(([r, t]) => { pos.push(Math.cos(a) * r, 0.04, Math.sin(a) * r); tv.push(t); });
+    [[rr + 0.1, 0], [rr + 2.0, 1]].forEach(([r, t]) => { pos.push(Math.cos(a) * r, 0.04, Math.sin(a) * r); tv.push(t); });
     if (i < seg) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
   }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("t", new THREE.Float32BufferAttribute(tv, 1)); g.setIndex(idx);
@@ -153,42 +170,11 @@ const foam = (() => {
 
 /* ===== 建築與擺設 ===== */
 const colliders = []; // { x, z, r }
+const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
 const windowM = new THREE.MeshStandardMaterial({ color: "#3a2a1a", emissive: "#ffae4a", emissiveIntensity: 0.1, roughness: 0.4 });
 const housePools = [];
-function makeHouse(x, z, ry, wall, roof) {
-  const g = new THREE.Group(); g.position.set(x, 0.55, z); g.rotation.y = ry; scene.add(g);
-  box(1.9, 1.35, 1.6, wall, 0, 0.675, 0, g);
-  box(2.0, 0.12, 1.7, "#8a6a4a", 0, 0.06, 0, g);
-  const sh = new THREE.Shape(); sh.moveTo(-1.22, 0); sh.lineTo(1.22, 0); sh.lineTo(0, 0.95); sh.closePath();
-  const rg = new THREE.ExtrudeGeometry(sh, { depth: 1.95, bevelEnabled: false }); rg.translate(0, 0, -0.975);
-  const rf = new THREE.Mesh(rg, mat(roof)); rf.position.y = 1.35; rf.rotation.y = Math.PI / 2; rf.castShadow = rf.receiveShadow = true; g.add(rf);
-  box(0.3, 0.7, 0.3, "#9a8a7a", 0.45, 1.85, 0.3, g);
-  box(0.44, 0.78, 0.06, "#6a4a32", 0, 0.39, 0.81, g);
-  sph(0.035, "#e8b93a", 0.13, 0.4, 0.85, g, 8, 6);
-  [[-0.6, 0.85, 0.81, 0], [0.6, 0.85, 0.81, 0], [0.96, 0.8, 0, Math.PI / 2], [-0.96, 0.8, 0, -Math.PI / 2]].forEach(([wx, wy, wz, wr]) => {
-    const w = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), windowM); w.position.set(wx, wy, wz + (wz ? 0.005 : 0)); w.rotation.y = wr; if (!wz) w.position.x += Math.sign(wx) * 0.005; g.add(w);
-    const fr = box(0.5, 0.06, 0.04, "#f3efe6", wx, wy - 0.24, wz, g); fr.rotation.y = wr;
-    const cross = box(0.04, 0.42, 0.02, "#f3efe6", wx, wy, wz + (wz ? 0.01 : 0), g); cross.rotation.y = wr;
-  });
-  outline(g, 0.02);
-  const pool = lightPool("#ffb060", 2.6, g, 0.03); pool.position.z = 1.4; housePools.push(pool);
-  const pool2 = lightPool("#ffb060", 2, g, 0.03); pool2.position.x = 1.5; housePools.push(pool2);
-  const pool3 = lightPool("#ffb060", 2, g, 0.03); pool3.position.x = -1.5; housePools.push(pool3);
-  colliders.push({ x, z, r: 1.35 });
-  return g;
-}
-function roundTree(x, z, s) {
-  const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.scale.setScalar(s); scene.add(g);
-  cyl(0.11, 0.15, 0.9, "#7a5232", 0, 0.45, 0, g, 8);
-  sph(0.55, "#5f9a44", 0, 1.15, 0, g, 14, 10); sph(0.4, "#6fae50", 0.28, 1.45, 0.1, g, 12, 8); sph(0.38, "#548a3a", -0.25, 1.35, -0.12, g, 12, 8);
-  outline(g, 0.03); colliders.push({ x, z, r: 0.35 * s }); return g;
-}
-function pineTree(x, z, s) {
-  const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.scale.setScalar(s); scene.add(g);
-  cyl(0.1, 0.13, 0.5, "#6a4a2c", 0, 0.25, 0, g, 8);
-  [[0.75, 0.9, 0.55], [0.58, 0.75, 1.05], [0.4, 0.6, 1.5]].forEach(([r, h, y]) => { const c = new THREE.Mesh(new THREE.ConeGeometry(r, h, 9), mat("#3f7a4a")); c.position.y = y; c.castShadow = c.receiveShadow = true; g.add(c); });
-  outline(g, 0.03); colliders.push({ x, z, r: 0.4 * s }); return g;
-}
+function roundTree(x, z, s) { const t = tree(scene, x, groundY(x, z), z, s, ["green", "green", "dark", "autumn"][Math.floor(rnd() * 4)]); colliders.push({ x, z, r: 0.4 * s }); return t; }
+function pineTree(x, z, s) { const t = pine(scene, x, groundY(x, z), z, s); colliders.push({ x, z, r: 0.4 * s }); return t; }
 function palm(x, z, s, lean) {
   const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.scale.setScalar(s); g.rotation.y = lean; scene.add(g);
   let px = 0, py = 0;
@@ -197,10 +183,7 @@ function palm(x, z, s, lean) {
   sph(0.09, "#6a4a2a", px + 0.05, py - 0.05, 0.05, g, 8, 6); sph(0.09, "#6a4a2a", px - 0.05, py - 0.07, -0.04, g, 8, 6);
   outline(g, 0.025); colliders.push({ x, z, r: 0.3 }); return g;
 }
-function rock(x, z, s) {
-  const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 * s, 0), mat("#9a968c")); r.position.set(x, groundY(x, z) + 0.1 * s, z); r.rotation.set(Math.random(), Math.random() * TAU, 0); r.scale.y = 0.7; r.castShadow = r.receiveShadow = true; scene.add(r);
-  outline(r, 0.02); colliders.push({ x, z, r: 0.35 * s });
-}
+function rock(x, z, s) { const r = rockE(scene, x, groundY(x, z), z, s); outline(r, 0.015); colliders.push({ x, z, r: 0.35 * s }); }
 
 /* 燈塔 */
 const tower = new THREE.Group(); scene.add(tower); tower.position.y = 0.55;
@@ -245,40 +228,69 @@ const dockLampAt = new THREE.Vector3(), boatRef = {};
   outline(g, 0.02);
 })();
 
-/* 村莊 */
-const HOUSES = [[-4.6, -3.2, 0.6, "#f3e6cf", "#c8574a"], [4.4, -3.6, -0.7, "#e8d8c0", "#3f7a8a"], [-5.2, 2.6, 2.3, "#f0dcc8", "#6a8a4a"], [5.0, 2.4, -2.2, "#f6efe2", "#a0603a"]];
-HOUSES.forEach((h) => makeHouse(...h));
-const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+/* ===== 小鎮 ===== */
+// 鎮上原本就有的路燈：模型＋光暈＋地面光，真正的點光源只給前幾盞（手機吃不消）
+const townLamps = [];
+function addLamp(parent, x, y, z) {
+  const g = lampPost(parent, x, y, z); outline(g, 0.014);
+  const glow = glowSprite(new THREE.Color("#ffb860").multiplyScalar(2.0), 1.3, g, 1.85);
+  const pool = lightPool("#ffb860", 3.2, g, 0.04);
+  const w = new THREE.Vector3(); g.updateMatrixWorld(true); g.getWorldPosition(w);
+  townLamps.push({ g, glow, pool, light: null, x: w.x, z: w.z, y: w.y });
+  colliders.push({ x: w.x, z: w.z, r: 0.3 });
+  return g;
+}
+const RING_R = 11, ROAD_W = 2.0;
+const A = (deg) => deg * Math.PI / 180;
+const DOCK_T = Math.atan2(Math.cos(DOCK_A), Math.sin(DOCK_A)); // 碼頭在小鎮座標的方位（sin,cos）
+const outer = (deg, r) => [Math.sin(A(deg)) * (r || 14.3), Math.cos(A(deg)) * (r || 14.3), A(deg) + Math.PI];
+const inner = (deg, r) => [Math.sin(A(deg)) * (r || 7.3), Math.cos(A(deg)) * (r || 7.3), A(deg)];
+const LAYOUT = [
+  ["library", ...outer(40)], ["house", ...outer(68), 0], ["cafe", ...outer(100)], ["house", ...outer(130), 1],
+  ["school", ...outer(165)], ["house", ...outer(200), 2], ["inn", ...outer(235)], ["house", ...outer(268), 3],
+  ["chapel", ...outer(300)], ["konbini", ...outer(335)],
+  ["bakery", ...inner(0)], ["bookstore", ...inner(90)], ["house", ...inner(180), 1], ["house", ...inner(270), 2],
+];
+const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, ringR: RING_R, roadW: ROAD_W, y: 0.55, layout: LAYOUT, spokes: [A(45), A(135), A(225), A(315), DOCK_T] });
 function freeSpot(x, z, pad) { return colliders.every((c) => Math.hypot(c.x - x, c.z - z) > c.r + pad); }
-for (let i = 0, n = 0; i < 400 && n < 16; i++) {
-  const a = rnd() * TAU, r = 2.8 + rnd() * (RG(a) - 3.2), x = Math.cos(a) * r, z = Math.sin(a) * r;
-  if (Math.abs(a - DOCK_A) < 0.35 || !freeSpot(x, z, 1.2)) continue;
-  (n % 3 === 2 ? pineTree : roundTree)(x, z, 0.85 + rnd() * 0.45); n++;
+function onRoad(x, z, pad) {
+  const r = Math.hypot(x, z); if (Math.abs(r - RING_R) < ROAD_W / 2 + pad || r < 4.8 + pad) return true;
+  const t = Math.atan2(x, z);
+  return [A(45), A(135), A(225), A(315), DOCK_T].some((sa) => { let d = Math.abs(((t - sa + Math.PI) % TAU + TAU) % TAU - Math.PI); return d * r < ROAD_W / 2 + pad && r < RING_R; });
 }
-for (let i = 0, n = 0; i < 300 && n < 6; i++) {
-  const a = rnd() * TAU, r = RG(a) + 0.6 + rnd() * 1.2, x = Math.cos(a) * r, z = Math.sin(a) * r;
-  if (Math.abs(a - DOCK_A) < 0.4 || !freeSpot(x, z, 1.4)) continue;
-  palm(x, z, 0.9 + rnd() * 0.3, rnd() * TAU); n++;
+for (let i = 0, n = 0; i < 2000 && n < 34; i++) {
+  const a = rnd() * TAU, r = 5.5 + rnd() * (RG(a) - 6.5), x = Math.cos(a) * r, z = Math.sin(a) * r;
+  if (Math.abs(a - DOCK_A) < 0.2 || onRoad(x, z, 0.8) || !freeSpot(x, z, 1.3)) continue;
+  (n % 4 === 3 ? pineTree : roundTree)(x, z, 0.85 + rnd() * 0.5); n++;
 }
-for (let i = 0, n = 0; i < 200 && n < 9; i++) {
-  const a = rnd() * TAU, r = R(a) - 0.4 + rnd() * 0.9, x = Math.cos(a) * r, z = Math.sin(a) * r;
-  if (Math.abs(a - DOCK_A) < 0.3 || !freeSpot(x, z, 0.6)) continue;
-  rock(x, z, 0.6 + rnd() * 0.9); n++;
+for (let i = 0, n = 0; i < 600 && n < 14; i++) {
+  const a = rnd() * TAU, r = RG(a) + 0.6 + rnd() * 1.6, x = Math.cos(a) * r, z = Math.sin(a) * r;
+  if (Math.abs(a - DOCK_A) < 0.3 || !freeSpot(x, z, 1.4)) continue;
+  palm(x, z, 0.9 + rnd() * 0.35, rnd() * TAU); n++;
 }
+for (let i = 0, n = 0; i < 400 && n < 18; i++) {
+  const a = rnd() * TAU, r = R(a) - 0.4 + rnd() * 1.2, x = Math.cos(a) * r, z = Math.sin(a) * r;
+  if (Math.abs(a - DOCK_A) < 0.25 || !freeSpot(x, z, 0.6)) continue;
+  rock(x, z, 0.6 + rnd() * 1.0); n++;
+}
+grassTufts(scene, HIGH ? 2600 : 1200, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
+smokes.forEach((s) => hideForAO.push(s.s));
 
 /* ===== 光源 ===== */
 const hemi = new THREE.HemisphereLight(0xbfdcff, 0x6a5a3a, 1); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 3); scene.add(sun); scene.add(sun.target);
 sun.castShadow = true;
 sun.shadow.mapSize.set(HIGH ? 2048 : 1024, HIGH ? 2048 : 1024);
-Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 17, bottom: -17, near: 1, far: 80 });
+Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, near: 1, far: 90 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
 // 點光源先開好一池，蓋燈時拿來用，避免數量變動讓著色器重新編譯
 const POINTS = [];
-for (let i = 0; i < 12; i++) { const l = new THREE.PointLight("#ffb860", 0, 8, 1.5); l.position.set(0, -50, 0); scene.add(l); POINTS.push({ l, used: false }); }
+for (let i = 0; i < (HIGH ? 18 : 8); i++) { const l = new THREE.PointLight("#ffb860", 0, 8, 1.5); l.position.set(0, -50, 0); scene.add(l); POINTS.push({ l, used: false }); }
 const SPOTS = [];
 for (let i = 0; i < 4; i++) { const l = new THREE.SpotLight("#e8f0ff", 0, 16, 0.24, 0.5, 1.2); l.position.set(0, -50, 0); scene.add(l); scene.add(l.target); SPOTS.push({ l, used: false }); }
 function takeLight(pool) { const s = pool.find((p) => !p.used); if (s) s.used = true; return s && s.l; }
+// 鎮上的路燈：離燈塔近的先拿到真的點光源
+townLamps.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, HIGH ? 8 : 3).forEach((l) => { l.light = takeLight(POINTS); if (l.light) { l.light.position.set(l.x, l.y + 1.95, l.z); l.light.distance = 7; } });
 
 /* ===== 光的建築：路燈、探照燈、篝火 ===== */
 const COST = { lamp: { wood: 2, oil: 0 }, search: { wood: 4, oil: 2 }, fire: { wood: 3, oil: 0 }, repair: { wood: 3, oil: 0 } };
@@ -290,10 +302,7 @@ const builds = [];
 function buildModel(kind) {
   const g = new THREE.Group();
   if (kind === "lamp") {
-    cyl(0.07, 0.1, 1.6, "#3a3440", 0, 0.8, 0, g, 8); cyl(0.18, 0.2, 0.1, "#3a3440", 0, 0.05, 0, g, 12);
-    const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.3, 6), new THREE.MeshStandardMaterial({ color: "#fff0c8", emissive: "#ffb24a", emissiveIntensity: 0.1 })); glass.position.y = 1.72; g.add(glass);
-    const top = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.2, 6), mat("#3a3440")); top.position.y = 1.97; top.castShadow = true; g.add(top);
-    g.userData.glass = glass; g.userData.h = 1.72;
+    const l = lampPost(g, 0, 0, 0); l.userData.glass.material = l.userData.glass.material.clone(); g.userData.glass = l.userData.glass; g.userData.h = 1.85;
   } else if (kind === "search") {
     box(0.6, 0.25, 0.6, "#5a5660", 0, 0.12, 0, g); cyl(0.07, 0.07, 1.0, "#3a3440", 0, 0.7, 0, g, 8);
     const head = new THREE.Group(); head.position.y = 1.25; g.add(head);
@@ -340,10 +349,23 @@ function burst(p, color, n, sp) {
   }
 }
 const flies = [];
-for (let i = 0; i < 46; i++) {
+for (let i = 0; i < 80; i++) {
   const s = glowSprite(new THREE.Color(1.6, 2.2, 0.7), 0.22, scene); s.material.opacity = 0;
-  const a = Math.random() * TAU, r = 2 + Math.random() * 8;
+  const a = Math.random() * TAU, r = 3 + Math.random() * 15;
   flies.push({ s, x: Math.cos(a) * r, z: Math.sin(a) * r, y: 0.8 + Math.random() * 1.4, ph: Math.random() * 10, sp: 0.3 + Math.random() * 0.5 });
+}
+
+/* ===== 氛圍：早晨的光塵與光束、夜晚的地面濃霧 ===== */
+const motes = [], fogs = [], shafts = [];
+{
+  const mm = new THREE.SpriteMaterial({ map: GLOW, color: new THREE.Color(2.2, 2.0, 1.5), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false });
+  for (let i = 0; i < (HIGH ? 260 : 100); i++) { const sp = new THREE.Sprite(mm.clone()); const k = 0.04 + Math.random() * 0.06; sp.scale.set(k, k, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.random() * 19; motes.push({ sp, x: Math.cos(a) * r, y: 0.8 + Math.random() * 4, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.15 + Math.random() * 0.3 }); }
+  const fm = new THREE.SpriteMaterial({ map: GLOW, color: new THREE.Color("#6f8f98"), depthWrite: false, transparent: true, opacity: 0, fog: false });
+  for (let i = 0; i < (HIGH ? 90 : 40); i++) { const sp = new THREE.Sprite(fm.clone()); const k = 5 + Math.random() * 6; sp.scale.set(k, k * 0.35, 1); scene.add(sp); hideForAO.push(sp); const a = Math.random() * TAU, r = Math.random() * 24; fogs.push({ sp, x: Math.cos(a) * r, y: 0.6 + Math.random() * 0.5, z: Math.sin(a) * r, ph: Math.random() * 10, v: 0.04 + Math.random() * 0.06, k: 0.16 + Math.random() * 0.16 }); }
+  const sm = new THREE.ShaderMaterial({ uniforms: { uC: { value: new THREE.Color("#fff4d8") }, uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }",
+    fragmentShader: "uniform vec3 uC; uniform float uA; varying vec2 vUv; void main(){ float a = smoothstep(0.,.25,vUv.x)*smoothstep(1.,.75,vUv.x) * pow(vUv.y,1.6) * uA; gl_FragColor = vec4(uC*a, a); }" });
+  for (let i = 0; i < 7; i++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(2 + (i % 3), 16), sm); pl.renderOrder = 3; scene.add(pl); hideForAO.push(pl); const a = i / 7 * TAU, r = 6 + (i % 2) * 7; shafts.push({ pl, base: new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r), m: sm }); }
 }
 
 /* ===== 角色 ===== */
@@ -359,18 +381,21 @@ const lanternLight = new THREE.PointLight("#ffc070", 0, 6, 1.5); scene.add(lante
 const lanternPool = lightPool("#ffc070", 2.6, scene);
 player.root.scale.setScalar(0.62);
 const pet = makePet("shiba", 2); outline(pet, 0.012); pet.scale.multiplyScalar(0.85); scene.add(pet);
-const P = { x: 0.5, z: 2.6, yaw: 0, tx: null, tz: null, moving: false, walk: 0 };
-const petS = { x: 1, z: 3, yaw: 0, walk: 0 };
+const P = { x: 0.5, z: 6.5, yaw: 0, tx: null, tz: null, moving: false, walk: 0 };
+const petS = { x: 1, z: 7, yaw: 0, walk: 0 };
 // 鎮民：白天在家門口晃，晚上回屋裡
-const villagers = [
-  { look: { g: "boy", skin: 1, hair: 0, top: "plaid", legs: "khaki", hat: "straw" }, h: 0 },
-  { look: { g: "girl", skin: 3, hair: 5, style: "pony", top: "tee-pink", legs: "skirt" }, h: 1 },
-  { look: { g: "boy", skin: 2, hair: 3, style: "curly", top: "overalls", legs: "jeans", face: "glasses" }, h: 2 },
-  { look: { g: "girl", skin: 0, hair: 9, style: "twins", top: "sweater", legs: "shorts", hat: "flower" }, h: 3 },
-].map((v) => {
-  const c = makeChar(v.look); c.root.scale.setScalar(0.62); scene.add(c.root);
-  const [hx, hz, hr] = HOUSES[v.h]; const dx = Math.sin(hr) * 1.9, dz = Math.cos(hr) * 1.9;
-  return { c, home: { x: hx + dx, z: hz + dz }, door: { x: hx + Math.sin(hr) * 0.9, z: hz + Math.cos(hr) * 0.9 }, x: hx + dx, z: hz + dz, tx: hx + dx, tz: hz + dz, wait: Math.random() * 3, walk: 0, yaw: 0, inside: 0 };
+const LOOKS = [
+  { g: "boy", skin: 1, hair: 0, top: "plaid", legs: "khaki", hat: "straw" }, { g: "girl", skin: 3, hair: 5, style: "pony", top: "tee-pink", legs: "skirt" },
+  { g: "boy", skin: 2, hair: 3, style: "curly", top: "overalls", legs: "jeans", face: "glasses" }, { g: "girl", skin: 0, hair: 9, style: "twins", top: "sweater", legs: "shorts", hat: "flower" },
+  { g: "boy", skin: 4, hair: 2, top: "suit", legs: "suitp", neck: "tie" }, { g: "girl", skin: 1, hair: 4, style: "bob", top: "cardigan", legs: "jeans", face: "glasses" },
+  { g: "boy", skin: 0, hair: 6, style: "spiky", top: "sport", legs: "trackp", hat: "cap" }, { g: "girl", skin: 2, hair: 7, style: "long", top: "denim", legs: "skirt" },
+  { g: "boy", skin: 3, hair: 1, top: "sweater", legs: "khaki", hat: "beret" }, { g: "girl", skin: 5, hair: 0, style: "buns", top: "stripe", legs: "shorts" },
+  { g: "boy", skin: 1, hair: 8, top: "cardigan", legs: "blackp", face: "glasses" }, { g: "girl", skin: 0, hair: 2, style: "pony", top: "hoodie", legs: "jeans", hat: "beanie" },
+  { g: "boy", skin: 2, hair: 0, top: "turtle", legs: "jeans" }, { g: "girl", skin: 4, hair: 3, style: "bob", top: "plaid", legs: "khaki", hat: "bucket" },
+];
+const villagers = town.map((b, i) => {
+  const c = makeChar(LOOKS[i % LOOKS.length]); c.root.scale.setScalar(0.62); scene.add(c.root);
+  return { c, home: { x: b.front.x, z: b.front.z }, door: { x: b.door.x, z: b.door.z }, x: b.front.x, z: b.front.z, tx: b.front.x, tz: b.front.z, wait: Math.random() * 3, walk: 0, yaw: 0, inside: 0 };
 });
 function animWalk(c, walk, moving) {
   const s = moving ? Math.sin(walk) : 0;
@@ -408,7 +433,7 @@ function spawnFoe() {
   [-0.12, 0.12].forEach((ex) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), eyeM); e.position.set(ex, 0.52, 0.3); e.scale.y = 1.4; g.add(e); });
   const aura = glowSprite(new THREE.Color(0.5, 0.2, 1.1), 2.2, g, 0.5); aura.material.opacity = 0.7;
   const day = G.day;
-  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 0.75 + Math.min(day, 8) * 0.07, t: Math.random() * 10, lit: 0, dying: 0 };
+  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 1.05 + Math.min(day, 8) * 0.08, t: Math.random() * 10, lit: 0, dying: 0 };
   f.g.position.set(x, -0.4, z); foes.push(f);
 }
 function killFoe(f, byTower) {
@@ -461,11 +486,11 @@ const startT = 0;
 G.t = startT;
 // 開場先送兩盞燈：一盞在碼頭、一盞在燈塔前
 addBuild("lamp", dockLampAt.x, dockLampAt.z, true, 0.42);
-addBuild("lamp", 1.4, 2.4, true);
-for (let i = 0; i < 6; i++) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.7), Math.sin(a) * (R(a) - 0.7)); }
+addBuild("lamp", 3.0, 6.8, true);
+for (let i = 0; i < 10; i++) { const a = Math.random() * TAU; spawnWood(Math.cos(a) * (R(a) - 0.7), Math.sin(a) * (R(a) - 0.7)); }
 
 /* ===== 鏡頭與操作 ===== */
-const camS = { yaw: 0.35, pitch: 0.82, dist: 19, x: 0, z: 2 };
+const camS = { yaw: 0.35, pitch: 0.8, dist: 26, x: 0, z: 5 };
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 function groundHit(cx, cy) {
   ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
@@ -479,7 +504,7 @@ cvs.addEventListener("pointermove", (e) => {
   const p = ptrs.get(e.pointerId);
   if (!p) { hover = groundHit(e.clientX, e.clientY); return; }
   const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
-  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) camS.dist = clamp(camS.dist * pinch / d, 7, 26); pinch = d; return; }
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) camS.dist = clamp(camS.dist * pinch / d, 9, 46); pinch = d; return; }
   if (!drag && Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 8) drag = "rot";
   if (drag === "rot") { camS.yaw -= dx * 0.008; camS.pitch = clamp(camS.pitch + dy * 0.004, 0.45, 1.3); }
   if (e.pointerType === "mouse") hover = groundHit(e.clientX, e.clientY);
@@ -493,7 +518,7 @@ function endPtr(e) {
   P.tx = Math.cos(a) * r; P.tz = Math.sin(a) * r; marker(P.tx, P.tz);
 }
 cvs.addEventListener("pointerup", endPtr); cvs.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); drag = null; });
-cvs.addEventListener("wheel", (e) => { e.preventDefault(); camS.dist = clamp(camS.dist * (1 + Math.sign(e.deltaY) * 0.08), 7, 26); }, { passive: false });
+cvs.addEventListener("wheel", (e) => { e.preventDefault(); camS.dist = clamp(camS.dist * (1 + Math.sign(e.deltaY) * 0.08), 9, 46); }, { passive: false });
 const keys = {};
 addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); });
 addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
@@ -513,7 +538,7 @@ function setBuild(k) {
     tip(`點島上的空地放${NAME[k]}，再點一次按鈕取消`);
   } else tip("");
 }
-function placeOk(x, z) { const a = Math.atan2(z, x), r = Math.hypot(x, z); return r < R(a) - 0.4 && r > 2.2 && freeSpot(x, z, 0.4); }
+function placeOk(x, z) { const a = Math.atan2(z, x), r = Math.hypot(x, z); return r < R(a) - 0.4 && r > 2.4 && freeSpot(x, z, 0.4); }
 function tryPlace(x, z) {
   const k = G.build;
   // 點到樹或房子旁邊時，自動往旁邊挪到最近的空地
@@ -592,6 +617,9 @@ function frame() {
 
   // 天空、太陽、月亮
   skyU.top.value.copy(E.top); skyU.bot.value.copy(E.bot); scene.fog.color.copy(E.bot).lerp(E.top, 0.25);
+  // 白天一點薄霧、晚上濃霧（偏青綠），遠處的東西沉進霧裡
+  scene.fog.density = lerp(0.0045, 0.03, dark); if (dark > 0.5) scene.fog.color.lerp(tmpC.set("#142830"), (dark - 0.5) * 1.2);
+  scene.environmentIntensity = lerp(0.35, 0.1, dark);
   const sa = (h - 6) / 12 * Math.PI, sunDir = new THREE.Vector3(Math.cos(sa) * 0.9, Math.sin(sa), -0.45).normalize();
   const moonDir = new THREE.Vector3(-0.35, 0.55, -0.75).normalize();
   const useMoon = sunDir.y < 0.08;
@@ -607,8 +635,19 @@ function frame() {
   bloom.strength = HIGH ? E.bloom : 0;
   renderer.toneMappingExposure = 1;
 
+  // 粒子：光塵白天飄、光束在太陽低角度最明顯、地面霧夜晚起
+  const dayK = 1 - dark;
+  motes.forEach((m) => { m.ph += dt * m.v; m.sp.position.set(m.x + Math.sin(m.ph * 1.3) * 0.6, m.y + Math.sin(m.ph * 0.9) * 0.4 + ((m.ph * 0.15) % 1.5), m.z + Math.cos(m.ph) * 0.6); m.sp.material.opacity = dayK * (0.3 + 0.7 * Math.max(0, Math.sin(m.ph * 4.1 + m.x))); });
+  fogs.forEach((f) => { f.ph += dt * f.v; f.sp.position.set(f.x + Math.sin(f.ph) * 2, f.y + Math.sin(f.ph * 1.7) * 0.1, f.z + Math.cos(f.ph * 0.8) * 1.6); f.sp.material.opacity = dark * f.k; });
+  const shaftA = dayK * smooth(0.05, 0.25, sunDir.y) * (1 - smooth(0.5, 0.9, sunDir.y)) * 0.16 + dayK * 0.03;
+  shafts.forEach((s) => { s.m.uniforms.uA.value = shaftA; s.pl.position.copy(s.base).addScaledVector(sunDir, 8); s.pl.lookAt(s.base.clone().addScaledVector(sunDir, 16)); s.pl.rotateX(Math.PI / 2); s.pl.rotateY(0.6); });
+  tickSmoke(dt, 1);
+  // 鎮上的路燈、招牌
+  townLamps.forEach((l, i) => { const on = smooth(0.12 + (i % 5) * 0.05, 0.32 + (i % 5) * 0.05, dark); l.glow.material.opacity = on; l.pool.material.opacity = on * 0.35; if (l.light) l.light.intensity = on * 3.5; });
+  M.lampGlass.emissiveIntensity = 0.08 + dark * 5;
+  signMats.forEach((m) => m.emissiveIntensity = dark * 0.9);
   // 窗戶、燈塔
-  windowM.emissiveIntensity = 0.05 + dark * 3.2;
+  windowM.emissiveIntensity = 0.05 + dark * 3.2; M.win.emissiveIntensity = 0.05 + dark * 3.0; M.winCool.emissiveIntensity = 0.05 + dark * 2.2;
   housePools.forEach((p) => p.material.opacity = dark * 0.55);
   lampGlassM.emissiveIntensity = 0.3 + dark * 4;
   towerGlow.material.opacity = 0.1 + dark * 0.8; towerGlow.scale.setScalar(2.5 + dark * 3 + Math.sin(now * 3) * 0.15);
@@ -762,7 +801,7 @@ function frame() {
 
   composer.render();
 }
-addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
+addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(innerWidth, innerHeight); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
 window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; } };
