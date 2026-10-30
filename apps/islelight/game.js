@@ -7,6 +7,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { makeInterior, ROOM_OF } from "./interior.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
 import { buildTown, buildExtras, windmills } from "./town.js";
 
@@ -38,7 +39,7 @@ initArt();
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 700);
 
 const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
+const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.8, 0.55, 0.85);
 composer.addPass(bloom);
 // 環境光遮蔽：角落、屋簷下自然變暗。粒子和光暈在算 AO 時要先藏起來，不然會變成一塊塊方形
@@ -427,6 +428,44 @@ const villagers = town.map((b, i) => {
   const c = makeChar(LOOKS[i % LOOKS.length]); c.root.scale.setScalar(0.62); scene.add(c.root);
   return { c, home: { x: b.front.x, z: b.front.z }, door: { x: b.door.x, z: b.door.z }, x: b.front.x, z: b.front.z, tx: b.front.x, tz: b.front.z, wait: Math.random() * 3, walk: 0, yaw: 0, inside: 0 };
 });
+/* ===== 進出建築 ===== */
+// 室內是另一個 THREE.Scene；進門時把玩家、寵物、提燈搬過去，相機與移動改用房間的座標和碰撞
+let IN = null; const rooms = {};
+const fadeEl = $("fade");
+function fadeTo(fn) { fadeEl.classList.add("on"); setTimeout(() => { fn(); setTimeout(() => fadeEl.classList.remove("on"), 60); }, 380); }
+function roomFor(b) {
+  const kind = ROOM_OF[b.kind] || ROOM_OF[b.name] || "house", key = kind + ":" + b.name;
+  if (!rooms[key]) {
+    const r = makeInterior(kind); r.hideAO = [];
+    if (r.npc) { const c = makeChar(LOOKS[Math.abs(Math.round(b.x * 7 + b.z * 13)) % LOOKS.length]); c.root.scale.setScalar(0.62); c.root.position.set(r.npc.x, 0.55, r.npc.z); c.root.rotation.y = r.npc.yaw; r.scene.add(c.root); r.npcChar = c; }
+    rooms[key] = r;
+  }
+  return rooms[key];
+}
+function moveActors(to) { [player.root, pet, lanternLight, lanternPool].forEach((o) => { if (o.parent) o.parent.remove(o); to.add(o); }); }
+function enterBuilding(b) {
+  if (IN || G.over) return;
+  const room = roomFor(b);
+  fadeTo(() => {
+    IN = { b, room }; moveActors(room.scene); renderPass.scene = room.scene; if (gtao) gtao.scene = room.scene;
+    P.x = room.entry.x; P.z = room.entry.z; P.yaw = Math.PI; P.tx = null; petS.x = P.x + 0.6; petS.z = P.z + 0.3;
+    camS.x = P.x; camS.z = P.z; camS.fyaw = 0; camS.cdNow = null; camS.free = 0; camS.fdistOut = camS.fdist; camS.fdist = Math.min(camS.fdist, 6);
+    $("build").style.display = "none"; setBuild(null); banner(b.name, "按 E 或點門口離開", 1800);
+  });
+}
+function leaveBuilding() {
+  if (!IN) return;
+  const b = IN.b;
+  fadeTo(() => {
+    IN = null; moveActors(scene); renderPass.scene = scene; if (gtao) gtao.scene = scene;
+    P.x = b.front.x; P.z = b.front.z; P.yaw = b.ry; P.tx = null; petS.x = P.x + Math.cos(b.ry) * 0.6; petS.z = P.z - Math.sin(b.ry) * 0.6;
+    camS.x = P.x; camS.z = P.z; camS.fyaw = b.ry + Math.PI; camS.cdNow = null; camS.free = 0; if (camS.fdistOut) camS.fdist = camS.fdistOut;
+    $("build").style.display = "";
+  });
+}
+let nearDoor = null;
+function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (nearDoor) enterBuilding(nearDoor); }
+$("prompt").addEventListener("click", doorAction);
 function animWalk(c, walk, moving) {
   const s = moving ? Math.sin(walk) : 0;
   c.legs[0].rotation.x = s * 0.7; c.legs[1].rotation.x = -s * 0.7;
@@ -526,7 +565,7 @@ function setCamMode(m) { camS.mode = m; save.cam = m; persist(); $("cam").textCo
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 function groundHit(cx, cy) {
   ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
-  const h = ray.intersectObjects([grass, sand, water], false)[0];
+  const h = ray.intersectObjects(IN ? [IN.room.floor] : [grass, sand, water], false)[0];
   return h ? h.point : null;
 }
 const ptrs = new Map(); let drag = null, pinch = 0, hover = null;
@@ -546,13 +585,14 @@ function endPtr(e) {
   if (!p || drag || !G.started || G.over) { if (!ptrs.size) drag = null; return; }
   const hit = groundHit(e.clientX, e.clientY); if (!hit) return;
   if (G.build) { tryPlace(hit.x, hit.z); return; }
+  if (IN) { P.tx = hit.x; P.tz = hit.z; return; }
   const a = Math.atan2(hit.z, hit.x), r = Math.min(Math.hypot(hit.x, hit.z), R(a) - 0.3);
   P.tx = Math.cos(a) * r; P.tz = Math.sin(a) * r; marker(P.tx, P.tz);
 }
 cvs.addEventListener("pointerup", endPtr); cvs.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); drag = null; });
 cvs.addEventListener("wheel", (e) => { e.preventDefault(); const L = camLimits(), k = 1 + Math.sign(e.deltaY) * 0.08; if (camS.mode === "follow") camS.fdist = clamp(camS.fdist * k, L.dmin, L.dmax); else camS.dist = clamp(camS.dist * k, L.dmin, L.dmax); }, { passive: false });
 const keys = {};
-addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); if (e.key.toLowerCase() === "v" && !e.repeat) setCamMode(camS.mode === "follow" ? "top" : "follow"); });
+addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; if (e.key === "Escape") setBuild(null); if (e.key.toLowerCase() === "v" && !e.repeat) setCamMode(camS.mode === "follow" ? "top" : "follow"); if (e.key.toLowerCase() === "e" && !e.repeat && G.started) doorAction(); });
 addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
 const mk = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.3, 24), new THREE.MeshBasicMaterial({ color: 0xffe2a0, transparent: true, opacity: 0, depthWrite: false }));
 mk.rotation.x = -Math.PI / 2; scene.add(mk);
@@ -636,7 +676,7 @@ function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), 0.05) * DBG.speed; now += dt;
   waterU.uTime.value = now;
-  if (G.started && !G.over) G.t += dt;
+  if (G.started && !G.over && !IN) G.t += dt;
   if (G.t >= CYCLE) { G.t -= CYCLE; }
   const h = hourAt(G.t), ph = phaseAt(G.t), dark = darkAt(h), E = envAt(h);
 
@@ -728,8 +768,9 @@ function frame() {
   const vl = Math.hypot(vx, vz); P.moving = vl > 0;
   if (P.moving) {
     const sp = 3.4; P.x += vx / vl * sp * dt; P.z += vz / vl * sp * dt;
-    colliders.forEach((c) => { const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz), m = c.r + 0.22; if (d < m && d > 1e-4) { P.x = c.x + dx / d * m; P.z = c.z + dz / d * m; } });
-    const a = Math.atan2(P.z, P.x), r = Math.hypot(P.x, P.z), lim = R(a) - 0.3; if (r > lim) { P.x *= lim / r; P.z *= lim / r; }
+    (IN ? IN.room.colliders : colliders).forEach((c) => { const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz), m = c.r + 0.22; if (d < m && d > 1e-4) { P.x = c.x + dx / d * m; P.z = c.z + dz / d * m; } });
+    if (IN) { const hw = IN.room.w / 2 - 0.45, hd = IN.room.d / 2 - 0.45; P.x = clamp(P.x, -hw, hw); P.z = clamp(P.z, -hd, Math.abs(P.x) < 0.5 ? hd + 0.3 : hd); }
+    else { const a = Math.atan2(P.z, P.x), r = Math.hypot(P.x, P.z), lim = R(a) - 0.3; if (r > lim) { P.x *= lim / r; P.z *= lim / r; } }
     const wy = Math.atan2(vx, vz); let d = ((wy - P.yaw + Math.PI) % TAU + TAU) % TAU - Math.PI; P.yaw += d * Math.min(1, dt * 12);
     P.walk += dt * 11;
   }
@@ -741,6 +782,11 @@ function frame() {
   lanternGlow.material.opacity = dark; lanternGlass.visible = true;
   lantern.getWorldPosition(v3); lanternLight.position.copy(v3); lanternLight.intensity = dark * 2.5;
   lanternPool.position.set(P.x, groundY(P.x, P.z) + 0.04, P.z); lanternPool.material.opacity = dark * 0.45;
+  // 門口提示
+  if (IN) { IN.room.tick(dt, dark, E.bot); if (IN.room.ceiling) IN.room.ceiling.visible = camS.mode === "follow"; if (IN.room.npcChar) { IN.room.npcChar.root.position.y = 0.55 + Math.sin(now * 2) * 0.01; animWalk(IN.room.npcChar, 0, false); } }
+  else { nearDoor = null; let bd = 1.6; town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
+  const pr = $("prompt"), want = IN ? (P.z > IN.room.exitZ - 0.9 ? "離開 ⏎" : "") : nearDoor ? `進入 ${nearDoor.name} ⏎` : "";
+  if (pr.dataset.t !== want) { pr.dataset.t = want; pr.textContent = want; pr.classList.toggle("show", !!want && G.started); }
   // 寵物跟著
   const fx = P.x - Math.sin(P.yaw) * 0.8 + Math.cos(P.yaw) * 0.5, fz = P.z - Math.cos(P.yaw) * 0.8 - Math.sin(P.yaw) * 0.5;
   const pdx = fx - petS.x, pdz = fz - petS.z, pd = Math.hypot(pdx, pdz);
@@ -823,7 +869,7 @@ function frame() {
     let cd = camS.fdist * clamp(1.0 / camera.aspect, 1, 1.5); const cp = Math.cos(camS.fpitch);
     // 鏡頭碰到房子或樹就往前拉，不要穿牆
     { const dx = Math.sin(camS.fyaw), dz = Math.cos(camS.fyaw); let best = cd * cp; // 先用水平距離算，最後再換回鏡頭距離
-      for (const c of colliders) { if (c.r < 0.38) continue; const rr = (c.cr || c.r) + 0.12, ox = camS.x - c.x, oz = camS.z - c.z;
+      for (const c of (IN ? IN.room.colliders : colliders)) { if (c.r < 0.38 || IN) continue; const rr = (c.cr || c.r) + 0.12, ox = camS.x - c.x, oz = camS.z - c.z;
         const bq = ox * dx + oz * dz, cq = ox * ox + oz * oz - rr * rr; if (cq < 0) continue; const disc = bq * bq - cq; if (disc < 0) continue;
         const t = -bq - Math.sqrt(disc); if (t > 0 && t < best) best = Math.max(2.0, t); }
       best /= Math.max(cp, 0.3);
@@ -832,12 +878,15 @@ function frame() {
     let cx = camS.x + Math.sin(camS.fyaw) * cp * cd, cz = camS.z + Math.cos(camS.fyaw) * cp * cd, cy = gy + 0.9 + Math.sin(camS.fpitch) * cd;
     // 不要鑽到地面或海面下
     cy = Math.max(cy, groundY(cx, cz) + 0.9, 0.9);
+    if (IN) { cx = clamp(cx, -IN.room.w / 2 + 0.35, IN.room.w / 2 - 0.35); cz = clamp(cz, -IN.room.d / 2 + 0.35, IN.room.d / 2 + 4); cy = Math.min(cy, 0.55 + 3.0); }
+    if (IN) IN.room.frame.visible = cz < IN.room.d / 2 + 0.3;
     camera.position.set(cx + (Math.random() - 0.5) * shake, cy, cz + (Math.random() - 0.5) * shake);
     camera.lookAt(camS.x - Math.sin(camS.fyaw) * 0.6, gy + 1.0, camS.z - Math.cos(camS.fyaw) * 0.6);
   } else {
     const cd = camS.dist * clamp(1.15 / camera.aspect, 1, 1.9);
     const cp = Math.cos(camS.pitch);
-    camera.position.set(camS.x + Math.sin(camS.yaw) * cp * cd + (Math.random() - 0.5) * shake, Math.sin(camS.pitch) * cd + 0.5, camS.z + Math.cos(camS.yaw) * cp * cd + (Math.random() - 0.5) * shake);
+    const cdd = IN ? Math.min(cd, 12) : cd;
+    camera.position.set(camS.x + Math.sin(camS.yaw) * cp * cdd + (Math.random() - 0.5) * shake, Math.sin(camS.pitch) * cdd + 0.5, camS.z + Math.cos(camS.yaw) * cp * cdd + (Math.random() - 0.5) * shake);
     camera.lookAt(camS.x, 0.8, camS.z);
   }
 
@@ -852,7 +901,7 @@ function frame() {
     $("hpn").textContent = Math.ceil(G.hp); $("hp").firstElementChild.style.width = G.hp + "%";
     $("wood").textContent = G.wood; $("oil").textContent = G.oil;
     document.querySelectorAll("#build button").forEach((b) => b.classList.toggle("no", !canAfford(b.dataset.b)));
-    $("skipbtn").style.display = G.started && ph === "day" ? "" : "none";
+    $("skipbtn").style.display = G.started && ph === "day" && !IN ? "" : "none";
   }
 
   composer.render();
@@ -860,5 +909,5 @@ function frame() {
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(innerWidth, innerHeight); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode };
+window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN };
 frame();
