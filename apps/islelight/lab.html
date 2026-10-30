@@ -48,7 +48,8 @@ const v = new THREE.Vector3();
 function frame() {
   const t = performance.now() / 1000;
   chars.forEach(({ c }, i) => { const w = t * 6 + i; const s = Math.sin(w); c.legs[0].rotation.x = s * 0.6; c.legs[1].rotation.x = -s * 0.6; c.arms[0].rotation.x = -s * 0.45; c.arms[1].rotation.x = s * 0.45; c.hips.position.y = (c.hipY || 0.36) + Math.abs(Math.cos(w)) * 0.03; if (c.key) c.key.rotation.z = t * 3; c.root.rotation.y = focus != null ? Math.sin(t * 0.6) * 0.35 : 0.1; });
-  if (focus != null) { const c = chars[+focus].c; const box = new THREE.Box3().setFromObject(c.root); const h = box.max.y; camera.position.set(c.root.position.x + 0.5, h * 0.62, c.root.position.z + h * 1.9); camera.lookAt(c.root.position.x, h * 0.52, c.root.position.z); }
+  if (focus != null && params.get("zoom")) { const c = chars[+focus].c; const hp = new THREE.Vector3(); c.head.getWorldPosition(hp); camera.position.set(hp.x + 0.25, hp.y + 0.05, hp.z + 0.95); camera.lookAt(hp.x, hp.y - 0.02, hp.z); }
+  else if (focus != null) { const c = chars[+focus].c; const box = new THREE.Box3().setFromObject(c.root); const h = box.max.y; camera.position.set(c.root.position.x + 0.5, h * 0.62, c.root.position.z + h * 1.9); camera.lookAt(c.root.position.x, h * 0.52, c.root.position.z); }
   else { camera.position.set(0, 1.5, 9.5); camera.lookAt(0, 0.75, 0); }
   renderer.render(scene, camera);
   chars.forEach(({ c, el }, i) => { v.set(c.root.position.x, -0.02, c.root.position.z + 0.4).project(camera); el.style.left = (v.x * 0.5 + 0.5) * innerWidth + "px"; el.style.top = (-v.y * 0.5 + 0.5) * innerHeight + 8 + "px"; el.style.display = focus != null && +focus !== i ? "none" : ""; });

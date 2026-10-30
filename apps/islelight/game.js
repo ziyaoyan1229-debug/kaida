@@ -9,6 +9,7 @@ import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { makeInterior, ROOM_OF } from "./interior.js";
 import { bakeStatic } from "./bake.js";
+import { makeGothic } from "./charstyles.js";
 import { WIND, grassField, tallGrassField, flowerField, leafTree, bush, makeClouds, tickClouds, makeMountains } from "./foliage.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
@@ -60,7 +61,7 @@ if (ULTRA) {
 }
 // 色彩分級：飽和一點、對比一點、白天偏暖、邊角壓暗，整體像一張畫
 const gradePass = new ShaderPass({
-  uniforms: { tDiffuse: { value: null }, uVig: { value: 0.32 }, uSat: { value: 1.14 }, uWarm: { value: 0 }, uContrast: { value: 1.07 } },
+  uniforms: { tDiffuse: { value: null }, uVig: { value: 0.32 }, uSat: { value: 0.96 }, uWarm: { value: 0 }, uContrast: { value: 1.07 } },
   vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
   fragmentShader: "uniform sampler2D tDiffuse; uniform float uVig, uSat, uWarm, uContrast; varying vec2 vUv; void main(){ vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(.2126, .7152, .0722)); c.rgb = mix(vec3(l), c.rgb, uSat); c.rgb = max((c.rgb - .18) * uContrast + .18, 0.); c.rgb *= vec3(1. + uWarm * .07, 1. + uWarm * .025, 1. - uWarm * .06); vec2 d = vUv - .5; c.rgb *= 1. - uVig * smoothstep(.3, 1., dot(d, d) * 2.4); gl_FragColor = c; }",
 });
@@ -511,10 +512,11 @@ const motes = [], fogs = [], shafts = [];
 }
 
 /* ===== 角色 ===== */
-const player = makeChar({ g: "girl", skin: 0, hair: 1, style: "long", top: "hoodie", legs: "jeans", hat: "beanie" });
+// 主角：第五人格風格（細長手腳、蒼白臉、禮帽長外套）；村民同風格但換外套顏色、有的不戴帽
+const player = makeGothic({ coat: "#3a3340", trim: "#7a2a34", hair: "#1a1518" }); player.root.scale.setScalar(0.78);
 scene.add(player.root);
 // 手提燈
-const lantern = new THREE.Group(); lantern.position.set(0, -0.36, 0.04); player.arms[1].add(lantern);
+const lantern = new THREE.Group(); lantern.position.set(0, -0.52, 0.04); player.arms[1].add(lantern);
 cyl(0.004, 0.004, 0.12, "#3a3440", 0, 0.08, 0, lantern, 4);
 const lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 1.8, 0.8) })); lantern.add(lanternGlass);
 cyl(0.075, 0.075, 0.025, "#3a3440", 0, 0.065, 0, lantern, 6);
@@ -532,6 +534,10 @@ const pet = makePet("shiba", 2); outline(pet, 0.012); pet.scale.multiplyScalar(0
 const P = { x: 0.5, z: 6.5, yaw: 0, tx: null, tz: null, moving: false, walk: 0 };
 const petS = { x: 1, z: 7, yaw: 0, walk: 0 };
 // 鎮民：白天在家門口晃，晚上回屋裡
+const GOTH = [
+  { coat: "#4a3a3a", trim: "#8a6a30", hair: "#2a1a12", hat: false }, { coat: "#2f3a4a", trim: "#9a3a3a", hair: "#4a3a2a" }, { coat: "#3a4a3a", trim: "#c8a050", hair: "#6a4a2a", hat: false },
+  { coat: "#4a2a3a", trim: "#d0b060", hair: "#1a1518" }, { coat: "#3a3a4a", trim: "#7a2a34", hair: "#8a7a70", hat: false }, { coat: "#5a3a2a", trim: "#2a4a5a", hair: "#2a1a12" },
+];
 const LOOKS = [
   { g: "boy", skin: 1, hair: 0, top: "plaid", legs: "khaki", hat: "straw" }, { g: "girl", skin: 3, hair: 5, style: "pony", top: "tee-pink", legs: "skirt" },
   { g: "boy", skin: 2, hair: 3, style: "curly", top: "overalls", legs: "jeans", face: "glasses" }, { g: "girl", skin: 0, hair: 9, style: "twins", top: "sweater", legs: "shorts", hat: "flower" },
@@ -542,7 +548,7 @@ const LOOKS = [
   { g: "boy", skin: 2, hair: 0, top: "turtle", legs: "jeans" }, { g: "girl", skin: 4, hair: 3, style: "bob", top: "plaid", legs: "khaki", hat: "bucket" },
 ];
 const villagers = town.map((b, i) => {
-  const c = makeChar(LOOKS[i % LOOKS.length]); c.root.scale.setScalar(0.62); c.root.userData.noBake = true; scene.add(c.root);
+  const c = makeGothic(GOTH[i % GOTH.length]); c.root.scale.setScalar(0.66); c.root.userData.noBake = true; scene.add(c.root);
   return { c, home: { x: b.front.x, z: b.front.z }, door: { x: b.door.x, z: b.door.z }, x: b.front.x, z: b.front.z, tx: b.front.x, tz: b.front.z, wait: Math.random() * 3, walk: 0, yaw: 0, inside: 0 };
 });
 /* ===== 進出建築 ===== */
@@ -554,7 +560,7 @@ function roomFor(b) {
   const kind = ROOM_OF[b.kind] || ROOM_OF[b.name] || "house", key = kind + ":" + b.name;
   if (!rooms[key]) {
     const r = makeInterior(kind); r.hideAO = [];
-    if (r.npc) { const c = makeChar(LOOKS[Math.abs(Math.round(b.x * 7 + b.z * 13)) % LOOKS.length]); c.root.scale.setScalar(0.62); c.root.position.set(r.npc.x, 0.55, r.npc.z); c.root.rotation.y = r.npc.yaw; r.scene.add(c.root); r.npcChar = c; }
+    if (r.npc) { const c = makeGothic(GOTH[Math.abs(Math.round(b.x * 7 + b.z * 13)) % GOTH.length]); c.root.scale.setScalar(0.66); c.root.position.set(r.npc.x, 0.55, r.npc.z); c.root.rotation.y = r.npc.yaw; r.scene.add(c.root); r.npcChar = c; }
     rooms[key] = r;
   }
   return rooms[key];
@@ -905,7 +911,7 @@ function frame() {
   const ld = useMoon ? moonDir : sunDir;
   skyU.sunDir.value.copy(sunDir); skyU.sunC.value.copy(E.sunC); skyU.sunA.value = smooth(-0.1, 0.05, sunDir.y);
   tickClouds(clouds, dt, tmpC.copy(E.bot).lerp(tmpC2.set("#ffffff"), 0.55 - dark * 0.35), 0.95 - dark * 0.55); mountains.m.color.copy(E.bot).lerp(tmpC2.set("#3a5070"), 0.55 + dark * 0.3);
-  gradePass.uniforms.uWarm.value = (1 - dark) * 0.6; gradePass.uniforms.uSat.value = 1.14 - dark * 0.1; WIND.value = now;
+  gradePass.uniforms.uWarm.value = (1 - dark) * 0.6; gradePass.uniforms.uSat.value = 0.98 - dark * 0.12; gradePass.uniforms.uVig.value = 0.4 + dark * 0.12; gradePass.uniforms.uContrast.value = 1.1; WIND.value = now;
   sun.position.copy(ld).multiplyScalar(40).add(sun.target.position.set(camS.x, 0, camS.z)); sun.position.y = Math.max(sun.position.y, 6);
   sun.color.copy(E.sunC); sun.intensity = E.sun * (useMoon ? 1 : smooth(0.02, 0.15, sunDir.y));
   hemi.intensity = E.hemi; hemi.color.copy(E.top).lerp(tmpC.set("#ffffff"), 0.5); hemi.groundColor.set("#5a4a32").multiplyScalar(0.6 + 0.4 * (1 - dark));

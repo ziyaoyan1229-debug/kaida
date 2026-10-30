@@ -39,16 +39,31 @@ export function makeGothic(look) {
   // 頭：偏大、略長的蒼白臉，深眼窩
   const head = new THREE.Group(); head.position.y = 0.9; torso.add(head); c.head = head;
   const hs = sph(0.22, skin, 0, 0, 0, head, 26, 18); hs.scale.set(1, 1.15, 0.98);
-  const socket = mat("#4a3a44"); [-0.08, 0.08].forEach((x) => { const sk = sph(0.06, socket, x, 0.0, 0.17, head, 12, 8); sk.scale.set(1, 1.3, 0.5); const e = sph(0.028, mat("#120e14"), x, -0.005, 0.2, head, 10, 8); e.scale.set(0.9, 1.4, 0.5); const hl = sph(0.009, new THREE.MeshBasicMaterial({ color: 0xffffff }), 0.01, 0.015, 0.03, e, 6, 4); hl.castShadow = false; c.eyes.push(e); });
-  [-0.08, 0.08].forEach((x) => { const br = box(0.08, 0.012, 0.01, hairC, x, 0.085, 0.2, head); br.rotation.z = Math.sign(x) * 0.35; });
-  const nose = cyl(0.008, 0.02, 0.06, skin, 0, -0.06, 0.215, head, 6); nose.rotation.x = 0.3;
-  const mouth = box(0.06, 0.008, 0.01, "#5a3a40", 0, -0.13, 0.205, head);
-  // 縫線：臉頰一道
-  [-0.02, 0, 0.02, 0.04].forEach((d, i) => { const st = box(0.025, 0.006, 0.006, "#8a7a80", 0.13 + d * 0.3, -0.06 - d, 0.17, head); st.rotation.z = 0.5; st.rotation.y = -0.5; });
+  // 臉：眼睛用高解析貼圖（厚眼線、淡紫虹膜、小瞳孔、眼下陰影一起畫），不再用球疊球，輪廓才清楚
+  const eyeTex = (flip) => canvasTex(256, 256, (g) => {
+    g.clearRect(0, 0, 256, 256);
+    const sh = g.createRadialGradient(128, 150, 40, 128, 150, 128); sh.addColorStop(0, "rgba(70,50,70,.55)"); sh.addColorStop(0.6, "rgba(70,50,70,.25)"); sh.addColorStop(1, "rgba(70,50,70,0)"); g.fillStyle = sh; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = "#f4f0f2"; g.beginPath(); g.moveTo(30, 128); g.quadraticCurveTo(128, 30, 226, 128); g.quadraticCurveTo(128, 200, 30, 128); g.fill();
+    const ir = g.createRadialGradient(128, 128, 6, 128, 128, 52); ir.addColorStop(0, "#2a2030"); ir.addColorStop(0.3, "#9a8ab8"); ir.addColorStop(0.85, "#5a4a74"); ir.addColorStop(1, "#2a2030"); g.fillStyle = ir; g.beginPath(); g.arc(128, 130, 52, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#100c12"; g.beginPath(); g.arc(128, 132, 18, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#ffffff"; g.beginPath(); g.arc(108, 108, 12, 0, Math.PI * 2); g.fill(); g.beginPath(); g.arc(150, 150, 5, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = "#1a1218"; g.lineWidth = 18; g.lineCap = "round"; g.beginPath(); g.moveTo(24, 130); g.quadraticCurveTo(128, 22, 232, 126); g.stroke();
+    g.lineWidth = 6; g.beginPath(); g.moveTo(40, 136); g.quadraticCurveTo(128, 204, 220, 134); g.stroke();
+    for (let k = 0; k < 3; k++) { const x = (flip ? 48 : 208) + (flip ? 1 : -1) * k * 22, y = 60 + k * 14; g.lineWidth = 7; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (flip ? -16 : 16), y - 22); g.stroke(); }
+  });
+  [-0.085, 0.085].forEach((x) => { const e = new THREE.Mesh(new THREE.PlaneGeometry(0.125, 0.115), new THREE.MeshStandardMaterial({ map: eyeTex(x < 0), transparent: true, roughness: 0.3 })); e.position.set(x, 0.0, 0.207); e.rotation.y = x * 1.1; e.rotation.x = -0.05; e.castShadow = false; e.userData.noOutline = true; head.add(e); c.eyes.push(e); });
+  [-0.085, 0.085].forEach((x) => { const br = box(0.085, 0.014, 0.012, "#1a1218", x, 0.095, 0.2, head); br.rotation.z = Math.sign(x) * 0.4; br.rotation.y = x * 1.0; });
+  const nose = sph(0.02, mat("#ddd0c8"), 0, -0.055, 0.205, head, 12, 10); nose.scale.set(0.8, 1.7, 0.9); nose.userData.noOutline = true; const ntip = sph(0.02, mat("#d6c6be"), 0, -0.095, 0.215, head, 10, 8); ntip.userData.noOutline = true;
+  // 嘴和臉頰縫線都畫在貼圖上貼到臉上，線條才銳利
+  const mouthTex = canvasTex(256, 128, (g) => { g.clearRect(0, 0, 256, 128); g.strokeStyle = "#2a1a22"; g.lineCap = "round"; g.lineWidth = 9; g.beginPath(); g.moveTo(60, 64); g.quadraticCurveTo(128, 72, 196, 62); g.stroke(); g.lineWidth = 6; [150, 172, 194].forEach((x) => { g.beginPath(); g.moveTo(x, 48); g.lineTo(x + 6, 82); g.stroke(); }); });
+  const mouthP = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.065), new THREE.MeshStandardMaterial({ map: mouthTex, transparent: true, roughness: 0.6 })); mouthP.position.set(0, -0.135, 0.212); mouthP.rotation.x = -0.15; mouthP.castShadow = false; mouthP.userData.noOutline = true; head.add(mouthP);
+  const stitchTex = canvasTex(128, 256, (g) => { g.clearRect(0, 0, 128, 256); g.strokeStyle = "#2a1a22"; g.lineCap = "round"; g.lineWidth = 7; g.beginPath(); g.moveTo(44, 30); g.lineTo(84, 226); g.stroke(); g.lineWidth = 6; for (let k = 0; k < 5; k++) { const t = 50 + k * 40, x = 44 + (t - 30) / 196 * 40; g.beginPath(); g.moveTo(x - 22, t + 4); g.lineTo(x + 22, t - 4); g.stroke(); } g.strokeStyle = "rgba(120,60,80,.35)"; g.lineWidth = 16; g.beginPath(); g.moveTo(44, 30); g.lineTo(84, 226); g.stroke(); });
+  const stitchP = new THREE.Mesh(new THREE.PlaneGeometry(0.07, 0.14), new THREE.MeshStandardMaterial({ map: stitchTex, transparent: true, roughness: 0.6 })); stitchP.position.set(0.155, -0.04, 0.155); stitchP.rotation.y = 0.75; stitchP.castShadow = false; stitchP.userData.noOutline = true; head.add(stitchP);
+  [-0.17, 0.17].forEach((x) => { const b = new THREE.Mesh(new THREE.CircleGeometry(0.045, 14), new THREE.MeshBasicMaterial({ color: 0x8a5a70, transparent: true, opacity: 0.22 })); b.position.set(x, -0.07, 0.19); b.rotation.y = x * 2.4; head.add(b); });
   // 頭髮：貼頭、側分，幾綹垂到額前
   const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.235, 26, 14, 0, Math.PI * 2, 0, Math.PI * 0.5), mat(hairC)); hairCap.position.y = 0.04; hairCap.scale.set(1.02, 1.1, 1.0); hairCap.rotation.x = -0.25; hairCap.castShadow = true; head.add(hairCap);
   const hairBack = new THREE.Mesh(new THREE.SphereGeometry(0.232, 26, 14, Math.PI, Math.PI, 0, Math.PI * 0.7), mat(hairC)); hairBack.position.y = 0.04; hairBack.scale.set(1.02, 1.1, 1.0); head.add(hairBack);
-  [[-0.1, 0.05, 0.3], [-0.03, 0.08, 0.15], [0.06, 0.06, -0.2]].forEach(([x, y, rz]) => { const lk = cap(0.025, 0.14, hairC, head); lk.position.set(x, 0.14 + y, 0.2); lk.rotation.z = rz; lk.rotation.x = 0.35; });
+  [[-0.11, 0.0, 0.3], [-0.04, 0.02, 0.12], [0.05, 0.01, -0.15], [0.12, -0.01, -0.3]].forEach(([x, y, rz]) => { const lk = cap(0.018, 0.1, hairC, head); lk.position.set(x, 0.12 + y, 0.16); lk.rotation.z = rz; lk.rotation.x = 1.0; lk.scale.z = 0.5; lk.userData.noOutline = true; });
   // 禮帽
   if (look.hat !== false) { const hat = new THREE.Group(); hat.position.set(0, 0.2, -0.02); hat.rotation.x = -0.12; head.add(hat); cyl(0.3, 0.3, 0.025, "#1f1a22", 0, 0, 0, hat, 28); cyl(0.19, 0.17, 0.34, "#1f1a22", 0, 0.17, 0, hat, 24); cyl(0.195, 0.195, 0.06, trim, 0, 0.05, 0, hat, 24); cyl(0.19, 0.19, 0.02, "#1f1a22", 0, 0.34, 0, hat, 24); }
   // 脖子上的圍巾／領結
