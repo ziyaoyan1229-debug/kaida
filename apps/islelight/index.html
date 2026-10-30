@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>漂流燈島</title>
+<meta name="description" content="白天在漂流小島上撿木頭、蓋路燈，晚上用光守住燈塔，擋下從海霧裡爬上岸的黑影。">
+<meta name="theme-color" content="#0d1426">
+<link rel="apple-touch-icon" href="../pomodoro/apple-touch-icon.png">
+<style>
+:root {
+  --glass: rgba(255, 250, 240, .16);
+  --glass-b: rgba(255, 250, 240, .32);
+  --ink: #fffaf0;
+  --gold: #ffd27a;
+  --red: #ff7a6a;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1426; color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; user-select: none; -webkit-user-select: none; }
+canvas { display: block; touch-action: none; }
+.glass { background: var(--glass); border: 1px solid var(--glass-b); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+#hud { position: fixed; left: 0; right: 0; top: 0; padding: max(10px, env(safe-area-inset-top)) 12px 0; display: flex; gap: 8px; align-items: flex-start; pointer-events: none; }
+#hud .glass { padding: 8px 12px; }
+#clock { display: flex; flex-direction: column; gap: 5px; min-width: 128px; }
+#clock b { font-size: 15px; letter-spacing: .05em; }
+#phase { font-size: 12px; opacity: .85; }
+#bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; }
+#bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffd27a, #ff9a5a); border-radius: 3px; }
+#res { display: flex; gap: 12px; font-size: 15px; font-weight: 600; align-items: center; margin-left: auto; }
+#res span { display: flex; gap: 4px; align-items: center; }
+#hp { width: 100%; height: 5px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; margin-top: 2px; }
+#hp i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ffe7a8, #ffc24a); transition: width .3s; }
+#tower { display: flex; flex-direction: column; min-width: 96px; font-size: 12px; }
+#build { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(14px, env(safe-area-inset-bottom)); display: flex; gap: 8px; padding: 8px; }
+#build button { all: unset; white-space: nowrap; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 10px; min-width: 62px; border-radius: 12px; font-size: 13px; font-weight: 600; color: var(--ink); background: rgba(255,255,255,.08); border: 1px solid transparent; transition: background .15s, border-color .15s, opacity .15s; }
+#build button small { font-size: 11px; font-weight: 400; opacity: .8; }
+#build button .ic { font-size: 20px; line-height: 1.1; }
+#build button:active { background: rgba(255,255,255,.22); }
+#build button.on { background: rgba(255, 210, 122, .3); border-color: var(--gold); }
+#build button.no { opacity: .4; }
+#tip { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(14px, env(safe-area-inset-bottom)) + 84px); font-size: 13px; padding: 7px 14px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .25s; }
+#tip.show { opacity: 1; }
+#toasts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.toast { position: absolute; font-size: 14px; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,.6); transform: translate(-50%, -50%); animation: up 1.1s ease-out forwards; white-space: nowrap; }
+@keyframes up { from { opacity: 1; margin-top: 0; } to { opacity: 0; margin-top: -46px; } }
+#banner { position: fixed; left: 50%; top: 32%; transform: translate(-50%, -50%); font-size: 30px; font-weight: 800; letter-spacing: .12em; text-shadow: 0 2px 18px rgba(0,0,0,.5); pointer-events: none; opacity: 0; transition: opacity .6s; text-align: center; }
+#banner small { display: block; font-size: 14px; font-weight: 500; letter-spacing: .04em; margin-top: 6px; opacity: .85; }
+#banner.show { opacity: 1; }
+#overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(13,20,38,.35), rgba(13,20,38,.75)); transition: opacity .6s; }
+#overlay.hide { opacity: 0; pointer-events: none; }
+#card { max-width: 380px; width: 100%; padding: 22px 22px 18px; text-align: center; }
+#card h1 { margin: 0 0 4px; font-size: 32px; letter-spacing: .14em; color: var(--gold); text-shadow: 0 0 22px rgba(255, 200, 100, .6); }
+#card .sub { margin: 0 0 14px; font-size: 13px; opacity: .8; }
+#card ul { text-align: left; margin: 0 0 16px; padding-left: 20px; font-size: 14px; line-height: 1.7; }
+#card button { all: unset; cursor: pointer; display: inline-block; padding: 11px 34px; border-radius: 999px; font-size: 16px; font-weight: 700; color: #3a2410; background: linear-gradient(180deg, #ffe2a0, #ffbf55); box-shadow: 0 0 24px rgba(255, 190, 80, .55); }
+#card .best { margin-top: 10px; font-size: 12px; opacity: .7; }
+#skipbtn { position: fixed; right: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+#quality { position: fixed; left: 12px; top: calc(max(10px, env(safe-area-inset-top)) + 62px); padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+@media (max-width: 420px) {
+  #build { gap: 4px; padding: 6px; }
+  #build button { min-width: 64px; padding: 6px 4px; font-size: 12px; white-space: nowrap; }
+  #res { gap: 8px; font-size: 14px; }
+  #clock { min-width: 108px; }
+}
+</style>
+<script type="importmap">{ "imports": { "three": "../pomodoro/vendor/three.module.min.js", "three/addons/": "./vendor/" } }</script>
+</head>
+<body>
+<div id="hud">
+  <div id="clock" class="glass"><b id="day">第 1 天</b><span id="phase">早晨</span><div id="bar"><i></i></div></div>
+  <div id="tower" class="glass"><span>🗼 燈塔 <b id="hpn">100</b></span><div id="hp"><i></i></div></div>
+  <div id="res" class="glass"><span>🪵 <b id="wood">0</b></span><span>🛢️ <b id="oil">0</b></span></div>
+</div>
+<button id="skipbtn" class="glass">快轉到夜晚 ⏩</button>
+<button id="quality" class="glass">畫質：高</button>
+<div id="build" class="glass">
+  <button data-b="lamp"><span class="ic">🏮</span>路燈<small>🪵2</small></button>
+  <button data-b="search"><span class="ic">🔦</span>探照燈<small>🪵4 🛢️2</small></button>
+  <button data-b="fire"><span class="ic">🔥</span>篝火<small>🪵3</small></button>
+  <button data-b="repair"><span class="ic">🔧</span>修燈塔<small>🪵3</small></button>
+</div>
+<div id="tip" class="glass"></div>
+<div id="toasts"></div>
+<div id="banner"></div>
+<div id="overlay">
+  <div id="card" class="glass">
+    <h1>漂流燈島</h1>
+    <p class="sub">守住燈塔的光，撐過每一個夜晚</p>
+    <ul>
+      <li>點地面走路，拖曳轉視角，雙指或滾輪縮放</li>
+      <li>白天到海邊撿漂流木 🪵，打倒黑影會掉燈油 🛢️</li>
+      <li>天黑前蓋路燈、探照燈、篝火，光照到的黑影會消散</li>
+      <li>你手上的提燈也能驅散黑影，燈塔被摸到就會受損</li>
+    </ul>
+    <button id="start">開始守夜</button>
+    <div class="best" id="best"></div>
+  </div>
+</div>
+<script type="module" src="game.js?v=20261030a"></script>
+</body>
+</html>
