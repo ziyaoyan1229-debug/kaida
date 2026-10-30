@@ -229,6 +229,56 @@ const dockLampAt = new THREE.Vector3(), boatRef = {};
   outline(g, 0.02);
 })();
 
+/* ===== 船與出海打撈 ===== */
+// 船停在碼頭旁，按 E 上船就能開出去；海上漂著木箱、油桶、沉船殘骸，靠近自動打撈
+const boat = new THREE.Group(); scene.add(boat);
+const SEA = { on: false, v: 0, yaw: 0, x: 0, z: 0, moor: null, lamp: null, glow: null, pool: null, bow: new THREE.Vector3(), spawnT: 0, foeT: 0 };
+(() => {
+  const w = new THREE.Vector3(); boatRef.o.parent.updateMatrixWorld(true); boatRef.o.getWorldPosition(w); boatRef.o.parent.remove(boatRef.o);
+  SEA.moor = { x: w.x, z: w.z, yaw: -DOCK_A + Math.PI / 2 }; SEA.x = w.x; SEA.z = w.z; SEA.yaw = SEA.moor.yaw;
+  boat.position.set(w.x, -0.05, w.z); boat.rotation.y = SEA.yaw;
+  const hull = sph(0.7, "#c8574a", 0, 0, 0, boat, 18, 10); hull.scale.set(0.95, 0.5, 2.1);
+  const rim = sph(0.72, "#f3efe6", 0, 0.1, 0, boat, 18, 10); rim.scale.set(0.97, 0.12, 2.14);
+  box(1.1, 0.08, 2.4, "#a07a52", 0, 0.22, 0, boat); [-0.55, 0.55].forEach((z) => box(1.0, 0.06, 0.28, "#8e6a46", 0, 0.3, z, boat));
+  cyl(0.04, 0.05, 1.9, "#5a3a22", 0, 1.0, -0.2, boat, 8); box(1.0, 0.05, 0.05, "#5a3a22", 0.45, 1.95, -0.2, boat);
+  const sail = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.15), new THREE.MeshStandardMaterial({ color: "#f3efe6", roughness: 0.9, side: THREE.DoubleSide })); sail.position.set(0.47, 1.35, -0.2); sail.castShadow = true; boat.add(sail);
+  cyl(0.03, 0.03, 0.6, "#5a3a22", 0, 0.55, 1.1, boat, 6);
+  const lampG = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 0.16), new THREE.MeshStandardMaterial({ color: "#fff2c8", emissive: "#ffcf6a", emissiveIntensity: 0.3, transparent: true, opacity: 0.85 })); lampG.position.set(0, 0.95, 1.1); boat.add(lampG); SEA.lampGlass = lampG;
+  SEA.glow = glowSprite(new THREE.Color("#ffb860").multiplyScalar(1.6), 1.1, boat, 0.95); SEA.glow.position.z = 1.1;
+  SEA.lamp = new THREE.PointLight("#ffc070", 0, 7, 1.4); SEA.lamp.position.set(0, 1.0, 1.1); boat.add(SEA.lamp);
+  SEA.pool = lightPool("#ffb860", 3.0, scene, 0.1);
+  outline(boat, 0.02);
+})();
+const flotsam = [];
+function spawnFlotsam() {
+  const a = Math.random() * TAU, far = Math.random(), r = 56 + far * 62, x = Math.cos(a) * r, z = Math.sin(a) * r;
+  const roll = Math.random(), kind = roll < 0.55 - far * 0.3 ? "crate" : roll < 0.86 ? "barrel" : "wreck";
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = Math.random() * TAU; scene.add(g);
+  if (kind === "crate") { box(0.6, 0.5, 0.6, "#b98b5c", 0, 0.1, 0, g); [0.33, -0.1].forEach((y) => box(0.64, 0.06, 0.64, "#5a3a22", 0, y, 0, g)); box(0.06, 0.5, 0.64, "#5a3a22", 0, 0.1, 0, g); }
+  else if (kind === "barrel") { const b = cyl(0.26, 0.26, 0.62, "#2f3e5a", 0, 0.12, 0, g, 12); b.rotation.z = Math.PI / 2; [-0.2, 0.2].forEach((x) => { const r = cyl(0.275, 0.275, 0.05, M.iron, x, 0.12, 0, g, 12); r.rotation.z = Math.PI / 2; }); sph(0.07, new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 1.7, 0.6) }), 0.32, 0.12, 0, g, 8, 6); }
+  else { [[0, 0.05, 0, 0.3], [0.2, 0.1, 0.25, -0.5], [-0.25, 0.0, -0.1, 1.2]].forEach(([x, y, z, ry]) => { const pl = box(1.1, 0.06, 0.22, "#6a4a32", x, y, z, g); pl.rotation.y = ry; pl.rotation.z = (ry - 0.3) * 0.1; }); cyl(0.2, 0.2, 0.06, M.brass, 0.1, 0.2, 0.1, g, 8); for (let i = 0; i < 6; i++) { const t = i / 6 * TAU; box(0.08, 0.06, 0.08, M.brass, 0.1 + Math.cos(t) * 0.22, 0.2, 0.1 + Math.sin(t) * 0.22, g); } }
+  outline(g, 0.015);
+  flotsam.push({ kind, g, x, z, t: Math.random() * 10, drift: Math.random() * TAU });
+}
+for (let i = 0; i < 10; i++) spawnFlotsam();
+let nearBoat = false, canLand = false;
+function boardBoat() {
+  if (SEA.on || IN) return;
+  SEA.on = true; P.tx = null; SEA.v = 0;
+  [player.root, pet].forEach((o) => { if (o.parent) o.parent.remove(o); boat.add(o); });
+  player.root.position.set(0, 0.26, -0.5); player.root.rotation.y = 0; pet.position.set(0, 0.26, 0.45); pet.rotation.y = Math.PI;
+  camS.x = SEA.x; camS.z = SEA.z; camS.fyaw = SEA.yaw + Math.PI; camS.cdNow = null; camS.free = 0;
+  $("build").style.display = "none"; setBuild(null); banner("出海", "靠近漂浮物自動打撈，天黑前回港");
+}
+function landBoat() {
+  if (!SEA.on) return;
+  SEA.on = false; SEA.v = 0; SEA.x = SEA.moor.x; SEA.z = SEA.moor.z; SEA.yaw = SEA.moor.yaw; boat.rotation.set(0, SEA.yaw, 0);
+  [player.root, pet].forEach((o) => { boat.remove(o); scene.add(o); });
+  P.x = DOCK_X; P.z = DOCK_Z; P.yaw = Math.atan2(-P.x, -P.z); P.tx = null; petS.x = P.x + 0.5; petS.z = P.z + 0.3;
+  camS.x = P.x; camS.z = P.z; camS.fyaw = P.yaw + Math.PI; camS.cdNow = null; camS.free = 0;
+  $("build").style.display = "";
+}
+
 /* ===== 小鎮 ===== */
 // 鎮上原本就有的路燈：模型＋光暈＋地面光，真正的點光源只給前幾盞（手機吃不消）
 const townLamps = [];
@@ -464,7 +514,7 @@ function leaveBuilding() {
   });
 }
 let nearDoor = null;
-function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (nearDoor) enterBuilding(nearDoor); }
+function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (SEA.on) { if (canLand) landBoat(); } else if (nearBoat) boardBoat(); else if (nearDoor) enterBuilding(nearDoor); }
 $("prompt").addEventListener("click", doorAction);
 function animWalk(c, walk, moving) {
   const s = moving ? Math.sin(walk) : 0;
@@ -491,8 +541,8 @@ function spawnShard(x, z) {
 /* ===== 黑影 ===== */
 const foes = [];
 const foeBodyM = new THREE.MeshStandardMaterial({ color: "#0d0a18", emissive: "#2a1650", emissiveIntensity: 0.6, roughness: 1 });
-function spawnFoe() {
-  const a = Math.random() * TAU, r = R(a) + 4.5, x = Math.cos(a) * r, z = Math.sin(a) * r;
+function spawnFoe(sx, sz, sea) {
+  const a = Math.random() * TAU, r = R(a) + 4.5, x = sx == null ? Math.cos(a) * r : sx, z = sz == null ? Math.sin(a) * r : sz;
   const g = new THREE.Group(); scene.add(g);
   const bm = foeBodyM.clone();
   const body = sph(0.36, bm, 0, 0.42, 0, g, 16, 12); body.scale.set(1, 1.25, 1);
@@ -502,7 +552,7 @@ function spawnFoe() {
   [-0.12, 0.12].forEach((ex) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), eyeM); e.position.set(ex, 0.52, 0.3); e.scale.y = 1.4; g.add(e); });
   const aura = glowSprite(new THREE.Color(0.5, 0.2, 1.1), 2.2, g, 0.5); aura.material.opacity = 0.7;
   const day = G.day;
-  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0 };
+  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.45, max: 2.2 + day * 0.45, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0, sea: !!sea };
   f.g.position.set(x, -0.4, z); foes.push(f);
 }
 function killFoe(f, byTower) {
@@ -545,7 +595,7 @@ function envAt(h) {
 function darkAt(h) { return h >= 12 ? smooth(17.4, 19.8, h) : 1 - smooth(4.6, 6.6, h); }
 
 /* ===== 遊戲狀態 ===== */
-const G = { started: false, over: false, t: 0, day: 1, wood: 4, oil: 0, hp: 100, build: null, spawns: [], woodTimer: 0, shake: 0, lastPhase: "day" };
+const G = { started: false, over: false, t: 0, day: 1, wood: 4, oil: 0, parts: 0, hp: 100, build: null, spawns: [], woodTimer: 0, shake: 0, lastPhase: "day" };
 function planNight() {
   const n = 5 + G.day * 3, list = [];
   for (let i = 0; i < n; i++) { const k = i / n; list.push(PH.night * (0.04 + 0.66 * k + Math.random() * 0.06)); }
@@ -586,6 +636,7 @@ function endPtr(e) {
   const hit = groundHit(e.clientX, e.clientY); if (!hit) return;
   if (G.build) { tryPlace(hit.x, hit.z); return; }
   if (IN) { P.tx = hit.x; P.tz = hit.z; return; }
+  if (SEA.on) { P.tx = hit.x; P.tz = hit.z; mk.position.set(hit.x, 0.14, hit.z); mk.material.opacity = 0.9; mk.scale.setScalar(1.4); return; }
   const a = Math.atan2(hit.z, hit.x), r = Math.min(Math.hypot(hit.x, hit.z), R(a) - 0.3);
   P.tx = Math.cos(a) * r; P.tz = Math.sin(a) * r; marker(P.tx, P.tz);
 }
@@ -682,7 +733,7 @@ function frame() {
 
   // 階段切換
   if (ph !== G.lastPhase && G.started && !G.over) {
-    if (ph === "dusk") banner("太陽下山了", "燈要亮了，黑影快來了");
+    if (ph === "dusk") banner("太陽下山了", SEA.on ? "天快黑了，快回港！" : "燈要亮了，黑影快來了");
     if (ph === "night") { planNight(); banner(`第 ${G.day} 夜`, "守住燈塔"); }
     if (ph === "dawn") { foes.forEach((f) => { if (!f.dying) killFoe(f, false); }); }
     if (ph === "day") { G.day++; G.wood += 2; banner(`撐過了第 ${G.day - 1} 夜`, "天亮了，木頭 +2"); }
@@ -766,7 +817,16 @@ function frame() {
     else if (P.tx != null) { vx = P.tx - P.x; vz = P.tz - P.z; if (Math.hypot(vx, vz) < 0.08) { P.tx = null; vx = vz = 0; } }
   }
   const vl = Math.hypot(vx, vz); P.moving = vl > 0;
-  if (P.moving) {
+  if (SEA.on) {
+    // 開船：有慣性、慢慢轉向；不能撞上島，也別開太遠
+    if (P.moving) { const want = Math.atan2(vx, vz); let d = ((want - SEA.yaw + Math.PI) % TAU + TAU) % TAU - Math.PI; SEA.yaw += d * Math.min(1, dt * 2.2); SEA.v = Math.min(5.5, SEA.v + dt * 4); }
+    else SEA.v = Math.max(0, SEA.v - dt * 3);
+    SEA.x += Math.sin(SEA.yaw) * SEA.v * dt; SEA.z += Math.cos(SEA.yaw) * SEA.v * dt;
+    const a = Math.atan2(SEA.z, SEA.x), r = Math.hypot(SEA.x, SEA.z), lim = R(a) + 1.4; if (r < lim) { SEA.x *= lim / r; SEA.z *= lim / r; SEA.v *= 0.5; } if (r > 150) { SEA.x *= 150 / r; SEA.z *= 150 / r; }
+    P.x = SEA.x; P.z = SEA.z; P.yaw = SEA.yaw;
+    boat.rotation.set(Math.sin(now * 1.1) * 0.03 + SEA.v * 0.012, SEA.yaw, Math.sin(now * 1.4) * 0.05);
+    animWalk(player, 0, false);
+  } else if (P.moving) {
     const sp = 3.4; P.x += vx / vl * sp * dt; P.z += vz / vl * sp * dt;
     (IN ? IN.room.colliders : colliders).forEach((c) => { const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz), m = c.r + 0.22; if (d < m && d > 1e-4) { P.x = c.x + dx / d * m; P.z = c.z + dz / d * m; } });
     if (IN) { const hw = IN.room.w / 2 - 0.45, hd = IN.room.d / 2 - 0.45; P.x = clamp(P.x, -hw, hw); P.z = clamp(P.z, -hd, Math.abs(P.x) < 0.5 ? hd + 0.3 : hd); }
@@ -774,24 +834,43 @@ function frame() {
     const wy = Math.atan2(vx, vz); let d = ((wy - P.yaw + Math.PI) % TAU + TAU) % TAU - Math.PI; P.yaw += d * Math.min(1, dt * 12);
     P.walk += dt * 11;
   }
-  player.root.position.set(P.x, groundY(P.x, P.z), P.z); player.root.rotation.y = P.yaw; animWalk(player, P.walk, P.moving);
+  if (!SEA.on) { player.root.position.set(P.x, groundY(P.x, P.z), P.z); player.root.rotation.y = P.yaw; animWalk(player, P.walk, P.moving); }
   player.arms[1].rotation.z = -0.25;
+  // 船：停泊或航行都隨浪起伏；船燈晚上亮
+  boat.position.set(SEA.x, -0.05 + Math.sin(now * 1.6) * 0.05, SEA.z);
+  SEA.lamp.intensity = dark * 6; SEA.glow.material.opacity = dark * 0.9; SEA.lampGlass.material.emissiveIntensity = 0.3 + dark * 3;
+  SEA.bow.set(0, 0.9, 1.1); boat.localToWorld(SEA.bow); SEA.pool.position.set(SEA.bow.x, 0.12, SEA.bow.z); SEA.pool.material.opacity = dark * 0.5;
+  // 漂浮物：白天慢慢補貨、隨浪漂；船靠近就撈起來
+  if ((SEA.spawnT += dt) > 3 && ph === "day" && flotsam.length < 16) { SEA.spawnT = 0; spawnFlotsam(); }
+  for (let i = flotsam.length - 1; i >= 0; i--) {
+    const f = flotsam[i]; f.t += dt; f.x += Math.cos(f.drift) * 0.06 * dt; f.z += Math.sin(f.drift) * 0.06 * dt;
+    f.g.position.set(f.x, Math.sin(now * 1.3 + f.t) * 0.1 - 0.02, f.z); f.g.rotation.z = Math.sin(now * 0.9 + f.t) * 0.08;
+    if (SEA.on && Math.hypot(f.x - SEA.x, f.z - SEA.z) < 1.7) {
+      if (f.kind === "crate") { G.wood += 3; toastAt(f.x, f.z, "+3 🪵", "#ffe2a0", 0.6); } else if (f.kind === "barrel") { G.oil += 2; toastAt(f.x, f.z, "+2 🛢️", "#ffd27a", 0.6); } else { G.parts++; G.wood += 1; toastAt(f.x, f.z, "+1 🔩 +1 🪵", "#ffd27a", 0.6); }
+      burst(new THREE.Vector3(f.x, 0.5, f.z), 0xbfe0ff, 10, 1.2); scene.remove(f.g); flotsam.splice(i, 1);
+    }
+  }
+  // 夜裡還在海上：黑影從船邊的水面冒出來追船
+  if (SEA.on && ph === "night" && (SEA.foeT += dt) > 3.5) { SEA.foeT = 0; const a = Math.random() * TAU; spawnFoe(SEA.x + Math.cos(a) * 9, SEA.z + Math.sin(a) * 9, true); }
   mk.material.opacity = Math.max(0, mk.material.opacity - dt * 1.6); mk.scale.setScalar(Math.max(1, mk.scale.x - dt));
   // 提燈
   const lanternOn = 0.25 + dark * 0.75;
   lanternGlow.material.opacity = dark; lanternGlass.visible = true;
   lantern.getWorldPosition(v3); lanternLight.position.copy(v3); lanternLight.intensity = dark * 2.5;
-  lanternPool.position.set(P.x, groundY(P.x, P.z) + 0.04, P.z); lanternPool.material.opacity = dark * 0.45;
+  lanternPool.position.set(P.x, SEA.on ? 0.1 : groundY(P.x, P.z) + 0.04, P.z); lanternPool.material.opacity = dark * 0.45;
   // 門口提示
   if (IN) { IN.room.tick(dt, dark, E.bot); if (IN.room.ceiling) IN.room.ceiling.visible = camS.mode === "follow"; if (IN.room.npcChar) { IN.room.npcChar.root.position.y = 0.55 + Math.sin(now * 2) * 0.01; animWalk(IN.room.npcChar, 0, false); } }
-  else { nearDoor = null; let bd = 1.6; town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
-  const pr = $("prompt"), want = IN ? (P.z > IN.room.exitZ - 0.9 ? "離開 ⏎" : "") : nearDoor ? `進入 ${nearDoor.name} ⏎` : "";
+  else if (!SEA.on) { nearDoor = null; let bd = 1.6; town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
+  nearBoat = !IN && !SEA.on && Math.hypot(P.x - SEA.x, P.z - SEA.z) < 2.6; canLand = SEA.on && Math.hypot(SEA.x - SEA.moor.x, SEA.z - SEA.moor.z) < 5;
+  const pr = $("prompt"), want = IN ? (P.z > IN.room.exitZ - 0.9 ? "離開 ⏎" : "") : SEA.on ? (canLand ? "靠岸 ⏎" : "") : nearBoat ? "上船出海 ⏎" : nearDoor ? `進入 ${nearDoor.name} ⏎` : "";
   if (pr.dataset.t !== want) { pr.dataset.t = want; pr.textContent = want; pr.classList.toggle("show", !!want && G.started); }
+  if (!SEA.on) {
   // 寵物跟著
   const fx = P.x - Math.sin(P.yaw) * 0.8 + Math.cos(P.yaw) * 0.5, fz = P.z - Math.cos(P.yaw) * 0.8 - Math.sin(P.yaw) * 0.5;
   const pdx = fx - petS.x, pdz = fz - petS.z, pd = Math.hypot(pdx, pdz);
   if (pd > 0.25) { const sp = Math.min(pd * 3, 4.2); petS.x += pdx / pd * sp * dt; petS.z += pdz / pd * sp * dt; petS.yaw = Math.atan2(pdx, pdz); petS.walk += dt * 14; }
   pet.position.set(petS.x, groundY(petS.x, petS.z) + (pd > 0.25 ? Math.abs(Math.sin(petS.walk)) * 0.06 : 0), petS.z); pet.rotation.y = petS.yaw;
+  }
   if (pet.userData.tail) pet.userData.tail.rotation.z = Math.sin(now * 12) * 0.4;
 
   // 鎮民
@@ -831,6 +910,7 @@ function frame() {
     let light = 0;
     builds.forEach((b) => { if (b.on < 0.4) return; const d = Math.hypot(f.x - b.x, f.z - b.z); if (b.kind === "search") { if (b.target === f) light += DPS.search * b.on; } else if (d < RANGE[b.kind]) light += DPS[b.kind] * b.on * (1.2 - d / RANGE[b.kind] * 0.5); });
     const dp = Math.hypot(f.x - P.x, f.z - P.z); if (dp < 2.4 && dark > 0.4) light += 1.6 * (1.2 - dp / 2.4 * 0.5);
+    const db = Math.hypot(f.x - SEA.bow.x, f.z - SEA.bow.z); if (db < 2.8 && dark > 0.4) light += 1.2 * (1.2 - db / 2.8 * 0.5);
     const fa = Math.atan2(f.x, f.z), fd = Math.hypot(f.x, f.z);
     [by, by + Math.PI].forEach((ba) => { const df = Math.abs(((fa - ba + Math.PI) % TAU + TAU) % TAU - Math.PI); if (df < 0.16 && fd > 2 && fd < 17) light += 1.3 * dark; });
     if (fd < 2.1) light += 1.0;
@@ -841,6 +921,7 @@ function frame() {
     if (f.hp <= 0) { killFoe(f, false); continue; }
     // 往燈塔走；篝火會把附近的黑影引過去
     let tx = 0, tz = 0;
+    if (f.sea && SEA.on) { tx = SEA.x; tz = SEA.z; } else f.sea = false;
     builds.forEach((b) => { if (b.kind === "fire" && b.on > 0.4 && Math.hypot(b.x - f.x, b.z - f.z) < 6.5) { tx = b.x; tz = b.z; } });
     const dx = tx - f.x, dz = tz - f.z, d = Math.hypot(dx, dz);
     const sp = f.sp * (1 - f.lit * 0.55), wob = Math.sin(f.t * 2.2) * 0.35;
@@ -848,6 +929,7 @@ function frame() {
     f.g.position.set(f.x, Math.max(groundY(f.x, f.z), -0.45) + Math.sin(f.t * 4) * 0.05, f.z); f.g.rotation.y = Math.atan2(dx, dz);
     f.tips.forEach((t, j) => t.scale.y = 1 + Math.sin(f.t * 8 + j * 1.3) * 0.25);
     f.aura.material.opacity = 0.6 - f.lit * 0.4;
+    if (f.sea && d < 1.5) { G.wood = Math.max(0, G.wood - 3); G.oil = Math.max(0, G.oil - 1); G.shake = 0.3; SEA.v *= 0.3; killFoe(f, true); toastAt(SEA.x, SEA.z, "船被撞！-3 🪵 -1 🛢️", "#ff9a8a", 1.4); continue; }
     if (tx === 0 && tz === 0 && d < 1.7) { G.hp -= 6 + G.day; G.shake = 0.35; killFoe(f, true); toastAt(0, 0, `燈塔 -${6 + G.day}`, "#ff9a8a", 4); if (G.hp <= 0) { G.hp = 0; gameOver(); } }
   }
 
@@ -899,7 +981,7 @@ function frame() {
     $("bar").firstElementChild.style.width = (prog * 100).toFixed(1) + "%";
     $("bar").firstElementChild.style.background = ph === "night" ? "linear-gradient(90deg,#8aa4ff,#c8d4ff)" : "";
     $("hpn").textContent = Math.ceil(G.hp); $("hp").firstElementChild.style.width = G.hp + "%";
-    $("wood").textContent = G.wood; $("oil").textContent = G.oil;
+    $("wood").textContent = G.wood; $("oil").textContent = G.oil; $("parts").textContent = G.parts;
     document.querySelectorAll("#build button").forEach((b) => b.classList.toggle("no", !canAfford(b.dataset.b)));
     $("skipbtn").style.display = G.started && ph === "day" && !IN ? "" : "none";
   }
@@ -909,5 +991,5 @@ function frame() {
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); if (gtao) gtao.setSize(innerWidth, innerHeight); });
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
-window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN };
+window.__islelight = { G, P, camS, foes, items, DBG, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe };
 frame();
