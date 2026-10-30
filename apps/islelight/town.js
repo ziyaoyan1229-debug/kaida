@@ -8,7 +8,9 @@ let C = null; // 由 game.js 傳進來：scene、lightPool、housePools、collid
 /* 地形有起伏：建築放在佔地範圍內最高的地面上，下面墊一塊草皮平台（像山坡上整出來的宅基地），坡下那側就看得到平台邊 */
 function topY(x, z, r) { let y = C.groundY(x, z); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; y = Math.max(y, C.groundY(x + Math.cos(a) * r, z + Math.sin(a) * r)); } return y; }
 const TERRACE = mat("#7fae58", { roughness: 1 });
-function terrace(g, w, d, round) { const t = round ? cyl(w / 2, w / 2 + 0.35, 3, TERRACE, 0, -1.52, 0, g, 28) : box(w, 3, d, TERRACE, 0, -1.52, 0, g); t.castShadow = false; t.receiveShadow = true; return t; }
+function terrace(g, w, d, round) { const t = round ? cyl(w / 2, w / 2 + 0.35, 3, TERRACE, 0, -1.52, 0, g, 28) : box(w, 3, d, TERRACE, 0, -1.52, 0, g); t.castShadow = false; t.receiveShadow = true;
+  // 登記給 groundY 用：走到平台上時人要站在平台面上，不能埋進去
+  if (C.terraces) C.terraces.push({ x: g.position.x, z: g.position.z, y: g.position.y - 0.02, ry: g.rotation.y, w, d: round ? 0 : d, round }); return t; }
 function start(x, z, ry, r) { const g = new THREE.Group(); g.position.set(x, topY(x, z, r * 0.8), z); g.rotation.y = ry; C.scene.add(g); terrace(g, r * 2 + 0.6, r * 2 + 0.6); C.colliders.push({ x, z, r }); return g; }
 function timber(g, w, h, d, y, zf) {
   // 木骨架：直樑、斜撐、橫樑，貼在正面

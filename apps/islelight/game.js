@@ -133,9 +133,19 @@ function hill(x, z) {
     + 0.75 + 0.45 * Math.sin(x * 0.23 + 1) * Math.sin(z * 0.19) + 0.3 * Math.sin(x * 0.11 - z * 0.14);
   return h * fade;
 }
+const terraces = []; // 建築、池塘、農田下面的草皮平台：{x,z,y,ry,w,d,round}
+function terraceY(x, z, y) {
+  for (const t of terraces) {
+    const dx = x - t.x, dz = z - t.z;
+    if (t.round) { if (dx * dx + dz * dz < t.w * t.w / 4) y = Math.max(y, t.y); continue; }
+    const c = Math.cos(t.ry), s = Math.sin(t.ry), lx = dx * c - dz * s, lz = dx * s + dz * c;
+    if (Math.abs(lx) < t.w / 2 && Math.abs(lz) < t.d / 2) y = Math.max(y, t.y);
+  }
+  return y;
+}
 function groundY(x, z) {
   const r = Math.hypot(x, z), a = Math.atan2(z, x), rr = R(a), rg = RG(a);
-  if (r < rg) return 0.55 + hill(x, z);
+  if (r < rg) return terraceY(x, z, 0.55 + hill(x, z));
   if (r < rg + 0.35) return lerp(0.55, 0.35, (r - rg) / 0.35);
   if (r < rr) return 0.35;
   if (r < rr + 1.6) return 0.35 - (r - rr) / 1.6 * 1.4;
@@ -241,7 +251,7 @@ box(0.62, 1.15, 0.14, "#4a3426", 0, 0.98, 1.06, tower); box(0.08, 0.08, 0.06, "#
 /* 登上燈塔頂：站在瞭望台上，小地圖會顯示全島的黑影 */
 let ONTOP = false;
 const TOP_Y = TY + 5.22;
-const playerY = () => ONTOP ? TOP_Y : groundY(P.x, P.z);
+const playerY = () => IN ? 0.55 : ONTOP ? TOP_Y : groundY(P.x, P.z);
 let nearTower = false;
 function climbTower() { fadeTo(() => { ONTOP = true; P.x = 0; P.z = 0.86; P.yaw = 0; P.tx = null; P.goDoor = null; camS.x = 0; camS.z = 0.86; camS.fyaw = Math.PI; camS.cdNow = null; camS.free = 0; banner("燈塔瞭望台", "小地圖上看得到島上所有黑影", 2600); }); }
 function descendTower() { fadeTo(() => { ONTOP = false; P.x = 0; P.z = 2.3; P.yaw = 0; P.tx = null; camS.x = 0; camS.z = 2.3; camS.fyaw = Math.PI; camS.cdNow = null; camS.free = 0; }); }
@@ -370,7 +380,7 @@ const EXTRAS = [
 // 高草叢：[x, z, 寬, 深, 轉角]
 const TALL = [[-13, 14.5, 7, 4.5, 0], [-16, 25, 6, 5, 0.3], [-24, 11, 5, 5, -0.2], [-9, 27, 5, 4, 0.2], [11, 24.5, 5, 4, 0], [25, 10, 6, 4, 0.4], [12, 33, 6, 4.5, -0.3], [30, 2, 5, 5, 0], [-27, -5, 6, 6, 0.2], [-20, -32, 6, 4, 0], [28, -28, 5, 5, 0.3], [-14, -27, 5, 4, -0.2], [-33, 4, 5, 4, 0.1], [20, -2, 4.5, 4, 0], [-18, 34, 5, 4, 0.2], [33, 26, 5, 4, 0.1]];
 const SIGNS = [[2.3, 5.2, A(200), ["主街", "碼頭 ⇣"]], [-2.3, -5.2, A(20), ["住宅區", "鐘樓 ⇡"]], [-2.6, 21.3, A(150), ["⇠ 池塘", "西野原"]], [2.6, 17, A(-150), ["農田 ⇢"]], [-23, -13.1, A(60), ["⇠ 風車", "森林"]], [23, -17, A(-100), ["小池塘 ⇢"]]];
-const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
+const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, terraces, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
 const extras = buildExtras(EXTRAS); extras.forEach((e) => { if (e && e.name) town.push(e); });
 TALL.forEach(([x, z, w, d, ry]) => tallGrassField(scene, x, z, w, d, ry, groundY));
 SIGNS.forEach(([x, z, ry, texts]) => { signPost(scene, x, z, ry, texts, groundY(x, z)); colliders.push({ x, z, r: 0.2 }); });
@@ -611,7 +621,7 @@ function animWalk(c, walk, moving) {
   const s = moving ? Math.sin(walk) : 0;
   c.legs[0].rotation.x = s * 0.7; c.legs[1].rotation.x = -s * 0.7;
   c.arms[0].rotation.x = -s * 0.5; c.arms[1].rotation.x = moving ? s * 0.25 : 0;
-  c.hips.position.y = 0.36 + (moving ? Math.abs(Math.cos(walk)) * 0.04 : 0);
+  c.hips.position.y = (c.hipY || 0.36) + (moving ? Math.abs(Math.cos(walk)) * 0.04 : 0);
 }
 
 /* ===== 撿東西：漂流木、燈油碎片 ===== */
@@ -1011,7 +1021,7 @@ function frame() {
   torchDir.set(Math.sin(P.yaw), -0.08, Math.cos(P.yaw)).normalize(); torchPos.copy(v3);
   torchCone.position.copy(torchPos); torchCone.rotation.set(0, P.yaw, 0); torchCone.rotateX(0.08); torchCone.material.uniforms.uOpacity.value = dark * 0.5;
   torchSpot.position.copy(torchPos); torchSpot.target.position.copy(torchPos).addScaledVector(torchDir, 6); torchSpot.intensity = dark * 55;
-  lanternPool.position.set(P.x + torchDir.x * 3.2, SEA.on ? 0.1 : ONTOP ? TOP_Y + 0.02 : groundY(P.x, P.z) + 0.04, P.z + torchDir.z * 3.2); lanternPool.rotation.z = -P.yaw; lanternPool.scale.set(1.1, 2.0, 1); lanternPool.material.opacity = dark * 0.4;
+  lanternPool.position.set(P.x + torchDir.x * 3.2, SEA.on ? 0.1 : IN ? 0.57 : ONTOP ? TOP_Y + 0.02 : groundY(P.x, P.z) + 0.04, P.z + torchDir.z * 3.2); lanternPool.rotation.z = -P.yaw; lanternPool.scale.set(1.1, 2.0, 1); lanternPool.material.opacity = dark * 0.4;
   // 門口提示
   if (IN) { IN.room.tick(dt, dark, E.bot); if (IN.room.ceiling) IN.room.ceiling.visible = camS.mode === "follow"; if (IN.room.npcChar) { IN.room.npcChar.root.position.y = 0.55 + Math.sin(now * 2) * 0.01; animWalk(IN.room.npcChar, 0, false); } }
   else if (!SEA.on) { nearDoor = null; let bd = 2.3; if (!ONTOP) town.forEach((b) => { const d = Math.hypot(P.x - b.door.x, P.z - b.door.z); if (d < bd) { bd = d; nearDoor = b; } }); }
@@ -1025,7 +1035,7 @@ function frame() {
   const fx = P.x - Math.sin(P.yaw) * 0.8 + Math.cos(P.yaw) * 0.5, fz = P.z - Math.cos(P.yaw) * 0.8 - Math.sin(P.yaw) * 0.5;
   const pdx = fx - petS.x, pdz = fz - petS.z, pd = Math.hypot(pdx, pdz);
   if (pd > 0.25) { const sp = Math.min(pd * 3, 4.2); petS.x += pdx / pd * sp * dt; petS.z += pdz / pd * sp * dt; petS.yaw = Math.atan2(pdx, pdz); petS.walk += dt * 14; }
-  pet.position.set(petS.x, groundY(petS.x, petS.z) + (pd > 0.25 ? Math.abs(Math.sin(petS.walk)) * 0.06 : 0), petS.z); pet.rotation.y = petS.yaw;
+  pet.position.set(petS.x, (IN ? 0.55 : groundY(petS.x, petS.z)) + (pd > 0.25 ? Math.abs(Math.sin(petS.walk)) * 0.06 : 0), petS.z); pet.rotation.y = petS.yaw;
   }
   if (pet.userData.tail) pet.userData.tail.rotation.z = Math.sin(now * 12) * 0.4;
 
@@ -1112,11 +1122,11 @@ function frame() {
         const t = -bq - Math.sqrt(disc); if (t > 0 && t < best) best = Math.max(2.0, t); }
       best /= Math.max(cp, 0.3);
       camS.cdNow = camS.cdNow == null ? best : (best < camS.cdNow ? best : lerp(camS.cdNow, best, Math.min(1, dt * 4))); cd = camS.cdNow; }
-    const gy = ONTOP ? TOP_Y : groundY(camS.x, camS.z);
+    const gy = IN ? 0.55 : ONTOP ? TOP_Y : groundY(camS.x, camS.z);
     if (ONTOP) { camS.fpitch = clamp(camS.fpitch, 0.05, 0.3); cd = Math.min(cd, 3.6); }
     let cx = camS.x + Math.sin(camS.fyaw) * cp * cd, cz = camS.z + Math.cos(camS.fyaw) * cp * cd, cy = gy + 0.9 + Math.sin(camS.fpitch) * cd;
     // 不要鑽到地面或海面下
-    cy = Math.max(cy, groundY(cx, cz) + 0.9, 0.9);
+    cy = Math.max(cy, (IN ? 0.55 : ONTOP ? TOP_Y - 1 : groundY(cx, cz)) + 0.9, 0.9);
     if (IN) { cx = clamp(cx, -IN.room.w / 2 + 0.35, IN.room.w / 2 - 0.35); cz = clamp(cz, -IN.room.d / 2 + 0.35, IN.room.d / 2 + 4); cy = Math.min(cy, 0.55 + 3.0); }
     if (IN) IN.room.frame.visible = cz < IN.room.d / 2 + 0.3;
     camera.position.set(cx + (Math.random() - 0.5) * shake, cy, cz + (Math.random() - 0.5) * shake);
