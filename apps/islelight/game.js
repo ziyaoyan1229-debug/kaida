@@ -7,7 +7,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes } from "./art.js";
+import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
 import { buildTown, buildExtras, windmills } from "./town.js";
 
 const SAVE_KEY = "kaida-islelight-v1";
@@ -233,50 +233,64 @@ const dockLampAt = new THREE.Vector3(), boatRef = {};
 const townLamps = [];
 function addLamp(parent, x, y, z) {
   const g = lampPost(parent, x, y, z); outline(g, 0.014);
-  const glow = glowSprite(new THREE.Color("#ffb860").multiplyScalar(2.0), 1.3, g, 1.85);
+  const glow = glowSprite(new THREE.Color("#ffb860").multiplyScalar(1.6), 1.1, g, 1.85);
   const pool = lightPool("#ffb860", 3.2, g, 0.04);
   const w = new THREE.Vector3(); g.updateMatrixWorld(true); g.getWorldPosition(w);
   townLamps.push({ g, glow, pool, light: null, x: w.x, z: w.z, y: w.y });
   colliders.push({ x: w.x, z: w.z, r: 0.3 });
   return g;
 }
-const RING_R = 11, RING2 = 30, ROAD_W = 2.0;
+/* 劍盾式分區：燈塔廣場 → 主街（商店街，往南通碼頭）／北街（住宅區，盡頭是鐘樓）／橫街 → 兩側土路通往野外（高草、池塘、農田、風車） */
 const A = (deg) => deg * Math.PI / 180;
-const DOCK_T = Math.atan2(Math.cos(DOCK_A), Math.sin(DOCK_A)); // 碼頭在小鎮座標的方位（sin,cos）
-const outer = (deg, r) => [Math.sin(A(deg)) * (r || 14.3), Math.cos(A(deg)) * (r || 14.3), A(deg) + Math.PI];
-const inner = (deg, r) => [Math.sin(A(deg)) * (r || 7.3), Math.cos(A(deg)) * (r || 7.3), A(deg)];
+const DOCK_T = Math.atan2(Math.cos(DOCK_A), Math.sin(DOCK_A));
+const DOCK_X = Math.cos(DOCK_A) * (R(DOCK_A) - 1), DOCK_Z = Math.sin(DOCK_A) * (R(DOCK_A) - 1);
+const HPI = Math.PI / 2;
+const ROADS = [
+  { x0: 0, z0: 4, x1: 0, z1: 32.5, w: 3.0, kind: "cobble" },            // 主街
+  { x0: 0, z0: 32.5, x1: DOCK_X, z1: DOCK_Z, w: 2.4, kind: "cobble" },   // 碼頭路
+  { x0: 0, z0: -4, x1: 0, z1: -27, w: 2.6, kind: "cobble" },             // 北街（住宅區）
+  { x0: -22, z0: -15, x1: 22, z1: -15, w: 2.6, kind: "cobble" },         // 橫街
+  { x0: -1.5, z0: 19.5, x1: -22.5, z1: 19.5, w: 2.2, kind: "dirt" },     // 西路線 → 池塘
+  { x0: 1.5, z0: 18.7, x1: 17.5, z1: 18.7, w: 2.2, kind: "dirt" },       // 東路線 → 農田
+  { x0: 17.5, z0: 18.7, x1: 17.5, z1: 34, w: 2.0, kind: "dirt" },        // 東路線往南 → 番茄田
+  { x0: -22, z0: -15, x1: -33, z1: -27, w: 2.0, kind: "dirt" },          // 西北路線 → 風車、森林
+  { x0: 22, z0: -15, x1: 27, z1: -12.5, w: 2.0, kind: "dirt" },          // 東北路線 → 小池塘
+  { x0: 27, z0: -12.5, x1: 36, z1: -22, w: 2.0, kind: "dirt" },          // 東北路線 → 森林
+];
 const LAYOUT = [
-  ["library", ...outer(40)], ["house", ...outer(68), 0], ["cafe", ...outer(100)], ["house", ...outer(130), 1],
-  ["school", ...outer(165)], ["house", ...outer(200), 2], ["inn", ...outer(235)], ["house", ...outer(268), 3],
-  ["chapel", ...outer(300)], ["konbini", ...outer(335)],
-  ["bakery", ...inner(0)], ["bookstore", ...inner(90)], ["house", ...inner(180), 1], ["house", ...inner(270), 2],
-  // 外圈街區：貼著第二條環形路，內外各一排
-  ["inn", ...outer(20, 33.5)], ["house", ...outer(50, 33.5), 2], ["school", ...outer(80, 33.8)], ["house", ...outer(110, 33.5), 3],
-  ["cafe", ...outer(140, 33.5)], ["house", ...outer(170, 33.5), 0], ["library", ...outer(205, 34)], ["bakery", ...outer(240, 33.5)],
-  ["house", ...outer(275, 33.5), 1], ["chapel", ...outer(310, 33.8)], ["konbini", ...outer(345, 33.5)],
-  ["house", ...inner(35, 26.5), 3], ["bookstore", ...inner(95, 26.5)], ["house", ...inner(155, 26.5), 0], ["house", ...inner(215, 26.5), 2], ["cafe", ...inner(290, 26.5)],
+  // 主街西側（面向東）／東側（面向西）
+  ["library", -6.8, 9, HPI], ["cafe", -6.3, 16, HPI], ["bookstore", -6.3, 23.5, HPI], ["inn", -6.8, 30.5, HPI],
+  ["bakery", 6.4, 9, -HPI], ["konbini", 6.4, 15, -HPI], ["school", 7.0, 23, -HPI], ["house", 6.3, 30, -HPI, 1],
+  // 北街兩側
+  ["house", -5.6, -8, HPI, 0], ["house", 5.6, -8, -HPI, 1], ["house", -5.6, -22, HPI, 2], ["house", 5.6, -22, -HPI, 3],
+  // 橫街北側（面向南）／南側（面向北）
+  ["house", -12, -19.6, 0, 1], ["cafe", -18.5, -19.6, 0], ["house", 12, -19.6, 0, 3], ["bookstore", 18.5, -19.6, 0],
+  ["house", -12, -10.4, Math.PI, 2], ["inn", -18.5, -10.4, Math.PI], ["house", 12, -10.4, Math.PI, 0], ["bakery", 18.5, -10.4, Math.PI],
+  ["chapel", 0, -30.5, 0],
 ];
 const EXTRAS = [
-  ["pond", Math.sin(A(125)) * 40, Math.cos(A(125)) * 40, 3.2],
-  ["field", Math.sin(A(60)) * 40, Math.cos(A(60)) * 40, A(60), 7, 5, "wheat"], ["field", Math.sin(A(78)) * 41, Math.cos(A(78)) * 41, A(78), 5, 4, "cabbage"], ["field", Math.sin(A(42)) * 41, Math.cos(A(42)) * 41, A(42), 5, 4, "tomato"],
-  ["windmill", Math.sin(A(300)) * 40, Math.cos(A(300)) * 40, A(300) + Math.PI],
-  ["pond", Math.sin(A(235)) * 41, Math.cos(A(235)) * 41, 2.2],
+  ["pond", -26.5, 21.5, 3.2], ["pond", 29, -8.5, 2.3],
+  ["field", 22.5, 22.5, 0, 7, 5, "wheat"], ["field", 29.5, 16, 0, 5, 4, "cabbage"], ["field", 22.5, 32, 0, 5, 4, "tomato"],
+  ["windmill", -29, -17.5, HPI],
 ];
-const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, rings: [RING_R, RING2], roadW: ROAD_W, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT, spokes: [A(45), A(135), A(225), A(315), DOCK_T] });
+// 高草叢：[x, z, 寬, 深, 轉角]
+const TALL = [[-13, 14.5, 7, 4.5, 0], [-16, 25, 6, 5, 0.3], [-24, 11, 5, 5, -0.2], [-9, 27, 5, 4, 0.2], [11, 24.5, 5, 4, 0], [25, 10, 6, 4, 0.4], [12, 33, 6, 4.5, -0.3], [30, 2, 5, 5, 0], [-27, -5, 6, 6, 0.2], [-20, -32, 6, 4, 0], [28, -28, 5, 5, 0.3], [-14, -27, 5, 4, -0.2], [-33, 4, 5, 4, 0.1], [20, -2, 4.5, 4, 0], [-18, 34, 5, 4, 0.2], [33, 26, 5, 4, 0.1]];
+const SIGNS = [[2.3, 5.2, A(200), ["主街", "碼頭 ⇣"]], [-2.3, -5.2, A(20), ["住宅區", "鐘樓 ⇡"]], [-2.6, 21.3, A(150), ["⇠ 池塘", "西野原"]], [2.6, 17, A(-150), ["農田 ⇢"]], [-23, -13.1, A(60), ["⇠ 風車", "森林"]], [23, -17, A(-100), ["小池塘 ⇢"]]];
+const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
 const extras = buildExtras(EXTRAS); extras.forEach((e) => { if (e && e.name) town.push(e); });
+TALL.forEach(([x, z, w, d, ry]) => tallGrass(scene, x, z, w, d, ry));
+SIGNS.forEach(([x, z, ry, texts]) => { signPost(scene, x, z, ry, texts); colliders.push({ x, z, r: 0.2 }); });
 function freeSpot(x, z, pad) { return colliders.every((c) => Math.hypot(c.x - x, c.z - z) > c.r + pad); }
-function onRoad(x, z, pad) {
-  const r = Math.hypot(x, z); if (Math.abs(r - RING_R) < ROAD_W / 2 + pad || Math.abs(r - RING2) < ROAD_W / 2 + pad || r < 4.8 + pad) return true;
-  const t = Math.atan2(x, z);
-  return [A(45), A(135), A(225), A(315), DOCK_T].some((sa, i) => { let d = Math.abs(((t - sa + Math.PI) % TAU + TAU) % TAU - Math.PI); return d * r < ROAD_W / 2 + pad && (r < RING2 || i === 4); });
-}
-const FOREST = [[A(190), A(270), 35, 44], [A(140), A(180), 36, 43]]; // 森林帶：角度範圍、半徑範圍
-function inForest(x, z) { const t = ((Math.atan2(x, z) % TAU) + TAU) % TAU, r = Math.hypot(x, z); return FOREST.some(([a0, a1, r0, r1]) => t > a0 && t < a1 && r > r0 && r < r1); }
-for (let i = 0, n = 0; i < 6000 && n < (HIGH ? 150 : 90); i++) {
+function segDist(x, z, r) { const dx = r.x1 - r.x0, dz = r.z1 - r.z0, l2 = dx * dx + dz * dz; const t = clamp(((x - r.x0) * dx + (z - r.z0) * dz) / l2, 0, 1); return Math.hypot(x - r.x0 - dx * t, z - r.z0 - dz * t); }
+function onRoad(x, z, pad) { if (Math.hypot(x, z) < 4.8 + pad) return true; return ROADS.some((r) => segDist(x, z, r) < r.w / 2 + pad); }
+function inTall(x, z) { return TALL.some(([tx, tz, w, d]) => Math.abs(x - tx) < w / 2 + 0.3 && Math.abs(z - tz) < d / 2 + 0.3); }
+const FOREST = [[-46, -46, -13, -24], [13, -46, 46, -24], [-46, 26, -19, 46], [27, 30, 46, 46]]; // 森林：x0, z0, x1, z1
+function inForest(x, z) { return FOREST.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1); }
+for (let i = 0, n = 0; i < 8000 && n < (HIGH ? 230 : 120); i++) {
   const a = rnd() * TAU, r = 5.5 + rnd() * (RG(a) - 6.5), x = Math.cos(a) * r, z = Math.sin(a) * r;
   const forest = inForest(x, z);
-  if (!forest && rnd() < 0.55) continue;
-  if (Math.abs(a - DOCK_A) < 0.12 || onRoad(x, z, 0.8) || !freeSpot(x, z, forest ? 0.9 : 1.4)) continue;
+  if (!forest && rnd() < 0.7) continue;
+  if (Math.abs(a - DOCK_A) < 0.12 || onRoad(x, z, 1.0) || inTall(x, z) || !freeSpot(x, z, forest ? 0.9 : 1.6)) continue;
   (forest ? (n % 3 ? pineTree : roundTree) : (n % 5 === 4 ? pineTree : roundTree))(x, z, 0.85 + rnd() * 0.6); n++;
 }
 for (let i = 0, n = 0; i < 1500 && n < 32; i++) {
@@ -289,7 +303,7 @@ for (let i = 0, n = 0; i < 1000 && n < 44; i++) {
   if (Math.abs(a - DOCK_A) < 0.25 || !freeSpot(x, z, 0.6)) continue;
   rock(x, z, 0.6 + rnd() * 1.0); n++;
 }
-grassTufts(scene, HIGH ? 9000 : 3000, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
+grassTufts(scene, HIGH ? 9000 : 3000, "#6aa047", () => { const a = rnd() * TAU, r = 4.5 + rnd() * (RG(a) - 5); const x = Math.cos(a) * r, z = Math.sin(a) * r; if (onRoad(x, z, 0.3) || inTall(x, z) || !freeSpot(x, z, 0.2)) return null; return new THREE.Vector3(x, 0.55, z); });
 smokes.forEach((s) => hideForAO.push(s.s));
 
 /* ===== 光源 ===== */
@@ -747,7 +761,7 @@ function frame() {
   });
 
   // 漂流木：白天沿著海岸漂上來
-  if (G.started && !G.over && ph === "day" && (woodT += dt) > 1.6) { woodT = 0; if (items.filter((i) => i.kind === "wood").length < 22) { const a = Math.random() * TAU; if (Math.random() < 0.35) { for (let k = 0; k < 20; k++) { const fa = Math.random() * TAU, fr = 34 + Math.random() * 10, fx = Math.cos(fa) * fr, fz = Math.sin(fa) * fr; if (inForest(fx, fz) && freeSpot(fx, fz, 0.4)) { spawnWood(fx, fz); break; } } } else spawnWood(Math.cos(a) * (R(a) - 0.6), Math.sin(a) * (R(a) - 0.6)); } }
+  if (G.started && !G.over && ph === "day" && (woodT += dt) > 1.6) { woodT = 0; if (items.filter((i) => i.kind === "wood").length < 22) { const a = Math.random() * TAU; if (Math.random() < 0.35) { for (let k = 0; k < 20; k++) { const fx = (Math.random() - 0.5) * 84, fz = (Math.random() - 0.5) * 84; if (inForest(fx, fz) && Math.hypot(fx, fz) < RG(Math.atan2(fz, fx)) - 1 && freeSpot(fx, fz, 0.4)) { spawnWood(fx, fz); break; } } } else spawnWood(Math.cos(a) * (R(a) - 0.6), Math.sin(a) * (R(a) - 0.6)); } }
   for (let i = items.length - 1; i >= 0; i--) {
     const it = items[i]; it.t += dt;
     if (it.m) { it.m.rotation.y += dt * 2; it.m.position.y = 0.45 + Math.sin(now * 3 + i) * 0.08; }
@@ -808,10 +822,11 @@ function frame() {
     else if (P.moving) { let d = ((P.yaw + Math.PI - camS.fyaw + Math.PI) % TAU + TAU) % TAU - Math.PI; camS.fyaw += d * Math.min(1, dt * 0.9); }
     let cd = camS.fdist * clamp(1.0 / camera.aspect, 1, 1.5); const cp = Math.cos(camS.fpitch);
     // 鏡頭碰到房子或樹就往前拉，不要穿牆
-    { const dx = Math.sin(camS.fyaw) * cp, dz = Math.cos(camS.fyaw) * cp; let best = cd;
+    { const dx = Math.sin(camS.fyaw), dz = Math.cos(camS.fyaw); let best = cd * cp; // 先用水平距離算，最後再換回鏡頭距離
       for (const c of colliders) { if (c.r < 0.38) continue; const rr = (c.cr || c.r) + 0.12, ox = camS.x - c.x, oz = camS.z - c.z;
         const bq = ox * dx + oz * dz, cq = ox * ox + oz * oz - rr * rr; if (cq < 0) continue; const disc = bq * bq - cq; if (disc < 0) continue;
-        const t = -bq - Math.sqrt(disc); if (t > 0 && t < best) best = Math.max(2.2, t); }
+        const t = -bq - Math.sqrt(disc); if (t > 0 && t < best) best = Math.max(2.0, t); }
+      best /= Math.max(cp, 0.3);
       camS.cdNow = camS.cdNow == null ? best : (best < camS.cdNow ? best : lerp(camS.cdNow, best, Math.min(1, dt * 4))); cd = camS.cdNow; }
     const gy = groundY(camS.x, camS.z);
     let cx = camS.x + Math.sin(camS.fyaw) * cp * cd, cz = camS.z + Math.cos(camS.fyaw) * cp * cd, cy = gy + 0.9 + Math.sin(camS.fpitch) * cd;

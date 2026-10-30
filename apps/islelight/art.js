@@ -127,6 +127,31 @@ export function grassTufts(parent, n, col, sampler) {
   while (i < n && tries++ < n * 20) { const p = sampler(); if (!p) continue; e.set((rnd() - 0.5) * 0.4, rnd() * TAU, (rnd() - 0.5) * 0.4); q.setFromEuler(e); s.setScalar(0.7 + rnd() * 0.8); Mx.compose(p, q, s); im.setMatrixAt(i++, Mx); }
   im.count = i; parent.add(im); return im;
 }
+// 高草叢（劍盾式野外草原）：長一點、密一點、顏色略有深淺
+export function tallGrass(parent, x, z, w, d, ry, y0) {
+  const n = Math.floor(w * d * 6.5);
+  const geo = new THREE.ConeGeometry(0.07, 0.62, 4); geo.translate(0, 0.3, 0);
+  const im = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.95 }), n); im.castShadow = false; im.receiveShadow = true;
+  const Mx = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), e = new THREE.Euler(), p = new THREE.Vector3(), c = new THREE.Color();
+  const cols = ["#4f8a3c", "#5c9a44", "#6aa84f", "#457a34", "#78b05a"];
+  for (let i = 0; i < n; i++) {
+    const lx = (rnd() - 0.5) * w, lz = (rnd() - 0.5) * d; const cr = Math.cos(ry || 0), sr = Math.sin(ry || 0);
+    p.set(x + lx * cr + lz * sr, y0 || 0.55, z - lx * sr + lz * cr); e.set((rnd() - 0.5) * 0.5, rnd() * TAU, (rnd() - 0.5) * 0.5); q.setFromEuler(e); s.set(1, 0.75 + rnd() * 0.6, 1);
+    Mx.compose(p, q, s); im.setMatrixAt(i, Mx); im.setColorAt(i, c.set(cols[Math.floor(rnd() * cols.length)]));
+  }
+  parent.add(im); return im;
+}
+// 路牌：木柱＋一到三塊寫字的指示板
+export function signPost(parent, x, z, ry, texts, y0) {
+  const g = new THREE.Group(); g.position.set(x, y0 || 0.55, z); g.rotation.y = ry || 0; parent.add(g);
+  cyl(0.06, 0.07, 1.6, FRAME, 0, 0.8, 0, g, 7); cone(0.07, 0.1, FRAME, 0, 1.65, 0, g, 6);
+  texts.forEach((txt, i) => {
+    const tx = tex(256, 72, (c) => { c.fillStyle = "#c9a876"; c.fillRect(0, 0, 256, 72); c.fillStyle = "#4a2e1a"; c.font = "bold 40px 'PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(txt, 128, 38); });
+    const b = add(new THREE.BoxGeometry(0.95, 0.27, 0.06), [M.wood, M.wood, M.wood, M.wood, new THREE.MeshStandardMaterial({ map: tx, roughness: 0.7 }), M.wood], 0.2, 1.42 - i * 0.34, 0.03, g);
+    b.rotation.y = i % 2 ? -0.12 : 0.1;
+  });
+  return g;
+}
 // 炊煙：幾顆慢慢上升變大的半透明球，game.js 每格呼叫 tickSmoke
 export const smokes = [];
 export function smoke(parent, x, y, z) { for (let i = 0; i < 6; i++) { const s = sph(0.12, new THREE.MeshStandardMaterial({ color: "#e8e4dc", transparent: true, opacity: 0.3, roughness: 1 }), x, y, z, parent, 8, 6); s.castShadow = s.receiveShadow = false; s.userData.noAO = true; smokes.push({ s, x, y, z, t: i / 6 }); } }

@@ -198,19 +198,25 @@ function chapel(x, z, ry) {
 const KIND = { house, library, cafe, konbini, school, bookstore, bakery, inn, chapel };
 
 /* 街道：兩圈環形路、放射路、中央廣場 */
-function roads(rings, roadW, y) {
+function roads(y) {
   const m = M.cobble; M.cobble.map.repeat.set(3, 3);
-  const outerR = rings[rings.length - 1];
-  rings.forEach((ringR) => { const ring = add(new THREE.RingGeometry(ringR - roadW / 2, ringR + roadW / 2, 160), m, 0, y + 0.01, 0, C.scene); ring.rotation.x = -Math.PI / 2; ring.castShadow = false; });
+  const dirt = mat("#c6a77a", { roughness: 1 });
   const plaza = add(new THREE.CircleGeometry(4.6, 48), m, 0, y + 0.01, 0, C.scene); plaza.rotation.x = -Math.PI / 2; plaza.castShadow = false;
-  C.spokes.forEach((a) => { const len = outerR - 4; const sp = add(new THREE.PlaneGeometry(roadW, len), m, Math.sin(a) * (outerR + 4) / 2, y + 0.012, Math.cos(a) * (outerR + 4) / 2, C.scene); sp.rotation.set(-Math.PI / 2, 0, -a); sp.castShadow = false; });
-  // 碼頭那條路從外圈一路通到沙灘
-  const da = C.spokes[C.spokes.length - 1], len2 = C.coastR - outerR + 1; const ext = add(new THREE.PlaneGeometry(roadW, len2), m, Math.sin(da) * (outerR + len2 / 2), y + 0.012, Math.cos(da) * (outerR + len2 / 2), C.scene); ext.rotation.set(-Math.PI / 2, 0, -da); ext.castShadow = false;
+  // 路段：{ x0, z0, x1, z1, w, kind: "cobble" | "dirt" }。石板街兩旁有路燈，土路（野外路線）兩旁有圍欄
+  C.roads.forEach((r) => {
+    const dx = r.x1 - r.x0, dz = r.z1 - r.z0, len = Math.hypot(dx, dz), a = Math.atan2(dx, dz), nx = Math.cos(a), nz = -Math.sin(a);
+    const pl = add(new THREE.PlaneGeometry(r.w, len + r.w * 0.9), r.kind === "dirt" ? dirt : m, (r.x0 + r.x1) / 2, y + (r.kind === "dirt" ? 0.011 : 0.012), (r.z0 + r.z1) / 2, C.scene); pl.rotation.set(-Math.PI / 2, 0, -a); pl.castShadow = false;
+    if (r.kind === "dirt") {
+      // 圍欄：每段 6 格、留 3 格缺口，從路口 2 格後開始
+      for (let side = -1; side <= 1; side += 2) { const off = r.w / 2 + 0.55; let t = 2.2; while (t + 3 < len - 1) { const t1 = Math.min(t + 6, len - 1.2); fenceLine(C.scene, r.x0 + dx / len * t + nx * off * side, r.z0 + dz / len * t + nz * off * side, r.x0 + dx / len * t1 + nx * off * side, r.z0 + dz / len * t1 + nz * off * side, Math.max(1, Math.round((t1 - t) / 1.3)), "#a08a6a", y); t = t1 + 3; } }
+    } else if (!r.noLamp) {
+      for (let t = 3.5, k = 0; t < len - 1.5; t += 7, k++) { const side = k % 2 ? 1 : -1, off = r.w / 2 + 0.6; C.addLamp(C.scene, r.x0 + dx / len * t + nx * off * side, y, r.z0 + dz / len * t + nz * off * side); }
+    }
+  });
   // 廣場：長椅、花圃（燈塔在正中央）
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; const bx = Math.sin(a) * 3.3, bz = Math.cos(a) * 3.3; const g = new THREE.Group(); g.position.set(bx, y, bz); g.rotation.y = a; C.scene.add(g); box(1.1, 0.08, 0.35, M.wood, 0, 0.42, 0, g); box(1.1, 0.3, 0.06, M.wood, 0, 0.62, -0.17, g); [-0.45, 0.45].forEach((lx) => box(0.06, 0.42, 0.3, M.iron, lx, 0.21, 0, g)); C.colliders.push({ x: bx, z: bz, r: 0.5 }); }
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; const fx = Math.sin(a) * 3.4, fz = Math.cos(a) * 3.4; cyl(0.5, 0.45, 0.3, M.stoneLight, fx, y + 0.15, fz, C.scene, 10); flowers(C.scene, fx, fz, 0.35, 10, ["#f07a8a", "#ffd27a", "#f3efe6", "#c8a0e0"], y + 0.3); C.colliders.push({ x: fx, z: fz, r: 0.55 }); }
-  // 路燈：每圈環形路外側一排
-  rings.forEach((ringR, ri) => { const n = ri ? 16 : 8; for (let i = 0; i < n; i++) { const a = i * TAU / n + Math.PI / n; C.addLamp(C.scene, Math.sin(a) * (ringR + roadW / 2 + 0.5), y, Math.cos(a) * (ringR + roadW / 2 + 0.5)); } });
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; const bx = Math.sin(a) * 3.3, bz = Math.cos(a) * 3.3; const g = new THREE.Group(); g.position.set(bx, y, bz); g.rotation.y = a; C.scene.add(g); box(1.1, 0.08, 0.35, M.wood, 0, 0.42, 0, g); box(1.1, 0.3, 0.06, M.wood, 0, 0.62, -0.17, g); [-0.45, 0.45].forEach((lx) => box(0.06, 0.42, 0.3, M.iron, lx, 0.21, 0, g)); C.colliders.push({ x: bx, z: bz, r: 0.5 }); }
+  for (let i = 0; i < 2; i++) { const a = i * Math.PI + Math.PI / 2; const fx = Math.sin(a) * 3.4, fz = Math.cos(a) * 3.4; cyl(0.5, 0.45, 0.3, M.stoneLight, fx, y + 0.15, fz, C.scene, 10); flowers(C.scene, fx, fz, 0.35, 10, ["#f07a8a", "#ffd27a", "#f3efe6", "#c8a0e0"], y + 0.3); C.colliders.push({ x: fx, z: fz, r: 0.55 }); }
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; C.addLamp(C.scene, Math.sin(a) * 5.4, y, Math.cos(a) * 5.4); }
 }
 
 /* ===== 郊外：池塘、農田、風車 ===== */
@@ -260,6 +266,6 @@ export function buildExtras(list) { return list.map(([kind, ...args]) => EXTRA[k
 
 export function buildTown(ctx) {
   C = ctx;
-  roads(ctx.rings, ctx.roadW, ctx.y);
+  roads(ctx.y);
   return ctx.layout.map(([kind, x, z, ry, ...rest]) => { const b = KIND[kind](x, z, ry, ...rest); b.kind = kind; return b; });
 }
