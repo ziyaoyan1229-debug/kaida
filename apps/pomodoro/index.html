@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title data-i18n-title="app.title">番茄讀書會</title>
+<title data-i18n-title="app.title">番茄宿舍</title>
 <meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。用 Google 帳號登入，進度自動備份到雲端。">
 <meta name="theme-color" content="#f2ece1">
 <script>/* 一開頁就套上配色，避免閃一下：預設牛皮紙 */try{var _d=JSON.parse(localStorage.getItem("kaida-pomodoro-v1")||"null"),_p=_d&&_d.pal||"kraft";if(_p!=="kraft")document.documentElement.setAttribute("data-pal",_p)}catch(e){}</script>
 <script>try{if(!localStorage.getItem("kaida-acct"))document.documentElement.classList.add("need-login")}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="番茄讀書會">
+<meta name="apple-mobile-web-app-title" content="Pomodorm">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -353,7 +353,8 @@
   @media (prefers-reduced-motion: reduce) { .lg-row { animation: none; } }
   @keyframes lgIn { from { opacity: 0; transform: translateY(12px) } }
   .login-in { position: relative; width: 100%; padding: 40px max(24px, calc((100% - 340px) / 2)) max(28px, env(safe-area-inset-bottom)); text-align: center; display: grid; justify-items: center; align-content: start; gap: 12px; background: linear-gradient(color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) 30px); }
-  .login h1 { margin: 0; font-size: 32px; letter-spacing: .06em; }
+  .login h1 { margin: 0; font-size: 36px; letter-spacing: .04em; line-height: 1.1; }
+  .login h1 small { display: block; margin-top: 6px; font-size: 18px; letter-spacing: .3em; color: var(--muted); font-weight: 600; }
   .login .lg-p { margin: 0 0 12px; color: var(--muted); font-size: 15px; line-height: 1.6; }
   .login .lg-g { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; border-radius: 999px; border: 1px solid #dadce0; background: #fff; color: #3c4043; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
   .login .lg-g:disabled { opacity: .6; cursor: default; }
@@ -733,7 +734,7 @@
 <body>
 <div class="hop" id="hop" hidden role="status" aria-live="polite"><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="hop-t" data-i18n="hop.t">準備房間中</div></div>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="lg-t"><div class="lg-mo" aria-hidden="true"><div class="lg-row r1"><i style="background-image:url(thumbs/cafe.jpg)"></i><i style="background-image:url(thumbs/library.jpg)"></i><i style="background-image:url(thumbs/space.jpg)"></i><i style="background-image:url(thumbs/beach.jpg)"></i><i style="background-image:url(thumbs/cabin.jpg)"></i><i style="background-image:url(thumbs/washitsu.jpg)"></i><i style="background-image:url(thumbs/cafe.jpg)"></i><i style="background-image:url(thumbs/library.jpg)"></i><i style="background-image:url(thumbs/space.jpg)"></i><i style="background-image:url(thumbs/beach.jpg)"></i><i style="background-image:url(thumbs/cabin.jpg)"></i><i style="background-image:url(thumbs/washitsu.jpg)"></i></div><div class="lg-row r2"><i style="background-image:url(thumbs/school.jpg)"></i><i style="background-image:url(thumbs/rooftop.jpg)"></i><i style="background-image:url(thumbs/lodge.jpg)"></i><i style="background-image:url(thumbs/konbini.jpg)"></i><i style="background-image:url(thumbs/study.jpg)"></i><i style="background-image:url(thumbs/home.jpg)"></i><i style="background-image:url(thumbs/school.jpg)"></i><i style="background-image:url(thumbs/rooftop.jpg)"></i><i style="background-image:url(thumbs/lodge.jpg)"></i><i style="background-image:url(thumbs/konbini.jpg)"></i><i style="background-image:url(thumbs/study.jpg)"></i><i style="background-image:url(thumbs/home.jpg)"></i></div></div><div class="login-in">
-  <h1 id="lg-t" data-i18n="app.title">番茄讀書會</h1>
+  <h1 id="lg-t">Pomodorm<small>番茄宿舍</small></h1>
   <p class="lg-p" data-i18n="lg.p">挑一間讀書房，跟大家一起專注</p>
   <button type="button" class="lg-g" id="lg-go"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span data-i18n="ac.in">Google 登入</span></button>
   <p class="lg-err" id="lg-err" role="alert"></p>
@@ -766,7 +767,7 @@
 </div></div>
 
 
-  <div class="hero"><button type="button" class="me-chip" id="tab-char" aria-selected="false"></button><h1 data-i18n="app.title">番茄讀書會</h1>
+  <div class="hero"><button type="button" class="me-chip" id="tab-char" aria-selected="false"></button><h1 data-i18n="app.title">番茄宿舍</h1>
     <button type="button" class="set-btn" id="help-btn" data-help data-i18n-aria="help.t" aria-label="說明"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
     <button type="button" class="set-btn" id="set-btn" data-i18n-aria="set.title" aria-label="設定"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button type="button" class="wood-pill" id="wood-pill"></button></div>
 
@@ -878,7 +879,7 @@
 
   <header class="topbar bottom" id="topbar"></header>
   <footer class="foot">
-    <p data-i18n="foot.1">番茄讀書會是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。</p>
+    <p data-i18n="foot.1">番茄宿舍 Pomodorm 是開達 Kaida 的封測作品。用 Google 帳號登入，進度會自動備份到雲端。</p>
     <p data-i18n="foot.2">提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。</p>
   </footer>
 </div>
@@ -888,20 +889,20 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103d"></script>
-<script src="net.js?v=20261103d"></script>
-<script src="music.js?v=20261103d"></script>
-<script type="module" src="scene3d.js?v=20261103d" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103d"></script>
-<script src="books.js?v=20261103d"></script>
-<script type="module" src="account.js?v=20261103d"></script>
+<script src="scene.js?v=20261103e"></script>
+<script src="net.js?v=20261103e"></script>
+<script src="music.js?v=20261103e"></script>
+<script type="module" src="scene3d.js?v=20261103e" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103e"></script>
+<script src="books.js?v=20261103e"></script>
+<script type="module" src="account.js?v=20261103e"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
 
   K.addStrings({
     zh: {
-      "app.title": "番茄讀書會", "app.reload": "重新整理",
+      "app.title": "番茄宿舍", "app.reload": "重新整理",
       "app.lede": "打開就能加入一間安靜的讀書房。同一間房的每個人都照同一個時鐘開始、一起休息，不用註冊。",
       "tab.team": "團隊", "tm.modeH": "加入方式", "tm.modeOpen": "直接加入", "tm.modeReview": "需要審核", "tm.apply": "申請加入", "tm.applied": "已送出申請，等隊長同意", "tm.applyWait": "申請中，等隊長同意", "tm.cancelApply": "取消申請",
       "tm.approved": "「{n}」同意你加入了！", "tm.rejected": "「{n}」這次沒有通過你的申請", "tm.reqH": "加入申請", "tm.ok": "同意", "tm.no": "拒絕", "tm.studyingN": "讀書中", "tm.reading": "讀書中",
@@ -951,7 +952,7 @@
       "beta.h": "封測任務", "beta.sub": "做完這幾件事，再回開達留下回饋",
       "beta.t1": "加入一間讀書房", "beta.t2": "完成一顆番茄鐘（專注到最後）",
       "beta.back": "回開達 Kaida 留回饋 →",
-      "foot.1": "番茄讀書會是開達 Kaida 的第一批封測作品，純前端網頁，不用帳號，資料只存在你的瀏覽器。",
+      "foot.1": "番茄宿舍 Pomodorm 是開達 Kaida 的封測作品。用 Google 帳號登入，進度會自動備份到雲端。",
       "foot.2": "提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。",
       "wd": "日,一,二,三,四,五,六",
       "tab.friends": "好友", "tab.char": "角色",
@@ -967,7 +968,7 @@
       "r.err.code": "請輸入四位數字的房號", "r.needName": "先到「角色」取暱稱、選造型",
       "r.invited": "朋友邀你進房間 {code}，按「加入」就能進去",
       "s.label.room": "房號", "s.label.sim": "模擬房間", "s.label.solo": "自己讀",
-      "s.invite": "邀請朋友", "s.inviteText": "來番茄讀書會跟我一起讀書！房號 {code}，打開連結就能進來：",
+      "s.invite": "邀請朋友", "s.inviteText": "來番茄宿舍跟我一起讀書！房號 {code}，打開連結就能進來：",
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
@@ -997,7 +998,7 @@
       "f.cheerBack": "回他打氣",
       "f.composeH": "幫 {n} 打氣", "f.composeCustom": "或自己寫一句（40 字內）", "f.composeSend": "傳出去", "f.addH": "加好友", "f.myId": "我的 ID", "f.copy": "複製", "f.copied": "已複製", "f.idph": "輸入好友的 ID", "f.sendReq": "送出邀請", "f.reqSent": "已送出好友邀請給 {n}", "f.reqWait": "已邀請", "f.reqIn": "想加你為好友", "f.reqOut": "已送出邀請，等對方同意", "f.accept": "同意", "f.decline": "回絕", "f.reqGot": "{n} 想加你為好友", "f.reqOk": "{n} 同意了，你們現在是好友", "f.reqNo": "{n} 回絕了好友邀請", "f.badId": "ID 是 4 到 16 個英文字母或數字", "f.selfId": "這是你自己的 ID", "f.already": "{n} 已經是你的好友", "f.cheerSent": "已送出打氣給 {n}", "f.cheerLink": "{n} 不在線上，改用連結傳過去", "f.botThanks": "謝謝你！一起加油💪|收到了，好開心😊|你也要加油喔！|有你打氣，我再讀一輪📖",
       "f.presets": "加油！一起讀完這週|今天也一起專注 25 分鐘|你的排行好猛，我要追上了|休息一下再繼續，你可以的|考試順利！|我先開一顆番茄，等你",
-      "f.shareText": "{n} 邀你一起在番茄讀書會讀書。本週已專注 {m} 分鐘，打開連結加好友、看排行：",
+      "f.shareText": "{n} 邀你一起在番茄宿舍讀書。本週已專注 {m} 分鐘，打開連結加好友、看排行：",
       "f.shareCheer": "{n} 給你打氣：「{c}」打開連結看排行，一起讀書：",
       "f.copied": "連結已複製，貼到 LINE 或 IG 傳給好友",
       "f.added": "已加 {n} 為好友", "f.updatedFriend": "已更新 {n} 的成績", "f.self": "這是你自己的好友卡",
@@ -1009,7 +1010,7 @@
       "toast.doneShare": "完成一顆番茄！到「好友」把新成績傳給朋友"
     },
     en: {
-      "app.title": "Pomodoro Study Club", "app.reload": "Reload",
+      "app.title": "Pomodorm", "app.reload": "Reload",
       "app.lede": "Join a quiet study room in one tap. Everyone in a room follows the same clock, so you focus and take breaks together. No sign-up.",
       "tab.team": "Teams", "tm.modeH": "How people join", "tm.modeOpen": "Open", "tm.modeReview": "Approval needed", "tm.apply": "Ask to join", "tm.applied": "Request sent. Waiting for the captain.", "tm.applyWait": "Request pending", "tm.cancelApply": "Cancel request",
       "tm.approved": "“{n}” accepted you!", "tm.rejected": "“{n}” didn't accept your request this time", "tm.reqH": "Join requests", "tm.ok": "Accept", "tm.no": "Decline", "tm.studyingN": "Studying now", "tm.reading": "studying",
@@ -1059,7 +1060,7 @@
       "beta.h": "Beta tasks", "beta.sub": "Do these, then leave feedback on Kaida",
       "beta.t1": "Join a study room", "beta.t2": "Finish one pomodoro (stay to the end)",
       "beta.back": "Back to Kaida to leave feedback →",
-      "foot.1": "Pomodoro Study Club is one of Kaida's first beta apps. It's a plain web page with no account; your data stays in your browser.",
+      "foot.1": "Pomodorm is one of Kaida's beta apps. Sign in with Google and your progress is backed up to the cloud.",
       "foot.2": "Note: phones may pause the browser while locked. When you come back the countdown re-syncs to the clock and focus minutes are counted by real time.",
       "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
       "tab.friends": "Friends", "tab.char": "Avatar",
@@ -1075,7 +1076,7 @@
       "r.err.code": "Enter a 4-digit room code", "r.needName": "Pick a nickname and look on the Avatar tab first",
       "r.invited": "A friend invited you to room {code}. Tap Join to go in.",
       "s.label.room": "Room", "s.label.sim": "Practice room", "s.label.solo": "Studying alone",
-      "s.invite": "Invite", "s.inviteText": "Study with me on Pomodoro Study Club! Room {code}, open the link to join:",
+      "s.invite": "Invite", "s.inviteText": "Study with me on Pomodorm! Room {code}, open the link to join:",
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
@@ -1105,7 +1106,7 @@
       "f.cheerBack": "Cheer back",
       "f.composeH": "Cheer on {n}", "f.composeCustom": "Or write your own (40 chars max)", "f.composeSend": "Send", "f.addH": "Add a friend", "f.myId": "My ID", "f.copy": "Copy", "f.copied": "Copied", "f.idph": "Your friend's ID", "f.sendReq": "Send request", "f.reqSent": "Friend request sent to {n}", "f.reqWait": "Requested", "f.reqIn": "wants to be your friend", "f.reqOut": "Request sent, waiting for them", "f.accept": "Accept", "f.decline": "Decline", "f.reqGot": "{n} sent you a friend request", "f.reqOk": "{n} accepted, you're friends now", "f.reqNo": "{n} declined your friend request", "f.badId": "An ID is 4 to 16 letters or numbers", "f.selfId": "That's your own ID", "f.already": "{n} is already your friend", "f.cheerSent": "Cheer sent to {n}", "f.cheerLink": "{n} is offline, sending it as a link instead", "f.botThanks": "Thanks! Let's keep going 💪|Got it, that made my day 😊|You've got this too!|Thanks to you, one more round 📖",
       "f.presets": "You got this, let's finish the week!|Let's do 25 focused minutes today|Your rank is wild, I'm catching up|Take a break, then keep going|Good luck on the exam!|Starting a pomodoro now, join me",
-      "f.shareText": "{n} invited you to Pomodoro Study Club. {m} focus minutes this week. Open the link to add them and see the ranking:",
+      "f.shareText": "{n} invited you to Pomodorm. {m} focus minutes this week. Open the link to add them and see the ranking:",
       "f.shareCheer": "{n} is cheering you on: \"{c}\" Open the link to see the ranking and study together:",
       "f.copied": "Link copied. Paste it into LINE or IG to send it.",
       "f.added": "Added {n} as a friend", "f.updatedFriend": "Updated {n}'s score", "f.self": "This is your own friend card",
@@ -2541,9 +2542,8 @@
   function renderChip() {
     var el = document.getElementById("tab-char");
     // 左上角的 logo 就是個人設定：番茄背景 + 自己的角色
-    // 有寵物就坐在頭上，畫面往上留一點空間
-    var lk = myLook(), pet = lk.pet;
-    el.innerHTML = '<svg viewBox="' + (pet ? "-26 -78 52 52" : "-22 -67 44 44") + '" aria-hidden="true">' + S.bust(lk, true, pet || "") + '</svg>';
+    // 只畫角色本人，不放寵物
+    el.innerHTML = '<svg viewBox="-23 -69 46 46" aria-hidden="true">' + S.bust(myLook(), true, "") + '</svg>';
     el.setAttribute("aria-label", t("chip.set"));
     updateWood();
   }
