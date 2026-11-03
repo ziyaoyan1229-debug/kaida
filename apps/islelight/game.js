@@ -878,6 +878,7 @@ function banner(t, sub, ms) { $("banner").innerHTML = t + (sub ? `<small>${sub}<
 
 /* ===== 開始、結束 ===== */
 $("best").textContent = save.best ? `最佳紀錄：撐過 ${save.best} 夜` : "";
+$("start").disabled = false; $("start").textContent = "開始守夜"; // 模型都載好了才開放按
 $("start").addEventListener("click", () => {
   if (G.over) { location.reload(); return; }
   $("overlay").classList.add("hide"); G.started = true; banner("第 1 天", "天黑前多撿點木頭、蓋幾盞燈");
@@ -1181,23 +1182,24 @@ window.__islelight = { G, P, camS, foes, items, DBG, climbTower, descendTower, i
 player.root.userData.noBake = pet.userData.noBake = true; tower.userData.noBake = beamRig.userData.noBake = true; grass.userData.noBake = sand.userData.noBake = true;
 const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
 // 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）
-/* 自動畫質：每次開啟都量 3 秒幀率，太慢就降一級重新載入（同一次瀏覽最多重載兩次，避免一直轉圈）；玩家手動選過就不自動調 */
-const RELOADS = +(sessionStorage.getItem("islelight-qreload") || 0);
-if (!save.manualQ && RELOADS < 2 && !DBG.noAutoQ) {
-  let n = 0, t0 = 0; const probe = () => { const t = performance.now(); if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); let q = QL; if (fps < 22 && QL !== "low") q = "low"; else if (fps < 40 && QL === "high") q = "mid"; if (q !== QL) { save.quality = q; persist(); sessionStorage.setItem("islelight-qreload", RELOADS + 1); location.reload(); } } };
-  setTimeout(() => requestAnimationFrame(probe), 2500);
+/* 自動畫質：每次開啟都量 3 秒幀率，太慢就「當場」降載（不重新載入，不然按開始會像沒反應），並記住下次直接用較低一級；玩家手動選過就不自動調 */
+if (!save.manualQ && !DBG.noAutoQ) {
+  let n = 0, t0 = 0; const probe = () => { const t = performance.now(); if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); const steps = fps < 15 ? 3 : fps < 24 ? 2 : fps < 40 ? 1 : 0; for (let i = 0; i < steps; i++) adaptDown(fps); } };
+  setTimeout(() => requestAnimationFrame(probe), 1500);
 }
 /* 遊戲中動態降載：開始後每 4 秒看一次幀率，掉到 24 以下就依序關環境光遮蔽、降解析度、關聚光燈陰影、再降解析度，不用重新載入 */
 let adaptStep = 0, adaptN = 0, adaptT = 0;
-function adapt(now) {
-  if (!G.started || adaptStep >= 4) return; adaptN++; if (!adaptT) adaptT = now; if (now - adaptT < 4000) return;
-  const fps = adaptN / ((now - adaptT) / 1000); adaptN = 0; adaptT = now; if (fps >= 24) return;
-  adaptStep++;
+function adaptDown(fps) {
+  if (adaptStep >= 4) return; adaptStep++;
   if (adaptStep === 1 && gtao) { gtao.enabled = false; shadowEvery = 2; }
-  else if (adaptStep === 1 || adaptStep === 2) { const pr = Math.max(1, renderer.getPixelRatio() - 0.5); renderer.setPixelRatio(pr); composer.setPixelRatio(pr); composer.setSize(innerWidth, innerHeight); }
+  else if (adaptStep === 1 || adaptStep === 2) { const pr = Math.max(1, renderer.getPixelRatio() - 0.5); renderer.setPixelRatio(pr); composer.setPixelRatio(pr); composer.setSize(innerWidth, innerHeight); shadowEvery = 2; }
   else if (adaptStep === 3) { torchSpot.castShadow = false; beamSpot.castShadow = false; if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } sun.shadow.mapSize.set(1024, 1024); }
   else { renderer.setPixelRatio(1); composer.setPixelRatio(1); composer.setSize(innerWidth, innerHeight); }
-  if (!save.manualQ && QL !== "low" && adaptStep >= 2) { save.quality = QL === "high" ? "mid" : "low"; persist(); } // 下次開啟直接用較低一級
+  if (!save.manualQ && QL !== "low" && adaptStep >= 2) { save.quality = QL === "high" ? "mid" : "low"; persist(); } // 下次開啟直接用較低一級（樹、草、光源數也會跟著少）
   console.log("islelight adapt", adaptStep, fps.toFixed(1));
+}
+function adapt(now) {
+  if (!G.started || adaptStep >= 4) return; adaptN++; if (!adaptT) adaptT = now; if (now - adaptT < 4000) return;
+  const fps = adaptN / ((now - adaptT) / 1000); adaptN = 0; adaptT = now; if (fps < 24) adaptDown(fps);
 }
 frame();
