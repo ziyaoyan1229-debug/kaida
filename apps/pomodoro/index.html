@@ -889,13 +889,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103f"></script>
-<script src="net.js?v=20261103f"></script>
-<script src="music.js?v=20261103f"></script>
-<script type="module" src="scene3d.js?v=20261103f" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103f"></script>
-<script src="books.js?v=20261103f"></script>
-<script type="module" src="account.js?v=20261103f"></script>
+<script src="scene.js?v=20261103g"></script>
+<script src="net.js?v=20261103g"></script>
+<script src="music.js?v=20261103g"></script>
+<script type="module" src="scene3d.js?v=20261103g" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103g"></script>
+<script src="books.js?v=20261103g"></script>
+<script type="module" src="account.js?v=20261103g"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -960,7 +960,7 @@
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.long": "100 分專注\n30 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "有好友在的房間最優先，其次是人多的房間，都要跟你選一樣時間、還有空位；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "有好友在的房間最優先，其次是人多的房間，都要跟你選一樣時間、還有空位；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.newRoom": "目前沒有空房，幫你開了一間新的", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
@@ -1068,7 +1068,7 @@
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.long": "100 focus\n30 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a room on the same timer that still has seats, rooms with your friends first, then the busiest ones. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a room on the same timer that still has seats, rooms with your friends first, then the busiest ones. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.newRoom": "No open rooms, so we opened a new one for you", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
@@ -1424,7 +1424,8 @@
   var hopOn = false, hopT0 = 0, hopTm = 0;
   function startHop() {
     var el = document.getElementById("hop"); clearTimeout(hopTm);
-    hopOn = true; hopT0 = Date.now(); el.classList.remove("out"); el.hidden = false;
+    hopOn = true; hopT0 = Date.now(); el.classList.remove("out"); el.hidden = false; newRoomNote = false;
+    el.querySelector(".hop-t").textContent = t("hop.t");
     hopTm = setTimeout(function () { endHop(true); }, 15000);
   }
   function endHop(now) {
@@ -1433,7 +1434,14 @@
     hopTm = setTimeout(function () { el.classList.add("out"); hopTm = setTimeout(function () { el.hidden = true; el.classList.remove("out"); }, 380); }, now ? 0 : Math.max(0, 900 - (Date.now() - hopT0)));
   }
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".a4-go")) startHop(); }, true);
-  (function () { var toast = K.toast; K.toast = function (msg) { if (hopOn && msg !== t("r.matching")) endHop(true); return toast.apply(this, arguments); }; })();
+  // 配對中的提示（找房間、沒有空房幫你開新的）直接寫在過場畫面上，不另外跳通知
+  var newRoomNote = false;
+  (function () { var toast = K.toast; K.toast = function (msg) {
+    if (msg === t("r.matchNew")) newRoomNote = true;
+    if (hopOn && (msg === t("r.matching") || msg === t("r.matchNew") || msg === t("r.connecting"))) { document.querySelector("#hop .hop-t").textContent = msg; return; }
+    if (hopOn) endHop(true);
+    return toast.apply(this, arguments);
+  }; })();
   // 進房間的載入畫面（提案 B）：3D 好了而且至少放 1.4 秒才進房間
   var loadT0 = 0, loadTm = 0;
   function showLoad() {
@@ -1442,7 +1450,8 @@
     var th = session.theme || "home", n = sceneMembers().length;
     el.querySelector(".kl-bg").style.backgroundImage = "url(thumbs/" + th + ".jpg)";
     document.getElementById("kl-name").textContent = themeName(th, session.host);
-    document.getElementById("kl-sub").textContent = n > 1 ? t("s.loadN", { n: n }) : t("s.load1");
+    document.getElementById("kl-sub").textContent = newRoomNote && session.kind === "room" ? t("r.newRoom") : n > 1 ? t("s.loadN", { n: n }) : t("s.load1");
+    newRoomNote = false;
     document.getElementById("kl-me").innerHTML = S.bust(data.look, true);
     clearTimeout(loadTm);
     el.className = "k3-load"; el.hidden = false; void el.offsetWidth; el.classList.add("run");
