@@ -1,13 +1,13 @@
 /* 番茄讀書會：我的家（three.js）
-   空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
+   空房間、地板分成方格；家具用番茄種子買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, cap, outline, envAt } from "./scene3d.js?v=20261103m"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, cap, outline, envAt } from "./scene3d.js?v=20261103n"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
 const DOOR_X = 0, DOOR_CELLS = [{ x: 4, z: 0 }, { x: 5, z: 0 }]; // 二樓房門在後牆正中間（第 4、5 格前面）
-// 家具：w × d 是佔幾格（沒旋轉時），price 是小木頭
+// 家具：w × d 是佔幾格（沒旋轉時），price 是番茄種子
 // cat 是商店分類；wall 掛在牆上（不佔地板、不擋路）；out 只能擺在三樓露臺
 const FURN = {
   rug: { w: 3, d: 2, price: 6, zh: "方地毯", en: "Rug", ic: "🟫", cat: "rug" },
@@ -36,7 +36,7 @@ const FURN = {
   birdcage: { w: 1, d: 1, price: 10, zh: "鳥籠", en: "Birdcage", ic: "🐦", cat: "decor" },
   terrarium: { w: 1, d: 1, price: 8, zh: "玻璃生態瓶", en: "Terrarium", ic: "🫙", cat: "decor" },
   record: { w: 2, d: 1, price: 14, zh: "唱片機櫃", en: "Record player", ic: "💿", cat: "decor" },
-  wallShelf: { w: 2, d: 1, price: 7, zh: "壁掛層板", en: "Wall shelves", ic: "🪵", cat: "decor", wall: true },
+  wallShelf: { w: 2, d: 1, price: 7, zh: "壁掛層板", en: "Wall shelves", ic: "🌱", cat: "decor", wall: true },
   macrame: { w: 2, d: 1, price: 6, zh: "編織掛毯", en: "Macramé", ic: "🧶", cat: "decor", wall: true },
   neon: { w: 2, d: 1, price: 9, zh: "霓虹燈", en: "Neon sign", ic: "💗", cat: "decor", wall: true },
   tv: { w: 2, d: 1, price: 12, zh: "電視櫃", en: "TV stand", ic: "📺", cat: "elec" },
@@ -57,7 +57,7 @@ const FURN = {
   setLibrary: { w: 2, d: 2, price: 26, zh: "圖書館桌椅", en: "Library desk set", ic: "🏛️", cat: "desk", study: true },
   setSchool: { w: 2, d: 2, price: 16, zh: "教室課桌椅", en: "School desk set", ic: "🏫", cat: "desk", study: true },
   setSpace: { w: 2, d: 2, price: 28, zh: "太空艙桌椅", en: "Space pod set", ic: "🚀", cat: "desk", study: true },
-  setCabin: { w: 2, d: 2, price: 22, zh: "小木屋桌椅", en: "Cabin desk set", ic: "🪵", cat: "desk", study: true },
+  setCabin: { w: 2, d: 2, price: 22, zh: "小木屋桌椅", en: "Cabin desk set", ic: "🌱", cat: "desk", study: true },
   setBeach: { w: 2, d: 2, price: 22, zh: "海邊藤椅桌組", en: "Beach desk set", ic: "🐚", cat: "desk", study: true },
   setPlants: { w: 2, d: 2, price: 20, zh: "綠植包廂桌椅", en: "Plant booth set", ic: "🌿", cat: "desk", study: true },
   chair: { w: 1, d: 1, price: 4, zh: "木椅", en: "Chair", ic: "🪑", cat: "chair" },
@@ -521,7 +521,7 @@ Object.assign(BUILD, {
     for (let i = 0; i < 6; i++) sph(0.008, "#4a1a1a", -0.12 + (i % 3) * 0.12, 0.42 + Math.floor(i / 3) * 0.12, 0.128, ch, 4, 3);
     [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { cyl(0.02, 0.014, 0.22, "#2a180e", a * 0.18, 0.11, b * 0.15, ch, 6); sph(0.014, "#c9a24a", a * 0.18, 0.005, b * 0.15, ch, 5, 3); });
   },
-  // 教室：淺色木頭桌面、藍灰鐵腳、桌下置物架；椅子是一體成形的塑膠椅
+  // 教室：淺色種子桌面、藍灰鐵腳、桌下置物架；椅子是一體成形的塑膠椅
   setSchool: (g, w) => {
     const mt = "#56636f";
     box(w - 0.14, 0.035, 0.4, "#d9b98a", 0, 0.5, -0.27, g); box(w - 0.16, 0.012, 0.38, "#c9a878", 0, 0.48, -0.27, g);

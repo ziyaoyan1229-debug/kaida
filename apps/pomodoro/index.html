@@ -43,6 +43,7 @@
   @keyframes flick { 0% { transform: scale(1, 1) skewX(0); } 50% { transform: scale(.92, 1.12) skewX(3deg); } 100% { transform: scale(1.05, .9) skewX(-3deg); } }
   .rb-main { flex: 1; min-width: 0; }
   .rb-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 13px; }
+  .rb-top b { white-space: nowrap; margin-right: 6px; }
   .rb-top span { font-family: var(--f-mono); font-weight: 600; font-size: 16px; }
   .rb-track { height: 8px; border-radius: 4px; background: var(--rb-trk); overflow: hidden; }
   .rb-fill { height: 100%; width: 0; border-radius: 5px; background: #D6361F; transition: width .9s linear; }
@@ -752,7 +753,7 @@
   <p class="lg-p" data-i18n="lg.p">挑一間讀書房，跟大家一起專注</p>
   <button type="button" class="lg-g" id="lg-go"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span data-i18n="ac.in">Google 登入</span></button>
   <p class="lg-err" id="lg-err" role="alert"></p>
-  <p class="lg-note" data-i18n="lg.note">登入後角色、小木頭和家會自動備份，換手機也找得回來。</p>
+  <p class="lg-note" data-i18n="lg.note">登入後角色、番茄種子和家會自動備份，換手機也找得回來。</p>
   <button type="button" class="lg-lang" id="lg-lang">English</button>
 </div></div>
 <div class="wrap">
@@ -797,7 +798,7 @@
   <section id="view-rooms">
     <div class="quote" id="quote-rooms"></div>
     <div id="room-list"></div>
-    <p class="small muted" data-i18n="rooms.how">房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。</p>
+    <p class="small muted" data-i18n="rooms.how">房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和番茄種子只存在你的手機。</p>
   </section>
 
   <section id="view-home" hidden>
@@ -844,7 +845,7 @@
     </div>
     <div class="quote session-quote" id="quote-session"></div>
 
-    <div class="card" id="mid-join" hidden><p class="small" style="margin:0" data-i18n="s.midjoin">你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來，也會照比例給小木頭（最少 1 根）。下一輪開始時一起從頭來。</p></div>
+    <div class="card" id="mid-join" hidden><p class="small" style="margin:0" data-i18n="s.midjoin">你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來，也會照比例給番茄種子（最少 1 顆）。下一輪開始時一起從頭來。</p></div>
 
     <div class="card" id="break-box" hidden>
       <label class="field" style="margin-bottom:8px">
@@ -903,13 +904,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103m"></script>
-<script src="net.js?v=20261103m"></script>
-<script src="music.js?v=20261103m"></script>
-<script type="module" src="scene3d.js?v=20261103m" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103m"></script>
-<script src="books.js?v=20261103m"></script>
-<script type="module" src="account.js?v=20261103m"></script>
+<script src="scene.js?v=20261103n"></script>
+<script src="net.js?v=20261103n"></script>
+<script src="music.js?v=20261103n"></script>
+<script type="module" src="scene3d.js?v=20261103n" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103n"></script>
+<script src="books.js?v=20261103n"></script>
+<script type="module" src="account.js?v=20261103n"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -921,11 +922,11 @@
       "tab.team": "團隊", "tm.modeH": "加入方式", "tm.modeOpen": "直接加入", "tm.modeReview": "需要審核", "tm.apply": "申請加入", "tm.applied": "已送出申請，等隊長同意", "tm.applyWait": "申請中，等隊長同意", "tm.cancelApply": "取消申請",
       "tm.approved": "「{n}」同意你加入了！", "tm.rejected": "「{n}」這次沒有通過你的申請", "tm.reqH": "加入申請", "tm.ok": "同意", "tm.no": "拒絕", "tm.studyingN": "讀書中", "tm.reading": "讀書中",
       "tm.inTeam": "你已經在「{n}」了，要先退出才能加入別隊。", "tm.demoNote": "這是示範團隊，不能加入。", "tm.cap": "{n}/30 人", "tm.tap": "點團隊可以看成員和狀態。", "tm.owner": "隊長", "tm.yours": "這是你的團隊", "tm.close": "關閉", "tm.view": "查看成員狀態", "tm.weekTot": "本週 {w} · 累積 {t}", "tm.noMem": "還沒有成員資料",
-      "chip.set": "個人設定", "h.card": "{n}的家", "h.cardP": "三層樓的家：一樓客廳、二樓房間、三樓露臺，已經擺了基本家具。用小木頭買更多，擺成你喜歡的樣子，還能邀請朋友來參觀。", "h.cardN": "三層樓，擺了 {k} 件家具",
+      "chip.set": "個人設定", "h.card": "{n}的家", "h.cardP": "三層樓的家：一樓客廳、二樓房間、三樓露臺，已經擺了基本家具。用番茄種子買更多，擺成你喜歡的樣子，還能邀請朋友來參觀。", "h.cardN": "三層樓，擺了 {k} 件家具",
       "h.f0": "1F 客廳", "h.f1": "2F 房間", "h.f1h": "2F 走廊", "h.hintHall": "點房門進房間。按門旁的鎖可以鎖上房間，客人就進不去。", "h.f2": "3F 露臺", "h.bedOn": "🔒 房間鎖著（點一下打開）", "h.bedOff": "🚪 房間沒鎖（點一下鎖上）", "h.bedLocked": "房間鎖著，進不去", "h.bedLockT": "房間鎖上了，客人進不去", "h.bedOpenT": "房間打開了，客人可以進去", "h.upTo": "上樓到{f}", "h.downTo": "下樓到{f}", "h.doorH": "一樓大門", "h.pinFirst": "歡迎回家！先幫一樓大門設一組 4 位數密碼，朋友來參觀要輸入這組密碼", "h.pinLater": "之後點一樓的門也可以設密碼", "h.doorGuest": "這是大門", "h.bedGuest": "這是房門", "h.noStore": "樓梯不能收起來，可以搬位置", "h.enter": "進去",
       "h.back": "‹ 離開", "h.shop": "🛒 買家具", "h.edit": "✏️ 擺設", "h.done": "✓ 完成", "h.rotate": "↻ 旋轉", "h.store": "📦 收起", "h.invite": "💌 邀請朋友", "h.lockOn": "🔓 開鎖", "h.lockOff": "🔒 鎖門",
       "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。按樓梯上的 ⬆ ⬇ 上下樓，點門可以鎖門。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
-      "h.shopH": "家具商店", "hc.mine": "⭐ 我的", "h.mineHere": "現在這層", "h.lift": "拿起", "h.move": "移動", "h.place": "放置", "h.placedS": "已擺放", "h.lifted": "{f}收進倉庫了", "h.mineEdit": "點一下搬、轉、收", "h.mineStore": "倉庫", "h.minePut": "點一下擺出來", "h.mineNone": "還沒有家具，去其他分類逛逛吧", "h.mineOut": "{f}拿出來了，可以拖曳移動", "hc.books": "📖 書店", "h.bookOwn": "已擁有，點一下讀", "h.bookBought": "買了《{b}》，放上書櫃了", "h.shelfH": "我的書櫃", "h.shelfP": "挑一本來讀", "h.shelfEmpty": "書櫃還是空的，去書店挑幾本吧", "h.toBookshop": "去書店", "h.shelfBack": "回書櫃", "h.sitStudy": "坐下讀書", "h.focusGo": "開始專注 {n} 分", "h.focusStop": "起來", "h.focusPart": "這段專注記了 {n} 分鐘", "h.focusAgain": "休息結束，坐好就可以再來一顆", "hc.paint": "🎨 牆壁漆", "hc.floor": "🟫 地板", "hc.rug": "🧶 地毯", "hc.plant": "🪴 植物", "hc.decor": "🧸 擺飾", "hc.elec": "📺 家電樂器", "hc.gallery": "🖼️ 畫廊", "hc.desk": "🪑 桌椅", "hc.chair": "🛋️ 沙發", "hc.shelf": "📚 書櫃", "hc.lamp": "💡 燈", "hc.table": "🫖 茶几桌子", "hc.bedroom": "🛏️ 寢具收納", "hc.curtain": "🪟 窗簾", "hc.outdoor": "⛱️ 露臺戶外", "hc.pet": "🐾 寵物用品", "hc.fest": "🎄 節日裝飾", "h.inUse": "這層正在用", "h.owned": "已擁有，點一下換上", "h.onWall": "掛牆", "h.onlyOutS": "露臺限定", "h.noWall": "露臺沒有牆，換到一樓或二樓房間再掛", "h.onlyOut": "這個只能擺在三樓露臺", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
+      "h.shopH": "家具商店", "hc.mine": "⭐ 我的", "h.mineHere": "現在這層", "h.lift": "拿起", "h.move": "移動", "h.place": "放置", "h.placedS": "已擺放", "h.lifted": "{f}收進倉庫了", "h.mineEdit": "點一下搬、轉、收", "h.mineStore": "倉庫", "h.minePut": "點一下擺出來", "h.mineNone": "還沒有家具，去其他分類逛逛吧", "h.mineOut": "{f}拿出來了，可以拖曳移動", "hc.books": "📖 書店", "h.bookOwn": "已擁有，點一下讀", "h.bookBought": "買了《{b}》，放上書櫃了", "h.shelfH": "我的書櫃", "h.shelfP": "挑一本來讀", "h.shelfEmpty": "書櫃還是空的，去書店挑幾本吧", "h.toBookshop": "去書店", "h.shelfBack": "回書櫃", "h.sitStudy": "坐下讀書", "h.focusGo": "開始專注 {n} 分", "h.focusStop": "起來", "h.focusPart": "這段專注記了 {n} 分鐘", "h.focusAgain": "休息結束，坐好就可以再來一顆", "hc.paint": "🎨 牆壁漆", "hc.floor": "🟫 地板", "hc.rug": "🧶 地毯", "hc.plant": "🪴 植物", "hc.decor": "🧸 擺飾", "hc.elec": "📺 家電樂器", "hc.gallery": "🖼️ 畫廊", "hc.desk": "🪑 桌椅", "hc.chair": "🛋️ 沙發", "hc.shelf": "📚 書櫃", "hc.lamp": "💡 燈", "hc.table": "🫖 茶几桌子", "hc.bedroom": "🛏️ 寢具收納", "hc.curtain": "🪟 窗簾", "hc.outdoor": "⛱️ 露臺戶外", "hc.pet": "🐾 寵物用品", "hc.fest": "🎄 節日裝飾", "h.inUse": "這層正在用", "h.owned": "已擁有，點一下換上", "h.onWall": "掛牆", "h.onlyOutS": "露臺限定", "h.noWall": "露臺沒有牆，換到一樓或二樓房間再掛", "h.onlyOut": "這個只能擺在三樓露臺", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "番茄種子不夠，還差 {n} 顆",
       "h.pinSet": "設定 4 位數門鎖密碼", "h.pinChange": "🔑 改密碼", "h.pinBad": "密碼要是 4 位數字", "h.locked": "上鎖了，朋友要輸入密碼才進得來", "h.unlocked": "沒上鎖，拿到連結的人都能來參觀",
       "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，請對方打開一次 App 再試", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
       "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "小日誌",
@@ -939,12 +940,12 @@
       "ph.focus": "專注中", "ph.break": "休息中",
       "s.nextFocus": "下一輪專注 {time} 開始", "s.nextBreak": "{time} 休息",
       "s.sync": "跟所有在 {room} 的人同步", "s.solo": "你自己的番茄鐘",
-      "s.midjoin": "你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來，也會照比例給小木頭（最少 1 根）。下一輪開始時一起從頭來。",
+      "s.midjoin": "你在這一輪中途加入，這顆不算完整的番茄，但專注的分鐘數會記下來。下一輪開始時一起從頭來。",
       "s.notelabel": "休息時間，留一句話給自己（只存在這支手機）",
       "s.noteph": "剛剛讀完第三章，下一輪寫習題",
       "s.notesave": "留下這句話", "s.notesaved": "記下來了",
       "p.joined": "加入時間", "p.hours": "累積時數", "p.country": "國家", "s.leave": "離開讀書房", "set.quit": "退出", "s.exit": "暫離", "s.away": "你暫時離開了 {r}", "s.back": "回到房間", "s.awayP": "你的角色起身去走走了，番茄鐘還在跑。回去他就會走回座位。", "s.addFriend": "+ 好友", "p.now": "現在", "p.add": "加為好友", "p.chat": "去聊天", "p.close": "關閉", "p.self": "這是你", "s.isFriend": "好友", "s.added": "已經把 {n} 加為好友，對方也會看到你", "c.free": "有空", "c.busy": "專注中", "c.off": "離線", "c.chat": "聊天", "c.dnd": "專注中，請勿打擾", "c.close": "關閉", "c.ph": "說點什麼…", "c.send": "送出", "c.meBusy": "你正在專注，休息時間再聊吧", "c.themBusy": "{n} 正在專注，等他休息再聊", "c.themOff": "{n} 現在不在線上", "c.noNet": "聊天需要網路連線", "c.empty": "還沒有訊息，打聲招呼吧", "c.new": "{n}：{t}", "c.addedYou": "{n} 在讀書房加你為好友", "c.how": "好友沒在專注的時候可以聊天。訊息只存在你們兩個人的手機上。",
-      "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘，寵物會有點難過，但不會扣木頭或等級。確定離開嗎？",
+      "s.leaveconfirm": "現在離開，這一輪只會記錄已經專注的分鐘，寵物會有點難過，但不會扣種子或等級。確定離開嗎？",
       "opt.sound": "換段時響一聲、震動", "set.title": "設定", "hop.t": "準備房間中", "set.close": "關閉", "set.lang": "語言 Language", "set.reload": "重新整理（拿到最新版本）", "set.sound": "聲音與提醒", "set.room": "房間", "opt.view": "房間視角", "opt.viewL": "大", "opt.viewM": "中", "opt.viewS": "小", "opt.wake": "讀書時保持螢幕亮著", "opt.mute": "全部靜音", "mu.mute": "靜音", "mu.unmute": "取消靜音", "opt.notify": "換段時跳出通知（電腦瀏覽器較穩）",
       "opt.notifydenied": "瀏覽器沒有允許通知，可以到瀏覽器設定打開",
       "toast.done": "完成一顆番茄！休息 {m} 分鐘", "toast.focus": "休息結束，開始專注",
@@ -958,10 +959,10 @@
       "g.h": "我的成長", "g.tot": "累積專注 {h}", "g.stage0": "寶寶", "g.stage1": "小朋友", "g.stage2": "長大了", "g.stage3": "進化",
       "g.next": "再讀 {h} 小時，{p}就會長大", "g.max": "{p}已經進化到最終型態了", "g.noPet": "到商店領養一隻寵物，牠會跟著你的讀書時數長大。",
       "pet.up": "🎉 {p}長大了：{s}！",
-      "lock.focus": "專注中不能逛商店或換裝，休息時再來", "feed.btn": "🍖 用 {n} 根木頭換飼料", "feed.done": "{p}吃得好開心", "feed.poor": "小木頭不夠，讀完一輪再來餵{p}",
+      "lock.focus": "專注中不能逛商店或換裝，休息時再來", "feed.btn": "🍖 用 {n} 顆種子換飼料", "feed.done": "{p}吃得好開心", "feed.poor": "番茄種子不夠，讀完一輪再來餵{p}",
       "feed.sadQuit": "這一輪只記錄已經專注的部分，{p}有點難過。下次讀完一整輪牠就會開心起來。", "feed.happyAgain": "讀完一整輪，{p}又開心起來了",
-      "pet.name": "取名", "pet.namePrompt": "幫{p}取個名字（最多 10 個字）", "pet.hungry": "{p}已經 {d} 天沒吃東西了，休息時記得用木頭換飼料餵牠。",
-      "pet.away": "{p}餓到離家出走了。休息時用木頭換飼料，牠就會回來。", "pet.back": "🎉 {p}聞到飼料的香味，跑回來了！",
+      "pet.name": "取名", "pet.namePrompt": "幫{p}取個名字（最多 10 個字）", "pet.hungry": "{p}已經 {d} 天沒吃東西了，休息時記得用種子換飼料餵牠。",
+      "pet.away": "{p}餓到離家出走了。休息時用種子換飼料，牠就會回來。", "pet.back": "🎉 {p}聞到飼料的香味，跑回來了！",
       "st.clear": "清除我的所有紀錄", "st.clearconfirm": "要清除所有專注紀錄、留言、好友和封測任務進度嗎？這個動作沒辦法復原。", "st.cleared": "已清除",
       "beta.h": "封測任務", "beta.sub": "做完這幾件事，再回開達留下回饋",
       "beta.t1": "加入一間讀書房", "beta.t2": "完成一顆番茄鐘（專注到最後）",
@@ -970,8 +971,8 @@
       "foot.2": "提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。",
       "wd": "日,一,二,三,四,五,六",
       "tab.friends": "好友", "tab.char": "角色",
-      "app.lede": "開一間溫馨的小讀書房，用六位數房號約朋友進來。大家一起專注、一起休息，完成番茄就拿小木頭幫角色買裝備。",
-      "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
+      "app.lede": "開一間溫馨的小讀書房，用六位數房號約朋友進來。大家一起專注、一起休息，完成番茄就拿番茄種子幫角色買裝備。",
+      "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和番茄種子只存在你的手機。",
       "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到六位數房號，不會跟別人重複，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.long": "100 分專注\n30 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
       "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友給的房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "有好友在的房間最優先，其次是人多的房間，都要跟你選一樣時間、還有空位；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.newRoom": "目前沒有空房，幫你開了一間新的", "r.joinP": "輸入朋友給你的房號（4 或 6 位數）。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "000000",
@@ -986,20 +987,20 @@
       "s.net.online": "● 已連線", "s.net.offline": "● 連線中斷，重新連線中", "s.net.connecting": "● 重新連線中",
       "s.people": "{n}/6 人", "s.sim": "跟 5 位模擬室友一起", "s.alone": "只有你一個人",
       "s.st.focus": "{act}中", "s.st.break": "休息中",
-      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙|運動一下吧🏃|今天要讀到12點！|伸個懶腰～|拍拍手👏|來跳個舞💃|肚子好餓🍙|深呼吸…|衝刺最後一小時🚀|好想睡💤", "s.up": "休息一下 ☕", "s.sit": "坐下", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.backUp": "回到房間畫面", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "風吹聲", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.koto": "和風古箏", "mu.synth": "太空電子", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 小木頭！", "s.rewardPart": "中途加入這輪：照專注比例拿到 {n} 根小木頭",
+      "s.says": "加油！💪|一起撐下去|我讀完一章了📖|👋 嗨|好睏😪|再一下下|專心模式🔥|我先喝口水💧|有人要咖啡嗎☕|這題好難🤯|寫完作業了✅|你們好認真👍|今天也辛苦了|晚安🌙|運動一下吧🏃|今天要讀到12點！|伸個懶腰～|拍拍手👏|來跳個舞💃|肚子好餓🍙|深呼吸…|衝刺最後一小時🚀|好想睡💤", "s.up": "休息一下 ☕", "s.sit": "坐下", "s.down": "我回來了 ✏️", "s.drag": "拖曳轉視角 · 兩指縮放、轉動、移動", "s.more": "往下滑：音樂、成員和更多", "s.backUp": "回到房間畫面", "s.loadN": "{n} 位同學在讀書", "s.load1": "一個人的專注時間", "mu.lab": "音樂", "mu.amb": "環境音", "mu.off": "關閉", "mu.jazz": "爵士", "mu.light": "輕音樂", "c.flag": "國家（顯示在名字前面）", "c.firstH": "歡迎！先選好你的角色", "c.firstP": "取個暱稱、挑性別膚色和髮型，按「儲存」就能進讀書房。之後隨時可以按右上角的「個人設定」換裝。", "c.firstNeed": "先取暱稱、選好角色再進去喔", "mu.noise": "風吹聲", "mu.fire": "柴火聲", "mu.rain": "雨聲", "mu.lofi": "Lo-fi", "mu.forest": "森林鳥叫", "mu.piano": "鋼琴", "mu.waves": "海浪", "mu.bossa": "波沙諾瓦", "mu.musicbox": "音樂盒", "mu.folk": "民謠吉他", "mu.koto": "和風古箏", "mu.synth": "太空電子", "mu.cafe": "咖啡廳", "mu.night": "夏夜蟲鳴", "mu.vol": "音量", "s.st.up": "起來走走", "s.st.away": "暫離中", "s.reward": "+{n} 顆番茄種子！", "s.rewardPart": "中途加入這輪：照專注比例拿到 {n} 顆番茄種子",
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "act.music": "練音樂", "act.piano": "練琴", "act.sing": "練唱", "act.craft": "做手作", "act.other": "其他", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
-      "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "小木頭",
-      "c.woodP": "專注就能拿小木頭，根據時間比例計算。建好角色後，換新的膚色或髮色每種 2 根，買過的顏色可以隨時換回來。", "c.needWood": "小木頭不夠，要 {n} 根", "c.tryColor": "先試看看，按儲存才會用掉 {n} 根小木頭", "c.boughtColor": "換好了，用掉 {n} 根小木頭",
-      "c.wardrobe": "我的衣櫃", "c.shop": "小木頭商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
-      "c.buy": "{n} 根買", "c.poor": "還差 {n} 根", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "tab.shop": "商店", "gift.welcome": "🎁 歡迎加入！送你一隻小雞夥伴和 50 根小木頭", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 根小木頭", "c.idShow": "我的 ID", "c.colorBuy": "{n} 根買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 根小木頭", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 根小木頭", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "番茄種子",
+      "c.woodP": "坐在書桌前專注，每 5 分鐘得 1 顆番茄種子，按「休息一下」時結算，中途離開房間不算。建好角色後，換新的膚色或髮色每種 2 顆，買過的顏色可以隨時換回來。", "c.needWood": "番茄種子不夠，要 {n} 顆", "c.tryColor": "先試看看，按儲存才會用掉 {n} 顆番茄種子", "c.boughtColor": "換好了，用掉 {n} 顆番茄種子",
+      "c.wardrobe": "我的衣櫃", "c.shop": "番茄種子商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
+      "c.buy": "{n} 顆買", "c.poor": "還差 {n} 顆", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
+      "tab.shop": "商店", "gift.welcome": "🎁 歡迎加入！送你一隻小雞夥伴和 50 顆番茄種子", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 顆番茄種子", "c.idShow": "我的 ID", "c.colorBuy": "{n} 顆買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 顆番茄種子", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 顆番茄種子", "c.use": "換上", "c.boughtCol": "買了新顏色！",
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
       "rc.wh": "悄悄話", "rc.tipWh": "悄悄話開著：說的話只有 {n} 看得到，不會出現在頭上", "rc.end": "結束對話", "rc.endLine": "先這樣吧，我要繼續進步了！", "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
       "help.t": "說明", "help.ok": "知道了",
-      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|專注就能拿小木頭，根據時間比例計算。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|小木頭可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 根。|讀書紀錄、小木頭和家都會自動備份到你的 Google 帳號，換手機登入就找得回來。",
+      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|坐在書桌前專注，每 5 分鐘得 1 顆番茄種子，按「休息一下」時結算，中途離開房間不算。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|番茄種子可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 顆。|讀書紀錄、番茄種子和家都會自動備份到你的 Google 帳號，換手機登入就找得回來。",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "slot.legs": "褲子", "slot.set": "套裝", "cat.legs": "褲子", "cat.set": "套裝", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
       "q.next": "換一句",
       "f.avNote": "頭像就是你的角色，到個人設定換造型", "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
@@ -1029,11 +1030,11 @@
       "tab.team": "Teams", "tm.modeH": "How people join", "tm.modeOpen": "Open", "tm.modeReview": "Approval needed", "tm.apply": "Ask to join", "tm.applied": "Request sent. Waiting for the captain.", "tm.applyWait": "Request pending", "tm.cancelApply": "Cancel request",
       "tm.approved": "“{n}” accepted you!", "tm.rejected": "“{n}” didn't accept your request this time", "tm.reqH": "Join requests", "tm.ok": "Accept", "tm.no": "Decline", "tm.studyingN": "Studying now", "tm.reading": "studying",
       "tm.inTeam": "You're already in “{n}”. Leave it first to join another team.", "tm.demoNote": "This is a demo team and can't be joined.", "tm.cap": "{n}/30", "tm.tap": "Tap a team to see its members and status.", "tm.owner": "captain", "tm.yours": "This is your team", "tm.close": "Close", "tm.view": "Member status", "tm.weekTot": "Week {w} · total {t}", "tm.noMem": "No member data yet",
-      "chip.set": "Profile", "h.card": "{n}'s home", "h.cardP": "A three-floor home: living room, bedroom and a rooftop terrace, with the basics already in. Buy more with logs, arrange it your way and invite friends over.", "h.cardN": "3 floors, {k} pieces of furniture",
+      "chip.set": "Profile", "h.card": "{n}'s home", "h.cardP": "A three-floor home: living room, bedroom and a rooftop terrace, with the basics already in. Buy more with seeds, arrange it your way and invite friends over.", "h.cardN": "3 floors, {k} pieces of furniture",
       "h.f0": "1F Living", "h.f1": "2F Bedroom", "h.f1h": "2F Hallway", "h.hintHall": "Tap the door to enter the bedroom. Tap the lock beside it to keep guests out.", "h.f2": "3F Terrace", "h.bedOn": "🔒 Bedroom locked (tap to open)", "h.bedOff": "🚪 Bedroom open (tap to lock)", "h.bedLocked": "The bedroom is locked", "h.bedLockT": "Bedroom locked. Guests can't go in.", "h.bedOpenT": "Bedroom open. Guests can go in.", "h.upTo": "Up to {f}", "h.downTo": "Down to {f}", "h.doorH": "Front door", "h.pinFirst": "Welcome home! Set a 4-digit code for the front door. Friends need it to visit.", "h.pinLater": "You can set it later by tapping the front door", "h.doorGuest": "The front door", "h.bedGuest": "The bedroom door", "h.noStore": "Stairs can't be put away, but you can move them", "h.enter": "Go in",
       "h.back": "‹ Leave", "h.shop": "🛒 Furniture", "h.edit": "✏️ Arrange", "h.done": "✓ Done", "h.rotate": "↻ Rotate", "h.store": "📦 Put away", "h.invite": "💌 Invite", "h.lockOn": "🔓 Unlock", "h.lockOff": "🔒 Lock",
       "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap ⬆ ⬇ on the stairs to change floors, and tap a door to lock it.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
-      "h.shopH": "Furniture shop", "hc.mine": "⭐ Mine", "h.mineHere": "this floor", "h.lift": "Pick up", "h.move": "Move", "h.place": "Place", "h.placedS": "Placed", "h.lifted": "{f} went to storage", "h.mineEdit": "Tap to move, turn or store", "h.mineStore": "Storage", "h.minePut": "Tap to place", "h.mineNone": "No furniture yet. Browse the other tabs", "h.mineOut": "{f} is out. Drag to move it", "hc.books": "📖 Bookstore", "h.bookOwn": "Owned, tap to read", "h.bookBought": "Bought {b}. It's on your shelf", "h.shelfH": "My bookshelf", "h.shelfP": "Pick something to read", "h.shelfEmpty": "Your shelf is empty. Visit the bookstore", "h.toBookshop": "Bookstore", "h.shelfBack": "Back to shelf", "h.sitStudy": "Sit and study", "h.focusGo": "Focus {n} min", "h.focusStop": "Stand up", "h.focusPart": "Logged {n} min of focus", "h.focusAgain": "Break's over. Ready for another round", "hc.paint": "🎨 Wall paint", "hc.floor": "🟫 Flooring", "hc.rug": "🧶 Rugs", "hc.plant": "🪴 Plants", "hc.decor": "🧸 Decor", "hc.elec": "📺 Appliances", "hc.gallery": "🖼️ Gallery", "hc.desk": "🪑 Desks & chairs", "hc.chair": "🛋️ Sofas", "hc.shelf": "📚 Shelves", "hc.lamp": "💡 Lamps", "hc.table": "🫖 Tables", "hc.bedroom": "🛏️ Bedroom", "hc.curtain": "🪟 Curtains", "hc.outdoor": "⛱️ Terrace", "hc.pet": "🐾 Pets", "hc.fest": "🎄 Holiday", "h.inUse": "On this floor", "h.owned": "Owned, tap to use", "h.onWall": "Wall", "h.onlyOutS": "Terrace only", "h.noWall": "The terrace has no walls. Try 1F or the bedroom.", "h.onlyOut": "This only goes on the 3F terrace", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
+      "h.shopH": "Furniture shop", "hc.mine": "⭐ Mine", "h.mineHere": "this floor", "h.lift": "Pick up", "h.move": "Move", "h.place": "Place", "h.placedS": "Placed", "h.lifted": "{f} went to storage", "h.mineEdit": "Tap to move, turn or store", "h.mineStore": "Storage", "h.minePut": "Tap to place", "h.mineNone": "No furniture yet. Browse the other tabs", "h.mineOut": "{f} is out. Drag to move it", "hc.books": "📖 Bookstore", "h.bookOwn": "Owned, tap to read", "h.bookBought": "Bought {b}. It's on your shelf", "h.shelfH": "My bookshelf", "h.shelfP": "Pick something to read", "h.shelfEmpty": "Your shelf is empty. Visit the bookstore", "h.toBookshop": "Bookstore", "h.shelfBack": "Back to shelf", "h.sitStudy": "Sit and study", "h.focusGo": "Focus {n} min", "h.focusStop": "Stand up", "h.focusPart": "Logged {n} min of focus", "h.focusAgain": "Break's over. Ready for another round", "hc.paint": "🎨 Wall paint", "hc.floor": "🟫 Flooring", "hc.rug": "🧶 Rugs", "hc.plant": "🪴 Plants", "hc.decor": "🧸 Decor", "hc.elec": "📺 Appliances", "hc.gallery": "🖼️ Gallery", "hc.desk": "🪑 Desks & chairs", "hc.chair": "🛋️ Sofas", "hc.shelf": "📚 Shelves", "hc.lamp": "💡 Lamps", "hc.table": "🫖 Tables", "hc.bedroom": "🛏️ Bedroom", "hc.curtain": "🪟 Curtains", "hc.outdoor": "⛱️ Terrace", "hc.pet": "🐾 Pets", "hc.fest": "🎄 Holiday", "h.inUse": "On this floor", "h.owned": "Owned, tap to use", "h.onWall": "Wall", "h.onlyOutS": "Terrace only", "h.noWall": "The terrace has no walls. Try 1F or the bedroom.", "h.onlyOut": "This only goes on the 3F terrace", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough seeds, {n} short",
       "h.pinSet": "Set a 4-digit door code", "h.pinChange": "🔑 Change code", "h.pinBad": "The code must be 4 digits", "h.locked": "Locked. Friends need the code to come in.", "h.unlocked": "Unlocked. Anyone with the link can visit.",
       "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. Ask them to open the app once, then try again.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
       "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Journal",
@@ -1047,12 +1048,12 @@
       "ph.focus": "Focus", "ph.break": "Break",
       "s.nextFocus": "Next focus starts at {time}", "s.nextBreak": "Break at {time}",
       "s.sync": "In sync with everyone in the {room}", "s.solo": "Your own timer",
-      "s.midjoin": "You joined mid-round, so this one won't count as a full pomodoro, but your focus minutes are still logged and you get logs for that share (at least 1). Everyone starts fresh next round.",
+      "s.midjoin": "You joined mid-round, so this one won't count as a full pomodoro, but your focus minutes are still logged. Everyone starts fresh next round.",
       "s.notelabel": "Break time. Leave yourself a note (stays on this device)",
       "s.noteph": "Finished chapter 3, exercises next round",
       "s.notesave": "Save note", "s.notesaved": "Saved",
       "p.joined": "Joined", "p.hours": "Total hours", "p.country": "Country", "s.leave": "Leave room", "set.quit": "Leave room", "s.exit": "Step away", "s.away": "You stepped away from {r}", "s.back": "Go back", "s.awayP": "Your character got up to wander. The timer keeps running, and they'll walk back to the desk when you return.", "s.addFriend": "+ Friend", "p.now": "Now", "p.add": "Add friend", "p.chat": "Chat", "p.close": "Close", "p.self": "That's you", "s.isFriend": "Friend", "s.added": "Added {n} as a friend. They'll see you too.", "c.free": "Free", "c.busy": "Focusing", "c.off": "Offline", "c.chat": "Chat", "c.dnd": "Focusing, do not disturb", "c.close": "Close", "c.ph": "Say something…", "c.send": "Send", "c.meBusy": "You're focusing. Chat on your break.", "c.themBusy": "{n} is focusing. Chat when they take a break.", "c.themOff": "{n} is offline right now", "c.noNet": "Chat needs an internet connection", "c.empty": "No messages yet. Say hi!", "c.new": "{n}: {t}", "c.addedYou": "{n} added you as a friend in the study room", "c.how": "You can chat with friends while they're not focusing. Messages stay only on your two phones.",
-      "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged and your pet will look a little sad, but you lose no logs or levels. Leave?",
+      "s.leaveconfirm": "If you leave now, only the minutes you already focused are logged and your pet will look a little sad, but you lose no seeds or levels. Leave?",
       "opt.sound": "Chime and vibrate between phases", "set.title": "Settings", "hop.t": "Getting your room ready", "set.close": "Close", "set.lang": "語言 Language", "set.reload": "Reload (get the latest version)", "set.sound": "Sound and reminders", "set.room": "Room", "opt.view": "Room view", "opt.viewL": "Close", "opt.viewM": "Medium", "opt.viewS": "Wide", "opt.wake": "Keep screen on while studying", "opt.mute": "Mute all sound", "mu.mute": "Mute", "mu.unmute": "Unmute", "opt.notify": "Show a notification between phases (best on desktop)",
       "opt.notifydenied": "Notifications are blocked. You can allow them in browser settings.",
       "toast.done": "Pomodoro done! Take {m} minutes off", "toast.focus": "Break's over, time to focus",
@@ -1066,10 +1067,10 @@
       "g.h": "My growth", "g.tot": "{h} of focus in total", "g.stage0": "Baby", "g.stage1": "Kid", "g.stage2": "Grown", "g.stage3": "Evolved",
       "g.next": "{h} more hours until {p} grows", "g.max": "{p} has reached its final form", "g.noPet": "Adopt a pet in the shop and it will grow with your study hours.",
       "pet.up": "🎉 {p} grew up: {s}!",
-      "lock.focus": "No shopping or dressing up during focus. Come back on your break.", "feed.btn": "🍖 Trade {n} logs for food", "feed.done": "{p} loved it", "feed.poor": "Not enough logs. Finish a round, then feed {p}.",
+      "lock.focus": "No shopping or dressing up during focus. Come back on your break.", "feed.btn": "🍖 Trade {n} seeds for food", "feed.done": "{p} loved it", "feed.poor": "Not enough seeds. Finish a round, then feed {p}.",
       "feed.sadQuit": "Only the focused part was logged, and {p} looks a little sad. Finish a full round next time to cheer it up.", "feed.happyAgain": "A full round done, {p} is happy again",
-      "pet.name": "Name", "pet.namePrompt": "Name your {p} (up to 10 characters)", "pet.hungry": "{p} hasn't eaten for {d} days. Trade logs for food on your break.",
-      "pet.away": "{p} got so hungry it ran away. Trade logs for food on a break and it will come back.", "pet.back": "🎉 {p} smelled the food and came back!",
+      "pet.name": "Name", "pet.namePrompt": "Name your {p} (up to 10 characters)", "pet.hungry": "{p} hasn't eaten for {d} days. Trade seeds for food on your break.",
+      "pet.away": "{p} got so hungry it ran away. Trade seeds for food on a break and it will come back.", "pet.back": "🎉 {p} smelled the food and came back!",
       "st.clear": "Clear all my data", "st.clearconfirm": "Clear all focus stats, notes, friends and beta task progress? This can't be undone.", "st.cleared": "Cleared",
       "beta.h": "Beta tasks", "beta.sub": "Do these, then leave feedback on Kaida",
       "beta.t1": "Join a study room", "beta.t2": "Finish one pomodoro (stay to the end)",
@@ -1078,8 +1079,8 @@
       "foot.2": "Note: phones may pause the browser while locked. When you come back the countdown re-syncs to the clock and focus minutes are counted by real time.",
       "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
       "tab.friends": "Friends", "tab.char": "Avatar",
-      "app.lede": "Open a cozy little study room and invite friends with a 6-digit code. Focus and take breaks together, and earn little logs to dress up your character.",
-      "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
+      "app.lede": "Open a cozy little study room and invite friends with a 6-digit code. Focus and take breaks together, and earn tomato seeds to dress up your character.",
+      "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and seeds stay on your phone.",
       "r.createH": "New room", "r.createP": "You'll get your own 6-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.long": "100 focus\n30 break", "r.mode.test": "Quick test\n1 min / 30 s",
       "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's room code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a room on the same timer that still has seats, rooms with your friends first, then the busiest ones. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.newRoom": "No open rooms, so we opened a new one for you", "r.joinP": "Enter the room code a friend sent you (4 or 6 digits).", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "000000",
@@ -1094,20 +1095,20 @@
       "s.net.online": "● Connected", "s.net.offline": "● Disconnected, retrying", "s.net.connecting": "● Reconnecting",
       "s.people": "{n}/6 people", "s.sim": "With 5 simulated roommates", "s.alone": "Just you",
       "s.st.focus": "{act}", "s.st.break": "On break",
-      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙|Let's exercise 🏃|Studying till 12!|Big stretch~|Clap clap 👏|Dance break 💃|So hungry 🍙|Deep breath…|Final sprint 🚀|So sleepy 💤", "s.up": "Take a break ☕", "s.sit": "Sit here", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.backUp": "Back to the room", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "Wind", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.koto": "Koto", "mu.synth": "Space synth", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} logs!", "s.rewardPart": "Joined mid-round: {n} logs for the part you focused",
+      "s.says": "You got this! 💪|Let's keep going|Finished a chapter 📖|👋 Hi|So sleepy 😪|Just a bit more|Focus mode 🔥|Getting water 💧|Coffee anyone? ☕|This is hard 🤯|Homework done ✅|You're all so focused 👍|Good work today|Good night 🌙|Let's exercise 🏃|Studying till 12!|Big stretch~|Clap clap 👏|Dance break 💃|So hungry 🍙|Deep breath…|Final sprint 🚀|So sleepy 💤", "s.up": "Take a break ☕", "s.sit": "Sit here", "s.down": "I'm back ✏️", "s.drag": "Drag to look · two fingers to zoom, turn and move", "s.more": "Scroll down for music, people and more", "s.backUp": "Back to the room", "s.loadN": "{n} people studying", "s.load1": "Your own focus time", "mu.lab": "Music", "mu.amb": "Ambience", "mu.off": "Off", "mu.jazz": "Jazz", "mu.light": "Soft", "c.flag": "Country (shown before your name)", "c.firstH": "Welcome! Make your character first", "c.firstP": "Pick a nickname, look and hair, then press Save to enter the study room. You can change outfits anytime from Profile at the top right.", "c.firstNeed": "Pick a nickname and character first", "mu.noise": "Wind", "mu.fire": "Fireplace", "mu.rain": "Rain", "mu.lofi": "Lo-fi", "mu.forest": "Forest birds", "mu.piano": "Piano", "mu.waves": "Ocean waves", "mu.bossa": "Bossa nova", "mu.musicbox": "Music box", "mu.folk": "Folk guitar", "mu.koto": "Koto", "mu.synth": "Space synth", "mu.cafe": "Café chatter", "mu.night": "Summer night", "mu.vol": "Volume", "s.st.up": "Walking around", "s.st.away": "Stepped away", "s.reward": "+{n} tomato seeds!", "s.rewardPart": "Joined mid-round: {n} seeds for the part you focused",
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "act.music": "Practicing music", "act.piano": "Practicing piano", "act.sing": "Singing practice", "act.craft": "Crafting", "act.other": "Something else", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
-      "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "logs",
-      "c.woodP": "Focusing earns logs, based on how long you focus. After setup, each new skin or hair color costs 2 logs; colors you've bought stay free to switch back to.", "c.needWood": "Not enough logs, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} logs", "c.boughtColor": "Changed, {n} logs spent",
+      "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "seeds",
+      "c.woodP": "Every 5 minutes focused at your desk earns 1 tomato seed, paid out when you press Take a break. Leaving the room before that forfeits them. After setup, each new skin or hair color costs 2 seeds; colors you've bought stay free to switch back to.", "c.needWood": "Not enough seeds, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} seeds", "c.boughtColor": "Changed, {n} seeds spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "tab.shop": "Shop", "gift.welcome": "🎁 Welcome! Here's a chick buddy and 50 logs", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 logs", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 logs", "gift.n": "🎁 Thanks for studying with us! Here are {n} logs", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "tab.shop": "Shop", "gift.welcome": "🎁 Welcome! Here's a chick buddy and 50 seeds", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 seeds", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 seeds", "gift.n": "🎁 Thanks for studying with us! Here are {n} seeds", "c.use": "Use", "c.boughtCol": "New color bought!",
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
       "rc.wh": "Whisper", "rc.tipWh": "Whisper is on: only {n} sees what you say, nothing shows above your head", "rc.end": "End chat", "rc.endLine": "That's it for now, back to leveling up!", "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
       "help.t": "How it works", "help.ok": "Got it",
-      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|Focusing earns logs, based on how long you focus.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend logs in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 logs.|Your records, logs and home are backed up to your Google account, so signing in on a new phone brings them back.",
+      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|Every 5 minutes focused at your desk earns 1 tomato seed, paid out when you press Take a break. Leaving the room before that forfeits them.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend seeds in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 seeds.|Your records, seeds and home are backed up to your Google account, so signing in on a new phone brings them back.",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "slot.legs": "Bottoms", "slot.set": "Set", "cat.legs": "Bottoms", "cat.set": "Sets", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
       "q.next": "Another",
       "f.avNote": "Your avatar is your character. Change the look in Profile.", "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
@@ -1168,20 +1169,20 @@
   data.ownSkin = data.ownSkin || [data.look.skin || 0]; data.ownHair = data.ownHair || [data.look.hair || 0];
   data.owned = data.owned || ["tee-blue", "tee-pink"];
   data.wood = data.wood || 0;
-  // 2026/10 一次性禮物：已經玩過的人送 30 根小木頭；之後才加入的不送
+  // 2026/10 一次性禮物：已經玩過的人送 30 顆番茄種子；之後才加入的不送
   var gift30 = false;
   if (!data.pal) data.pal = "kraft";
   if (!data.gift30) { data.gift30 = true; if (oldPlayer) { data.wood += 30; gift30 = true; } K.save(STORE, data); }
-  // 第二次禮物：目前已經在玩的人再送 100 根（每人一次）
+  // 第二次禮物：目前已經在玩的人再送 100 顆（每人一次）
   var gift100 = false;
   if (!data.gift100) { data.gift100 = true; if (oldPlayer) { data.wood += 100; gift100 = true; } K.save(STORE, data); }
-  // 新玩家見面禮：一隻小雞夥伴和 50 根小木頭（取好名字、存好角色時告訴他）
+  // 新玩家見面禮：一隻小雞夥伴和 50 顆番茄種子（取好名字、存好角色時告訴他）
   if (!data.welcome) {
     data.welcome = true;
     if (!oldPlayer) { if (data.owned.indexOf("chick") < 0) data.owned.push("chick"); if (!data.look.pet) data.look.pet = "chick"; data.wood += 50; data.fedAt = Date.now(); data.welcomeToast = true; }
     K.save(STORE, data);
   }
-  // 熊貓下架：買過的退回 18 根小木頭
+  // 熊貓下架：買過的退回 18 顆番茄種子
   if (data.owned.indexOf("panda") >= 0) { data.owned.splice(data.owned.indexOf("panda"), 1); data.wood += 18; }
   if (data.look.pet === "panda") data.look.pet = "";
   data.act = data.act || "read";
@@ -1232,18 +1233,17 @@
   function addFocus(endT, ms, full) {
     var k = K.dayKey(new Date(endT - 1));
     var d = data.days[k] || (data.days[k] = { min: 0, pomo: 0 });
-    // 快速測試不算進讀書時數，只給 1 根小木頭
+    // 快速測試不算進讀書時數，只給 1 顆番茄種子
     if (!(session && session.cfg.test)) d.min = Math.round((d.min + ms / MIN) * 10) / 10;
     if (typeof teamSync === "function" && (!teamSync.at || Date.now() - teamSync.at > 60000 || full)) { teamSync.at = Date.now(); setTimeout(teamSync, 0); }
     if (full) {
       if (!(session && session.cfg.test)) d.pomo += 1;
       data.tasks.t2 = true;
-      var n = woodFor(session.cfg);
-      data.wood += n; updateWood();
-      K.toast(t("s.reward", { n: n }));
+      // 番茄種子改成按「休息一下」時照坐著專注的時間結算；只有快速測試維持每輪 1 顆
+      if (session && session.cfg.test) { var n = woodFor(session.cfg); data.wood += n; updateWood(); K.toast(t("s.reward", { n: n })); }
       if (data.petSad) { data.petSad = false; if (data.look.pet) setTimeout(function () { K.toast(t("feed.happyAgain", { p: petName() })); }, 2600); pubMood(); }
-    } else if (session && ms > 0) {
-      // 中途加入的那一輪：照專注的比例給小木頭，最少 1 根
+    } else if (session && session.cfg.test && ms > 0) {
+      // 中途加入的那一輪：照專注的比例給番茄種子，最少 1 顆
       var pn = Math.max(1, Math.round(woodFor(session.cfg) * Math.min(1, ms / (session.cfg.focus * MIN))));
       data.wood += pn; updateWood();
       K.toast(t("s.rewardPart", { n: pn }));
@@ -1410,6 +1410,15 @@
     session.ack = p.start; creditUntil(now); persist();
   }
   function needAck(p) { return !!session && !p.focus && session.credited < p.start && session.ack !== p.start; }
+  // 番茄種子：坐在書桌前專注，每滿 5 分鐘 1 顆；按「休息一下」時結算，沒滿 5 分鐘的留到下次。中途離開房間沒結算的就不算
+  function settleSeeds() {
+    if (!session || session.cfg.test) return;
+    var n = Math.floor(((session.dk || 0) - (session.paid || 0)) / (5 * MIN));
+    if (n <= 0) return;
+    session.paid = (session.paid || 0) + n * 5 * MIN;
+    data.wood += n; updateWood(); K.toast(t("s.reward", { n: n }));
+    if (data.petSad) { data.petSad = false; if (data.look.pet) setTimeout(function () { K.toast(t("feed.happyAgain", { p: petName() })); }, 2600); pubMood(); }
+  }
   // 休息一下：角色起身在房間走動；我回來了：走回座位
   function setUp(up) {
     if (!session) return;
@@ -1417,7 +1426,9 @@
     var now = Date.now();
     if (!session.up && !session.pz) session.dk = (session.dk || 0) + focusSince(session.dkAt || session.joinedAt, now);
     session.dkAt = now;
-    session.up = !!up; session.pz = false; persist();
+    session.up = !!up; session.pz = false;
+    if (up) settleSeeds();
+    persist();
     if (session.kind === "room" && net) net.publishMe({ up: session.up, away: !!session.away, dk: session.dk, dkAt: session.dkAt, pz: false });
     renderSays(); renderScene(true);
   }
@@ -1730,7 +1741,7 @@
     if (p.focus) {
       var segStart = Math.max(p.start, session.credited, session.joinedAt);
       if (now > segStart) addFocus(now, now - segStart, false);
-      // 失敗溫和處理：不扣木頭、不退等級，只是寵物有點難過
+      // 失敗溫和處理：不扣種子、不退等級，只是寵物有點難過
       if (!silent && data.look.pet) { data.petSad = true; var pn = petName(); setTimeout(function () { K.toast(t("feed.sadQuit", { p: pn })); }, 2600); }
     }
     if (session.kind === "room" && net) net.leave();
@@ -2302,12 +2313,12 @@
     return ((data.ownSkin.indexOf(data.look.skin) < 0) + (data.ownHair.indexOf(data.look.hair) < 0)) * COLOR_PRICE;
   }
   function dropTrialColors() {
-    // 改了名字沒按儲存（或小木頭不夠）就換回原本的名字
+    // 改了名字沒按儲存（或番茄種子不夠）就換回原本的名字
     if (data.me.named && data.paidName != null && data.me.name !== data.paidName) { data.me.name = data.paidName; persist(); syncMe(); renderChip(); }
     if (!colorCost()) return;
     data.look.skin = paidColor.skin; data.look.hair = paidColor.hair; persist(); syncMe(); renderChip();
   }
-  function colorTag(own, i) { return data.me.named && own.indexOf(i) < 0 ? '<span class="pr">🪵' + COLOR_PRICE + '</span>' : ""; }
+  function colorTag(own, i) { return data.me.named && own.indexOf(i) < 0 ? '<span class="pr">🌱' + COLOR_PRICE + '</span>' : ""; }
   function renderChar() {
     var el = document.getElementById("view-char"), L = data.look, html = "";
     if (!data.me.name) html += '<div class="card welcome"><h3>' + K.esc(t("c.firstH")) + '</h3><p class="small muted" style="margin:0">' + K.esc(t("c.firstP")) + '</p></div>';
@@ -2316,7 +2327,7 @@
       (data.me.named ? '<p class="small muted" style="margin:-4px 0 0">' + K.esc(t("c.renameP")) + '</p>' : "") +
       (charShowId ? '<div class="idrow"><span class="k">ID</span><b class="mono">' + K.esc(data.me.id) + '</b><button type="button" class="cp" data-copy="' + K.esc(data.me.id) + '" aria-label="' + K.esc(t("f.copy")) + '"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></svg></button></div>'
                   : '<button type="button" class="idrow" data-act="show-id"><span class="k">' + K.esc(t("c.idShow")) + '</span><b></b><span aria-hidden="true">›</span></button>') +
-      '<div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
+      '<div><span class="wood">🌱 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
       '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("c.woodP")) + '</p></div>';
     html += '<div class="card"><label class="field"><span>' + K.esc(t("c.country")) + '</span><select id="c-flag" class="pick-select">' +
       '<option value="">' + K.esc(t("c.noCountry")) + '</option>' +
@@ -2337,9 +2348,9 @@
     Object.keys(shopPick).forEach(function (k) { PL[k] = shopPick[k]; });
     if (shopTry.set) wearItem(PL, S.item(shopTry.set));
     Object.keys(shopTry).forEach(function (k) { if (k === "set") return; if (S.STACK.indexOf(k) >= 0) { if (!S.has(PL[k], shopTry[k])) PL[k] = S.toggle(PL[k], shopTry[k]); } else PL[k] = shopTry[k]; });
-    // 上面（預覽、木頭、分類）固定不動，只有下面的商品可以滑
+    // 上面（預覽、種子、分類）固定不動，只有下面的商品可以滑
     html += '<div class="shop-head"><div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(PL) + '</svg>' +
-      '<div style="min-width:0"><div><span class="wood">🪵 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
+      '<div style="min-width:0"><div><span class="wood">🌱 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
       '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("c.woodP")) + '</p>' +
       (Object.keys(shopTry).length || Object.keys(shopPick).length ? '<button class="linkbtn" type="button" data-act="untry-all" style="margin-top:4px">' + K.esc(t("c.untry")) + '</button>' : "") + '</div></div></div>';
     var CATS2 = [{ id: "skin", slots: [] }, { id: "hair", slots: [] }].concat(S.CATS);
@@ -2351,8 +2362,8 @@
       var on = isOn(L, it), name = K.lang() === "en" ? it.en : it.zh;
       var btn = own ? (it.slot === "top" || it.parts ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.wearing")) + '</button>' : '<button class="btn ghost" type="button" data-wear="' + it.id + '">' + K.esc(t("c.wear")) + '</button>')
                     : '<button class="btn ' + (on ? "ghost" : "") + '" type="button" data-wear="' + it.id + '">' + K.esc(t(on ? "c.off" : "c.wear")) + '</button>')
-        : (data.wood >= it.price ? '<button class="btn" type="button" data-buy="' + it.id + '">🪵 ' + K.esc(t("c.buy", { n: it.price })) + '</button>'
-                                 : '<button class="btn ghost" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
+        : (data.wood >= it.price ? '<button class="btn" type="button" data-buy="' + it.id + '">🌱 ' + K.esc(t("c.buy", { n: it.price })) + '</button>'
+                                 : '<button class="btn ghost" type="button" disabled>🌱 ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
       return '<div class="it' + (on ? " on" : "") + (shopTry[it.slot] === it.id ? " try" : "") + '" data-try="' + it.id + '">' + itemThumb(it) + '<b>' + K.esc(name) + '</b><span class="small muted">' + K.esc(t("slot." + it.slot)) + '</span>' + btn + '</div>';
     }
     html += '<div class="cats" role="tablist">' + CATS2.map(function (c) {
@@ -2367,8 +2378,8 @@
       }).join("") + '</div>';
       html += '<div class="swbuy"><span class="small muted">' + K.esc(t("cat." + ck)) + ' ' + (sel + 1) + (has ? " · " + K.esc(t("c.owned")) : "") + '</span>' +
         (has ? (L[ck] === sel ? '<button class="btn ghost block" type="button" disabled>' + K.esc(t("c.colorOn")) + '</button>' : '<button class="btn block" type="button" data-usecol="' + ck + ':' + sel + '">' + K.esc(t("c.use")) + '</button>')
-          : data.wood >= COLOR_PRICE ? '<button class="btn block" type="button" data-buycol="' + ck + ':' + sel + '">🪵 ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
-          : '<button class="btn ghost block" type="button" disabled>🪵 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>') + '</div>';
+          : data.wood >= COLOR_PRICE ? '<button class="btn block" type="button" data-buycol="' + ck + ':' + sel + '">🌱 ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
+          : '<button class="btn ghost block" type="button" disabled>🌱 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>') + '</div>';
       el.innerHTML = html; return;
     }
     html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop wardrobe">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
@@ -2397,9 +2408,9 @@
     if (ds.cat) { shopCat = ds.cat; rerenderLook(); var vs = document.getElementById("view-shop"); if (current === "shop" && vs.getBoundingClientRect().top < 0) vs.scrollIntoView({ block: "start" }); return; }
     if (ds.g) L.g = ds.g;
     else if (ds.skin != null || ds.hair != null) {
-      // 建好角色後，換沒買過的膚色／髮色要小木頭；買過的可以隨時換回來
+      // 建好角色後，換沒買過的膚色／髮色要番茄種子；買過的可以隨時換回來
       var key = ds.skin != null ? "skin" : "hair", v = +(ds.skin != null ? ds.skin : ds.hair), own = key === "skin" ? data.ownSkin : data.ownHair;
-      // 沒買過的顏色先試穿，按「儲存」才扣小木頭；沒儲存就離開會換回原本的顏色
+      // 沒買過的顏色先試穿，按「儲存」才扣番茄種子；沒儲存就離開會換回原本的顏色
       if (!data.me.named) { own.length = 0; own.push(v); }
       else if (own.indexOf(v) < 0 && colorCost() === 0) K.toast(t("c.tryColor", { n: COLOR_PRICE }));
       L[key] = v;
@@ -2639,7 +2650,7 @@
   }
   function updateWood() {
     var w = document.getElementById("wood-pill"); if (!w) return;
-    w.innerHTML = '<span aria-hidden="true">🪵</span><b>' + data.wood + '</b>';
+    w.innerHTML = '<span aria-hidden="true">🌱</span><b>' + data.wood + '</b>';
     w.setAttribute("aria-label", data.wood + " " + t("c.wood"));
   }
 
@@ -2655,7 +2666,7 @@
   // 成長：寵物跟著累積時數長大
   function petKind() { var it = data.look.pet && S.item(data.look.pet); return it ? it[K.lang() === "en" ? "en" : "zh"] : ""; }
   function petName() { return (data.petNames && data.petNames[data.look.pet]) || petKind(); }
-  // 餓肚子：5 天沒餵會難過，7 天沒餵就離家出走，休息時用木頭換飼料就回來
+  // 餓肚子：5 天沒餵會難過，7 天沒餵就離家出走，休息時用種子換飼料就回來
   function hungryDays() { return data.look.pet && data.fedAt ? Math.floor((Date.now() - data.fedAt) / 86400000) : 0; }
   function ranAway() { return hungryDays() >= 7; }
   function myLook() { return ranAway() ? Object.assign({}, data.look, { pet: "" }) : data.look; }
@@ -2670,7 +2681,7 @@
   var lastMood = null;
   function pubMood() { var m = myMood(); if (m === lastMood) return; lastMood = m; if (session && session.kind === "room" && net) net.publishMe({ pm: m }); }
   function decoGrowth(m) { if (!m.look) return m; var gr = S.growth(m.hr); m.look = Object.assign({}, m.look, { ps: gr.stage, pm: m.me ? myMood() : m.pm || "" }); return m; }
-  // 飼料要用小木頭換：一整輪 25 分鐘拿 3 根，餵一次 2 根
+  // 飼料要用番茄種子換：專注 5 分鐘 1 顆，餵一次 2 顆
   var FEED_COST = 2;
   function canFeed() { if (!session || !data.look.pet) return false; var p = phaseAt("cur", Date.now(), roomOrigin()); return !p.focus && !(session.fedAt >= p.start); }
 
@@ -2900,30 +2911,30 @@
     } else if (furnCat === "books") {
       // 書店：沒有版權的經典節選，買了放上書櫃，點書櫃就能讀
       body = (window.KaidaBooks || []).map(function (bk) { var own = myBooks().indexOf(bk.id) >= 0;
-        return '<button type="button" class="fi" data-hbook="' + bk.id + '"' + (!own && data.wood < BOOK_PRICE ? " disabled" : "") + '><span class="bk" style="background:' + bk.c + '"></span><b>' + K.esc(K.lang() === "en" ? bk.en : bk.t) + '</b><span class="small muted">' + K.esc(bk.by) + ' · ' + (own ? K.esc(t("h.bookOwn")) : "🪵 " + BOOK_PRICE) + '</span></button>';
+        return '<button type="button" class="fi" data-hbook="' + bk.id + '"' + (!own && data.wood < BOOK_PRICE ? " disabled" : "") + '><span class="bk" style="background:' + bk.c + '"></span><b>' + K.esc(K.lang() === "en" ? bk.en : bk.t) + '</b><span class="small muted">' + K.esc(bk.by) + ' · ' + (own ? K.esc(t("h.bookOwn")) : "🌱 " + BOOK_PRICE) + '</span></button>';
       }).join("");
     } else if (furnCat === "paint" || furnCat === "floor") {
       var map = furnCat === "paint" ? h.PAINTS : h.TILES, key = furnCat === "paint" ? "paint" : "tile";
       var cur = (data.home[key] || [])[homeFloor] || h.FLOORS[homeFloor][furnCat === "paint" ? "wall" : "floor"];
       body = Object.keys(map).map(function (id) { var o = map[id], own = surfOwned(key, id, o);
         var sw = '<span class="sw" style="background:' + o.c + (o.tex ? ';background-image:repeating-linear-gradient(' + (o.tex === "brick" || o.tex === "plank" || o.tex === "tatami" ? "0deg" : "90deg") + ',rgba(0,0,0,.15) 0 2px,transparent 2px 12px)' : "") + '"></span>';
-        var tag = id === cur ? t("h.inUse") : own ? t("h.owned") : "🪵 " + o.price;
+        var tag = id === cur ? t("h.inUse") : own ? t("h.owned") : "🌱 " + o.price;
         return '<button type="button" class="fi' + (id === cur ? " on" : "") + '" data-hsurf="' + key + ':' + id + '"' + (!own && data.wood < o.price ? " disabled" : "") + '>' + sw + '<b>' + K.esc(nm(o)) + '</b><span class="small muted">' + K.esc(tag) + '</span></button>';
       }).join("");
     } else {
       body = Object.keys(F).filter(function (k) { return !F[k].fixed && F[k].cat === furnCat; }).map(function (k) { var f = F[k];
         var note = f.wall ? t("h.onWall") : f.out ? t("h.onlyOutS") : t("h.size", { w: f.w, d: f.d });
-        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(note) + ' · 🪵 ' + f.price + '</span></button>';
+        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(note) + ' · 🌱 ' + f.price + '</span></button>';
       }).join("");
     }
-    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 8px">🪵 ' + data.wood + ' · ' + K.esc(t(inHall() ? "h.f1h" : "h.f" + homeFloor)) + '</p>' +
+    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 8px">🌱 ' + data.wood + ' · ' + K.esc(t(inHall() ? "h.f1h" : "h.f" + homeFloor)) + '</p>' +
       '<div class="fcats" role="tablist">' + FCATS.map(function (c) { return '<button type="button" role="tab" data-hcat="' + c + '" aria-selected="' + (c === furnCat) + '">' + K.esc(t("hc." + c)) + '</button>'; }).join("") + '</div>' +
       '<div class="fshop">' + body + '</div><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:12px">' + K.esc(t("tm.close")) + '</button>';
     document.getElementById("modal").hidden = false;
     var on = card.querySelector('.fcats [aria-selected="true"]'); if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "center" });
     renderHomeCats();
   }
-  // 牆壁漆、地板：沒買過先付小木頭，然後換到現在這層
+  // 牆壁漆、地板：沒買過先付番茄種子，然後換到現在這層
   function useSurf(key, id) {
     var h = H(), spec = (key === "paint" ? h.PAINTS : h.TILES)[id]; if (!spec) return;
     if (key === "paint" && !h.FLOORS[homeFloor].wall) { K.toast(t("h.noWall")); return; }
@@ -3030,7 +3041,7 @@
   function creditHome(ms, full, cfg) {
     var d = data.days[K.dayKey()] || (data.days[K.dayKey()] = { min: 0, pomo: 0 });
     if (ms >= MIN) d.min = Math.round((d.min + ms / MIN) * 10) / 10;
-    if (full) { d.pomo += 1; data.tasks.t2 = true; var n = woodFor(cfg); data.wood += n; updateWood(); K.toast(t("s.reward", { n: n })); }
+    if (full) { d.pomo += 1; data.tasks.t2 = true; var n = cfg.test ? woodFor(cfg) : Math.floor(cfg.focus / 5); data.wood += n; updateWood(); K.toast(t("s.reward", { n: n })); }
     else if (ms >= MIN) K.toast(t("h.focusPart", { n: Math.floor(ms / MIN) }));
     if (ms >= MIN) checkGrowth();
     persist();
@@ -3976,7 +3987,7 @@
   // 寬螢幕時，房間畫面黏在房間列下方，高度扣掉房間列
   (function () { var rb = document.querySelector(".roombar"); if (!rb || !window.ResizeObserver) return; new ResizeObserver(function () { document.documentElement.style.setProperty("--rb-h", (rb.offsetHeight + 10) + "px"); }).observe(rb); })();
   (function () { var lb = document.getElementById("k-lang"), slot = document.getElementById("set-lang-slot"); if (lb && slot) slot.appendChild(lb); })();
-  // 設定：小木頭左邊和房間計時列各有一個齒輪
+  // 設定：番茄種子左邊和房間計時列各有一個齒輪
   (function () {
     var sh = document.getElementById("settings"), from = null;
     function open() { from = document.activeElement; renderSetPals(); document.getElementById("set-quit").hidden = current !== "session"; sh.hidden = false; sh.querySelector(".sheet-x").focus(); }
