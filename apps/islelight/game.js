@@ -1184,7 +1184,7 @@ const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
 // 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）
 /* 自動畫質：每次開啟都量 3 秒幀率，太慢就「當場」降載（不重新載入，不然按開始會像沒反應），並記住下次直接用較低一級；玩家手動選過就不自動調 */
 if (!save.manualQ && !DBG.noAutoQ) {
-  let n = 0, t0 = 0; const probe = () => { const t = performance.now(); if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); const steps = fps < 15 ? 3 : fps < 24 ? 2 : fps < 40 ? 1 : 0; for (let i = 0; i < steps; i++) adaptDown(fps); } };
+  let n = 0, t0 = 0; let tl = 0; const probe = () => { const t = performance.now(); if (document.hidden || (tl && t - tl > 400)) return; tl = t; if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); const steps = fps < 15 ? 3 : fps < 24 ? 2 : fps < 40 ? 1 : 0; for (let i = 0; i < steps; i++) adaptDown(fps); } };
   setTimeout(() => requestAnimationFrame(probe), 1500);
 }
 /* 遊戲中動態降載：開始後每 4 秒看一次幀率，掉到 24 以下就依序關環境光遮蔽、降解析度、關聚光燈陰影、再降解析度，不用重新載入 */
@@ -1198,7 +1198,11 @@ function adaptDown(fps) {
   if (!save.manualQ && QL !== "low" && adaptStep >= 2) { save.quality = QL === "high" ? "mid" : "low"; persist(); } // 下次開啟直接用較低一級（樹、草、光源數也會跟著少）
   console.log("islelight adapt", adaptStep, fps.toFixed(1));
 }
+let adaptLast = 0;
 function adapt(now) {
+  // 分頁切到背景時瀏覽器會停掉畫面更新，那段時間不能算進幀率，不然切回來會被誤判成很卡
+  const gap = now - adaptLast; adaptLast = now;
+  if (document.hidden || gap > 400) { adaptN = 0; adaptT = 0; return; }
   if (!G.started || adaptStep >= 4) return; adaptN++; if (!adaptT) adaptT = now; if (now - adaptT < 4000) return;
   const fps = adaptN / ((now - adaptT) / 1000); adaptN = 0; adaptT = now; if (fps < 24) adaptDown(fps);
 }
