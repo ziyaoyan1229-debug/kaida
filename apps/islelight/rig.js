@@ -11,7 +11,7 @@ const GEAR = /Sword|Shield|Axe|Crossbow|Staff|Wand|Knife|Offhand|Throwable|Spell
 export const RIGS = [];
 export async function loadRigs(names) {
   const loader = new GLTFLoader();
-  await Promise.all(names.map(async (name) => { if (CACHE[name]) return; const url = (name.startsWith("Skeleton") ? "assets/foes/" : "assets/chars/") + name + ".glb"; CACHE[name] = await loader.loadAsync(url); }));
+  await Promise.all(names.map(async (name) => { if (CACHE[name]) return; const url = (name.startsWith("Skeleton") ? "assets/foes/" : "assets/chars/") + name + ".json"; CACHE[name] = await loader.loadAsync(url); }));
 }
 export function makeRig(name, opt) {
   opt = opt || {}; const src = CACHE[name];

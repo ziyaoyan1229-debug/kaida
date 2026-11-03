@@ -25,8 +25,8 @@ function place(g, x, z, s, ry) { g.position.set(x, 0, z); g.scale.setScalar(s); 
 async function load(url) { return new Promise((res, rej) => loader.load(url, res, undefined, rej)); }
 function anim(gltf, root, name) { const clip = gltf.animations.find((a) => a.name === name) || gltf.animations[0]; if (!clip) return; const m = new THREE.AnimationMixer(root); m.clipAction(clip).play(); mixers.push(m); }
 const ROWS = {
-  chars: [["assets/chars/Knight.glb", "Knight 騎士", "Walking_A"], ["assets/chars/Barbarian.glb", "Barbarian 野蠻人", "Walking_B"], ["assets/chars/Mage.glb", "Mage 法師", "Idle"], ["assets/chars/Rogue.glb", "Rogue 盜賊", "Running_A"], ["assets/chars/Rogue_Hooded.glb", "Rogue Hooded 兜帽", "Walking_C"]],
-  foes: [["assets/foes/Skeleton_Minion.glb", "Skeleton Minion", "Walking_A"], ["assets/foes/Skeleton_Warrior.glb", "Skeleton Warrior", "Walking_B"], ["assets/foes/Skeleton_Rogue.glb", "Skeleton Rogue", "Running_A"], ["assets/foes/Skeleton_Mage.glb", "Skeleton Mage", "Idle"]],
+  chars: [["assets/chars/Knight.json", "Knight 騎士", "Walking_A"], ["assets/chars/Barbarian.json", "Barbarian 野蠻人", "Walking_B"], ["assets/chars/Mage.json", "Mage 法師", "Idle"], ["assets/chars/Rogue.json", "Rogue 盜賊", "Running_A"], ["assets/chars/Rogue_Hooded.json", "Rogue Hooded 兜帽", "Walking_C"]],
+  foes: [["assets/foes/Skeleton_Minion.json", "Skeleton Minion", "Walking_A"], ["assets/foes/Skeleton_Warrior.json", "Skeleton Warrior", "Walking_B"], ["assets/foes/Skeleton_Rogue.json", "Skeleton Rogue", "Running_A"], ["assets/foes/Skeleton_Mage.json", "Skeleton Mage", "Idle"]],
   buildings: ["home_A", "home_B", "tavern", "blacksmith", "market", "church", "windmill", "well", "tower_A", "lumbermill"].map((n) => [`assets/hex/buildings/building_${n}_red.gltf`, n]),
   nature: ["tree_single_A", "tree_single_B", "trees_A_large", "trees_B_medium", "rock_single_A", "rock_single_C"].map((n) => [`assets/hex/nature/${n}.gltf`, n]).concat(["barrel", "crate_A_big", "sack", "wheelbarrow", "tent", "resource_lumber"].map((n) => [`assets/hex/props/${n}.gltf`, n])).concat([["assets/hex/neutral/fence_wood_straight.gltf", "fence_wood"]]),
 };
