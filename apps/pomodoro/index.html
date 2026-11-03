@@ -897,13 +897,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103i"></script>
-<script src="net.js?v=20261103i"></script>
-<script src="music.js?v=20261103i"></script>
-<script type="module" src="scene3d.js?v=20261103i" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103i"></script>
-<script src="books.js?v=20261103i"></script>
-<script type="module" src="account.js?v=20261103i"></script>
+<script src="scene.js?v=20261103j"></script>
+<script src="net.js?v=20261103j"></script>
+<script src="music.js?v=20261103j"></script>
+<script type="module" src="scene3d.js?v=20261103j" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103j"></script>
+<script src="books.js?v=20261103j"></script>
+<script type="module" src="account.js?v=20261103j"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -921,7 +921,7 @@
       "h.hintView": "點地板就走過去；點家具會做對應的事：沙發坐下、床躺下、書櫃拿書、鋼琴彈琴、寵物窩讓寵物睡覺。按樓梯上的 ⬆ ⬇ 上下樓，點門可以鎖門。", "h.hintEdit": "點家具選取，拖曳或點地板格子搬過去。綠框可以放，紅框放不下。", "h.hintVisit": "你在{n}的家參觀，點地板走過去，點家具試試看。",
       "h.shopH": "家具商店", "hc.mine": "⭐ 我的", "h.mineHere": "現在這層", "h.lift": "拿起", "h.move": "移動", "h.place": "放置", "h.placedS": "已擺放", "h.lifted": "{f}收進倉庫了", "h.mineEdit": "點一下搬、轉、收", "h.mineStore": "倉庫", "h.minePut": "點一下擺出來", "h.mineNone": "還沒有家具，去其他分類逛逛吧", "h.mineOut": "{f}拿出來了，可以拖曳移動", "hc.books": "📖 書店", "h.bookOwn": "已擁有，點一下讀", "h.bookBought": "買了《{b}》，放上書櫃了", "h.shelfH": "我的書櫃", "h.shelfP": "挑一本來讀", "h.shelfEmpty": "書櫃還是空的，去書店挑幾本吧", "h.toBookshop": "去書店", "h.shelfBack": "回書櫃", "h.sitStudy": "坐下讀書", "h.focusGo": "開始專注 {n} 分", "h.focusStop": "起來", "h.focusPart": "這段專注記了 {n} 分鐘", "h.focusAgain": "休息結束，坐好就可以再來一顆", "hc.paint": "🎨 牆壁漆", "hc.floor": "🟫 地板", "hc.rug": "🧶 地毯", "hc.plant": "🪴 植物", "hc.decor": "🧸 擺飾", "hc.elec": "📺 家電樂器", "hc.gallery": "🖼️ 畫廊", "hc.desk": "🪑 桌椅", "hc.chair": "🛋️ 沙發", "hc.shelf": "📚 書櫃", "hc.lamp": "💡 燈", "hc.table": "🫖 茶几桌子", "hc.bedroom": "🛏️ 寢具收納", "hc.curtain": "🪟 窗簾", "hc.outdoor": "⛱️ 露臺戶外", "hc.pet": "🐾 寵物用品", "hc.fest": "🎄 節日裝飾", "h.inUse": "這層正在用", "h.owned": "已擁有，點一下換上", "h.onWall": "掛牆", "h.onlyOutS": "露臺限定", "h.noWall": "露臺沒有牆，換到一樓或二樓房間再掛", "h.onlyOut": "這個只能擺在三樓露臺", "h.size": "{w}×{d} 格", "h.buy": "買", "h.bought": "買了{f}！可以拖曳移動", "h.full": "家裡放不下了，先收進倉庫", "h.blocked": "這裡放不下，換個位置", "h.storeH": "倉庫：點一下拿出來擺", "h.needWood": "小木頭不夠，還差 {n} 根",
       "h.pinSet": "設定 4 位數門鎖密碼", "h.pinChange": "🔑 改密碼", "h.pinBad": "密碼要是 4 位數字", "h.locked": "上鎖了，朋友要輸入密碼才進得來", "h.unlocked": "沒上鎖，拿到連結的人都能來參觀",
-      "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，對方可能還沒佈置", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
+      "h.inviteText": "來我家坐坐！{n}的家：", "h.finding": "敲門中…", "h.notFound": "找不到這個家，請對方打開一次 App 再試", "h.pinAsk": "{n}的家上鎖了，請輸入 4 位數密碼", "h.pinWrong": "密碼不對，進不去", "h.visit": "🏠 去他家", "h.saved": "擺好了",
       "chip.new": "建立角色", "tm.offline": "團隊排行需要網路連線", "tm.joinH": "加入團隊", "tm.joinP": "輸入朋友給你的五碼團隊代碼。", "tm.join": "加入", "tm.newH": "建立團隊", "tm.newP": "取個隊名，會拿到團隊代碼，傳給朋友就能一起衝排行。每隊最多 30 人。", "tm.nameph": "例如：夜貓讀書團", "tm.create": "建立", "tm.code": "團隊代碼", "tm.members": "{n} 位成員", "tm.rank": "全球第 {n} 名", "tm.score": "累積小時", "tm.total": "本週小時", "tm.bonus": "成員", "tm.invite": "邀請隊友", "tm.quit": "退出團隊", "tm.boardH": "全球團隊排行", "tm.boardP": "比全隊累積的讀書小時（從加入團隊後開始算），隊友越多累積越快。", "tm.demo": "示範", "tm.rowInfo": "{n} 人 · 本週 {h}", "tm.full": "這個團隊已經滿了（30 人）", "tm.joined": "加入了「{n}」", "tm.needName": "請先取個隊名", "tm.created": "團隊建立好了，邀請朋友加入吧", "tm.badCode": "團隊代碼是五個英數字", "tm.finding": "找團隊中…", "tm.notfound": "找不到這個團隊，請確認代碼", "tm.inviteText": "來加入我的讀書團隊「{n}」一起衝排行！團隊代碼 {c}：", "tm.quitConfirm": "確定要退出「{n}」嗎？", "tab.rooms": "讀書房", "tab.me": "小日誌",
       "rooms.how": "讀書房照「整點」排程：整點房每半小時一輪（25 分專注、5 分休息），深度房每小時一輪（50 分專注、10 分休息）。任何人在同一時間打開，看到的倒數都一樣。",
       "room.hour.name": "整點房", "room.hour.desc": "25 分專注 · 5 分休息 · 每個 :00 和 :30 開始",
@@ -1029,7 +1029,7 @@
       "h.hintView": "Tap the floor to walk there. Tap furniture to use it: sit on the sofa, lie on the bed, grab a book, play the piano, tuck your pet in. Tap ⬆ ⬇ on the stairs to change floors, and tap a door to lock it.", "h.hintEdit": "Tap furniture to select it, then drag it or tap a floor square. Green fits, red doesn't.", "h.hintVisit": "You're visiting {n}'s home. Tap the floor to walk, tap furniture to try it.",
       "h.shopH": "Furniture shop", "hc.mine": "⭐ Mine", "h.mineHere": "this floor", "h.lift": "Pick up", "h.move": "Move", "h.place": "Place", "h.placedS": "Placed", "h.lifted": "{f} went to storage", "h.mineEdit": "Tap to move, turn or store", "h.mineStore": "Storage", "h.minePut": "Tap to place", "h.mineNone": "No furniture yet. Browse the other tabs", "h.mineOut": "{f} is out. Drag to move it", "hc.books": "📖 Bookstore", "h.bookOwn": "Owned, tap to read", "h.bookBought": "Bought {b}. It's on your shelf", "h.shelfH": "My bookshelf", "h.shelfP": "Pick something to read", "h.shelfEmpty": "Your shelf is empty. Visit the bookstore", "h.toBookshop": "Bookstore", "h.shelfBack": "Back to shelf", "h.sitStudy": "Sit and study", "h.focusGo": "Focus {n} min", "h.focusStop": "Stand up", "h.focusPart": "Logged {n} min of focus", "h.focusAgain": "Break's over. Ready for another round", "hc.paint": "🎨 Wall paint", "hc.floor": "🟫 Flooring", "hc.rug": "🧶 Rugs", "hc.plant": "🪴 Plants", "hc.decor": "🧸 Decor", "hc.elec": "📺 Appliances", "hc.gallery": "🖼️ Gallery", "hc.desk": "🪑 Desks & chairs", "hc.chair": "🛋️ Sofas", "hc.shelf": "📚 Shelves", "hc.lamp": "💡 Lamps", "hc.table": "🫖 Tables", "hc.bedroom": "🛏️ Bedroom", "hc.curtain": "🪟 Curtains", "hc.outdoor": "⛱️ Terrace", "hc.pet": "🐾 Pets", "hc.fest": "🎄 Holiday", "h.inUse": "On this floor", "h.owned": "Owned, tap to use", "h.onWall": "Wall", "h.onlyOutS": "Terrace only", "h.noWall": "The terrace has no walls. Try 1F or the bedroom.", "h.onlyOut": "This only goes on the 3F terrace", "h.size": "{w}×{d} squares", "h.buy": "Buy", "h.bought": "Bought a {f}! Drag to move it", "h.full": "No room left, it went into storage", "h.blocked": "That doesn't fit there", "h.storeH": "Storage: tap to place", "h.needWood": "Not enough logs, {n} short",
       "h.pinSet": "Set a 4-digit door code", "h.pinChange": "🔑 Change code", "h.pinBad": "The code must be 4 digits", "h.locked": "Locked. Friends need the code to come in.", "h.unlocked": "Unlocked. Anyone with the link can visit.",
-      "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. They may not have set it up yet.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
+      "h.inviteText": "Come over! {n}'s home:", "h.finding": "Knocking…", "h.notFound": "Couldn't find this home. Ask them to open the app once, then try again.", "h.pinAsk": "{n}'s home is locked. Enter the 4-digit code", "h.pinWrong": "Wrong code", "h.visit": "🏠 Visit", "h.saved": "Saved",
       "chip.new": "Set up", "tm.offline": "Team rankings need an internet connection", "tm.joinH": "Join a team", "tm.joinP": "Enter the 5-character team code a friend sent you.", "tm.join": "Join", "tm.newH": "Start a team", "tm.newP": "Pick a team name and get a code to share. Up to 30 members.", "tm.nameph": "e.g. Night Owls", "tm.create": "Create", "tm.code": "Team code", "tm.members": "{n} members", "tm.rank": "#{n} worldwide", "tm.score": "Total hours", "tm.total": "This week", "tm.bonus": "Members", "tm.invite": "Invite", "tm.quit": "Leave team", "tm.boardH": "Global team ranking", "tm.boardP": "Teams compete on total study hours since members joined. More teammates, faster hours.", "tm.demo": "Demo", "tm.rowInfo": "{n} people · {h} this week", "tm.full": "This team is full (30 people)", "tm.joined": "Joined “{n}”", "tm.needName": "Give your team a name first", "tm.created": "Team created. Invite your friends!", "tm.badCode": "Team codes are 5 letters or digits", "tm.finding": "Looking for the team…", "tm.notfound": "Couldn't find that team. Check the code.", "tm.inviteText": "Join my study team “{n}” and climb the ranking! Team code {c}:", "tm.quitConfirm": "Leave “{n}”?", "tab.rooms": "Rooms", "tab.me": "Journal",
       "rooms.how": "Rooms run on the clock: the Half-hour room starts every :00 and :30 (25 min focus, 5 min break), the Deep room starts every hour (50 min focus, 10 min break). Anyone opening a room at the same moment sees the same countdown.",
       "room.hour.name": "Half-hour room", "room.hour.desc": "25 focus · 5 break · starts at :00 and :30",
@@ -2313,6 +2313,7 @@
   }
   function syncMe() {
     if (session && session.kind === "room" && net) net.publishMe({ name: data.me.name, look: data.look, act: myAct(), fl: data.me.flag });
+    publishHome(); // 名字、造型改了，家門口的名牌和人物也跟著更新
   }
   document.getElementById("view-char").addEventListener("change", function (e) {
     if (e.target.id !== "c-flag") return;
@@ -2683,6 +2684,8 @@
       window.KaidaNet.homePut(data.me.id, { n: data.me.name, look: myLook(), floors: data.home.floors, items: data.home.floors[0], paint: data.home.paint || [], tile: data.home.tile || [], lock: data.home.lock || "", bl: 0, ts: Date.now() });
     }, 1200);
   }
+  // 每次打開 App 都把自己的家上傳一次：以前只有改家具時才上傳，沒動過家具的人朋友會找不到他家
+  (function pubBoot(n) { setTimeout(function () { if (window.KaidaNet && window.KaidaNet.homePut && data.me.name) publishHome(); else if (n < 20) pubBoot(n + 1); }, 3000); })(0);
   function renderHome() {
     var h = H(), el = document.getElementById("home-3d");
     var vis = homeVisit, owner = vis ? vis.n : data.me.name;
