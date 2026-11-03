@@ -40,7 +40,7 @@ let fb = null, auth = null, db = null, user = null, busy = false, state = "idle"
 async function boot() {
   if (fb) return fb;
   // 測試時可以用 window.KaidaFirebase 換掉真的 SDK
-  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103o");
+  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261104s");
   const app = fb.initializeApp(CONFIG);
   auth = fb.getAuth(app); db = fb.getDatabase(app);
   fb.onAuthStateChanged(auth, (u) => {

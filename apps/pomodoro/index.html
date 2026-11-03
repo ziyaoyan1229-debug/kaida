@@ -905,13 +905,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103o"></script>
-<script src="net.js?v=20261103o"></script>
-<script src="music.js?v=20261103o"></script>
-<script type="module" src="scene3d.js?v=20261103o" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103o"></script>
-<script src="books.js?v=20261103o"></script>
-<script type="module" src="account.js?v=20261103o"></script>
+<script src="scene.js?v=20261104s"></script>
+<script src="net.js?v=20261104s"></script>
+<script src="music.js?v=20261104s"></script>
+<script type="module" src="scene3d.js?v=20261104s" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261104s"></script>
+<script src="books.js?v=20261104s"></script>
+<script type="module" src="account.js?v=20261104s"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -992,16 +992,16 @@
       "act.read": "讀書", "act.novel": "看小說", "act.homework": "寫作業", "act.research": "做研究", "act.report": "寫報告", "act.code": "寫程式", "act.pc": "用電腦工作", "act.draw": "畫圖", "act.vocab": "背單字", "act.journal": "寫日記", "act.calligraphy": "練字", "act.lesson": "上線上課", "act.music": "練音樂", "act.piano": "練琴", "act.sing": "練唱", "act.craft": "做手作", "act.other": "其他", "s.doing": "這次在", "r.doH": "這次要做什麼？", "r.doP": "進房間後就固定，你的角色會在桌前做這件事。",
       "c.title": "我的角色", "c.name": "暱稱", "c.gender": "樣子", "c.boy": "男生", "c.girl": "女生",
       "c.skin": "膚色", "c.hair": "髮色", "c.act": "在房間裡做什麼", "c.wood": "番茄種子",
-      "c.woodP": "坐在書桌前專注，每 5 分鐘得 1 顆番茄種子，按「休息一下」時結算，中途離開房間不算。建好角色後，換新的膚色或髮色每種 2 顆，買過的顏色可以隨時換回來。", "c.needWood": "番茄種子不夠，要 {n} 顆", "c.tryColor": "先試看看，按儲存才會用掉 {n} 顆番茄種子", "c.boughtColor": "換好了，用掉 {n} 顆番茄種子",
+      "c.woodP": "坐在書桌前專注，每 5 分鐘得 1 顆番茄種子，不滿 5 分鐘的照有沒有過半四捨五入（2.5 分鐘以上算 1 顆）。休息時間按下「休息一下」那一刻才發放，中途離開房間不算。建好角色後，換新的膚色或髮色每種 3 顆，買過的顏色可以隨時換回來。", "c.needWood": "番茄種子不夠，要 {n} 顆", "c.tryColor": "先試看看，按儲存才會用掉 {n} 顆番茄種子", "c.boughtColor": "換好了，用掉 {n} 顆番茄種子",
       "c.wardrobe": "我的衣櫃", "c.shop": "番茄種子商店", "c.wear": "穿上", "c.off": "脫下", "c.wearing": "穿著中",
       "c.buy": "{n} 顆買", "c.poor": "還差 {n} 顆", "c.bought": "買到了「{n}」！", "c.save": "儲存", "c.saved": "已儲存",
-      "tab.shop": "商店", "gift.welcome": "🎁 歡迎加入！送你一隻小雞夥伴和 50 顆番茄種子", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 5 顆番茄種子", "c.idShow": "我的 ID", "c.colorBuy": "{n} 顆買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 顆番茄種子", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 顆番茄種子", "c.use": "換上", "c.boughtCol": "買了新顏色！",
+      "tab.shop": "商店", "gift.welcome": "🎁 歡迎加入！送你一隻小雞夥伴和 50 顆番茄種子", "cat.skin": "膚色", "cat.hair": "髮色", "c.toShop": "去商店換造型 →", "c.renameP": "改名字要 8 顆番茄種子", "c.idShow": "我的 ID", "c.colorBuy": "{n} 顆買", "c.colorOn": "使用中", "c.owned": "已擁有", "c.untry": "脫掉試穿，看原本的樣子", "gift.30": "🎁 謝謝你一直來讀書！送你 30 顆番茄種子", "gift.n": "🎁 謝謝你一直來讀書！送你 {n} 顆番茄種子", "c.use": "換上", "c.boughtCol": "買了新顏色！",
       "opt.focus": "專注模式（專注時全螢幕只顯示時間）", "opt.focusS": "專注模式", "opt.clock": "時間顯示", "opt.down": "倒數", "opt.up": "計時", "opt.layout": "房間佈置", "opt.layTheme": "主題版", "opt.layClassic": "經典版",
       "fov.x": "關閉專注模式", "fov.sub": "{r} · {t} 休息", "fov.subUp": "{r} · 這段 {m} 分鐘",
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
       "rc.wh": "悄悄話", "rc.tipWh": "悄悄話開著：說的話只有 {n} 看得到，不會出現在頭上", "rc.end": "結束對話", "rc.endLine": "先這樣吧，我要繼續進步了！", "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
       "help.t": "說明", "help.ok": "知道了",
-      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|坐在書桌前專注，每 5 分鐘得 1 顆番茄種子，按「休息一下」時結算，中途離開房間不算。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|番茄種子可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 顆。|讀書紀錄、番茄種子和家都會自動備份到你的 Google 帳號，換手機登入就找得回來。",
+      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|坐在書桌前專注，每 5 分鐘得 1 顆番茄種子，不滿 5 分鐘的照有沒有過半四捨五入（2.5 分鐘以上算 1 顆）。休息時間按下「休息一下」那一刻才發放，中途離開房間不算。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|番茄種子可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 8 顆。|讀書紀錄、番茄種子和家都會自動備份到你的 Google 帳號，換手機登入就找得回來。",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "slot.legs": "褲子", "slot.set": "套裝", "cat.legs": "褲子", "cat.set": "套裝", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
       "q.next": "換一句",
       "f.avNote": "頭像就是你的角色，到個人設定換造型", "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
@@ -1100,16 +1100,16 @@
       "act.read": "Studying", "act.novel": "Reading a novel", "act.homework": "Homework", "act.research": "Research", "act.report": "Writing a report", "act.code": "Coding", "act.pc": "Working on the computer", "act.draw": "Drawing", "act.vocab": "Vocabulary", "act.journal": "Journaling", "act.calligraphy": "Calligraphy", "act.lesson": "Online class", "act.music": "Practicing music", "act.piano": "Practicing piano", "act.sing": "Singing practice", "act.craft": "Crafting", "act.other": "Something else", "s.doing": "This session:", "r.doH": "What will you do?", "r.doP": "It stays fixed once you're in the room, and your character does it at the desk.",
       "c.title": "My character", "c.name": "Nickname", "c.gender": "Look", "c.boy": "Boy", "c.girl": "Girl",
       "c.skin": "Skin", "c.hair": "Hair", "c.act": "What you do in the room", "c.wood": "seeds",
-      "c.woodP": "Every 5 minutes focused at your desk earns 1 tomato seed, paid out when you press Take a break. Leaving the room before that forfeits them. After setup, each new skin or hair color costs 2 seeds; colors you've bought stay free to switch back to.", "c.needWood": "Not enough seeds, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} seeds", "c.boughtColor": "Changed, {n} seeds spent",
+      "c.woodP": "Every 5 minutes focused at your desk earns 1 tomato seed, and a leftover part rounds to the nearest seed (2.5 minutes or more counts as 1). Seeds are paid the moment you press Take a break during the break. Leaving the room before that forfeits them. After setup, each new skin or hair color costs 3 seeds; colors you've bought stay free to switch back to.", "c.needWood": "Not enough seeds, you need {n}", "c.tryColor": "Trying it on. Saving spends {n} seeds", "c.boughtColor": "Changed, {n} seeds spent",
       "c.wardrobe": "My wardrobe", "c.shop": "Log shop", "c.wear": "Wear", "c.off": "Take off", "c.wearing": "Wearing",
       "c.buy": "Buy for {n}", "c.poor": "Need {n} more", "c.bought": "Got \"{n}\"!", "c.save": "Save", "c.saved": "Saved",
-      "tab.shop": "Shop", "gift.welcome": "🎁 Welcome! Here's a chick buddy and 50 seeds", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 5 seeds", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 seeds", "gift.n": "🎁 Thanks for studying with us! Here are {n} seeds", "c.use": "Use", "c.boughtCol": "New color bought!",
+      "tab.shop": "Shop", "gift.welcome": "🎁 Welcome! Here's a chick buddy and 50 seeds", "cat.skin": "Skin", "cat.hair": "Hair color", "c.toShop": "Go to the shop for new looks →", "c.renameP": "Changing your name costs 8 seeds", "c.idShow": "My ID", "c.colorBuy": "Buy for {n}", "c.colorOn": "In use", "c.owned": "Owned", "c.untry": "Clear try-ons", "gift.30": "🎁 Thanks for studying with us! Here are 30 seeds", "gift.n": "🎁 Thanks for studying with us! Here are {n} seeds", "c.use": "Use", "c.boughtCol": "New color bought!",
       "opt.focus": "Focus mode (full-screen timer while focusing)", "opt.focusS": "Focus mode", "opt.clock": "Timer shows", "opt.down": "Countdown", "opt.up": "Elapsed", "opt.layout": "Room layout", "opt.layTheme": "Themed", "opt.layClassic": "Classic",
       "fov.x": "Turn off focus mode", "fov.sub": "{r} · break at {t}", "fov.subUp": "{r} · {m} min round",
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
       "rc.wh": "Whisper", "rc.tipWh": "Whisper is on: only {n} sees what you say, nothing shows above your head", "rc.end": "End chat", "rc.endLine": "That's it for now, back to leveling up!", "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
       "help.t": "How it works", "help.ok": "Got it",
-      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|Every 5 minutes focused at your desk earns 1 tomato seed, paid out when you press Take a break. Leaving the room before that forfeits them.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend seeds in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 seeds.|Your records, seeds and home are backed up to your Google account, so signing in on a new phone brings them back.",
+      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|Every 5 minutes focused at your desk earns 1 tomato seed, and a leftover part rounds to the nearest seed (2.5 minutes or more counts as 1). Seeds are paid the moment you press Take a break during the break. Leaving the room before that forfeits them.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend seeds in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 8 seeds.|Your records, seeds and home are backed up to your Google account, so signing in on a new phone brings them back.",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "slot.legs": "Bottoms", "slot.set": "Set", "cat.legs": "Bottoms", "cat.set": "Sets", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
       "q.next": "Another",
       "f.avNote": "Your avatar is your character. Change the look in Profile.", "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
@@ -1412,12 +1412,13 @@
     session.ack = p.start; creditUntil(now); persist();
   }
   function needAck(p) { return !!session && !p.focus && session.credited < p.start && session.ack !== p.start; }
-  // 番茄種子：坐在書桌前專注，每滿 5 分鐘 1 顆；按「休息一下」時結算，沒滿 5 分鐘的留到下次。中途離開房間沒結算的就不算
+  // 番茄種子：坐在書桌前專注，每 5 分鐘 1 顆；不滿 5 分鐘的照有沒有過半四捨五入（2.5 分鐘以上算 1 顆），零頭不留到下次。
+  // 只有休息時間按下「休息一下」（或「我回來了」）那一刻才發放；專注中起身不發，還沒發就離開房間的不算
   function settleSeeds() {
     if (!session || session.cfg.test) return;
-    var n = Math.floor(((session.dk || 0) - (session.paid || 0)) / (5 * MIN));
+    var n = Math.round(((session.dk || 0) - (session.paid || 0)) / (5 * MIN));
+    session.paid = session.dk || 0;
     if (n <= 0) return;
-    session.paid = (session.paid || 0) + n * 5 * MIN;
     data.wood += n; updateWood(); K.toast(t("s.reward", { n: n }));
     if (data.petSad) { data.petSad = false; if (data.look.pet) setTimeout(function () { K.toast(t("feed.happyAgain", { p: petName() })); }, 2600); pubMood(); }
   }
@@ -1429,7 +1430,6 @@
     if (!session.up && !session.pz) session.dk = (session.dk || 0) + focusSince(session.dkAt || session.joinedAt, now);
     session.dkAt = now;
     session.up = !!up; session.pz = false;
-    if (up) settleSeeds();
     persist();
     if (session.kind === "room" && net) net.publishMe({ up: session.up, away: !!session.away, dk: session.dk, dkAt: session.dkAt, pz: false });
     renderSays(); renderScene(true);
@@ -2588,7 +2588,7 @@
   var AVATARS = ["🍅", "📚", "✏️", "🎧", "☕", "🌱", "🌙", "🐱", "🐶", "🦊", "🐼", "🐧", "🦉", "🐢", "🚀", "🔥"];
   data.me = data.me || { id: Math.random().toString(36).slice(2, 10), name: "", avatar: "🍅" };
   data.reqIn = data.reqIn || {}; data.reqOut = data.reqOut || {};
-  var COLOR_PRICE = 2, RENAME_PRICE = 5;
+  var COLOR_PRICE = 3, RENAME_PRICE = 8;
   if (data.me.named && data.paidName == null) data.paidName = data.me.name;
   if (data.me.name) data.me.named = true;
   var pc0 = data.paidColor || {};
@@ -2683,8 +2683,8 @@
   var lastMood = null;
   function pubMood() { var m = myMood(); if (m === lastMood) return; lastMood = m; if (session && session.kind === "room" && net) net.publishMe({ pm: m }); }
   function decoGrowth(m) { if (!m.look) return m; var gr = S.growth(m.hr); m.look = Object.assign({}, m.look, { ps: gr.stage, pm: m.me ? myMood() : m.pm || "" }); return m; }
-  // 飼料要用番茄種子換：專注 5 分鐘 1 顆，餵一次 2 顆
-  var FEED_COST = 2;
+  // 飼料要用番茄種子換：專注 5 分鐘 1 顆，餵一次 3 顆
+  var FEED_COST = 3;
   function canFeed() { if (!session || !data.look.pet) return false; var p = phaseAt("cur", Date.now(), roomOrigin()); return !p.focus && !(session.fedAt >= p.start); }
 
   function myTotal() { var m = 0; Object.keys(data.days).forEach(function (k) { m += data.days[k].min || 0; }); return Math.floor(m); }
@@ -2947,7 +2947,7 @@
     data.home[key] = data.home[key] || [];
     data.home[key][homeFloor] = id; persist(); publishHome(); renderHome(); showFurnShop();
   }
-  var BOOK_PRICE = 3;
+  var BOOK_PRICE = 5;
   function myBooks() { return data.home.books || (data.home.books = []); }
   function bookOf(id) { return (window.KaidaBooks || []).filter(function (b) { return b.id === id; })[0]; }
   function buyBook(id) {
@@ -3814,7 +3814,7 @@
     window.scrollTo({ top: top, behavior: "smooth" });
   });
   document.getElementById("says").addEventListener("click", function (e) {
-    if (e.target.closest("[data-up]")) { ackBreak(); setUp(!session.up); renderSession(Date.now()); return; }
+    if (e.target.closest("[data-up]")) { ackBreak(); setUp(!session.up); if (!phaseAt("cur", Date.now(), roomOrigin()).focus) { settleSeeds(); persist(); } renderSession(Date.now()); return; }
     if (e.target.closest("[data-feed]")) {
       if (data.wood < FEED_COST) { K.toast(t("feed.poor", { p: petName() })); return; }
       var back = ranAway(); data.wood -= FEED_COST; updateWood(); data.fedAt = session.fedAt = Date.now(); data.petSad = false; persist(); pubMood(); K.toast(t(back ? "pet.back" : "feed.done", { p: petName() })); if (back) { renderChip(); if (net && session.kind === "room") net.publishMe(meInfo()); } renderSays(); renderScene(true); return; }
