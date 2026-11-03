@@ -1,4 +1,4 @@
-/* 番茄讀書會：溫馨小房間與角色（純 SVG，不用圖片檔） */
+/* 番茄宿舍：溫馨小房間與角色（純 SVG，不用圖片檔） */
 (function () {
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {

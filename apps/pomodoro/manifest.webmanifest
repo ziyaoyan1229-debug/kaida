@@ -1,6 +1,6 @@
 {
-  "name": "番茄讀書會",
-  "short_name": "番茄讀書會",
+  "name": "Pomodorm 番茄宿舍",
+  "short_name": "Pomodorm",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
