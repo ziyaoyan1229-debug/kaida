@@ -1,4 +1,4 @@
-/* 番茄宿舍：3D 原木風讀書房（three.js）
+/* 番茄讀書會：3D 原木風讀書房（three.js）
    window.KaidaScene3D.mount(el) → 是否成功；.update(members)；members: [{ id, name, look, act, me, bubble, up }] */
 import * as THREE from "./vendor/three.module.min.js";
 
