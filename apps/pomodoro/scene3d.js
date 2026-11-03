@@ -2839,8 +2839,9 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 
+let resizeObs = null; // 換容器（登入畫面 ↔ 房間）時要改看新容器的大小，不然畫面會被拉扁
 function mount(el) {
-  if (mounted) { if (el !== container) { el.appendChild(renderer.domElement); el.appendChild(overlay); container = el; resize(); } return true; }
+  if (mounted) { if (el !== container) { el.appendChild(renderer.domElement); el.appendChild(overlay); if (resizeObs) { resizeObs.disconnect(); resizeObs.observe(el); } container = el; resize(); } return true; }
   try {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "low-power" });
   } catch (e) { return false; }
@@ -2856,7 +2857,7 @@ function mount(el) {
   camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
   applyLayout(); buildRoom(); lighting();
   clock = new THREE.Clock();
-  if (window.ResizeObserver) new ResizeObserver(resize).observe(el); else window.addEventListener("resize", resize);
+  if (window.ResizeObserver) { resizeObs = new ResizeObserver(resize); resizeObs.observe(el); } else window.addEventListener("resize", resize);
   resize();
   // 拖曳轉視角
   let drag = null;

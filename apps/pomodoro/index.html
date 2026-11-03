@@ -903,13 +903,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103k"></script>
-<script src="net.js?v=20261103k"></script>
-<script src="music.js?v=20261103k"></script>
-<script type="module" src="scene3d.js?v=20261103k" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103k"></script>
-<script src="books.js?v=20261103k"></script>
-<script type="module" src="account.js?v=20261103k"></script>
+<script src="scene.js?v=20261103l"></script>
+<script src="net.js?v=20261103l"></script>
+<script src="music.js?v=20261103l"></script>
+<script type="module" src="scene3d.js?v=20261103l" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103l"></script>
+<script src="books.js?v=20261103l"></script>
+<script type="module" src="account.js?v=20261103l"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -1545,14 +1545,15 @@
     if (on && !lgDemo) {
       var th = lgShuffle(K3.themes.filter(function (x) { return x !== "home"; }))[0];
       K3.setTheme(th);
-      if (!K3.mount(box)) return;
+      lg.classList.add("has3d"); // 先讓容器有大小，3D 才會用正確的比例
+      if (!K3.mount(box)) { lg.classList.remove("has3d"); return; }
       var acts = lgShuffle(LG_ACTS), now = Date.now();
       var ms = lgShuffle(LG_PPL).slice(0, 6).map(function (lk, i) { return { id: "lg" + i, name: "", joined: now - i * 7e5, look: Object.assign(S.defaultLook(), lk), act: acts[i], up: i === 4 || i === 5 }; });
       lgDemo = { ms: ms, tm: 0, cam: 0 };
       lg.classList.add("has3d");
       K3.update(ms);
       // 鏡頭拉遠一點看到整間，再慢慢左右轉
-      K3.zoom(1.2);
+      K3.zoom(innerWidth < innerHeight ? 1.2 : 0.85);
       var c0 = performance.now();
       (function spin() { if (!lgDemo) return; K3.cam(16.6, 0.64 + Math.sin((performance.now() - c0) / 9000) * 0.32, 0.72); lgDemo.cam = requestAnimationFrame(spin); })();
       var says = t("s.says").split("|"), emos = ["coffee", "exercise", "hungry", "drink"];
