@@ -50,12 +50,17 @@ const scene = new THREE.Scene(); scene.background = new THREE.Color("#cfe3f2"); 
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
 const sun = new THREE.DirectionalLight("#fff2dc", 2.6); sun.position.set(6, 10, 7); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 10, bottom: -8 }); sun.shadow.bias = -0.0004; scene.add(sun); scene.add(new THREE.HemisphereLight("#dfeeff", "#8a7a60", 0.9));
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: "#9cc47a", roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
-const loader = new GLTFLoader(); const cache = {}; const mixers = []; const tags = []; const gap = 1.55; const v = new THREE.Vector3();
+const loader = new GLTFLoader(); const cache = {};
+// Blender 做的配件（tools/make_accessories.py 產生）；?acc=prim 改回程式拼的版本做比較
+const USE_GLB = new URLSearchParams(location.search).get("acc") !== "prim";
+const GLB_OF = { sou: "sou", chef: "chef", sailor: "sailor", glasses: "tophat", beret: "beret", pack: "pack", apron: "apron" }; const glb = {}; const mixers = []; const tags = []; const gap = 1.55; const v = new THREE.Vector3();
 (async () => {
   await Promise.all([...new Set(LOOKS.map((l) => l.model))].map(async (m) => { cache[m] = await loader.loadAsync("../assets/chars/" + m + ".json"); }));
+  if (USE_GLB) await Promise.all([...new Set(Object.values(GLB_OF).concat(["fringe"]))].map(async (n) => { glb[n] = (await loader.loadAsync("../assets/acc/" + n + ".glb")).scene; }));
+  const acc = (k, c) => { if (!USE_GLB) return ACC[k](c); if (k === "bald") { const g = ACC.bald(c); g.children.slice(1).forEach((h) => g.remove(h)); g.add(glb.fringe.clone()); return g; } if (GLB_OF[k]) { const o = glb[GLB_OF[k]].clone(); o.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return o; } return ACC[k](c); };
   LOOKS.forEach((l, i) => {
     const x = (i - (LOOKS.length - 1) / 2) * gap; const src = cache[l.model]; const model = skClone(src.scene);
-    const bodyM = M(l.body), legM = M(l.legs);
+    const bodyM = M(l.body, { flatShading: false, roughness: 0.75 }), legM = M(l.legs, { flatShading: false, roughness: 0.75 });
     model.traverse((o) => {
       if (!o.isMesh) return; o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
       if (/Sword|Shield|Axe|Crossbow|Staff|Wand|Knife|Offhand|Throwable|Spellbook|Mug|Cape/.test(o.name)) o.visible = false;
@@ -63,8 +68,8 @@ const loader = new GLTFLoader(); const cache = {}; const mixers = []; const tags
       else if (/Body|Arm/.test(o.name)) o.material = bodyM;
       else if (/Leg/.test(o.name)) o.material = legM;
     });
-    const head = model.getObjectByName("head"); (l.head || []).forEach(([k, c]) => head && head.add(ACC[k](c)));
-    const chest = model.getObjectByName("chest") || model.getObjectByName("spine") || model; (l.chest || []).forEach(([k, c]) => chest.add(ACC[k](c)));
+    const head = model.getObjectByName("head"); (l.head || []).forEach(([k, c]) => head && head.add(acc(k, c)));
+    const chest = model.getObjectByName("chest") || model.getObjectByName("spine") || model; (l.chest || []).forEach(([k, c]) => chest.add(acc(k, c)));
     model.position.set(x, 0, 0); model.rotation.y = 0.2; scene.add(model);
     const mix = new THREE.AnimationMixer(model); const clip = src.animations.find((a) => a.name === "Idle"); const a = mix.clipAction(clip); a.play(); a.time = i * 0.37; mixers.push(mix);
     const el = document.createElement("div"); el.className = "lbl"; el.innerHTML = `<b style="background:${l.color}">${l.name}</b><i>${l.note}</i>`; document.body.appendChild(el); tags.push({ el, p: new THREE.Vector3(x, 0, 0.7) });
