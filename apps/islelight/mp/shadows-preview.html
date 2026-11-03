@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>漂流燈島 黑影怪物預覽</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:#070a14}canvas{display:block}
+.lbl{position:fixed;transform:translate(-50%,0);text-align:center;pointer-events:none;white-space:nowrap}
+.lbl b{display:inline-block;padding:5px 11px;border-radius:999px;font-size:15px;color:#fff;background:#4a1a7a}
+.lbl i{display:block;font-style:normal;font-size:12px;margin-top:6px;color:#d8c8f0;max-width:220px;white-space:normal}
+#title{position:fixed;left:24px;top:18px;font-size:22px;font-weight:800;color:#efe2ff}
+#sub{position:fixed;left:24px;top:52px;font-size:14px;color:#c9b8e8}</style>
+<script type="importmap">{ "imports": { "three": "../../pomodoro/vendor/three.module.min.js", "three/addons/": "../vendor/" } }</script>
+</head>
+<body>
+<div id="title">黑影怪物：晚上從海上和森林爬上來攻燈塔</div>
+<div id="sub">半透明的紫黑煙霧身體、發光的眼睛、腳下拖著黑煙；被燈光照到會冒煙消散</div>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { clone as skClone } from "three/addons/utils/SkeletonUtils.js";
+const FOES = [
+  { name: "影兵", note: "最常見，成群走向燈塔", model: "Skeleton_Minion", s: 1, eye: "#c070ff", clip: "Walking_D" },
+  { name: "影賊", note: "跑很快，專挑沒燈的小路繞過去", model: "Skeleton_Rogue", s: 1, eye: "#ff4fd0", clip: "Running_A" },
+  { name: "影巫", note: "站遠遠的把附近的燈吹暗", model: "Skeleton_Mage", s: 1, eye: "#70b0ff", clip: "Idle" },
+  { name: "影將（魔王）", note: "週末和最後一夜出現，要燈塔光束和探照燈一起照", model: "Skeleton_Warrior", s: 1.55, eye: "#ff3a3a", clip: "Walking_B" },
+  { name: "影兵（被光照到）", note: "身體變淡、冒白煙，撐不住就消散", model: "Skeleton_Minion", s: 1, eye: "#ffffff", clip: "Hit_A", lit: true },
+];
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(devicePixelRatio); renderer.setSize(innerWidth, innerHeight); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color("#0a0e1c"); scene.fog = new THREE.Fog(scene.background, 12, 30);
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
+scene.add(new THREE.HemisphereLight("#4a5a90", "#0a0c14", 0.5)); const moon = new THREE.DirectionalLight("#8aa4e0", 0.5); moon.position.set(-6, 10, 6); scene.add(moon);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: "#2c3f2e", roughness: 1 })); ground.rotation.x = -Math.PI / 2; scene.add(ground);
+function glowTex() { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"); const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.35, "rgba(255,255,255,.45)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); }
+const GLOW = glowTex();
+const sprite = (color, s, op, add) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color, transparent: true, opacity: op, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending })); sp.scale.setScalar(s); return sp; };
+const loader = new GLTFLoader(); const cache = {}; const mixers = []; const smokes = [];
+const gap = 2.3; const v = new THREE.Vector3(); const tags = [];
+(async () => {
+  await Promise.all([...new Set(FOES.map((f) => f.model))].map(async (m) => { cache[m] = await loader.loadAsync("../assets/foes/" + m + ".json"); }));
+  FOES.forEach((f, i) => {
+    const x = (i - (FOES.length - 1) / 2) * gap + (i === 3 ? 0.15 : 0); const src = cache[f.model];
+    const body = new THREE.MeshStandardMaterial({ color: f.lit ? "#5a4a70" : "#140a22", emissive: f.lit ? "#c8b0ff" : "#36105e", emissiveIntensity: f.lit ? 0.5 : 0.55, roughness: 0.9, transparent: true, opacity: f.lit ? 0.55 : 0.92 });
+    const eyeM = new THREE.MeshBasicMaterial({ color: f.eye });
+    const rim = new THREE.MeshBasicMaterial({ color: f.lit ? "#ffffff" : "#8a3cff", transparent: true, opacity: f.lit ? 0.25 : 0.32, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false });
+    const make = (mat, scale) => { const m = skClone(src.scene); m.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; o.material = /Eyes/.test(o.name) && mat !== rim ? eyeM : mat; } }); m.scale.setScalar(scale); m.position.set(x, 0, 0); m.rotation.y = 0.25; scene.add(m); const mix = new THREE.AnimationMixer(m); const clip = src.animations.find((a) => a.name === f.clip) || src.animations.find((a) => a.name === "Idle"); const a = mix.clipAction(clip); a.play(); a.time = 0.3 + i * 0.21; mixers.push(mix); return m; };
+    const main = make(body, f.s); make(rim, f.s * 1.05);
+    const head = main.getObjectByName("head"); if (head) { const e = sprite(f.eye, 0.9, 0.9, true); e.position.set(0, 0.45, 0.45); head.add(e); }
+    for (let k = 0; k < 9; k++) { const sm = sprite(f.lit ? "#e8e0ff" : "#1a0830", (0.6 + Math.random() * 0.7) * f.s, f.lit ? 0.35 : 0.75, false); sm.position.set(x + (Math.random() - 0.5) * 0.9 * f.s, 0.15 + Math.random() * 0.35 * f.s, -0.1 - Math.random() * 0.6); scene.add(sm); smokes.push({ sm, y0: sm.position.y, t: Math.random() * 6, up: f.lit }); }
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(0.8 * f.s, 40), new THREE.MeshBasicMaterial({ map: GLOW, color: f.lit ? "#ffffff" : "#5a18a0", transparent: true, opacity: 0.6, depthWrite: false })); pool.rotation.x = -Math.PI / 2; pool.position.set(x, 0.02, 0); scene.add(pool);
+    if (f.lit) { const lamp = new THREE.PointLight("#ffd890", 6, 5, 1.5); lamp.position.set(x + 1.1, 1.6, 1.0); scene.add(lamp); const b = sprite("#ffd890", 0.9, 0.9, true); b.position.copy(lamp.position); scene.add(b); }
+    const el = document.createElement("div"); el.className = "lbl"; el.innerHTML = `<b>${f.name}</b><i>${f.note}</i>`; document.body.appendChild(el); tags.push({ el, p: new THREE.Vector3(x, 0, 1.0) });
+  });
+  setTimeout(() => window.__ready = true, 700);
+})();
+const clock = new THREE.Clock();
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05); mixers.forEach((m) => m.update(dt));
+  smokes.forEach((s) => { s.t += dt; s.sm.position.y = s.y0 + (s.up ? (s.t % 2) * 0.6 : Math.sin(s.t) * 0.05); });
+  const w = (FOES.length - 1) * gap + 4; camera.position.set(0, 2.6, w * 0.62 + 4.6); camera.lookAt(0, 1.25, 0);
+  renderer.render(scene, camera);
+  tags.forEach(({ el, p }) => { v.copy(p).project(camera); el.style.left = (v.x * 0.5 + 0.5) * innerWidth + "px"; el.style.top = (-v.y * 0.5 + 0.5) * innerHeight + 8 + "px"; });
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>

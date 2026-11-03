@@ -23,11 +23,11 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone as skClone } from "three/addons/utils/SkeletonUtils.js";
 const mode = new URLSearchParams(location.search).get("mode") || "day";
-const NIGHT = mode !== "day";
+const NIGHT = mode !== "day"; const GHOST = mode === "ghost";
 const ROLES = [
   { name: "守燈人", side: "守燈人", model: "Knight", gear: [], color: "#4f8a4a" },
   { name: "守塔人", side: "守燈人", model: "Mage", gear: ["2H_Staff"], color: "#3b6fd1" },
-  { name: "藥師", side: "守燈人", model: "Mage", gear: ["Spellbook_open"], color: "#2fa58f", tint: "#9fe0c8" },
+  { name: "護燈人", side: "守燈人", model: "Mage", gear: ["Spellbook_open"], color: "#2fa58f", tint: "#9fe0c8" },
   { name: "修燈匠", side: "守燈人", model: "Barbarian", gear: ["1H_Axe"], color: "#c47a22" },
   { name: "獵人", side: "守燈人", model: "Rogue", gear: ["2H_Crossbow"], color: "#7a5a2f" },
   { name: "漂流者", side: "中立", model: "Barbarian", gear: ["Mug"], color: "#8a62c4", tint: "#c8b4f0" },
@@ -40,18 +40,18 @@ const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 20
 if (!NIGHT) { const sun = new THREE.DirectionalLight("#fff2dc", 2.6); sun.position.set(6, 10, 7); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 10, bottom: -8 }); sun.shadow.bias = -0.0004; scene.add(sun); scene.add(new THREE.HemisphereLight("#dfeeff", "#8a7a60", 0.9)); }
 else { scene.add(new THREE.HemisphereLight("#3a4a78", "#0a0c14", 0.35)); const moon = new THREE.DirectionalLight("#8aa4e0", 0.35); moon.position.set(-6, 10, 4); scene.add(moon); }
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: NIGHT ? "#3a5a38" : "#9cc47a", roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
-document.getElementById("title").textContent = { day: "白天：每個職業（職業道具和標籤只有自己看得到）", night: "晚上：別人眼中的大家", self: `晚上：你自己的畫面（你是 ${ME + 1} 號${ROLES[ME].name}）` }[mode];
-document.getElementById("sub").textContent = { day: "外觀可以自己挑，不代表職業；別人白天看到你只有外觀，看不到手上的職業道具和標籤", night: "全部變成黑影，只剩座位號碼和提燈光；大家體型一樣、道具也藏起來，認不出誰是誰", self: "只有你自己是原本的樣子和職業，其他人一律是黑影" }[mode];
+document.getElementById("title").textContent = { day: "白天：每個職業（職業道具和標籤只有自己看得到）", night: "晚上：別人眼中的大家", ghost: "幽光：被投票放逐的人", self: `晚上：你自己的畫面（你是 ${ME + 1} 號${ROLES[ME].name}）` }[mode];
+document.getElementById("sub").textContent = { day: "外觀可以自己挑，不代表職業；別人白天看到你只有外觀，看不到手上的職業道具和標籤", night: "全部變成黑影，只剩座位號碼和提燈光；大家體型一樣、道具也藏起來，認不出誰是誰", ghost: "1、3、5、7 號已出局：半透明淡青光、飄在半空拖著光尾，還能繼續做任務；活著的人看不到幽光，幽光之間看得到彼此", self: "只有你自己是原本的樣子和職業，其他人一律是黑影" }[mode];
 ["title", "sub"].forEach((id) => document.getElementById(id).style.color = NIGHT ? "#f2e6c8" : "#1b2a40");
 function glowTex() { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"); const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.3, "rgba(255,220,150,.6)"); gr.addColorStop(1, "rgba(255,200,120,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); }
 const GLOW = glowTex();
 const SIL = new THREE.MeshBasicMaterial({ color: "#05060b" });
 const loader = new GLTFLoader(); const cache = {}; const mixers = []; const tags = [];
-const gap = 1.7; const v = new THREE.Vector3();
+const gap = 1.7; const glowGear = []; const v = new THREE.Vector3();
 (async () => {
   await Promise.all([...new Set(ROLES.map((r) => r.model))].map(async (m) => { cache[m] = await loader.loadAsync("../assets/chars/" + m + ".json"); }));
   ROLES.forEach((r, i) => {
-    const x = (i - (ROLES.length - 1) / 2) * gap; const sil = NIGHT && !(mode === "self" && i === ME);
+    const x = (i - (ROLES.length - 1) / 2) * gap; const sil = NIGHT && !(mode === "self" && i === ME) && !(GHOST && i % 2 === 0);
     // 黑影一律用同一個體型（盜賊、不戴帽、不披披風），從輪廓也認不出是誰
     const src = cache[sil ? "Rogue" : r.model]; const model = skClone(src.scene);
     model.traverse((o) => {
@@ -60,15 +60,28 @@ const gap = 1.7; const v = new THREE.Vector3();
       if (isGear) o.visible = !sil && r.gear.includes(o.name) && (!NIGHT || mode === "self");
       if (sil) { o.material = SIL; if (/Cape|Hat|Helmet|Hood/.test(o.name)) o.visible = false; } else if (r.tint && !isGear) { o.material = o.material.clone(); o.material.color.multiply(new THREE.Color(r.tint)); }
     });
-    if (r.evil && !sil) { // 叛徒：刺客造型，暗紫黑披風、紅眼、雙匕首、腳下紫黑煙
+    if (r.evil && !sil && !GHOST) { // 叛徒：刺客造型，暗紫黑披風、紅眼、雙匕首、腳下紫黑煙
       const head = model.getObjectByName("head");
       if (head) [-1, 1].forEach((k) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshBasicMaterial({ color: "#ff2a2a" })); e.position.set(k * 0.17, 0.42, 0.5); head.add(e); const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: "#ff2020", transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); g.scale.setScalar(0.28); e.add(g); });
       const aura = new THREE.Mesh(new THREE.CircleGeometry(0.75, 40), new THREE.MeshBasicMaterial({ map: GLOW, color: "#6a10a0", transparent: true, opacity: 0.85, depthWrite: false })); aura.rotation.x = -Math.PI / 2; aura.position.set(x, 0.02, 0); scene.add(aura);
       const smoke = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: "#40106a", transparent: true, opacity: 0.55, depthWrite: false })); smoke.scale.set(1.6, 1.2, 1); smoke.position.set(x, 0.35, -0.2); scene.add(smoke);
     }
-    model.position.set(x, 0, 0); model.rotation.y = 0.2; scene.add(model);
+    const ghost = GHOST && i % 2 === 0; // 幽光：出局的人，半透明的淡青色光、飄在半空、拖一條光尾
+    if (GHOST && !ghost) model.traverse((o) => { if (o.isMesh) o.material = SIL; });
+    if (ghost) {
+      const gm = new THREE.MeshStandardMaterial({ color: "#bff6ff", emissive: "#7fe8ff", emissiveIntensity: 0.9, transparent: true, opacity: 0.45, depthWrite: false });
+      model.traverse((o) => { if (o.isMesh) { o.material = gm; o.castShadow = false; if (/Sword|Shield|Axe|Crossbow|Staff|Wand|Knife|Offhand|Throwable|Spellbook|Mug/.test(o.name)) o.visible = false; } });
+      for (let k = 0; k < 7; k++) { const t = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: "#9ff0ff", transparent: true, opacity: 0.5 - k * 0.06, depthWrite: false, blending: THREE.AdditiveBlending })); t.scale.setScalar(0.7 - k * 0.07); t.position.set(x - 0.08 * k, 0.45 - 0.05 * k, -0.15 - 0.16 * k); scene.add(t); }
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: "#7fe8ff", transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.set(1.6, 2.4, 1); halo.position.set(x, 1.3, -0.1); scene.add(halo);
+    }
+    if (!NIGHT || (mode === "self" && i === ME)) { // 職業光環：腳下一圈職業顏色、職業道具發光（只有自己看得到）
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.52, 0.66, 48), new THREE.MeshBasicMaterial({ color: r.color, transparent: true, opacity: 0.85, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(x, 0.03, 0); scene.add(ring);
+      const pool = new THREE.Mesh(new THREE.CircleGeometry(0.62, 48), new THREE.MeshBasicMaterial({ map: GLOW, color: r.color, transparent: true, opacity: 0.55, depthWrite: false })); pool.rotation.x = -Math.PI / 2; pool.position.set(x, 0.025, 0); scene.add(pool);
+      glowGear.push({ model, r });
+    }
+    model.position.set(x, ghost ? 0.35 : 0, 0); model.rotation.y = 0.2; scene.add(model);
     const mix = new THREE.AnimationMixer(model); const clip = src.animations.find((a) => a.name === "Idle"); if (clip) { const a = mix.clipAction(clip); a.play(); a.time = i * 0.37; } mixers.push(mix);
-    if (NIGHT) { // 提燈：每個人都有，只是光
+    if (NIGHT && !ghost) { // 提燈：活著的人都有，只是光
       const hand = model.getObjectByName("handslot.l") || model.getObjectByName("hand.l");
       const lamp = new THREE.Group(); const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), new THREE.MeshBasicMaterial({ color: "#ffd890" })); lamp.add(bulb);
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); sp.scale.setScalar(0.9); lamp.add(sp);
@@ -77,11 +90,15 @@ const gap = 1.7; const v = new THREE.Vector3();
     }
     const el = document.createElement("div");
     if (!NIGHT) { el.className = "lbl"; el.innerHTML = `<b style="background:${r.color}">${r.name}</b><i>${r.side}</i>`; tags.push({ el, p: new THREE.Vector3(x, 0, 0.7), dy: 8 }); }
+    else if (GHOST) { el.className = "seat"; el.textContent = i + 1; if (i % 2 === 0) { el.style.background = "rgba(170,240,255,.9)"; el.textContent = "👻 " + (i + 1); el.style.width = "auto"; el.style.padding = "0 8px"; el.style.borderRadius = "999px"; } tags.push({ el, p: new THREE.Vector3(x, 2.75, 0), dy: 0 }); }
     else if (mode === "self" && i === ME) { el.className = "me"; el.innerHTML = `<b style="background:${r.color}">你・${r.name}</b><i>只有你看得到</i>`; tags.push({ el, p: new THREE.Vector3(x, 0, 0.7), dy: 8 }); }
     else { el.className = "seat"; el.textContent = i + 1; tags.push({ el, p: new THREE.Vector3(x, 2.75, 0), dy: 0 }); }
     document.body.appendChild(el);
   });
-  setTimeout(() => window.__ready = true, 600);
+  setTimeout(() => { // 道具尖端加一點職業色的光
+    glowGear.forEach(({ model, r }) => model.traverse((o) => { if (o.isMesh && o.visible && r.gear.includes(o.name)) { const b = new THREE.Box3().setFromObject(o); if (b.isEmpty()) return; const c = new THREE.Vector3(); b.getCenter(c); const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: r.color, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })); sp.scale.setScalar(0.6); sp.position.set(c.x, b.max.y - 0.05, c.z + 0.1); scene.add(sp); } }));
+  }, 300);
+  setTimeout(() => window.__ready = true, 900);
 })();
 const clock = new THREE.Clock();
 function frame() {
