@@ -505,6 +505,7 @@
     78% { transform: translateY(-2px); } 82% { transform: translateY(0) rotate(-3deg); } 86% { transform: rotate(3deg); } 90%, 100% { transform: rotate(0); }
   }
   @media (prefers-reduced-motion: reduce) { .bust .head, .bust .blink { animation: none; } .bust .ex { animation: none; } .bust .ex0 { opacity: 1; } }
+  svg.seed-ic { width: 1.15em !important; height: 1.15em !important; vertical-align: -0.2em; flex: none; display: inline-block; margin: 0 !important; }
   .wood { font-family: var(--f-mono); font-weight: 600; font-size: 18px; }
   .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .swatches button .pr { position: absolute; right: -6px; bottom: -6px; font-size: 10px; line-height: 1; padding: 2px 3px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); white-space: nowrap; }
@@ -904,13 +905,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103n"></script>
-<script src="net.js?v=20261103n"></script>
-<script src="music.js?v=20261103n"></script>
-<script type="module" src="scene3d.js?v=20261103n" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103n"></script>
-<script src="books.js?v=20261103n"></script>
-<script type="module" src="account.js?v=20261103n"></script>
+<script src="scene.js?v=20261103o"></script>
+<script src="net.js?v=20261103o"></script>
+<script src="music.js?v=20261103o"></script>
+<script type="module" src="scene3d.js?v=20261103o" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103o"></script>
+<script src="books.js?v=20261103o"></script>
+<script type="module" src="account.js?v=20261103o"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -1229,6 +1230,7 @@
   function clock(t) { var d = new Date(t); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
   function roomName() { return session ? t("s.label." + session.kind) + (session.code ? " " + session.code : "") : ""; }
 
+  var SEED_IC = '<svg class="seed-ic" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="#f3efe6"/><circle cx="50" cy="50" r="40" fill="none" stroke="#5f9a3f" stroke-width="7"/><circle cx="50" cy="50" r="30" fill="#e3f0d5"/><path d="M50 72V48" stroke="#4f8f36" stroke-width="5" stroke-linecap="round"/><path d="M50 54c-4-12-16-15-22-12 5 10 14 13 22 12z" fill="#72b84c"/><path d="M50 48c4-14 18-18 26-13-5 12-16 15-26 13z" fill="#8ccf5c"/><path d="M34 74c8-4 24-4 32 0" stroke="#8a5a3a" stroke-width="5" stroke-linecap="round"/></svg>'; // 綠芽代幣
   function woodFor(cfg) { return cfg.test ? 1 : Math.max(1, Math.round(cfg.focus / 25 * 3)); }
   function addFocus(endT, ms, full) {
     var k = K.dayKey(new Date(endT - 1));
@@ -2318,7 +2320,7 @@
     if (!colorCost()) return;
     data.look.skin = paidColor.skin; data.look.hair = paidColor.hair; persist(); syncMe(); renderChip();
   }
-  function colorTag(own, i) { return data.me.named && own.indexOf(i) < 0 ? '<span class="pr">🌱' + COLOR_PRICE + '</span>' : ""; }
+  function colorTag(own, i) { return data.me.named && own.indexOf(i) < 0 ? '<span class="pr">' + SEED_IC + COLOR_PRICE + '</span>' : ""; }
   function renderChar() {
     var el = document.getElementById("view-char"), L = data.look, html = "";
     if (!data.me.name) html += '<div class="card welcome"><h3>' + K.esc(t("c.firstH")) + '</h3><p class="small muted" style="margin:0">' + K.esc(t("c.firstP")) + '</p></div>';
@@ -2327,7 +2329,7 @@
       (data.me.named ? '<p class="small muted" style="margin:-4px 0 0">' + K.esc(t("c.renameP")) + '</p>' : "") +
       (charShowId ? '<div class="idrow"><span class="k">ID</span><b class="mono">' + K.esc(data.me.id) + '</b><button type="button" class="cp" data-copy="' + K.esc(data.me.id) + '" aria-label="' + K.esc(t("f.copy")) + '"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></svg></button></div>'
                   : '<button type="button" class="idrow" data-act="show-id"><span class="k">' + K.esc(t("c.idShow")) + '</span><b></b><span aria-hidden="true">›</span></button>') +
-      '<div><span class="wood">🌱 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
+      '<div><span class="wood">' + SEED_IC + ' ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div></div></div>' +
       '<p class="small muted" style="margin:8px 0 0">' + K.esc(t("c.woodP")) + '</p></div>';
     html += '<div class="card"><label class="field"><span>' + K.esc(t("c.country")) + '</span><select id="c-flag" class="pick-select">' +
       '<option value="">' + K.esc(t("c.noCountry")) + '</option>' +
@@ -2350,7 +2352,7 @@
     Object.keys(shopTry).forEach(function (k) { if (k === "set") return; if (S.STACK.indexOf(k) >= 0) { if (!S.has(PL[k], shopTry[k])) PL[k] = S.toggle(PL[k], shopTry[k]); } else PL[k] = shopTry[k]; });
     // 上面（預覽、種子、分類）固定不動，只有下面的商品可以滑
     html += '<div class="shop-head"><div class="card"><div class="shop-top"><svg viewBox="-60 -100 120 116" aria-hidden="true">' + S.preview(PL) + '</svg>' +
-      '<div style="min-width:0"><div><span class="wood">🌱 ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
+      '<div style="min-width:0"><div><span class="wood">' + SEED_IC + ' ' + data.wood + '</span> <span class="small muted">' + K.esc(t("c.wood")) + '</span></div>' +
       '<p class="small muted" style="margin:6px 0 0">' + K.esc(t("c.woodP")) + '</p>' +
       (Object.keys(shopTry).length || Object.keys(shopPick).length ? '<button class="linkbtn" type="button" data-act="untry-all" style="margin-top:4px">' + K.esc(t("c.untry")) + '</button>' : "") + '</div></div></div>';
     var CATS2 = [{ id: "skin", slots: [] }, { id: "hair", slots: [] }].concat(S.CATS);
@@ -2362,8 +2364,8 @@
       var on = isOn(L, it), name = K.lang() === "en" ? it.en : it.zh;
       var btn = own ? (it.slot === "top" || it.parts ? (on ? '<button class="btn ghost" type="button" disabled>' + K.esc(t("c.wearing")) + '</button>' : '<button class="btn ghost" type="button" data-wear="' + it.id + '">' + K.esc(t("c.wear")) + '</button>')
                     : '<button class="btn ' + (on ? "ghost" : "") + '" type="button" data-wear="' + it.id + '">' + K.esc(t(on ? "c.off" : "c.wear")) + '</button>')
-        : (data.wood >= it.price ? '<button class="btn" type="button" data-buy="' + it.id + '">🌱 ' + K.esc(t("c.buy", { n: it.price })) + '</button>'
-                                 : '<button class="btn ghost" type="button" disabled>🌱 ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
+        : (data.wood >= it.price ? '<button class="btn" type="button" data-buy="' + it.id + '">' + SEED_IC + ' ' + K.esc(t("c.buy", { n: it.price })) + '</button>'
+                                 : '<button class="btn ghost" type="button" disabled>' + SEED_IC + ' ' + K.esc(t("c.poor", { n: it.price - data.wood })) + '</button>');
       return '<div class="it' + (on ? " on" : "") + (shopTry[it.slot] === it.id ? " try" : "") + '" data-try="' + it.id + '">' + itemThumb(it) + '<b>' + K.esc(name) + '</b><span class="small muted">' + K.esc(t("slot." + it.slot)) + '</span>' + btn + '</div>';
     }
     html += '<div class="cats" role="tablist">' + CATS2.map(function (c) {
@@ -2378,8 +2380,8 @@
       }).join("") + '</div>';
       html += '<div class="swbuy"><span class="small muted">' + K.esc(t("cat." + ck)) + ' ' + (sel + 1) + (has ? " · " + K.esc(t("c.owned")) : "") + '</span>' +
         (has ? (L[ck] === sel ? '<button class="btn ghost block" type="button" disabled>' + K.esc(t("c.colorOn")) + '</button>' : '<button class="btn block" type="button" data-usecol="' + ck + ':' + sel + '">' + K.esc(t("c.use")) + '</button>')
-          : data.wood >= COLOR_PRICE ? '<button class="btn block" type="button" data-buycol="' + ck + ':' + sel + '">🌱 ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
-          : '<button class="btn ghost block" type="button" disabled>🌱 ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>') + '</div>';
+          : data.wood >= COLOR_PRICE ? '<button class="btn block" type="button" data-buycol="' + ck + ':' + sel + '">' + SEED_IC + ' ' + K.esc(t("c.colorBuy", { n: COLOR_PRICE })) + '</button>'
+          : '<button class="btn ghost block" type="button" disabled>' + SEED_IC + ' ' + K.esc(t("c.poor", { n: COLOR_PRICE - data.wood })) + '</button>') + '</div>';
       el.innerHTML = html; return;
     }
     html += '<h2>' + K.esc(t("c.wardrobe")) + '</h2>' + (owned.length ? '<div class="shop wardrobe">' + owned.map(function (it) { return card(it, true); }).join("") + '</div>' : '<p class="small muted">' + K.esc(t("c.noneOwned")) + '</p>');
@@ -2650,7 +2652,7 @@
   }
   function updateWood() {
     var w = document.getElementById("wood-pill"); if (!w) return;
-    w.innerHTML = '<span aria-hidden="true">🌱</span><b>' + data.wood + '</b>';
+    w.innerHTML = SEED_IC + '<b>' + data.wood + '</b>';
     w.setAttribute("aria-label", data.wood + " " + t("c.wood"));
   }
 
@@ -2911,23 +2913,23 @@
     } else if (furnCat === "books") {
       // 書店：沒有版權的經典節選，買了放上書櫃，點書櫃就能讀
       body = (window.KaidaBooks || []).map(function (bk) { var own = myBooks().indexOf(bk.id) >= 0;
-        return '<button type="button" class="fi" data-hbook="' + bk.id + '"' + (!own && data.wood < BOOK_PRICE ? " disabled" : "") + '><span class="bk" style="background:' + bk.c + '"></span><b>' + K.esc(K.lang() === "en" ? bk.en : bk.t) + '</b><span class="small muted">' + K.esc(bk.by) + ' · ' + (own ? K.esc(t("h.bookOwn")) : "🌱 " + BOOK_PRICE) + '</span></button>';
+        return '<button type="button" class="fi" data-hbook="' + bk.id + '"' + (!own && data.wood < BOOK_PRICE ? " disabled" : "") + '><span class="bk" style="background:' + bk.c + '"></span><b>' + K.esc(K.lang() === "en" ? bk.en : bk.t) + '</b><span class="small muted">' + K.esc(bk.by) + ' · ' + (own ? K.esc(t("h.bookOwn")) : SEED_IC + " " + BOOK_PRICE) + '</span></button>';
       }).join("");
     } else if (furnCat === "paint" || furnCat === "floor") {
       var map = furnCat === "paint" ? h.PAINTS : h.TILES, key = furnCat === "paint" ? "paint" : "tile";
       var cur = (data.home[key] || [])[homeFloor] || h.FLOORS[homeFloor][furnCat === "paint" ? "wall" : "floor"];
       body = Object.keys(map).map(function (id) { var o = map[id], own = surfOwned(key, id, o);
         var sw = '<span class="sw" style="background:' + o.c + (o.tex ? ';background-image:repeating-linear-gradient(' + (o.tex === "brick" || o.tex === "plank" || o.tex === "tatami" ? "0deg" : "90deg") + ',rgba(0,0,0,.15) 0 2px,transparent 2px 12px)' : "") + '"></span>';
-        var tag = id === cur ? t("h.inUse") : own ? t("h.owned") : "🌱 " + o.price;
-        return '<button type="button" class="fi' + (id === cur ? " on" : "") + '" data-hsurf="' + key + ':' + id + '"' + (!own && data.wood < o.price ? " disabled" : "") + '>' + sw + '<b>' + K.esc(nm(o)) + '</b><span class="small muted">' + K.esc(tag) + '</span></button>';
+        var tag = id === cur ? t("h.inUse") : own ? t("h.owned") : "" + o.price;
+        return '<button type="button" class="fi' + (id === cur ? " on" : "") + '" data-hsurf="' + key + ':' + id + '"' + (!own && data.wood < o.price ? " disabled" : "") + '>' + sw + '<b>' + K.esc(nm(o)) + '</b><span class="small muted">' + (id !== cur && !own ? SEED_IC + " " : "") + K.esc(tag) + '</span></button>';
       }).join("");
     } else {
       body = Object.keys(F).filter(function (k) { return !F[k].fixed && F[k].cat === furnCat; }).map(function (k) { var f = F[k];
         var note = f.wall ? t("h.onWall") : f.out ? t("h.onlyOutS") : t("h.size", { w: f.w, d: f.d });
-        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(note) + ' · 🌱 ' + f.price + '</span></button>';
+        return '<button type="button" class="fi" data-hbuy="' + k + '"' + (data.wood < f.price ? " disabled" : "") + '><span class="ic" aria-hidden="true">' + f.ic + '</span><b>' + K.esc(furnName(k)) + '</b><span class="small muted">' + K.esc(note) + ' · ' + SEED_IC + ' ' + f.price + '</span></button>';
       }).join("");
     }
-    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 8px">🌱 ' + data.wood + ' · ' + K.esc(t(inHall() ? "h.f1h" : "h.f" + homeFloor)) + '</p>' +
+    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("h.shopH")) + '</h2><p class="small muted" style="margin:0 0 8px">' + SEED_IC + ' ' + data.wood + ' · ' + K.esc(t(inHall() ? "h.f1h" : "h.f" + homeFloor)) + '</p>' +
       '<div class="fcats" role="tablist">' + FCATS.map(function (c) { return '<button type="button" role="tab" data-hcat="' + c + '" aria-selected="' + (c === furnCat) + '">' + K.esc(t("hc." + c)) + '</button>'; }).join("") + '</div>' +
       '<div class="fshop">' + body + '</div><button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:12px">' + K.esc(t("tm.close")) + '</button>';
     document.getElementById("modal").hidden = false;
