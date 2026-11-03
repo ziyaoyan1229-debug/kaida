@@ -27,15 +27,15 @@ function anim(gltf, root, name) { const clip = gltf.animations.find((a) => a.nam
 const ROWS = {
   chars: [["assets/chars/Knight.json", "Knight 騎士", "Walking_A"], ["assets/chars/Barbarian.json", "Barbarian 野蠻人", "Walking_B"], ["assets/chars/Mage.json", "Mage 法師", "Idle"], ["assets/chars/Rogue.json", "Rogue 盜賊", "Running_A"], ["assets/chars/Rogue_Hooded.json", "Rogue Hooded 兜帽", "Walking_C"]],
   foes: [["assets/foes/Skeleton_Minion.json", "Skeleton Minion", "Walking_A"], ["assets/foes/Skeleton_Warrior.json", "Skeleton Warrior", "Walking_B"], ["assets/foes/Skeleton_Rogue.json", "Skeleton Rogue", "Running_A"], ["assets/foes/Skeleton_Mage.json", "Skeleton Mage", "Idle"]],
-  buildings: ["home_A", "home_B", "tavern", "blacksmith", "market", "church", "windmill", "well", "tower_A", "lumbermill"].map((n) => [`assets/hex/buildings/building_${n}_red.gltf`, n]),
-  nature: ["tree_single_A", "tree_single_B", "trees_A_large", "trees_B_medium", "rock_single_A", "rock_single_C"].map((n) => [`assets/hex/nature/${n}.gltf`, n]).concat(["barrel", "crate_A_big", "sack", "wheelbarrow", "tent", "resource_lumber"].map((n) => [`assets/hex/props/${n}.gltf`, n])).concat([["assets/hex/neutral/fence_wood_straight.gltf", "fence_wood"]]),
+  buildings: ["home_A", "home_B", "tavern", "blacksmith", "market", "church", "windmill", "well", "tower_A", "lumbermill", "barracks", "mine", "castle", "watermill", "archeryrange", "tower_B"].map((n) => [`assets/hex/buildings/building_${n}_red.json`, n]),
+  nature: ["tree_single_A", "tree_single_B", "trees_A_large", "trees_B_medium", "rock_single_A", "rock_single_C"].map((n) => [`assets/hex/nature/${n}.json`, n]).concat(["barrel", "crate_A_big", "sack", "wheelbarrow", "tent", "resource_lumber"].map((n) => [`assets/hex/props/${n}.json`, n])).concat([["assets/hex/neutral/fence_wood_straight.json", "fence_wood"]]),
 };
-const list = ROWS[row]; const gap = row === "chars" || row === "foes" ? 1.6 : 3.2;
+const list = ROWS[row].slice(+(params.get("from") || 0), params.get("to") ? +params.get("to") : undefined); const gap = row === "chars" || row === "foes" ? 1.6 : 3.2;
 let zoomS = 1;
 (async () => {
   for (let i = 0; i < list.length; i++) {
     const [url, name, clip] = list[i]; const x = (i - (list.length - 1) / 2) * gap;
-    try { const gltf = await load(url); const root = gltf.scene; const s = row === "chars" || row === "foes" ? 1 : 1.6; place(root, x, 0, s, row === "chars" || row === "foes" ? 0.25 : 0.6); if (clip) anim(gltf, root, clip); label(name, x, 0); }
+    try { const gltf = await load(url); const root = gltf.scene; const s = row === "chars" || row === "foes" ? 1 : 1.6; place(root, x, 0, s, row === "chars" || row === "foes" ? 0.25 : params.get("ry") != null ? +params.get("ry") : 0.6); if (params.get("ry") != null) { const mk = new THREE.Mesh(new THREE.SphereGeometry(0.15), new THREE.MeshBasicMaterial({ color: 0xff0000 })); mk.position.set(0, 0.2, 1.4); root.add(mk); } if (clip) anim(gltf, root, clip); label(name, x, 0); }
     catch (e) { console.error("load fail", url, e); label("✗ " + name, x, 0); }
   }
   window.__ready = true;

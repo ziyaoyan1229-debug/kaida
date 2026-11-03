@@ -10,7 +10,12 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { makeInterior, ROOM_OF } from "./interior.js";
 import { bakeStatic } from "./bake.js";
 import { loadRigs, makeRig, tickRigs } from "./rig.js";
+import { loadModels, placeModel, modelBox } from "./models.js";
 await loadRigs(["Knight", "Barbarian", "Mage", "Rogue", "Rogue_Hooded", "Skeleton_Minion", "Skeleton_Warrior", "Skeleton_Rogue", "Skeleton_Mage"]);
+const HEX_BUILDINGS = ["home_A", "home_B", "barracks", "tavern", "blacksmith", "archeryrange", "market", "church", "windmill"].map((n) => "buildings/building_" + n + "_red");
+const HEX_NATURE = ["tree_single_A", "tree_single_B", "trees_B_small", "rock_single_A", "rock_single_B", "rock_single_C", "rock_single_D", "rock_single_E"].map((n) => "nature/" + n);
+const HEX_PROPS = ["barrel", "crate_A_big", "crate_B_small", "sack", "wheelbarrow", "resource_lumber", "crate_long_A", "bucket_water"].map((n) => "props/" + n);
+await loadModels([...HEX_BUILDINGS, ...HEX_NATURE, ...HEX_PROPS]);
 import { WIND, grassField, tallGrassField, flowerField, leafTree, bush, makeClouds, tickClouds, makeMountains } from "./foliage.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
@@ -220,8 +225,9 @@ const colliders = []; // { x, z, r }
 const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
 const windowM = new THREE.MeshStandardMaterial({ color: "#3a2a1a", emissive: "#ffae4a", emissiveIntensity: 0.1, roughness: 0.4 });
 const housePools = [];
-function roundTree(x, z, s) { const t = leafTree(scene, x, groundY(x, z), z, s, ["green", "green", "green", "dark", "autumn"][Math.floor(rnd() * 5)]); colliders.push({ x, z, r: 0.4 * s, cr: 1.2 * s }); return t; }
-function pineTree(x, z, s) { const t = pine(scene, x, groundY(x, z), z, s); colliders.push({ x, z, r: 0.4 * s, cr: 1.0 * s }); return t; }
+// 樹、石頭：KayKit 開源模型（models.js），森林裡偶爾放一叢小樹林
+function roundTree(x, z, s) { const cluster = s > 1.3 && rnd() < 0.35; const t = placeModel(scene, cluster ? "nature/trees_B_small" : "nature/tree_single_B", cluster ? 2.2 : 2.9 * s, x, groundY(x, z), z, rnd() * TAU); colliders.push({ x, z, r: cluster ? 1.2 : 0.4 * s, cr: cluster ? 1.6 : 1.2 * s }); return t; }
+function pineTree(x, z, s) { const t = placeModel(scene, "nature/tree_single_A", 3.0 * s, x, groundY(x, z), z, rnd() * TAU); colliders.push({ x, z, r: 0.4 * s, cr: 1.0 * s }); return t; }
 function palm(x, z, s, lean) {
   const g = new THREE.Group(); g.position.set(x, groundY(x, z), z); g.scale.setScalar(s); g.rotation.y = lean; scene.add(g);
   let px = 0, py = 0;
@@ -230,7 +236,7 @@ function palm(x, z, s, lean) {
   sph(0.09, "#6a4a2a", px + 0.05, py - 0.05, 0.05, g, 8, 6); sph(0.09, "#6a4a2a", px - 0.05, py - 0.07, -0.04, g, 8, 6);
   outline(g, 0.025); colliders.push({ x, z, r: 0.3 }); return g;
 }
-function rock(x, z, s) { const r = rockE(scene, x, groundY(x, z), z, s); outline(r, 0.015); colliders.push({ x, z, r: 0.35 * s }); }
+function rock(x, z, s) { placeModel(scene, "nature/rock_single_" + "ABCDE"[Math.floor(rnd() * 5)], 2.6 * s, x, groundY(x, z) - 0.03, z, rnd() * TAU); colliders.push({ x, z, r: 0.35 * s }); }
 
 /* 燈塔 */
 const TY = groundY(0, 0);
@@ -382,7 +388,7 @@ const EXTRAS = [
 // 高草叢：[x, z, 寬, 深, 轉角]
 const TALL = [[-13, 14.5, 7, 4.5, 0], [-16, 25, 6, 5, 0.3], [-24, 11, 5, 5, -0.2], [-9, 27, 5, 4, 0.2], [11, 24.5, 5, 4, 0], [25, 10, 6, 4, 0.4], [12, 33, 6, 4.5, -0.3], [30, 2, 5, 5, 0], [-27, -5, 6, 6, 0.2], [-20, -32, 6, 4, 0], [28, -28, 5, 5, 0.3], [-14, -27, 5, 4, -0.2], [-33, 4, 5, 4, 0.1], [20, -2, 4.5, 4, 0], [-18, 34, 5, 4, 0.2], [33, 26, 5, 4, 0.1]];
 const SIGNS = [[2.3, 5.2, A(200), ["主街", "碼頭 ⇣"]], [-2.3, -5.2, A(20), ["住宅區", "鐘樓 ⇡"]], [-2.6, 21.3, A(150), ["⇠ 池塘", "西野原"]], [2.6, 17, A(-150), ["農田 ⇢"]], [-23, -13.1, A(60), ["⇠ 風車", "森林"]], [23, -17, A(-100), ["小池塘 ⇢"]]];
-const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, terraces, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
+const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, terraces, placeModel, modelBox, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
 const extras = buildExtras(EXTRAS); extras.forEach((e) => { if (e && e.name) town.push(e); });
 TALL.forEach(([x, z, w, d, ry]) => tallGrassField(scene, x, z, w, d, ry, groundY));
 SIGNS.forEach(([x, z, ry, texts]) => { signPost(scene, x, z, ry, texts, groundY(x, z)); colliders.push({ x, z, r: 0.2 }); });

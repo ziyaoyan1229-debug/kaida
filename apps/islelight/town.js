@@ -201,7 +201,36 @@ function chapel(x, z, ry) {
   return finish(g, W, D, "鐘樓", x, z, ry, 0.9);
 }
 
-const KIND = { house, library, cafe, konbini, school, bookstore, bakery, inn, chapel };
+/* ===== 開源模型版建築（KayKit Medieval Hexagon Pack）=====
+   每種店鋪對應一個模型；門都在模型 +z 方向，跟原本「門在 +z」的規則一樣
+   建築放在草皮平台上，旁邊隨機擺幾個木桶、木箱、麻袋當生活感 */
+const PROPS = ["props/barrel", "props/crate_A_big", "props/crate_B_small", "props/sack", "props/wheelbarrow", "props/resource_lumber", "props/crate_long_A", "props/bucket_water"];
+let propSeed = 3;
+function prnd() { propSeed = (propSeed * 16807) % 2147483647; return propSeed / 2147483647; }
+function modelKind(model, s, label, nprops) {
+  return (x, z, ry, v) => {
+    const mdl = Array.isArray(model) ? model[(v || 0) % model.length] : model;
+    const bb = C.modelBox(mdl); const w = (bb.max.x - bb.min.x) * s, d = (bb.max.z - bb.min.z) * s, r = Math.max(w, d) / 2 + 0.3;
+    const g = start(x, z, ry, r);
+    C.placeModel(g, mdl, s, 0, 0, 0, 0);
+    // 道具：放在建築左右兩側、靠前的位置
+    const n = nprops == null ? 2 : nprops;
+    for (let i = 0; i < n; i++) { const side = i % 2 ? 1 : -1; const pn = PROPS[Math.floor(prnd() * PROPS.length)]; C.placeModel(g, pn, 3.2, side * (w / 2 + 0.45), 0, d / 2 - 0.4 - prnd() * (d * 0.6), prnd() * TAU); }
+    return finish(g, w, d, label, x, z, ry, 0);
+  };
+}
+const KIND = {
+  house: modelKind(["buildings/building_home_A_red", "buildings/building_home_B_red"], 3.6, "民宅", 1),
+  library: modelKind("buildings/building_barracks_red", 3.4, "圖書館"),
+  cafe: modelKind("buildings/building_tavern_red", 3.4, "咖啡廳"),
+  konbini: modelKind("buildings/building_blacksmith_red", 3.4, "便利商店"),
+  school: modelKind("buildings/building_archeryrange_red", 3.2, "學校", 0),
+  bookstore: modelKind("buildings/building_home_B_red", 3.8, "書店"),
+  bakery: modelKind("buildings/building_market_red", 2.8, "麵包店"),
+  inn: modelKind("buildings/building_home_B_red", 4.2, "旅店"),
+  chapel: modelKind("buildings/building_church_red", 3.8, "鐘樓", 0),
+};
+export const KIND_OLD = { house, library, cafe, konbini, school, bookstore, bakery, inn, chapel };
 
 /* 街道：兩圈環形路、放射路、中央廣場 */
 function roads(y) {
@@ -260,16 +289,13 @@ function field(x, z, ry, w, d, crop) {
   return g;
 }
 function windmill(x, z, ry) {
-  const g = new THREE.Group(); g.position.set(x, topY(x, z, 2.0), z); g.rotation.y = ry; C.scene.add(g); terrace(g, 4.6, 0, true);
-  box(3.2, 0.5, 3.2, M.stone, 0, 0.25, 0, g); cyl(1.1, 1.5, 4.6, M.stoneLight, 0, 2.8, 0, g, 12);
-  cyl(1.25, 1.25, 0.3, FRAME, 0, 5.2, 0, g, 12); const cap = cone(1.35, 1.4, "#6b4a3a", 0, 6.0, 0, g, 12);
-  doorFrame(g, 0.7, 1.4, 0, 1.45, 0, M.woodDark, FRAME); latticeWin(g, 0.45, 0.6, 0, 2.6, 1.33, 0, 2, 2, "#f3efe6", "#8a8278"); latticeWin(g, 0.4, 0.5, 0, 4.0, 1.18, 0, 2, 2, "#f3efe6");
-  const hub = new THREE.Group(); hub.position.set(0, 5.1, 1.5); hub.userData.noBake = true; g.add(hub); cyl(0.12, 0.12, 0.8, FRAME, 0, 0, 0, hub, 8).rotation.x = Math.PI / 2; sph(0.2, FRAME, 0, 0, 0.4, hub, 10, 8);
-  for (let i = 0; i < 4; i++) { const arm = new THREE.Group(); arm.rotation.z = i * Math.PI / 2; hub.add(arm); box(0.1, 3.4, 0.08, FRAME, 0, 1.7, 0.4, arm); const sail = box(0.9, 2.6, 0.02, "#f3efe6", 0.5, 2.0, 0.4, arm); for (let k = 0; k < 4; k++) box(0.9, 0.03, 0.04, FRAME, 0.5, 1.0 + k * 0.7, 0.42, arm); }
-  windmills.push(hub);
-  for (let i = 0; i < 5; i++) { const b = cyl(0.3, 0.3, 0.5, M.wood, 1.9 + (i % 3) * 0.65, 0.25 + Math.floor(i / 3) * 0.5, -1.2 + (i % 2) * 0.2, g, 10); b.rotation.x = 0; }
-  C.colliders.push({ x, z, r: 2.0 });
-  return { name: "風車", x, z, ry, door: { x: x + Math.sin(ry) * 2.5, z: z + Math.cos(ry) * 2.5 }, front: { x: x + Math.sin(ry) * 3.8, z: z + Math.cos(ry) * 3.8 }, r: 2 };
+  const mdl = "buildings/building_windmill_red", s = 3.8, bb = C.modelBox(mdl); const w = (bb.max.x - bb.min.x) * s, d = (bb.max.z - bb.min.z) * s;
+  const g = new THREE.Group(); g.position.set(x, topY(x, z, 2.0), z); g.rotation.y = ry; C.scene.add(g); terrace(g, 4.8, 0, true);
+  const m = C.placeModel(g, mdl, s, 0, 0, 0, 0);
+  const fan = m.getObjectByName("building_windmill_top_fan_red"); if (fan) { fan.userData.noBake = true; windmills.push(fan); }
+  for (let i = 0; i < 3; i++) C.placeModel(g, i ? "props/sack" : "props/wheelbarrow", 3.4, w / 2 + 0.3 + (i % 2) * 0.5, 0, -0.6 + i * 0.55, i * 1.3);
+  C.colliders.push({ x, z, r: 2.1 });
+  return { name: "風車", x, z, ry, door: { x: x + Math.sin(ry) * (d / 2 + 0.9), z: z + Math.cos(ry) * (d / 2 + 0.9) }, front: { x: x + Math.sin(ry) * (d / 2 + 2.2), z: z + Math.cos(ry) * (d / 2 + 2.2) }, r: 2.1 };
 }
 const EXTRA = { pond, field, windmill };
 export function buildExtras(list) { return list.map(([kind, ...args]) => EXTRA[kind](...args)); }
