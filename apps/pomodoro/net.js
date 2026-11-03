@@ -18,12 +18,17 @@
   function parse(buf) {
     try { var s = typeof buf === "string" ? buf : new TextDecoder().decode(buf); return s ? JSON.parse(s) : null; } catch (e) { return null; }
   }
-  function cleanMember(id, m) {
-    if (!m || typeof m !== "object") return null;
-    var look = m.look && typeof m.look === "object" ? m.look : {};
+  // 角色外觀：只留認得的欄位、限制長度
+  function cleanLook(look) {
+    look = look && typeof look === "object" ? look : {};
     var L = {};
     ["g", "top", "legs", "style", "hat", "face", "neck", "ears", "back", "pet"].forEach(function (k) { if (typeof look[k] === "string") L[k] = look[k].slice(0, 40); });
     L.skin = Math.max(0, Math.min(7, +look.skin || 0)); L.hair = Math.max(0, Math.min(12, +look.hair || 0));
+    return L;
+  }
+  function cleanMember(id, m) {
+    if (!m || typeof m !== "object") return null;
+    var L = cleanLook(m.look);
     return {
       id: id, name: String(m.name || "?").slice(0, 16), look: L, act: String(m.act || "read").slice(0, 16),
       joined: +m.joined || 0, ts: +m.ts || 0, up: !!m.up, away: !!m.away, fl: /^[A-Z]{2}$/.test(m.fl || "") ? m.fl : "", av: typeof m.av === "string" ? m.av.slice(0, 4) : "", say: typeof m.say === "string" ? m.say.slice(0, 20) : "", emo: /^[a-z]{2,8}$/.test(m.emo || "") ? m.emo : "", sayAt: +m.sayAt || 0, dk: m.dk == null ? null : Math.max(0, Math.min(864e5, +m.dk || 0)), dkAt: +m.dkAt || 0, seat: m.seat >= 0 && m.seat < 12 ? Math.floor(m.seat) : -1,
@@ -205,9 +210,13 @@
         self.onStatus(id, m && typeof m.k === "string" ? { k: m.k.slice(0, 12), m: Math.max(0, Math.min(10080, +m.m || 0)), p: Math.max(0, +m.p || 0), s: Math.max(0, +m.s || 0), ts: +m.ts || 0 } : null);
       } else if (parts[2] === "rq" && m && /^[a-z0-9]{4,16}$/i.test(parts[3] || "") && parts[3] !== meId && (m.k === "req" || m.k === "acc" || m.k === "no")) {
         // 好友邀請／同意／回絕：保留訊息放在 u/<收件人>/rq/<寄件人>，對方不在線上也收得到
-        self.onRequest({ from: parts[3], k: m.k, n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), t: +m.t || Date.now() });
+        self.onRequest({ from: parts[3], k: m.k, n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), lk: m.lk && typeof m.lk === "object" ? cleanLook(m.lk) : null, t: +m.t || Date.now() });
       } else if (parts[2] === "in" && m && typeof m.from === "string" && m.from !== meId) {
-        self.onMessage({ type: m.type === "friend" || m.type === "cheer" ? m.type : "chat", from: m.from.slice(0, 16), n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), text: String(m.text || "").slice(0, 200), t: +m.t || Date.now() });
+        var o = { type: m.type === "friend" || m.type === "cheer" || m.type === "invite" ? m.type : "chat", from: m.from.slice(0, 16), n: String(m.n || "?").slice(0, 16), av: String(m.av || "🍅").slice(0, 4), text: String(m.text || "").slice(0, 200), t: +m.t || Date.now() };
+        if (m.lk && typeof m.lk === "object") o.lk = cleanLook(m.lk);
+        // 房間邀請：只帶房號和房間主題
+        if (o.type === "invite") { o.code = /^(\d{4}|\d{6})$/.test(m.code || "") ? m.code : ""; o.th = /^[a-z]{2,16}$/.test(m.th || "") ? m.th : ""; if (!o.code) return; }
+        self.onMessage(o);
       }
     });
     this.hb = setInterval(function () { self.publishState(); }, 60000);

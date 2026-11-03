@@ -226,6 +226,7 @@
   .modal { position: fixed; inset: 0; background: rgba(42, 38, 32, .5); display: grid; place-items: center; z-index: 40; padding: 16px; }
   .modal .card { max-width: 400px; width: 100%; margin: 0; text-align: center; padding: 24px 20px; }
   .modal .big-av { font-size: 48px; line-height: 1; }
+  .modal .big-av svg { width: 84px; height: 84px; border-radius: 50%; background: var(--sunk); display: block; margin: 0 auto; }
   .modal .pcard { max-width: 240px; padding: 12px 16px 14px; text-align: left; }
   /* 點人物跳出的個人介紹：玻璃框（背景淡一點，透出後面的房間） */
   .modal:has(.pcard) { background: rgba(20, 16, 12, .22); }
@@ -250,7 +251,7 @@
   .hop .dots { display: flex; gap: 10px; }
   .hop .dots i { width: 12px; height: 12px; border-radius: 50%; background: #D6361F; animation: hopdot 1.2s ease-in-out infinite; }
   .hop .dots i:nth-child(2) { animation-delay: .16s; } .hop .dots i:nth-child(3) { animation-delay: .32s; }
-  .hop .hop-t { font-size: 13px; color: var(--muted); letter-spacing: .08em; }
+  .hop .hop-t { font-size: 13px; color: var(--muted); letter-spacing: .08em; text-align: center; line-height: 1.8; }
   @keyframes hopdot { 0%, 60%, 100% { transform: scale(.7); opacity: .3; } 30% { transform: scale(1.1) translateY(-4px); opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .hop .dots i { animation-duration: 2.4s; } }
   /* 進房間的載入畫面：模糊的房間 + 你的角色沿著進度條走進去，走到底畫面變清楚 */
@@ -728,6 +729,13 @@
   .shop-top svg { width: 110px; height: 106px; flex: none; }
   .shop .it .sw-big { display: block; width: 64px; height: 64px; border-radius: 50%; margin: 10px auto 8px; border: 1px solid var(--line); }
   .help-list { margin: 8px 0 14px; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.55; text-align: left; }
+  .inv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 50vh; overflow: auto; }
+  .inv-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .inv-av { width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--sunk); display: grid; place-items: center; overflow: hidden; font-size: 20px; }
+  .inv-av svg { width: 100%; height: 100%; }
+  .inv-n { flex: 1; min-width: 0; display: grid; } .inv-n b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .inv-n small { font-size: 12px; color: var(--muted); } .inv-n .st-free { color: var(--pass, #3f8a4a); }
+  .inv-row .btn { min-height: 34px; padding: 0 14px; font-size: 14px; }
   .idrow .cp svg { width: 17px !important; height: 17px !important; flex: none; }
 </style>
 </head>
@@ -889,13 +897,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103g"></script>
-<script src="net.js?v=20261103g"></script>
-<script src="music.js?v=20261103g"></script>
-<script type="module" src="scene3d.js?v=20261103g" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103g"></script>
-<script src="books.js?v=20261103g"></script>
-<script type="module" src="account.js?v=20261103g"></script>
+<script src="scene.js?v=20261103i"></script>
+<script src="net.js?v=20261103i"></script>
+<script src="music.js?v=20261103i"></script>
+<script type="module" src="scene3d.js?v=20261103i" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103i"></script>
+<script src="books.js?v=20261103i"></script>
+<script type="module" src="account.js?v=20261103i"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -956,16 +964,16 @@
       "foot.2": "提醒：手機鎖定畫面時瀏覽器可能會暫停，回到畫面後倒數會自動對上時鐘，專注分鐘照實際時間計算。",
       "wd": "日,一,二,三,四,五,六",
       "tab.friends": "好友", "tab.char": "角色",
-      "app.lede": "開一間溫馨的小讀書房，用四碼房號約朋友進來。大家一起專注、一起休息，完成番茄就拿小木頭幫角色買裝備。",
+      "app.lede": "開一間溫馨的小讀書房，用六位數房號約朋友進來。大家一起專注、一起休息，完成番茄就拿小木頭幫角色買裝備。",
       "rooms.how": "房間最多 6 個人，大家用同一個計時器一起專注、一起休息。房間只會傳你的暱稱、角色和現在在做什麼，經過公開的即時連線伺服器；讀書紀錄和小木頭只存在你的手機。",
-      "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到四碼房號，傳給朋友就能進來。",
+      "r.createH": "私人房間", "r.createP": "開一間自己的房間，會拿到六位數房號，不會跟別人重複，傳給朋友就能進來。",
       "r.mode.std": "25 分專注\n5 分休息", "r.mode.deep": "50 分專注\n10 分休息", "r.mode.long": "100 分專注\n30 分休息", "r.mode.test": "快速測試\n1 分／30 秒",
-      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友的四碼房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "有好友在的房間最優先，其次是人多的房間，都要跟你選一樣時間、還有空位；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.newRoom": "目前沒有空房，幫你開了一間新的", "r.joinP": "輸入朋友給你的四碼房號。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "0000",
+      "r.create": "開房間", "r.tab.join": "房號加入", "r.tab.quick": "直接開始", "r.tab.private": "私人房間", "r.tab.sim": "模擬室友", "r.tab.solo": "自己讀", "r.howH": "怎麼開始", "r.prev": "往左", "r.next": "往右", "r.sub.quick": "配到有空位的房間，房間主題可以指定或隨機", "r.sub.join": "輸入朋友給的房號", "r.sub.private": "開一間，房號傳給朋友", "r.sub.sim": "5 位模擬室友陪你讀", "r.sub.solo": "一個人，不連線", "r.quickP": "有好友在的房間最優先，其次是人多的房間，都要跟你選一樣時間、還有空位；沒有的話會幫你開一間，等其他人加入。", "r.matching": "幫你找房間中…", "r.matched": "配對成功！", "r.matchNew": "目前沒有空房，幫你開一間新的…", "r.newRoom": "目前沒有空房，幫你開了一間新的", "r.joinP": "輸入朋友給你的房號（4 或 6 位數）。", "r.timeH": "選時間", "r.themeH": "房間主題", "r.themeP": "開房的人選，進來的人都會看到一樣的房間。", "theme.home": "{n}家書房", "theme.cafe": "咖啡廳", "theme.library": "圖書館", "theme.study": "自習室", "theme.space": "太空艙", "theme.school": "學校教室", "theme.konbini": "深夜便利商店", "theme.washitsu": "日式和室", "theme.cabin": "森林木屋", "theme.beach": "海邊露台", "theme.rooftop": "頂樓天台", "theme.lodge": "雪山小屋", "r.timeJoin": "時間跟著房間走，按開始就進去。", "r.start": "開始", "r.joinH": "輸入房號加入", "r.join": "加入", "r.codeph": "000000",
       "r.simH": "模擬房間", "r.simP": "一個人也能試試看：5 位模擬室友陪你讀書，會聊天、會一起休息。可以用「快速測試」很快跑完一顆番茄。",
       "r.sim": "進模擬房間", "r.soloH": "自己讀", "r.soloP": "一個人在小房間裡讀書，不連線。", "r.solo": "一個人開始",
       "r.connecting": "連線中…", "r.err.offline": "連不上房間伺服器，可能是網路問題。可以先用模擬房間或自己讀。",
       "r.err.notfound": "找不到這個房間，請確認房號", "r.err.full": "這個房間已經滿了（最多 6 人）", "r.err.taken": "房號剛好被用了，再按一次開房間",
-      "r.err.code": "請輸入四位數字的房號", "r.needName": "先到「角色」取暱稱、選造型",
+      "r.err.code": "房號是 4 或 6 位數字", "r.needName": "先到「角色」取暱稱、選造型",
       "r.invited": "朋友邀你進房間 {code}，按「加入」就能進去",
       "s.label.room": "房號", "s.label.sim": "模擬房間", "s.label.solo": "自己讀",
       "s.invite": "邀請朋友", "s.inviteText": "來番茄宿舍跟我一起讀書！房號 {code}，打開連結就能進來：",
@@ -1003,7 +1011,7 @@
       "f.copied": "連結已複製，貼到 LINE 或 IG 傳給好友",
       "f.added": "已加 {n} 為好友", "f.updatedFriend": "已更新 {n} 的成績", "f.self": "這是你自己的好友卡",
       "f.badLink": "這個好友連結壞掉了", "f.gotCheer": "{n} 給你打氣",
-      "f.ok": "好", "f.cheerReply": "回個打氣",
+      "f.ok": "好", "f.cheerReply": "回個打氣", "inv.h": "邀請好友", "inv.p": "按「邀請」把房號 {code} 傳給好友，對方會收到通知。", "inv.go": "邀請", "inv.sent": "已邀請", "inv.here": "在房間裡", "inv.none": "還沒有好友。可以先用下面的連結邀請，或在房間裡點別人加好友。", "inv.link": "🔗 分享房間連結", "inv.done": "已經邀請 {n}", "inv.got": "{n} 邀請你一起讀書", "inv.join": "加入", "inv.later": "下次再說",
       "f.how": "好友不用註冊：用 ID 互相邀請，同意後就是好友。好友在線上時，排行會自動更新成對方最新的本週成績；讀書紀錄還是只存在你自己的手機。",
       "f.needName": "請先輸入暱稱", "f.cancel": "取消",
       "beta.t3": "加一位好友，或為好友打氣一次",
@@ -1064,16 +1072,16 @@
       "foot.2": "Note: phones may pause the browser while locked. When you come back the countdown re-syncs to the clock and focus minutes are counted by real time.",
       "wd": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
       "tab.friends": "Friends", "tab.char": "Avatar",
-      "app.lede": "Open a cozy little study room and invite friends with a 4-digit code. Focus and take breaks together, and earn little logs to dress up your character.",
+      "app.lede": "Open a cozy little study room and invite friends with a 6-digit code. Focus and take breaks together, and earn little logs to dress up your character.",
       "rooms.how": "Up to 6 people per room, all on the same timer. A room only shares your nickname, look and what you're doing, through a public real-time server. Your study stats and logs stay on your phone.",
-      "r.createH": "New room", "r.createP": "You'll get a 4-digit code to send to friends.",
+      "r.createH": "New room", "r.createP": "You'll get your own 6-digit code to send to friends.",
       "r.mode.std": "25 focus\n5 break", "r.mode.deep": "50 focus\n10 break", "r.mode.long": "100 focus\n30 break", "r.mode.test": "Quick test\n1 min / 30 s",
-      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's 4-digit code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a room on the same timer that still has seats, rooms with your friends first, then the busiest ones. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.newRoom": "No open rooms, so we opened a new one for you", "r.joinP": "Enter the 4-digit code a friend sent you.", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "0000",
+      "r.create": "Open room", "r.tab.join": "Join with code", "r.tab.quick": "Quick start", "r.tab.private": "Private room", "r.tab.sim": "Practice room", "r.tab.solo": "Study alone", "r.howH": "How to start", "r.prev": "Scroll left", "r.next": "Scroll right", "r.sub.quick": "Matches you with a free seat; pick a room style or leave it random", "r.sub.join": "Enter a friend's room code", "r.sub.private": "Open one and share the code", "r.sub.sim": "5 simulated roommates", "r.sub.solo": "Just you, offline", "r.quickP": "We'll match you with a room on the same timer that still has seats, rooms with your friends first, then the busiest ones. If none is open, we'll start one for others to join.", "r.matching": "Finding a room…", "r.matched": "Matched!", "r.matchNew": "No open rooms right now, starting a new one…", "r.newRoom": "No open rooms, so we opened a new one for you", "r.joinP": "Enter the room code a friend sent you (4 or 6 digits).", "r.timeH": "Pick a time", "r.themeH": "Room theme", "r.themeP": "Whoever opens the room picks it; everyone inside sees the same room.", "theme.home": "{n}'s study", "theme.cafe": "Café", "theme.library": "Library", "theme.study": "Study hall", "theme.space": "Space pod", "theme.school": "Classroom", "theme.konbini": "Late-night store", "theme.washitsu": "Tatami room", "theme.cabin": "Forest cabin", "theme.beach": "Beach terrace", "theme.rooftop": "Rooftop", "theme.lodge": "Snow lodge", "r.timeJoin": "The room sets the timer. Press start to go in.", "r.start": "Start", "r.joinH": "Join with a code", "r.join": "Join", "r.codeph": "000000",
       "r.simH": "Practice room", "r.simP": "Try it alone: 5 simulated roommates study with you, chat and take breaks. Use Quick test to finish a pomodoro fast.",
       "r.sim": "Enter practice room", "r.soloH": "Study alone", "r.soloP": "Just you in the little room, offline.", "r.solo": "Start alone",
       "r.connecting": "Connecting…", "r.err.offline": "Can't reach the room server, maybe a network issue. Try the practice room or study alone for now.",
       "r.err.notfound": "No room with that code. Check the number.", "r.err.full": "That room is full (6 max)", "r.err.taken": "That code was just taken. Tap Open room again.",
-      "r.err.code": "Enter a 4-digit room code", "r.needName": "Pick a nickname and look on the Avatar tab first",
+      "r.err.code": "Room codes are 4 or 6 digits", "r.needName": "Pick a nickname and look on the Avatar tab first",
       "r.invited": "A friend invited you to room {code}. Tap Join to go in.",
       "s.label.room": "Room", "s.label.sim": "Practice room", "s.label.solo": "Studying alone",
       "s.invite": "Invite", "s.inviteText": "Study with me on Pomodorm! Room {code}, open the link to join:",
@@ -1111,7 +1119,7 @@
       "f.copied": "Link copied. Paste it into LINE or IG to send it.",
       "f.added": "Added {n} as a friend", "f.updatedFriend": "Updated {n}'s score", "f.self": "This is your own friend card",
       "f.badLink": "This friend link is broken", "f.gotCheer": "{n} is cheering you on",
-      "f.ok": "OK", "f.cheerReply": "Cheer back",
+      "f.ok": "OK", "f.cheerReply": "Cheer back", "inv.h": "Invite friends", "inv.p": "Tap Invite to send room {code} to a friend. They'll get a notice.", "inv.go": "Invite", "inv.sent": "Invited", "inv.here": "In the room", "inv.none": "No friends yet. Share the link below, or tap someone in a room to add them.", "inv.link": "🔗 Share room link", "inv.done": "Invited {n}", "inv.got": "{n} invited you to study together", "inv.join": "Join", "inv.later": "Not now",
       "f.how": "No sign-up needed: send each other requests by ID, and once accepted you're friends. While a friend is online the ranking updates to their latest weekly score; your study history stays on your own phone.",
       "f.needName": "Enter a nickname first", "f.cancel": "Cancel",
       "beta.t3": "Add a friend or cheer one on",
@@ -1345,7 +1353,8 @@
     if (busy || needName()) return;
     if (!net || !window.mqtt) { K.toast(t("r.err.offline")); return; }
     busy = true; K.toast(t(pub ? "r.matchNew" : "r.connecting"));
-    if (create) code = String(Math.floor(1000 + Math.random() * 9000));
+    // 私人房間用六位數，不容易跟別人撞號；「直接開始」的公開房間維持四碼
+    if (create) code = pub ? String(Math.floor(1000 + Math.random() * 9000)) : String(Math.floor(100000 + Math.random() * 900000));
     var th = pub ? (data.qTheme !== "rand" ? data.qTheme : THEME_KEYS[Math.floor(Math.random() * THEME_KEYS.length)]) : data.theme;
     var cfg = Object.assign({}, modeCfg(), { theme: th, host: data.me.name }, pub ? { pub: pubKey() } : {});
     net.join({ code: code, create: create, me: meInfo(), cfg: cfg }).then(function (res) {
@@ -1438,7 +1447,13 @@
   var newRoomNote = false;
   (function () { var toast = K.toast; K.toast = function (msg) {
     if (msg === t("r.matchNew")) newRoomNote = true;
-    if (hopOn && (msg === t("r.matching") || msg === t("r.matchNew") || msg === t("r.connecting"))) { document.querySelector("#hop .hop-t").textContent = msg; return; }
+    if (hopOn && (msg === t("r.matching") || msg === t("r.matchNew") || msg === t("r.connecting"))) {
+      // 「目前沒有空房…」接在「幫你找房間中…」下面一行，不蓋掉
+      var ht = document.querySelector("#hop .hop-t");
+      if (msg === t("r.matchNew") && ht.textContent === t("r.matching")) { ht.textContent = ""; ht.appendChild(document.createTextNode(t("r.matching"))); ht.appendChild(document.createElement("br")); ht.appendChild(document.createTextNode(msg)); }
+      else ht.textContent = msg;
+      return;
+    }
     if (hopOn) endHop(true);
     return toast.apply(this, arguments);
   }; })();
@@ -1921,7 +1936,7 @@
           '<div class="a4-seg" role="group" aria-label="' + K.esc(t("r.timeH")) + '">' + times + '</div>' + custom) +
         '<div class="a4-grid">' + starts + acts + '</div>' +
         '<p class="small muted a4-sub">' + K.esc(t("r.sub." + roomTab)) + '</p>' +
-        (roomTab === "join" ? '<div class="prow"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '"><p class="small muted">' + K.esc(t("r.timeJoin")) + '</p></div>' : "") +
+        (roomTab === "join" ? '<div class="prow"><input type="text" id="join-code" class="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="' + K.esc(t("r.codeph")) + '" value="' + K.esc(pendingCode) + '" aria-label="' + K.esc(t("r.joinH")) + '"><p class="small muted">' + K.esc(t("r.timeJoin")) + '</p></div>' : "") +
         (hasTheme ? row("theme", t("r.themeH"), themes) : roomTab === "quick" ? row("qtheme", t("r.themeH"), qthemes) : "") +
         '<div class="pick-foot"><p class="small muted" id="start-sum">' + K.esc(startSummary()) + '</p>' +
         '<button class="btn block start-btn a4-go" type="button" data-act="' + act + '"><span>' + K.esc(t("r.start")) + '</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></div>' +
@@ -2012,6 +2027,7 @@
       document.getElementById("scene").innerHTML = S.render(ms, p.focus ? "focus" : "break", Date.now());
     } else if (!p.focus) S.move(document.getElementById("scene"), ms, Date.now());
     document.getElementById("scene").setAttribute("aria-label", ms.map(function (m) { return m.name; }).join("、"));
+    ms.forEach(function (m) { if (!m.me && m.look && data.friends[m.id] && !isBot(m.id)) data.friends[m.id].lk = m.look; }); // 同房的好友：記下他的臉
     document.getElementById("s-members").innerHTML = ms.map(function (m) {
       var fb = m.me ? "" : data.friends[m.id] ? '<span class="st"> · ' + K.esc(t("s.isFriend")) + '</span>' : data.reqOut[m.id] ? '<span class="st"> · ' + K.esc(t("f.reqWait")) + '</span>' : '<button type="button" class="addf" data-addf="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>';
       return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + fb + '</span><span class="st">' + (use3d ? '<span class="dk" data-dk="' + K.esc(m.id) + '">⏱ ' + deskClock(deskMs(m, Date.now())) + '</span> · ' : '') +
@@ -2599,7 +2615,7 @@
   var HOME_DEF = [
     [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "tv", x: 2, z: 0, r: 0 }, { k: "rug", x: 1, z: 2, r: 0 }, { k: "sofa", x: 1, z: 4, r: 2 }, { k: "table", x: 5, z: 3, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "lamp", x: 7, z: 0, r: 0 }],
     [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "stairsDown", x: 3, z: 0, r: 0 }, { k: "bed", x: 0, z: 0, r: 0 }, { k: "wardrobe", x: 6, z: 0, r: 0 }, { k: "lamp", x: 2, z: 0, r: 0 }, { k: "rug", x: 3, z: 3, r: 0 }, { k: "petbed", x: 5, z: 0, r: 0 }],
-    [{ k: "stairsDown", x: 8, z: 0, r: 0 }, { k: "studyset", x: 2, z: 0, r: 0 }, { k: "shelf", x: 5, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "plant", x: 0, z: 7, r: 0 }, { k: "beanbag", x: 5, z: 4, r: 0 }]
+    [{ k: "stairsDown", x: 8, z: 0, r: 0 }, { k: "studyset", x: 0, z: 0, r: 0 }, { k: "studyset", x: 3, z: 0, r: 0 }, { k: "studyset", x: 6, z: 0, r: 0 }, { k: "studyset", x: 0, z: 4, r: 0 }, { k: "studyset", x: 3, z: 4, r: 0 }, { k: "studyset", x: 6, z: 4, r: 0 }, { k: "plant", x: 0, z: 7, r: 0 }, { k: "plant", x: 9, z: 7, r: 0 }]
   ];
   // 二樓走廊：只有上樓梯、左邊的下樓梯口和房門（門在後牆中間）
   var HALL = [{ k: "stairs", x: 8, z: 0, r: 0 }, { k: "stairsDown", x: 6, z: 0, r: 0 }, { k: "plant", x: 0, z: 0, r: 0 }, { k: "rug", x: 3, z: 4, r: 1 }];
@@ -2612,6 +2628,12 @@
     data.home.floors = [data.home.items && data.home.items.length ? data.home.items : homeDef(0), homeDef(1), homeDef(2)];
     delete data.home.items;
   }
+  // 三樓露臺改成六張書桌（朋友來訪預設在這裡一起讀書）：還是舊的預設擺法就直接換掉
+  (function () {
+    var f2 = data.home.floors[2] || [], oldSig = "beanbag:5:4:0|plant:0:0:0|plant:0:7:0|shelf:5:0:0|stairsDown:8:0:0|studyset:2:0:0";
+    var sig = function (a) { return a.map(function (it) { return it.k + ":" + it.x + ":" + it.z + ":" + (it.r || 0); }).sort().join("|"); };
+    if (sig(f2) === oldSig) data.home.floors[2] = homeDef(2);
+  })();
   // 房門搬到二樓後牆中間：原本預設擺在那裡的衣櫃、寵物窩往右挪
   (function () {
     var f1 = data.home.floors[1] || [];
@@ -2900,7 +2922,7 @@
     persist(); renderHomeBar();
   }
   function visitHome(uid) {
-    homeFloor = 0;
+    homeFloor = uid === data.me.id ? 0 : 2; // 朋友來訪直接到三樓露臺，那裡有六張書桌
     if (uid === data.me.id) { show("home"); return; }
     if (isBot(uid)) {
       var bi = BOTS.map(function (x) { return x.id; }).indexOf(uid), bt = BOTS[bi];
@@ -3210,7 +3232,7 @@
       if (!data.team) { teamJoinTry = tmh[1]; if (teams) teams.start(); show("team"); }
       return;
     }
-    var rm = location.hash.match(/[#&]room=(\d{4})/);
+    var rm = location.hash.match(/[#&]room=(\d{6}|\d{4})(?!\d)/);
     if (rm) {
       history.replaceState(null, "", location.pathname + location.search);
       pendingCode = rm[1]; roomTab = "join";
@@ -3269,8 +3291,9 @@
   }
   /* 好友邀請：輸入對方 ID 送出邀請，對方同意才成為好友 */
   function friendSocial() { startSocial(); if (social) social.setFriends(Object.keys(data.friends).filter(function (x) { return !isBot(x); })); }
-  function makeFriend(id, n, av) {
+  function makeFriend(id, n, av, lk) {
     data.friends[id] = { n: String(n || "?").slice(0, 20), a: av || "🍅", k: "", m: 0, p: 0, s: 0, t: 0 };
+    if (lk || (data.reqIn[id] && data.reqIn[id].lk)) data.friends[id].lk = lk || data.reqIn[id].lk;
     delete data.reqIn[id]; delete data.reqOut[id]; data.tasks.t3 = true; persist(); friendSocial();
   }
   function sendFriendReq(id, name) {
@@ -3285,7 +3308,7 @@
       setTimeout(function () { onReq({ from: id, k: "acc", n: nm, av: SIM_AV[bi] || "🍅", t: Date.now() }); }, 1500 + Math.random() * 1500);
     } else {
       startSocial();
-      if (!social || !social.request(id, { k: "req", n: data.me.name, av: data.me.avatar, t: Date.now() })) { K.toast(t("c.noNet")); return false; }
+      if (!social || !social.request(id, { k: "req", n: data.me.name, av: data.me.avatar, lk: myLook(), t: Date.now() })) { K.toast(t("c.noNet")); return false; }
     }
     data.reqOut[id] = { n: name || "", t: Date.now() }; persist();
     K.toast(t("f.reqSent", { n: nm }));
@@ -3293,7 +3316,7 @@
   }
   function acceptReq(id) {
     var r = data.reqIn[id]; if (!r) return;
-    if (social) { social.request(id, { k: "acc", n: data.me.name, av: data.me.avatar, t: Date.now() }); social.clearRequest(id); }
+    if (social) { social.request(id, { k: "acc", n: data.me.name, av: data.me.avatar, lk: myLook(), t: Date.now() }); social.clearRequest(id); }
     makeFriend(id, r.n, r.av);
     K.toast(t("f.added", { n: r.n })); updateBadge();
   }
@@ -3310,14 +3333,15 @@
     if (social && !isBot(m.from)) social.clearRequest(m.from);
     if (m.k === "req") {
       if (data.friends[m.from] || data.reqOut[m.from]) {   // 已經是好友，或我也邀過他：直接成為好友
-        if (social) social.request(m.from, { k: "acc", n: data.me.name, av: data.me.avatar, t: Date.now() });
-        if (!data.friends[m.from]) { makeFriend(m.from, m.n, m.av); K.toast(t("f.added", { n: m.n })); }
+        if (social) social.request(m.from, { k: "acc", n: data.me.name, av: data.me.avatar, lk: myLook(), t: Date.now() });
+        if (!data.friends[m.from]) { makeFriend(m.from, m.n, m.av, m.lk); K.toast(t("f.added", { n: m.n })); }
+        else if (m.lk) { data.friends[m.from].lk = m.lk; persist(); }
       } else if (!data.reqIn[m.from]) {
-        data.reqIn[m.from] = { n: m.n, av: m.av, t: m.t }; persist(); updateBadge();
+        data.reqIn[m.from] = { n: m.n, av: m.av, lk: m.lk || null, t: m.t }; persist(); updateBadge();
         K.toast(t("f.reqGot", { n: m.n }));
       }
     } else if (m.k === "acc") {
-      if (!data.friends[m.from] && data.reqOut[m.from]) { makeFriend(m.from, m.n, m.av); K.toast(t("f.reqOk", { n: m.n })); }
+      if (!data.friends[m.from] && data.reqOut[m.from]) { makeFriend(m.from, m.n, m.av, m.lk); K.toast(t("f.reqOk", { n: m.n })); }
     } else if (m.k === "no") {
       if (data.reqOut[m.from]) { delete data.reqOut[m.from]; persist(); K.toast(t("f.reqNo", { n: m.n })); }
     }
@@ -3414,7 +3438,7 @@
     var f = data.friends[chatWith], msgs = data.chats[chatWith] || [], block = chatBlock(chatWith);
     var old = document.getElementById("chat-in"), draft = old ? old.value : "", hadFocus = old && document.activeElement === old;
     var last = 0;
-    box.innerHTML = '<div class="chat-head"><span class="av">' + K.esc(f.a) + '</span><b>' + K.esc(f.n) + ' <span class="stat ' + friendState(chatWith) + '">· ' + K.esc(t("c." + friendState(chatWith))) + '</span></b>' +
+    box.innerHTML = '<div class="chat-head"><span class="av">' + avOf(chatWith, f.a) + '</span><b>' + K.esc(f.n) + ' <span class="stat ' + friendState(chatWith) + '">· ' + K.esc(t("c." + friendState(chatWith))) + '</span></b>' +
       '<button class="linkbtn" type="button" data-act="close-chat">' + K.esc(t("c.close")) + '</button></div>' +
       '<div class="chat-log" id="chat-log">' + (msgs.length ? msgs.map(function (m) {
         var tm = m.t - last > 10 * 60 * 1000 ? '<span class="tm">' + K.esc(fmtTime(m.t)) + '</span>' : ""; last = m.t;
@@ -3431,7 +3455,7 @@
     var inp = document.getElementById("chat-in"); if (!inp || !chatWith) return;
     var text = inp.value.trim().slice(0, 200); if (!text || chatBlock(chatWith)) return;
     var to = chatWith, now = Date.now();
-    if (!isBot(to) && !social.send(to, { type: "chat", from: data.me.id, n: data.me.name, av: data.me.avatar, text: text, t: now })) { K.toast(t("c.noNet")); return; }
+    if (!isBot(to) && !social.send(to, { type: "chat", from: data.me.id, n: data.me.name, av: data.me.avatar, lk: myLook(), text: text, t: now })) { K.toast(t("c.noNet")); return; }
     inp.value = "";
     pushChat(to, { me: true, text: text, t: now });
     renderChat();
@@ -3451,6 +3475,18 @@
       return;
     }
     if (!data.friends[m.from]) return; // 只收好友的訊息
+    if (m.lk) data.friends[m.from].lk = m.lk; // 順便更新好友的臉
+    if (m.type === "invite") {
+      var ic = String(m.code || "");
+      if (!/^(\d{4}|\d{6})$/.test(ic) || (session && session.code === ic) || Date.now() - (+m.t || 0) > 10 * 60000) return;
+      var fv = data.friends[m.from], card = document.getElementById("modal-card"); card.className = "card";
+      card.innerHTML = '<div class="big-av">' + avOf(m.from, fv.a) + '</div><p class="msg" style="margin-top:8px">' + K.esc(t("inv.got", { n: fv.n })) + '</p>' +
+        '<p class="small muted" style="margin:4px 0 0">' + K.esc((m.th ? themeName(m.th, fv.n) + " · " : "") + t("s.label.room") + " " + ic) + '</p>' +
+        '<div class="btn-row" style="justify-content:center;margin-top:16px"><button class="btn" type="button" data-invjoin="' + K.esc(ic) + '">' + K.esc(t("inv.join")) + '</button>' +
+        '<button class="btn ghost" type="button" data-act="close-modal">' + K.esc(t("inv.later")) + '</button></div>';
+      document.getElementById("modal").hidden = false;
+      return;
+    }
     if (m.type === "cheer") {
       var cm = m.text.slice(0, 40), ck = m.from + ":" + m.t;
       if (data.cheers.some(function (x) { return x.key === ck; })) return;
@@ -3499,7 +3535,7 @@
       }, 1500 + Math.random() * 2000);
       return;
     }
-    if (friendState(to) !== "off" && social.send(to, { type: "cheer", from: data.me.id, n: data.me.name, av: data.me.avatar, text: msg, t: now })) {
+    if (friendState(to) !== "off" && social.send(to, { type: "cheer", from: data.me.id, n: data.me.name, av: data.me.avatar, lk: myLook(), text: msg, t: now })) {
       K.toast(t("f.cheerSent", { n: f.n })); return renderFriends();
     }
     renderFriends();
@@ -3509,7 +3545,7 @@
   function showCheerModal(f, msg, fid) {
     var card = document.getElementById("modal-card");
     card.className = "card";
-    card.innerHTML = '<div class="big-av">' + K.esc(f.a) + '</div><p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.gotCheer", { n: f.n })) + '</p>' +
+    card.innerHTML = '<div class="big-av">' + avOf(fid, f.a) + '</div><p class="small muted" style="margin:8px 0 0">' + K.esc(t("f.gotCheer", { n: f.n })) + '</p>' +
       '<p class="msg">「' + K.esc(msg) + '」</p><div class="btn-row" style="justify-content:center;margin-top:16px">' +
       '<button class="btn" type="button" data-cheer="' + K.esc(fid) + '">' + K.esc(t("f.cheerReply")) + '</button>' +
       '<button class="btn ghost" type="button" data-act="close-modal">' + K.esc(t("f.ok")) + '</button></div>';
@@ -3517,8 +3553,9 @@
   }
 
   // 頭像：自己和模擬好友用半身人物，其他好友用他們傳來的頭像
+  // 頭像：一律畫對方角色的臉（好友傳來的外觀），還不知道外觀才用 emoji
   function avOf(id, fallback) {
-    var look = id === "me" ? data.look : (BOTS.filter(function (b) { return b.id === id; })[0] || {}).look;
+    var look = id === "me" ? data.look : (BOTS.filter(function (b) { return b.id === id; })[0] || {}).look || (data.friends[id] && data.friends[id].lk) || (data.reqIn[id] && data.reqIn[id].lk);
     if (!look) return K.esc(fallback || "🍅");
     return '<svg viewBox="-21 -66 42 44" aria-hidden="true">' + S.bust(look, true) + '</svg>';
   }
@@ -3549,7 +3586,7 @@
       '<div class="myid">' + K.esc(t("f.myId")) + ' <b class="mono">' + K.esc(data.me.id) + '</b><button class="btn ghost" type="button" data-copy="' + K.esc(data.me.id) + '">' + K.esc(t("f.copy")) + '</button></div>' +
       '<form class="req-form" id="req-form"><input type="text" id="f-id" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + K.esc(t("f.idph")) + '"><button class="btn" type="submit">' + K.esc(t("f.sendReq")) + '</button></form>' +
       Object.keys(data.reqIn).map(function (id) { var r = data.reqIn[id];
-        return '<div class="req-row"><span class="av">' + K.esc(r.av) + '</span><span class="who"><b>' + K.esc(r.n) + '</b><span class="small muted">' + K.esc(t("f.reqIn")) + '</span></span>' +
+        return '<div class="req-row"><span class="av">' + avOf(id, r.av) + '</span><span class="who"><b>' + K.esc(r.n) + '</b><span class="small muted">' + K.esc(t("f.reqIn")) + '</span></span>' +
           '<button class="btn" type="button" data-racc="' + K.esc(id) + '">' + K.esc(t("f.accept")) + '</button><button class="btn ghost" type="button" data-rno="' + K.esc(id) + '">' + K.esc(t("f.decline")) + '</button></div>'; }).join("") +
       Object.keys(data.reqOut).map(function (id) { var r = data.reqOut[id];
         return '<div class="req-row"><span class="who"><b>' + K.esc(r.n || id) + '</b><span class="small muted">' + K.esc(t("f.reqOut")) + '</span></span>' +
@@ -3576,7 +3613,7 @@
 
     var cheers = data.cheers.slice().reverse().slice(0, 10);
     html += '<h2>' + K.esc(t("f.cheersH")) + '</h2><div class="card">' + (cheers.length ? cheers.map(function (c) {
-      return '<div class="cheer"><span class="av">' + K.esc(c.a) + '</span><div class="body"><b>' + K.esc(c.n) + '</b> <span class="when">' + K.esc(ago(c.t)) + '</span><div>「' + K.esc(c.c) + '」</div></div>' +
+      return '<div class="cheer"><span class="av">' + avOf(c.from, c.a) + '</span><div class="body"><b>' + K.esc(c.n) + '</b> <span class="when">' + K.esc(ago(c.t)) + '</span><div>「' + K.esc(c.c) + '」</div></div>' +
         (data.friends[c.from] ? '<button class="linkbtn" type="button" data-cheer="' + K.esc(c.from) + '">' + K.esc(t("f.cheerBack")) + '</button>' : "") + '</div>';
     }).join("") : '<p class="small muted" style="margin:0">' + K.esc(t("f.noCheers")) + '</p>') + '</div>';
 
@@ -3671,7 +3708,7 @@
     if (data.mode === "rand") rollRand();
     if (a === "join") {
       var code = (document.getElementById("join-code").value || "").replace(/\D/g, "");
-      if (code.length !== 4) { K.toast(t("r.err.code")); return; }
+      if (code.length !== 4 && code.length !== 6) { K.toast(t("r.err.code")); return; }
       pendingCode = code; openRoom(false, code);
     } else if (a === "create") openRoom(true);
     else if (a === "quick") quickMatch();
@@ -3712,9 +3749,42 @@
     if (!session) return;
     session.away = false; setUp(false); show("session");
   }
-  document.getElementById("s-invite").addEventListener("click", function () {
+  // 房間裡的「邀請朋友」：直接列出好友，按一下就把房號傳過去；下面保留分享連結
+  function showInvite() {
     if (!session || !session.code) return;
-    shareLink(t("s.inviteText", { code: session.code }), location.origin + location.pathname + "#room=" + session.code);
+    var ids = Object.keys(data.friends).filter(function (id) { return !isBot(id); });
+    var here = {}; sceneMembers().forEach(function (m) { here[m.id] = 1; });
+    var order = { free: 0, busy: 1, off: 2 };
+    ids.sort(function (a, b) { return order[friendState(a)] - order[friendState(b)]; });
+    var rows = ids.map(function (id) {
+      var f = data.friends[id], st = friendState(id), sent = invSent[id] && Date.now() - invSent[id] < 60000;
+      var btn = here[id] ? '<span class="small muted">' + K.esc(t("inv.here")) + '</span>' : '<button class="btn" type="button" data-inv="' + K.esc(id) + '"' + (st === "off" || sent ? " disabled" : "") + '>' + K.esc(t(sent ? "inv.sent" : "inv.go")) + '</button>';
+      return '<li class="inv-row"><span class="inv-av">' + avOf(id, f.a) + '</span><span class="inv-n"><b>' + K.esc(f.n) + '</b><small class="st-' + st + '">' + K.esc(t("c." + st)) + '</small></span>' + btn + '</li>';
+    }).join("");
+    var card = document.getElementById("modal-card"); card.className = "card";
+    card.innerHTML = '<h2 style="margin:0 0 4px">' + K.esc(t("inv.h")) + '</h2><p class="small muted" style="margin:0 0 10px">' + K.esc(t("inv.p", { code: session.code })) + '</p>' +
+      (ids.length ? '<ul class="inv-list">' + rows + '</ul>' : '<p class="small muted">' + K.esc(t("inv.none")) + '</p>') +
+      '<button class="btn ghost block" type="button" data-invlink="1" style="margin-top:12px">' + K.esc(t("inv.link")) + '</button>' +
+      '<button class="btn ghost block" type="button" data-act="close-modal" style="margin-top:8px">' + K.esc(t("tm.close")) + '</button>';
+    document.getElementById("modal").hidden = false;
+  }
+  var invSent = {};
+  document.getElementById("s-invite").addEventListener("click", showInvite);
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-inv],[data-invlink],[data-invjoin]"); if (!b) return;
+    if (b.dataset.invlink) { if (session && session.code) shareLink(t("s.inviteText", { code: session.code }), location.origin + location.pathname + "#room=" + session.code); return; }
+    if (b.dataset.inv) {
+      var id = b.dataset.inv, f = data.friends[id]; if (!session || !f) return;
+      if (social && social.send(id, { type: "invite", from: data.me.id, n: data.me.name, av: data.me.avatar, lk: myLook(), code: session.code, th: session.theme || "", t: Date.now() })) { invSent[id] = Date.now(); K.toast(t("inv.done", { n: f.n })); showInvite(); }
+      else K.toast(t("c.noNet"));
+      return;
+    }
+    if (b.dataset.invjoin) {
+      var code = b.dataset.invjoin; document.getElementById("modal").hidden = true;
+      if (session && session.code === code) return;
+      if (session) leave(true);
+      pendingCode = code; startHop(); openRoom(false, code);
+    }
   });
   document.getElementById("tab-char").addEventListener("click", function () { show("char"); });
   document.getElementById("wood-pill").addEventListener("click", function () { show("char"); });
