@@ -345,9 +345,12 @@
   .login { display: none; position: fixed; inset: 0; z-index: 9999; background: var(--paper); color: var(--ink); overflow-x: hidden; overflow-y: auto; }
   .need-login .login { display: grid; grid-template-rows: auto 1fr; }
   .need-login body { overflow: hidden; }
-  .lg-mo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: max(48px, calc(env(safe-area-inset-top) + 28px)) 14px 0; transform: rotate(-6deg) scale(1.15); transform-origin: center; max-width: 520px; width: 100%; margin: 0 auto; pointer-events: none; }
-  .lg-mo i { aspect-ratio: 1; border-radius: 16px; background: var(--sunk) center/cover; box-shadow: 0 6px 14px rgba(0,0,0,.18); animation: lgIn .6s both; }
-  .lg-mo i:nth-child(2) { animation-delay: .06s } .lg-mo i:nth-child(3) { animation-delay: .12s } .lg-mo i:nth-child(4) { animation-delay: .18s } .lg-mo i:nth-child(5) { animation-delay: .24s } .lg-mo i:nth-child(6) { animation-delay: .3s }
+  .lg-mo { display: grid; gap: 10px; padding: max(40px, calc(env(safe-area-inset-top) + 20px)) 0 0; transform: rotate(-6deg) scale(1.12); transform-origin: center; width: 100%; overflow: hidden; pointer-events: none; animation: lgIn .7s both; }
+  .lg-row { display: flex; gap: 10px; width: max-content; animation: lgRoll 60s linear infinite; }
+  .lg-row.r2 { animation-direction: reverse; animation-duration: 70s; }
+  .lg-row i { width: 132px; height: 132px; flex: none; border-radius: 18px; background: var(--sunk) center/cover; box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+  @keyframes lgRoll { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+  @media (prefers-reduced-motion: reduce) { .lg-row { animation: none; } }
   @keyframes lgIn { from { opacity: 0; transform: translateY(12px) } }
   .login-in { position: relative; width: 100%; padding: 40px max(24px, calc((100% - 340px) / 2)) max(28px, env(safe-area-inset-bottom)); text-align: center; display: grid; justify-items: center; align-content: start; gap: 12px; background: linear-gradient(color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) 30px); }
   .login h1 { margin: 0; font-size: 32px; letter-spacing: .06em; }
@@ -397,6 +400,7 @@
   .mlist { list-style: none; margin: 0; padding: 0; font-size: 14px; }
   .mlist li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; }
   .mlist .st { color: var(--muted); font-size: 13px; }
+  .mlist .dk { font-family: var(--f-mono); color: var(--ink); font-weight: 600; } .mlist .dk.pz { opacity: .5; }
   .code-input { font-family: var(--f-mono); font-size: 28px; letter-spacing: .4em; text-align: center; }
   .seg { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
   .seg button { flex: 1; min-width: 92px; border: 1px solid var(--line); background: var(--paper); border-radius: var(--r); padding: 8px; cursor: pointer; font-size: 14px; min-height: 44px; }
@@ -728,7 +732,7 @@
 </head>
 <body>
 <div class="hop" id="hop" hidden role="status" aria-live="polite"><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="hop-t" data-i18n="hop.t">準備房間中</div></div>
-<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="lg-t"><div class="lg-mo" aria-hidden="true"><i style="background-image:url(thumbs/cafe.jpg)"></i><i style="background-image:url(thumbs/library.jpg)"></i><i style="background-image:url(thumbs/space.jpg)"></i><i style="background-image:url(thumbs/beach.jpg)"></i><i style="background-image:url(thumbs/cabin.jpg)"></i><i style="background-image:url(thumbs/washitsu.jpg)"></i></div><div class="login-in">
+<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="lg-t"><div class="lg-mo" aria-hidden="true"><div class="lg-row r1"><i style="background-image:url(thumbs/cafe.jpg)"></i><i style="background-image:url(thumbs/library.jpg)"></i><i style="background-image:url(thumbs/space.jpg)"></i><i style="background-image:url(thumbs/beach.jpg)"></i><i style="background-image:url(thumbs/cabin.jpg)"></i><i style="background-image:url(thumbs/washitsu.jpg)"></i><i style="background-image:url(thumbs/cafe.jpg)"></i><i style="background-image:url(thumbs/library.jpg)"></i><i style="background-image:url(thumbs/space.jpg)"></i><i style="background-image:url(thumbs/beach.jpg)"></i><i style="background-image:url(thumbs/cabin.jpg)"></i><i style="background-image:url(thumbs/washitsu.jpg)"></i></div><div class="lg-row r2"><i style="background-image:url(thumbs/school.jpg)"></i><i style="background-image:url(thumbs/rooftop.jpg)"></i><i style="background-image:url(thumbs/lodge.jpg)"></i><i style="background-image:url(thumbs/konbini.jpg)"></i><i style="background-image:url(thumbs/study.jpg)"></i><i style="background-image:url(thumbs/home.jpg)"></i><i style="background-image:url(thumbs/school.jpg)"></i><i style="background-image:url(thumbs/rooftop.jpg)"></i><i style="background-image:url(thumbs/lodge.jpg)"></i><i style="background-image:url(thumbs/konbini.jpg)"></i><i style="background-image:url(thumbs/study.jpg)"></i><i style="background-image:url(thumbs/home.jpg)"></i></div></div><div class="login-in">
   <h1 id="lg-t" data-i18n="app.title">番茄讀書會</h1>
   <p class="lg-p" data-i18n="lg.p">挑一間讀書房，跟大家一起專注</p>
   <button type="button" class="lg-g" id="lg-go"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span data-i18n="ac.in">Google 登入</span></button>
@@ -884,13 +888,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103c"></script>
-<script src="net.js?v=20261103c"></script>
-<script src="music.js?v=20261103c"></script>
-<script type="module" src="scene3d.js?v=20261103c" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103c"></script>
-<script src="books.js?v=20261103c"></script>
-<script type="module" src="account.js?v=20261103c"></script>
+<script src="scene.js?v=20261103d"></script>
+<script src="net.js?v=20261103d"></script>
+<script src="music.js?v=20261103d"></script>
+<script type="module" src="scene3d.js?v=20261103d" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103d"></script>
+<script src="books.js?v=20261103d"></script>
+<script type="module" src="account.js?v=20261103d"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -1395,10 +1399,10 @@
     if (!session) return;
     // 坐在書桌前才算專注時間：起身前先把坐著的這段結算
     var now = Date.now();
-    if (!session.up) session.dk = (session.dk || 0) + focusSince(session.dkAt || session.joinedAt, now);
+    if (!session.up && !session.pz) session.dk = (session.dk || 0) + focusSince(session.dkAt || session.joinedAt, now);
     session.dkAt = now;
-    session.up = !!up; persist();
-    if (session.kind === "room" && net) net.publishMe({ up: session.up, away: !!session.away, dk: session.dk, dkAt: session.dkAt });
+    session.up = !!up; session.pz = false; persist();
+    if (session.kind === "room" && net) net.publishMe({ up: session.up, away: !!session.away, dk: session.dk, dkAt: session.dkAt, pz: false });
     renderSays(); renderScene(true);
   }
 
@@ -1934,9 +1938,19 @@
     }
     return sum;
   }
+  // 坐著但角色在走動或做動作（點下面的對話、喝咖啡…）：時間先停，動畫結束再繼續
+  function syncPause() {
+    if (!session || !use3d || !window.KaidaScene3D || !window.KaidaScene3D.meBusy) return;
+    var pz = !session.up && !session.away && !!window.KaidaScene3D.meBusy();
+    if (pz === !!session.pz) return;
+    var now = Date.now();
+    if (!session.up && !session.away && !session.pz) session.dk = (session.dk || 0) + focusSince(session.dkAt || session.joinedAt, now);
+    session.dkAt = now; session.pz = pz; persist();
+    if (session.kind === "room" && net) net.publishMe({ dk: session.dk, dkAt: session.dkAt, pz: pz });
+  }
   // 名牌下面的時間：坐在書桌前、專注段才算，幾小時:幾分（0:25）
   function deskMs(m, now) {
-    var seated = !m.up && !m.away;
+    var seated = !m.up && !m.away && !m.pz;
     if (m.dk == null) return seated ? focusSince(m.joined, now) : 0;
     return m.dk + (seated ? focusSince(m.dkAt || m.joined, now) : 0);
   }
@@ -1945,19 +1959,24 @@
     return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0");
   }
   function renderDeskTimes() {
+    syncPause();
     if (!session || !use3d || !window.KaidaScene3D || !window.KaidaScene3D.times) return;
     var now = Date.now(), out = {};
-    sceneMembers().forEach(function (m) { out[m.id] = deskClock(deskMs(m, now)); });
+    sceneMembers().forEach(function (m) {
+      out[m.id] = deskClock(deskMs(m, now));
+      var el = document.querySelector('#s-members [data-dk="' + CSS.escape(m.id) + '"]');
+      if (el) { el.textContent = "⏱ " + out[m.id]; el.classList.toggle("pz", !!m.pz || !!m.up || !!m.away); }
+    });
     window.KaidaScene3D.times(out);
   }
   function sceneMembers() {
     var now = Date.now(), list = [];
-    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: myLook(), act: myAct(), dnd: !!data.opts.focusMode, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
+    var me = { vis: rchat.vis || "", visAt: rchat.visAt || 0, id: data.me.id, name: data.me.name || t("f.you"), fl: data.me.flag, joined: session.joinedAt, dk: session.dk || 0, dkAt: session.dkAt || session.joinedAt, pz: !!session.pz, seat: session.seat != null ? session.seat : -1, hr: myTotal(), away: !!session.away, look: myLook(), act: myAct(), dnd: !!data.opts.focusMode, me: true, up: !!session.up, bubble: mySay && now - mySay.at < 6000 ? mySay.text : "" };
     if (me.bubble) { me.emo = emoOf(me.bubble); me.emoAt = mySay.at; }
     if (session.kind === "room" && net) {
       net.fresh().forEach(function (m) {
         if (m.id === data.me.id) list.push(me);
-        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, seat: m.seat, hr: m.hr, pm: m.pm, away: m.away, av: m.av, look: m.look, act: m.act, dnd: !!m.dnd, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
+        else list.push({ vis: m.vis, visAt: m.visAt, id: m.id, name: m.name, fl: m.fl, joined: m.joined, dk: m.dk, dkAt: m.dkAt, pz: m.pz, seat: m.seat, hr: m.hr, pm: m.pm, away: m.away, av: m.av, look: m.look, act: m.act, dnd: !!m.dnd, up: !!m.up, bubble: m.ct && !m.wh && m.ctAt > (m.sayAt || 0) && now - m.ctAt < 6000 && Math.abs(now - m.ctAt) < 60000 ? m.ct : m.say && now - m.sayAt < 6000 && Math.abs(now - m.sayAt) < 60000 ? m.say : "", emo: m.emo, emoAt: m.sayAt });
       });
       if (!list.some(function (x) { return x.me; })) list.unshift(me);
     } else {
@@ -1985,7 +2004,7 @@
     document.getElementById("scene").setAttribute("aria-label", ms.map(function (m) { return m.name; }).join("、"));
     document.getElementById("s-members").innerHTML = ms.map(function (m) {
       var fb = m.me ? "" : data.friends[m.id] ? '<span class="st"> · ' + K.esc(t("s.isFriend")) + '</span>' : data.reqOut[m.id] ? '<span class="st"> · ' + K.esc(t("f.reqWait")) + '</span>' : '<button type="button" class="addf" data-addf="' + K.esc(m.id) + '">' + K.esc(t("s.addFriend")) + '</button>';
-      return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + fb + '</span><span class="st">' +
+      return '<li><span>' + K.esc(m.name) + (m.me ? " (" + K.esc(t("f.you")) + ")" : "") + fb + '</span><span class="st">' + (use3d ? '<span class="dk" data-dk="' + K.esc(m.id) + '">⏱ ' + deskClock(deskMs(m, Date.now())) + '</span> · ' : '') +
         K.esc(m.away ? t("s.st.away") : m.up ? t("s.st.up") : p.focus ? t("s.st.focus", { act: t("act." + (S.ACTS.indexOf(m.act) >= 0 ? m.act : "read")) }) : t("s.st.break")) + '</span></li>';
     }).join("");
     document.getElementById("s-room").textContent = session.kind === "room" ? t("s.people", { n: ms.length }) : session.kind === "sim" ? t("s.sim") : t("s.alone");
