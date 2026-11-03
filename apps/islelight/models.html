@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>漂流燈島 開源模型試裝</title>
+<style>html,body{margin:0;height:100%;background:#cfe3f2;overflow:hidden;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif}canvas{display:block}
+.lbl{position:fixed;transform:translate(-50%,0);background:rgba(20,30,50,.75);color:#fff;padding:5px 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none}</style>
+<script type="importmap">{ "imports": { "three": "../pomodoro/vendor/three.module.min.js", "three/addons/": "./vendor/" } }</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { clone as skClone } from "three/addons/utils/SkeletonUtils.js";
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color("#cfe3f2");
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
+const sun = new THREE.DirectionalLight("#fff2dc", 2.6); sun.position.set(6, 10, 7); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 10, bottom: -8, near: 1, far: 40 }); sun.shadow.bias = -0.0004; scene.add(sun);
+scene.add(new THREE.HemisphereLight("#dfeeff", "#8a7a60", 0.9));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: "#9cc47a", roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const loader = new GLTFLoader(); const mixers = [], labels = [];
+const params = new URLSearchParams(location.search); const row = params.get("row") || "chars";
+function label(name, x, z) { const el = document.createElement("div"); el.className = "lbl"; el.textContent = name; document.body.appendChild(el); labels.push({ el, p: new THREE.Vector3(x, 0, z + 0.6) }); }
+function place(g, x, z, s, ry) { g.position.set(x, 0, z); g.scale.setScalar(s); g.rotation.y = ry || 0; g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); scene.add(g); return g; }
+async function load(url) { return new Promise((res, rej) => loader.load(url, res, undefined, rej)); }
+function anim(gltf, root, name) { const clip = gltf.animations.find((a) => a.name === name) || gltf.animations[0]; if (!clip) return; const m = new THREE.AnimationMixer(root); m.clipAction(clip).play(); mixers.push(m); }
+const ROWS = {
+  chars: [["assets/chars/Knight.glb", "Knight 騎士", "Walking_A"], ["assets/chars/Barbarian.glb", "Barbarian 野蠻人", "Walking_B"], ["assets/chars/Mage.glb", "Mage 法師", "Idle"], ["assets/chars/Rogue.glb", "Rogue 盜賊", "Running_A"], ["assets/chars/Rogue_Hooded.glb", "Rogue Hooded 兜帽", "Walking_C"]],
+  foes: [["assets/foes/Skeleton_Minion.glb", "Skeleton Minion", "Walking_A"], ["assets/foes/Skeleton_Warrior.glb", "Skeleton Warrior", "Walking_B"], ["assets/foes/Skeleton_Rogue.glb", "Skeleton Rogue", "Running_A"], ["assets/foes/Skeleton_Mage.glb", "Skeleton Mage", "Idle"]],
+  buildings: ["home_A", "home_B", "tavern", "blacksmith", "market", "church", "windmill", "well", "tower_A", "lumbermill"].map((n) => [`assets/hex/buildings/building_${n}_red.gltf`, n]),
+  nature: ["tree_single_A", "tree_single_B", "trees_A_large", "trees_B_medium", "rock_single_A", "rock_single_C"].map((n) => [`assets/hex/nature/${n}.gltf`, n]).concat(["barrel", "crate_A_big", "sack", "wheelbarrow", "tent", "resource_lumber"].map((n) => [`assets/hex/props/${n}.gltf`, n])).concat([["assets/hex/neutral/fence_wood_straight.gltf", "fence_wood"]]),
+};
+const list = ROWS[row]; const gap = row === "chars" || row === "foes" ? 1.6 : 3.2;
+let zoomS = 1;
+(async () => {
+  for (let i = 0; i < list.length; i++) {
+    const [url, name, clip] = list[i]; const x = (i - (list.length - 1) / 2) * gap;
+    try { const gltf = await load(url); const root = gltf.scene; const s = row === "chars" || row === "foes" ? 1 : 1.6; place(root, x, 0, s, row === "chars" || row === "foes" ? 0.25 : 0.6); if (clip) anim(gltf, root, clip); label(name, x, 0); }
+    catch (e) { console.error("load fail", url, e); label("✗ " + name, x, 0); }
+  }
+  window.__ready = true;
+})();
+const clock = new THREE.Clock(); const v = new THREE.Vector3();
+function frame() {
+  const dt = clock.getDelta(); mixers.forEach((m) => m.update(dt));
+  const w = (list.length - 1) * gap + 4, tall = row === "chars" || row === "foes" ? 1.9 : 4;
+  camera.position.set(0, tall * 0.9, w * 0.62 + tall); camera.lookAt(0, tall * 0.42, 0);
+  renderer.render(scene, camera);
+  labels.forEach(({ el, p }) => { v.copy(p).project(camera); el.style.left = (v.x * 0.5 + 0.5) * innerWidth + "px"; el.style.top = (-v.y * 0.5 + 0.5) * innerHeight + 6 + "px"; });
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>

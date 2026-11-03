@@ -9,7 +9,8 @@ import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { makeInterior, ROOM_OF } from "./interior.js";
 import { bakeStatic } from "./bake.js";
-import { makeGothic } from "./charstyles.js";
+import { loadRigs, makeRig, tickRigs } from "./rig.js";
+await loadRigs(["Knight", "Barbarian", "Mage", "Rogue", "Rogue_Hooded", "Skeleton_Minion", "Skeleton_Warrior", "Skeleton_Rogue", "Skeleton_Mage"]);
 import { WIND, grassField, tallGrassField, flowerField, leafTree, bush, makeClouds, tickClouds, makeMountains } from "./foliage.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { initArt, M, TEX, tree, pine, rock as rockE, lampPost, grassTufts, tickSmoke, signMats, smokes, tallGrass, signPost } from "./art.js";
@@ -513,10 +514,11 @@ const motes = [], fogs = [], shafts = [];
 
 /* ===== 角色 ===== */
 // 主角：第五人格風格（細長手腳、蒼白臉、禮帽長外套）；村民同風格但換外套顏色、有的不戴帽
-const player = makeGothic({ coat: "#3a3340", trim: "#7a2a34", hair: "#1a1518" }); player.root.scale.setScalar(0.78);
+// 主角：KayKit 騎士（CC0 開源模型）；村民是其他冒險者，動作都用模型內建動畫
+const player = makeRig("Knight", { walk: "Running_A" }); player.root.scale.setScalar(0.72);
 scene.add(player.root);
 // 手提燈
-const lantern = new THREE.Group(); lantern.position.set(0, -0.52, 0.04); player.arms[1].add(lantern);
+const lantern = new THREE.Group(); lantern.position.set(0, 0.05, 0.08); lantern.scale.setScalar(1.3); player.arms[1].add(lantern);
 cyl(0.004, 0.004, 0.12, "#3a3440", 0, 0.08, 0, lantern, 4);
 const lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 1.8, 0.8) })); lantern.add(lanternGlass);
 cyl(0.075, 0.075, 0.025, "#3a3440", 0, 0.065, 0, lantern, 6);
@@ -534,6 +536,7 @@ const pet = makePet("shiba", 2); outline(pet, 0.012); pet.scale.multiplyScalar(0
 const P = { x: 0.5, z: 6.5, yaw: 0, tx: null, tz: null, moving: false, walk: 0 };
 const petS = { x: 1, z: 7, yaw: 0, walk: 0 };
 // 鎮民：白天在家門口晃，晚上回屋裡
+const VILL = ["Barbarian", "Mage", "Rogue", "Rogue_Hooded", "Mage", "Barbarian"];
 const GOTH = [
   { coat: "#4a3a3a", trim: "#8a6a30", hair: "#2a1a12", hat: false }, { coat: "#2f3a4a", trim: "#9a3a3a", hair: "#4a3a2a" }, { coat: "#3a4a3a", trim: "#c8a050", hair: "#6a4a2a", hat: false },
   { coat: "#4a2a3a", trim: "#d0b060", hair: "#1a1518" }, { coat: "#3a3a4a", trim: "#7a2a34", hair: "#8a7a70", hat: false }, { coat: "#5a3a2a", trim: "#2a4a5a", hair: "#2a1a12" },
@@ -548,7 +551,7 @@ const LOOKS = [
   { g: "boy", skin: 2, hair: 0, top: "turtle", legs: "jeans" }, { g: "girl", skin: 4, hair: 3, style: "bob", top: "plaid", legs: "khaki", hat: "bucket" },
 ];
 const villagers = town.map((b, i) => {
-  const c = makeGothic(GOTH[i % GOTH.length]); c.root.scale.setScalar(0.66); c.root.userData.noBake = true; scene.add(c.root);
+  const c = makeRig(VILL[i % VILL.length]); c.root.scale.setScalar(0.66); c.root.userData.noBake = true; scene.add(c.root);
   return { c, home: { x: b.front.x, z: b.front.z }, door: { x: b.door.x, z: b.door.z }, x: b.front.x, z: b.front.z, tx: b.front.x, tz: b.front.z, wait: Math.random() * 3, walk: 0, yaw: 0, inside: 0 };
 });
 /* ===== 進出建築 ===== */
@@ -560,7 +563,7 @@ function roomFor(b) {
   const kind = ROOM_OF[b.kind] || ROOM_OF[b.name] || "house", key = kind + ":" + b.name;
   if (!rooms[key]) {
     const r = makeInterior(kind); r.hideAO = [];
-    if (r.npc) { const c = makeGothic(GOTH[Math.abs(Math.round(b.x * 7 + b.z * 13)) % GOTH.length]); c.root.scale.setScalar(0.66); c.root.position.set(r.npc.x, 0.55, r.npc.z); c.root.rotation.y = r.npc.yaw; r.scene.add(c.root); r.npcChar = c; }
+    if (r.npc) { const c = makeRig(VILL[Math.abs(Math.round(b.x * 7 + b.z * 13)) % VILL.length]); c.root.scale.setScalar(0.66); c.root.position.set(r.npc.x, 0.55, r.npc.z); c.root.rotation.y = r.npc.yaw; r.scene.add(c.root); r.npcChar = c; }
     rooms[key] = r;
   }
   return rooms[key];
@@ -624,6 +627,7 @@ let nearDoor = null;
 function doorAction() { if (IN) { if (P.z > IN.room.exitZ - 0.9) leaveBuilding(); } else if (SEA.on) { if (canLand) landBoat(); } else if (ONTOP) descendTower(); else if (nearTower) climbTower(); else if (nearBoat) boardBoat(); else if (nearDoor) enterBuilding(nearDoor); }
 $("prompt").addEventListener("click", doorAction);
 function animWalk(c, walk, moving) {
+  if (c.rig) { c.play(moving ? c.walkClip : "Idle"); return; }
   const s = moving ? Math.sin(walk) : 0;
   c.legs[0].rotation.x = s * 0.7; c.legs[1].rotation.x = -s * 0.7;
   c.arms[0].rotation.x = -s * 0.5; c.arms[1].rotation.x = moving ? s * 0.25 : 0;
@@ -651,20 +655,20 @@ const foeBodyM = new THREE.MeshStandardMaterial({ color: "#0d0a18", emissive: "#
 function spawnFoe(sx, sz, sea) {
   const a = Math.random() * TAU, r = R(a) + 4.5, x = sx == null ? Math.cos(a) * r : sx, z = sz == null ? Math.sin(a) * r : sz;
   const g = new THREE.Group(); scene.add(g);
-  const bm = foeBodyM.clone();
-  const body = sph(0.36, bm, 0, 0.42, 0, g, 16, 12); body.scale.set(1, 1.25, 1);
-  const tips = [];
-  for (let i = 0; i < 5; i++) { const t = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.42, 6), bm); const ta = i / 5 * TAU; t.position.set(Math.cos(ta) * 0.16, 0.86, Math.sin(ta) * 0.16); t.rotation.set(Math.sin(ta) * 0.5, 0, -Math.cos(ta) * 0.5); t.castShadow = true; g.add(t); tips.push(t); }
-  const eyeM = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.2, 0.9) });
-  [-0.12, 0.12].forEach((ex) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), eyeM); e.position.set(ex, 0.52, 0.3); e.scale.y = 1.4; g.add(e); });
-  const aura = glowSprite(new THREE.Color(0.5, 0.2, 1.1), 2.2, g, 0.5); aura.material.opacity = 0.7;
+  // 黑影＝從海霧裡爬上岸的骷髏（KayKit Skeletons，CC0），魔王是戴盔的骷髏戰士放大版
+  const kind = sea === "boss" ? "Skeleton_Warrior" : ["Skeleton_Minion", "Skeleton_Minion", "Skeleton_Rogue", "Skeleton_Mage"][Math.floor(Math.random() * 4)];
+  const rig = makeRig(kind, { cloneMats: true, keepGear: true, idle: "Walking_A" }); rig.root.scale.setScalar(0.62); g.add(rig.root);
+  rig.mats.forEach((m) => { m.emissive = new THREE.Color(); m.emissiveIntensity = 1; });
+  const bm = { emissive: { setRGB: (r, gg, b) => rig.mats.forEach((m) => m.emissive.setRGB(r * 0.35, gg * 0.35, b * 0.35)), set: (c) => rig.mats.forEach((m) => m.emissive.set(c)) } };
+  const body = rig.root, tips = [];
+  const aura = glowSprite(new THREE.Color(0.5, 0.2, 1.1), 2.2, g, 0.5); aura.material.opacity = 0.45;
   const day = G.day;
-  const f = { g, body, bm, tips, aura, x, z, hp: 2.2 + day * 0.35, max: 2.2 + day * 0.35, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0, sea: !!sea, boss: sea === "boss" };
+  const f = { g, body, bm, tips, aura, rig, x, z, hp: 2.2 + day * 0.35, max: 2.2 + day * 0.35, sp: 1.7 + Math.min(day, 8) * 0.1, t: Math.random() * 10, lit: 0, dying: 0, sea: !!sea, boss: sea === "boss" };
   if (f.boss) { f.hp = f.max = 30 + day * 6; f.sp = 1.0; g.scale.setScalar(2.6); aura.scale.multiplyScalar(1.4); bm.emissive.set("#4a1a80"); f.sea = false; }
   f.g.position.set(x, -0.4, z); foes.push(f); return f;
 }
 function killFoe(f, byTower) {
-  f.dying = 0.001;
+  f.dying = 0.001; if (f.rig) f.rig.play("Death_A", 0.1, true);
   const p = new THREE.Vector3(f.x, f.g.position.y + 0.5, f.z);
   if (byTower) burst(p, 0x8a5aff, 18, 1.8);
   else {
@@ -911,7 +915,7 @@ function frame() {
   const ld = useMoon ? moonDir : sunDir;
   skyU.sunDir.value.copy(sunDir); skyU.sunC.value.copy(E.sunC); skyU.sunA.value = smooth(-0.1, 0.05, sunDir.y);
   tickClouds(clouds, dt, tmpC.copy(E.bot).lerp(tmpC2.set("#ffffff"), 0.55 - dark * 0.35), 0.95 - dark * 0.55); mountains.m.color.copy(E.bot).lerp(tmpC2.set("#3a5070"), 0.55 + dark * 0.3);
-  gradePass.uniforms.uWarm.value = (1 - dark) * 0.6; gradePass.uniforms.uSat.value = 0.98 - dark * 0.12; gradePass.uniforms.uVig.value = 0.4 + dark * 0.12; gradePass.uniforms.uContrast.value = 1.1; WIND.value = now;
+  gradePass.uniforms.uWarm.value = (1 - dark) * 0.6; gradePass.uniforms.uSat.value = 0.98 - dark * 0.12; gradePass.uniforms.uVig.value = 0.4 + dark * 0.12; gradePass.uniforms.uContrast.value = 1.1; WIND.value = now; tickRigs(dt);
   sun.position.copy(ld).multiplyScalar(40).add(sun.target.position.set(camS.x, 0, camS.z)); sun.position.y = Math.max(sun.position.y, 6);
   sun.color.copy(E.sunC); sun.intensity = E.sun * (useMoon ? 1 : smooth(0.02, 0.15, sunDir.y));
   hemi.intensity = E.hemi; hemi.color.copy(E.top).lerp(tmpC.set("#ffffff"), 0.5); hemi.groundColor.set("#5a4a32").multiplyScalar(0.6 + 0.4 * (1 - dark));
@@ -1001,7 +1005,6 @@ function frame() {
     P.walk += dt * 11;
   }
   if (!SEA.on) { player.root.position.set(P.x, playerY(), P.z); player.root.rotation.y = P.yaw; animWalk(player, P.walk, P.moving); }
-  player.arms[1].rotation.z = -0.25;
   // 船：停泊或航行都隨浪起伏；船燈晚上亮
   boat.position.set(SEA.x, -0.05 + Math.sin(now * 1.6) * 0.05, SEA.z);
   SEA.lamp.intensity = dark * 6; SEA.glow.material.opacity = dark * 0.9; SEA.lampGlass.material.emissiveIntensity = 0.3 + dark * 3;
@@ -1013,7 +1016,7 @@ function frame() {
     f.g.position.set(f.x, Math.sin(now * 1.3 + f.t) * 0.1 - 0.02, f.z); f.g.rotation.z = Math.sin(now * 0.9 + f.t) * 0.08;
     if (SEA.on && Math.hypot(f.x - SEA.x, f.z - SEA.z) < 1.7) {
       if (f.kind === "crate") { G.wood += 3; toastAt(f.x, f.z, "+3 🪵", "#ffe2a0", 0.6); } else if (f.kind === "barrel") { G.oil += 2; toastAt(f.x, f.z, "+2 🛢️", "#ffd27a", 0.6); } else { G.parts++; G.wood += 1; toastAt(f.x, f.z, "+1 🔩 +1 🪵", "#ffd27a", 0.6); }
-      burst(new THREE.Vector3(f.x, 0.5, f.z), 0xbfe0ff, 10, 1.2); scene.remove(f.g); flotsam.splice(i, 1);
+      burst(new THREE.Vector3(f.x, 0.5, f.z), 0xbfe0ff, 10, 1.2); scene.remove(f.g); if (f.rig) f.rig.dead = true; flotsam.splice(i, 1);
     }
   }
   // 夜裡還在海上：黑影從船邊的水面冒出來追船
@@ -1073,8 +1076,8 @@ function frame() {
   for (let i = foes.length - 1; i >= 0; i--) {
     const f = foes[i]; f.t += dt;
     if (f.dying) {
-      f.dying += dt * 2.5; const k = 1 - f.dying; f.g.scale.setScalar(Math.max(0.01, k)); f.aura.material.opacity = k;
-      if (f.dying >= 1) { scene.remove(f.g); foes.splice(i, 1); }
+      f.dying += dt * 1.1; const k = 1 - Math.max(0, f.dying - 0.5) * 2; f.g.scale.setScalar(Math.max(0.01, k)); f.aura.material.opacity = k;
+      if (f.dying >= 1) { scene.remove(f.g); f.rig.dead = true; foes.splice(i, 1); }
       continue;
     }
     if (G.over) continue;
