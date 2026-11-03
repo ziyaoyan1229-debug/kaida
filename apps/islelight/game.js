@@ -32,7 +32,8 @@ const smooth = (a, b, v) => { const k = clamp((v - a) / (b - a), 0, 1); return k
 
 /* ===== 畫面 ===== */
 // 畫質三級：高（含環境光遮蔽、2x 解析度）、中（關環境光遮蔽、1.5x）、省電（1x、少光源少粒子）。第一次開會自動量測幀率挑一級
-const QL = ["high", "mid", "low"].includes(save.quality) ? save.quality : "high";
+const TOUCH = matchMedia("(pointer: coarse)").matches;
+const QL = ["high", "mid", "low"].includes(save.quality) ? save.quality : TOUCH ? "mid" : "high"; // 手機平板預設中畫質，再由量測往下調
 let HIGH = QL !== "low"; const ULTRA = QL === "high";
 const Q = { dpr: { high: 2, mid: 1.5, low: 1 }[QL], lights: { high: 20, mid: 12, low: 8 }[QL], lampLights: { high: 10, mid: 6, low: 3 }[QL], trees: { high: 230, mid: 200, low: 120 }[QL], grass: { high: 9000, mid: 7000, low: 3000 }[QL], motes: { high: 600, mid: 400, low: 200 }[QL], fogs: { high: 150, mid: 90, low: 50 }[QL] };
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -40,6 +41,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q.dpr));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+let shadowEvery = QL === "high" ? 1 : 2, frameNo = 0; renderer.shadowMap.autoUpdate = false; // 中、省電畫質：陰影每兩幀更新一次
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 document.body.prepend(renderer.domElement);
@@ -857,7 +859,7 @@ document.querySelectorAll("#build button").forEach((b) => b.addEventListener("cl
   setBuild(G.build === k ? null : k);
 }));
 $("skipbtn").addEventListener("click", () => { if (G.started && phaseAt(G.t) === "day") G.t = PH.day - 0.01; });
-$("quality").addEventListener("click", () => { save.quality = { high: "mid", mid: "low", low: "high" }[QL]; save.autoq = true; persist(); location.reload(); });
+$("quality").addEventListener("click", () => { save.quality = { high: "mid", mid: "low", low: "high" }[QL]; save.manualQ = true; persist(); location.reload(); });
 $("quality").textContent = "畫質：" + { high: "高", mid: "中", low: "省電" }[QL];
 $("cam").addEventListener("click", () => setCamMode(camS.mode === "follow" ? "top" : "follow"));
 setCamMode(camS.mode);
@@ -895,7 +897,7 @@ let hudT = 0, woodT = 0, now = 0;
 const tmpC = new THREE.Color(), tmpC2 = new THREE.Color();
 function frame() {
   requestAnimationFrame(frame);
-  const dt = Math.min(clock.getDelta(), 0.05) * DBG.speed; now += dt;
+  const dt = Math.min(clock.getDelta(), 0.05) * DBG.speed; now += dt; adapt(performance.now()); frameNo++; renderer.shadowMap.needsUpdate = frameNo % shadowEvery === 0;
   waterU.uTime.value = now;
   if (G.started && !G.over && !IN) G.t += dt;
   if (G.t >= CYCLE) { G.t -= CYCLE; }
@@ -1179,8 +1181,23 @@ window.__islelight = { G, P, camS, foes, items, DBG, climbTower, descendTower, i
 player.root.userData.noBake = pet.userData.noBake = true; tower.userData.noBake = beamRig.userData.noBake = true; grass.userData.noBake = sand.userData.noBake = true;
 const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
 // 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）
-if (!save.autoq) {
-  let n = 0, t0 = 0; const probe = () => { const t = performance.now(); if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); save.autoq = true; if (fps < 22 && QL !== "low") save.quality = "low"; else if (fps < 40 && QL === "high") save.quality = "mid"; persist(); if (save.quality && save.quality !== QL) location.reload(); } };
+/* 自動畫質：每次開啟都量 3 秒幀率，太慢就降一級重新載入（同一次瀏覽最多重載兩次，避免一直轉圈）；玩家手動選過就不自動調 */
+const RELOADS = +(sessionStorage.getItem("islelight-qreload") || 0);
+if (!save.manualQ && RELOADS < 2 && !DBG.noAutoQ) {
+  let n = 0, t0 = 0; const probe = () => { const t = performance.now(); if (!t0) t0 = t; else n++; if (t - t0 < 3000) requestAnimationFrame(probe); else { const fps = n / ((t - t0) / 1000); let q = QL; if (fps < 22 && QL !== "low") q = "low"; else if (fps < 40 && QL === "high") q = "mid"; if (q !== QL) { save.quality = q; persist(); sessionStorage.setItem("islelight-qreload", RELOADS + 1); location.reload(); } } };
   setTimeout(() => requestAnimationFrame(probe), 2500);
+}
+/* 遊戲中動態降載：開始後每 4 秒看一次幀率，掉到 24 以下就依序關環境光遮蔽、降解析度、關聚光燈陰影、再降解析度，不用重新載入 */
+let adaptStep = 0, adaptN = 0, adaptT = 0;
+function adapt(now) {
+  if (!G.started || adaptStep >= 4) return; adaptN++; if (!adaptT) adaptT = now; if (now - adaptT < 4000) return;
+  const fps = adaptN / ((now - adaptT) / 1000); adaptN = 0; adaptT = now; if (fps >= 24) return;
+  adaptStep++;
+  if (adaptStep === 1 && gtao) { gtao.enabled = false; shadowEvery = 2; }
+  else if (adaptStep === 1 || adaptStep === 2) { const pr = Math.max(1, renderer.getPixelRatio() - 0.5); renderer.setPixelRatio(pr); composer.setPixelRatio(pr); composer.setSize(innerWidth, innerHeight); }
+  else if (adaptStep === 3) { torchSpot.castShadow = false; beamSpot.castShadow = false; if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } sun.shadow.mapSize.set(1024, 1024); }
+  else { renderer.setPixelRatio(1); composer.setPixelRatio(1); composer.setSize(innerWidth, innerHeight); }
+  if (!save.manualQ && QL !== "low" && adaptStep >= 2) { save.quality = QL === "high" ? "mid" : "low"; persist(); } // 下次開啟直接用較低一級
+  console.log("islelight adapt", adaptStep, fps.toFixed(1));
 }
 frame();

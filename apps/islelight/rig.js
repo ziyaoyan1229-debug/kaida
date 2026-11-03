@@ -5,13 +5,29 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone as skClone } from "three/addons/utils/SkeletonUtils.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+
+/* 每個角色原本拆成手、腳、身體、頭等 6～9 個 SkinnedMesh，每個都是一次 draw call，再乘上陰影、AO 的多次繪製
+   載入時把同材質、同骨架的合成一個，畫面一樣，draw call 少一大半 */
+function mergeSkinned(root) {
+  const groups = new Map();
+  root.traverse((o) => { if (!o.isSkinnedMesh) return; const key = o.parent.uuid + "|" + o.material.uuid + "|" + o.skeleton.uuid + "|" + o.bindMatrix.elements.map((v) => v.toFixed(4)).join(","); let g = groups.get(key); if (!g) { g = []; groups.set(key, g); } g.push(o); });
+  groups.forEach((list) => {
+    if (list.length < 2) return;
+    const geo = mergeGeometries(list.map((m) => m.geometry), false); if (!geo) return;
+    const first = list[0]; const m = new THREE.SkinnedMesh(geo, first.material); m.name = first.name.replace(/_(Arm|Leg|Body|Head|Jaw|Cloak|Eyes).*$/, "") + "_Body";
+    m.position.copy(first.position); m.quaternion.copy(first.quaternion); m.scale.copy(first.scale);
+    m.bind(first.skeleton, first.bindMatrix); m.frustumCulled = false;
+    first.parent.add(m); list.forEach((o) => o.parent.remove(o));
+  });
+}
 
 const CACHE = {};
 const GEAR = /Sword|Shield|Axe|Crossbow|Staff|Wand|Knife|Offhand|Throwable|Spellbook|Mug|Blade|Bow|Arrow|Quiver/i;
 export const RIGS = [];
 export async function loadRigs(names) {
   const loader = new GLTFLoader();
-  await Promise.all(names.map(async (name) => { if (CACHE[name]) return; const url = (name.startsWith("Skeleton") ? "assets/foes/" : "assets/chars/") + name + ".json"; CACHE[name] = await loader.loadAsync(url); }));
+  await Promise.all(names.map(async (name) => { if (CACHE[name]) return; const url = (name.startsWith("Skeleton") ? "assets/foes/" : "assets/chars/") + name + ".json"; const gltf = await loader.loadAsync(url); mergeSkinned(gltf.scene); CACHE[name] = gltf; }));
 }
 export function makeRig(name, opt) {
   opt = opt || {}; const src = CACHE[name];
