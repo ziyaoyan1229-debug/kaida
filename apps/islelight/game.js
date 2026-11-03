@@ -11,6 +11,7 @@ import { makeInterior, ROOM_OF } from "./interior.js";
 import { bakeStatic } from "./bake.js";
 import { loadRigs, makeRig, tickRigs } from "./rig.js";
 import { loadModels, placeModel, modelBox } from "./models.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 await loadRigs(["Knight", "Barbarian", "Mage", "Rogue", "Rogue_Hooded", "Skeleton_Minion", "Skeleton_Warrior", "Skeleton_Rogue", "Skeleton_Mage"]);
 const HEX_BUILDINGS = ["home_A", "home_B", "barracks", "tavern", "blacksmith", "archeryrange", "market", "church", "windmill"].map((n) => "buildings/building_" + n + "_red");
 const HEX_NATURE = ["tree_single_A", "tree_single_B", "trees_B_small", "rock_single_A", "rock_single_B", "rock_single_C", "rock_single_D", "rock_single_E"].map((n) => "nature/" + n);
@@ -35,7 +36,7 @@ const smooth = (a, b, v) => { const k = clamp((v - a) / (b - a), 0, 1); return k
 const TOUCH = matchMedia("(pointer: coarse)").matches;
 const QL = ["high", "mid", "low"].includes(save.quality) ? save.quality : TOUCH ? "mid" : "high"; // 手機平板預設中畫質，再由量測往下調
 let HIGH = QL !== "low"; const ULTRA = QL === "high";
-const Q = { dpr: { high: 2, mid: 1.5, low: 1 }[QL], lights: { high: 20, mid: 12, low: 8 }[QL], lampLights: { high: 10, mid: 6, low: 3 }[QL], trees: { high: 230, mid: 200, low: 120 }[QL], grass: { high: 9000, mid: 7000, low: 3000 }[QL], motes: { high: 600, mid: 400, low: 200 }[QL], fogs: { high: 150, mid: 90, low: 50 }[QL] };
+const Q = { dpr: { high: 2, mid: 1.5, low: 1 }[QL], lights: { high: 20, mid: 12, low: 8 }[QL], lampLights: { high: 10, mid: 6, low: 3 }[QL], trees: { high: 230, mid: 200, low: 120 }[QL], grass: { high: 9000, mid: 7000, low: 3000 }[QL], motes: { high: 600, mid: 400, low: 200 }[QL], fogs: { high: 150, mid: 90, low: 24 }[QL] };
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q.dpr));
 renderer.setSize(innerWidth, innerHeight);
@@ -392,6 +393,9 @@ const TALL = [[-13, 14.5, 7, 4.5, 0], [-16, 25, 6, 5, 0.3], [-24, 11, 5, 5, -0.2
 const SIGNS = [[2.3, 5.2, A(200), ["主街", "碼頭 ⇣"]], [-2.3, -5.2, A(20), ["住宅區", "鐘樓 ⇡"]], [-2.6, 21.3, A(150), ["⇠ 池塘", "西野原"]], [2.6, 17, A(-150), ["農田 ⇢"]], [-23, -13.1, A(60), ["⇠ 風車", "森林"]], [23, -17, A(-100), ["小池塘 ⇢"]]];
 const town = buildTown({ scene, lightPool, housePools, colliders, groundY, addLamp, terraces, placeModel, modelBox, roads: ROADS, coastR: R(DOCK_A) - 1, y: 0.55, layout: LAYOUT });
 const extras = buildExtras(EXTRAS); extras.forEach((e) => { if (e && e.name) town.push(e); });
+// 每棟房子門口的光暈圓盤透明度都一樣，合成一個網格（省 20 多次繪製）
+{ scene.updateMatrixWorld(true); const geos = housePools.map((p) => { const g = p.geometry.clone(); g.applyMatrix4(p.matrixWorld); p.parent.remove(p); return g; });
+  if (geos.length) { const merged = new THREE.Mesh(mergeGeometries(geos, false), housePools[0].material); merged.renderOrder = 1; merged.frustumCulled = false; scene.add(merged); hideForAO.push(merged); housePools.length = 0; housePools.push(merged); } }
 TALL.forEach(([x, z, w, d, ry]) => tallGrassField(scene, x, z, w, d, ry, groundY));
 SIGNS.forEach(([x, z, ry, texts]) => { signPost(scene, x, z, ry, texts, groundY(x, z)); colliders.push({ x, z, r: 0.2 }); });
 function freeSpot(x, z, pad) { return colliders.every((c) => Math.hypot(c.x - x, c.z - z) > c.r + pad); }
@@ -1179,7 +1183,7 @@ addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; cam
 camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
 // 測試用：在主控台調時間、加速
 window.__islelight = { G, P, camS, foes, items, DBG, climbTower, descendTower, isTop: () => ONTOP, JOY, drawMap, setHour: (t) => { G.t = t; }, setCamMode, enterBuilding, leaveBuilding, town, isIn: () => !!IN, boardBoat, landBoat, SEA, flotsam, spawnFoe, renderShop, nightCount, WEEKEND, BAKE: () => BAKE, renderer, QL, THREE, camera };
-player.root.userData.noBake = pet.userData.noBake = true; tower.userData.noBake = beamRig.userData.noBake = true; grass.userData.noBake = sand.userData.noBake = true;
+player.root.userData.noBake = pet.userData.noBake = true; lampGlass.userData.noBake = roofC.userData.noBake = roofKnob.userData.noBake = beamRig.userData.noBake = true; // 燈塔本體可以 bake，只留會變的燈室、屋頂 grass.userData.noBake = sand.userData.noBake = true;
 const BAKE = bakeStatic(scene); console.log("islelight bake", BAKE);
 // 第一次開：先量 3 秒幀率，太慢就自動降一級再重開（只做一次）
 /* 自動畫質：每次開啟都量 3 秒幀率，太慢就「當場」降載（不重新載入，不然按開始會像沒反應），並記住下次直接用較低一級；玩家手動選過就不自動調 */

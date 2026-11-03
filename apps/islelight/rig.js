@@ -12,10 +12,29 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 function mergeSkinned(root) {
   const groups = new Map();
   root.traverse((o) => { if (!o.isSkinnedMesh) return; const key = o.parent.uuid + "|" + o.material.uuid + "|" + o.skeleton.uuid + "|" + o.bindMatrix.elements.map((v) => v.toFixed(4)).join(","); let g = groups.get(key); if (!g) { g = []; groups.set(key, g); } g.push(o); });
+  /* 帽子、披風這種掛在骨頭上的普通 Mesh（不是武器），轉成 100% 跟著那根骨頭的蒙皮頂點，一起併進去 */
+  const attach = [];
+  root.traverse((o) => {
+    if (!o.isMesh || o.isSkinnedMesh || GEAR.test(o.name)) return;
+    let bone = o.parent, local = new THREE.Matrix4().copy(o.matrix); while (bone && !bone.isBone) { local.premultiply(bone.matrix); bone = bone.parent; }
+    if (bone) attach.push({ o, bone, local });
+  });
   groups.forEach((list) => {
-    if (list.length < 2) return;
-    const geo = mergeGeometries(list.map((m) => m.geometry), false); if (!geo) return;
-    const first = list[0]; const m = new THREE.SkinnedMesh(geo, first.material); m.name = first.name.replace(/_(Arm|Leg|Body|Head|Jaw|Cloak|Eyes).*$/, "") + "_Body";
+    const first = list[0], skel = first.skeleton, si = first.geometry.attributes.skinIndex, sw = first.geometry.attributes.skinWeight;
+    const extra = [];
+    attach.forEach(({ o, bone, local }) => {
+      if (o.material !== first.material) return; const j = skel.bones.indexOf(bone); if (j < 0) return;
+      const g = o.geometry.clone(); const n = g.attributes.position.count;
+      const m = new THREE.Matrix4().copy(skel.boneInverses[j]).invert().multiply(local); g.applyMatrix4(m);
+      const idx = new si.array.constructor(n * 4), w = new sw.array.constructor(n * 4); for (let i = 0; i < n; i++) { idx[i * 4] = j; w[i * 4] = 1; }
+      const ia = new THREE.BufferAttribute(idx, 4), wa = new THREE.BufferAttribute(w, 4); ia.gpuType = si.gpuType; wa.gpuType = sw.gpuType; ia.normalized = si.normalized; wa.normalized = sw.normalized; g.setAttribute("skinIndex", ia); g.setAttribute("skinWeight", wa);
+      for (const k of Object.keys(g.attributes)) if (!first.geometry.attributes[k]) g.deleteAttribute(k);
+      for (const k of Object.keys(first.geometry.attributes)) if (!g.attributes[k]) return;
+      extra.push(g); o.parent.remove(o);
+    });
+    if (list.length + extra.length < 2) return;
+    const geo = mergeGeometries(list.map((m) => m.geometry).concat(extra), false); if (!geo) return;
+    const m = new THREE.SkinnedMesh(geo, first.material); m.name = first.name.replace(/_(Arm|Leg|Body|Head|Jaw|Cloak|Eyes).*$/, "") + "_Body";
     m.position.copy(first.position); m.quaternion.copy(first.quaternion); m.scale.copy(first.scale);
     m.bind(first.skeleton, first.bindMatrix); m.frustumCulled = false;
     first.parent.add(m); list.forEach((o) => o.parent.remove(o));

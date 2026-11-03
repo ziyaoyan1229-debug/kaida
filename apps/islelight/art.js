@@ -153,8 +153,9 @@ export function signPost(parent, x, z, ry, texts, y0) {
   cyl(0.06, 0.07, 1.6, FRAME, 0, 0.8, 0, g, 7); cone(0.07, 0.1, FRAME, 0, 1.65, 0, g, 6);
   texts.forEach((txt, i) => {
     const tx = tex(256, 72, (c) => { c.fillStyle = "#c9a876"; c.fillRect(0, 0, 256, 72); c.fillStyle = "#4a2e1a"; c.font = "bold 40px 'PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(txt, 128, 38); });
-    const b = add(new THREE.BoxGeometry(0.95, 0.27, 0.06), [M.wood, M.wood, M.wood, M.wood, new THREE.MeshStandardMaterial({ map: tx, roughness: 0.7 }), M.wood], 0.2, 1.42 - i * 0.34, 0.03, g);
+    const b = add(new THREE.BoxGeometry(0.95, 0.27, 0.06), M.wood, 0.2, 1.42 - i * 0.34, 0.03, g);
     b.rotation.y = i % 2 ? -0.12 : 0.1;
+    const face = add(new THREE.PlaneGeometry(0.93, 0.25), new THREE.MeshStandardMaterial({ map: tx, roughness: 0.7 }), 0, 0, 0.031, b); face.castShadow = false;
   });
   return g;
 }
