@@ -40,7 +40,7 @@ let fb = null, auth = null, db = null, user = null, busy = false, state = "idle"
 async function boot() {
   if (fb) return fb;
   // 測試時可以用 window.KaidaFirebase 換掉真的 SDK
-  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103o");
+  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103p");
   const app = fb.initializeApp(CONFIG);
   auth = fb.getAuth(app); db = fb.getDatabase(app);
   fb.onAuthStateChanged(auth, (u) => {
@@ -116,8 +116,7 @@ async function sync(first) {
     if (confirm(t("ac.both", { cw: c.wood, cd: c.n, mw: m.wood, md: m.n }))) return adopt(cloud);
     return push();
   }
-  if (acct.dirty) return push();
-  state = "ok"; render();
+  return push();                                               // 這台的比較新（例如開 App 時送了種子），上傳
 }
 
 function fail(e) {
