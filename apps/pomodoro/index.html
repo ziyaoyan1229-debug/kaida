@@ -341,19 +341,22 @@
   .set-btn { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
   .set-btn:focus-visible, .sheet-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .rb-set { color: var(--rb-ink); }
-  /* 登入畫面：沒登入就蓋住整個 app */
-  .login { display: none; position: fixed; inset: 0; z-index: 9999; background: var(--paper); color: var(--ink); overflow: auto; }
-  .need-login .login { display: grid; place-items: center; }
+  /* 登入畫面：沒登入就蓋住整個 app；上面斜排 6 間讀書房 */
+  .login { display: none; position: fixed; inset: 0; z-index: 9999; background: var(--paper); color: var(--ink); overflow-x: hidden; overflow-y: auto; }
+  .need-login .login { display: grid; grid-template-rows: auto 1fr; }
   .need-login body { overflow: hidden; }
-  .login-in { width: min(360px, 100%); padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom)); text-align: center; display: grid; justify-items: center; gap: 14px; }
-  .login-logo { width: 132px; height: 132px; border-radius: 32px; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
-  .login h1 { margin: 10px 0 0; font-size: 30px; letter-spacing: .04em; }
-  .login .lg-p { margin: 0 0 18px; color: var(--muted); font-size: 15px; line-height: 1.6; }
-  .login .lg-g { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; border-radius: 999px; border: 1px solid #dadce0; background: #fff; color: #3c4043; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .lg-mo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: max(48px, calc(env(safe-area-inset-top) + 28px)) 14px 0; transform: rotate(-6deg) scale(1.15); transform-origin: center; max-width: 520px; width: 100%; margin: 0 auto; pointer-events: none; }
+  .lg-mo i { aspect-ratio: 1; border-radius: 16px; background: var(--sunk) center/cover; box-shadow: 0 6px 14px rgba(0,0,0,.18); animation: lgIn .6s both; }
+  .lg-mo i:nth-child(2) { animation-delay: .06s } .lg-mo i:nth-child(3) { animation-delay: .12s } .lg-mo i:nth-child(4) { animation-delay: .18s } .lg-mo i:nth-child(5) { animation-delay: .24s } .lg-mo i:nth-child(6) { animation-delay: .3s }
+  @keyframes lgIn { from { opacity: 0; transform: translateY(12px) } }
+  .login-in { position: relative; width: 100%; padding: 40px max(24px, calc((100% - 340px) / 2)) max(28px, env(safe-area-inset-bottom)); text-align: center; display: grid; justify-items: center; align-content: start; gap: 12px; background: linear-gradient(color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) 30px); }
+  .login h1 { margin: 0; font-size: 32px; letter-spacing: .06em; }
+  .login .lg-p { margin: 0 0 12px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+  .login .lg-g { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; border-radius: 999px; border: 1px solid #dadce0; background: #fff; color: #3c4043; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
   .login .lg-g:disabled { opacity: .6; cursor: default; }
   .login .lg-note { text-wrap: balance; margin: 4px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
   .login .lg-err { min-height: 1.4em; margin: 0; font-size: 13px; color: var(--fail, #c0392b); }
-  .login .lg-lang { margin-top: 10px; background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+  .login .lg-lang { margin-top: 6px; background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
   .acct { display: flex; align-items: center; gap: 10px; padding: 8px 0 12px; }
   .acct .ac-t { flex: 1; min-width: 0; display: grid; gap: 2px; }
   .acct .ac-t b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -725,10 +728,9 @@
 </head>
 <body>
 <div class="hop" id="hop" hidden role="status" aria-live="polite"><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="hop-t" data-i18n="hop.t">準備房間中</div></div>
-<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="lg-t"><div class="login-in">
-  <img class="login-logo" src="apple-touch-icon.png" alt="">
+<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="lg-t"><div class="lg-mo" aria-hidden="true"><i style="background-image:url(thumbs/cafe.jpg)"></i><i style="background-image:url(thumbs/library.jpg)"></i><i style="background-image:url(thumbs/space.jpg)"></i><i style="background-image:url(thumbs/beach.jpg)"></i><i style="background-image:url(thumbs/cabin.jpg)"></i><i style="background-image:url(thumbs/washitsu.jpg)"></i></div><div class="login-in">
   <h1 id="lg-t" data-i18n="app.title">番茄讀書會</h1>
-  <p class="lg-p" data-i18n="lg.p">跟大家一起開番茄鐘專注讀書</p>
+  <p class="lg-p" data-i18n="lg.p">挑一間讀書房，跟大家一起專注</p>
   <button type="button" class="lg-g" id="lg-go"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span data-i18n="ac.in">Google 登入</span></button>
   <p class="lg-err" id="lg-err" role="alert"></p>
   <p class="lg-note" data-i18n="lg.note">登入後角色、小木頭和家會自動備份，換手機也找得回來。</p>
@@ -882,13 +884,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103b"></script>
-<script src="net.js?v=20261103b"></script>
-<script src="music.js?v=20261103b"></script>
-<script type="module" src="scene3d.js?v=20261103b" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103b"></script>
-<script src="books.js?v=20261103b"></script>
-<script type="module" src="account.js?v=20261103b"></script>
+<script src="scene.js?v=20261103c"></script>
+<script src="net.js?v=20261103c"></script>
+<script src="music.js?v=20261103c"></script>
+<script type="module" src="scene3d.js?v=20261103c" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103c"></script>
+<script src="books.js?v=20261103c"></script>
+<script type="module" src="account.js?v=20261103c"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;

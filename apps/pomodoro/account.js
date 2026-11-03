@@ -20,12 +20,12 @@ const ls = {
 K.addStrings({
   zh: { "ac.sec": "帳號", "ac.h": "用 Google 帳號登入", "ac.p": "自動備份到雲端，換手機也能找回角色、小木頭和家", "ac.in": "Google 登入", "ac.out": "登出",
     "ac.synced": "已同步", "ac.saving": "同步中…", "ac.pending": "等一下就同步", "ac.errS": "同步失敗，稍後再試", "ac.loaded": "已載入雲端的存檔",
-    "ac.offline": "沒有網路，連上後會自動同步", "ac.err": "登入失敗", "ac.outQ": "要登出嗎？登出後要再登入才能繼續使用。", "lg.p": "跟大家一起開番茄鐘專注讀書", "lg.note": "登入後角色、小木頭和家會自動備份，換手機也找得回來。", "lg.wait": "登入中…",
+    "ac.offline": "沒有網路，連上後會自動同步", "ac.err": "登入失敗", "ac.outQ": "要登出嗎？登出後要再登入才能繼續使用。", "lg.p": "挑一間讀書房，跟大家一起專注", "lg.note": "登入後角色、小木頭和家會自動備份，換手機也找得回來。", "lg.wait": "登入中…",
     "ac.pick": "這個帳號雲端已經有存檔了。\n\n雲端：{cw} 根小木頭、{cd} 天紀錄\n這台：{mw} 根小木頭、{md} 天紀錄\n\n按「確定」用雲端的存檔；按「取消」用這台的進度覆蓋雲端。",
     "ac.both": "另一台裝置也改過進度。\n\n雲端：{cw} 根小木頭、{cd} 天紀錄\n這台：{mw} 根小木頭、{md} 天紀錄\n\n按「確定」用雲端的；按「取消」用這台的。" },
   en: { "ac.sec": "Account", "ac.h": "Sign in with Google", "ac.p": "Back up to the cloud and get your character, logs and home back on any phone", "ac.in": "Sign in with Google", "ac.out": "Sign out",
     "ac.synced": "Synced", "ac.saving": "Syncing…", "ac.pending": "Will sync shortly", "ac.errS": "Sync failed, will retry", "ac.loaded": "Loaded your cloud save",
-    "ac.offline": "You're offline. It'll sync when you're back online.", "ac.err": "Sign-in failed", "ac.outQ": "Sign out? You'll need to sign in again to keep using the app.", "lg.p": "Focus together with a shared pomodoro timer", "lg.note": "Signing in backs up your character, logs and home, so you can get them back on any phone.", "lg.wait": "Signing in…",
+    "ac.offline": "You're offline. It'll sync when you're back online.", "ac.err": "Sign-in failed", "ac.outQ": "Sign out? You'll need to sign in again to keep using the app.", "lg.p": "Pick a study room and focus together", "lg.note": "Signing in backs up your character, logs and home, so you can get them back on any phone.", "lg.wait": "Signing in…",
     "ac.pick": "This account already has a cloud save.\n\nCloud: {cw} logs, {cd} days\nThis device: {mw} logs, {md} days\n\nOK uses the cloud save. Cancel overwrites the cloud with this device.",
     "ac.both": "Another device changed your progress too.\n\nCloud: {cw} logs, {cd} days\nThis device: {mw} logs, {md} days\n\nOK uses the cloud. Cancel keeps this device." }
 });
@@ -40,7 +40,7 @@ let fb = null, auth = null, db = null, user = null, busy = false, state = "idle"
 async function boot() {
   if (fb) return fb;
   // 測試時可以用 window.KaidaFirebase 換掉真的 SDK
-  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103b");
+  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103c");
   const app = fb.initializeApp(CONFIG);
   auth = fb.getAuth(app); db = fb.getDatabase(app);
   fb.onAuthStateChanged(auth, (u) => {
