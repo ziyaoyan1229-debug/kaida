@@ -2,7 +2,7 @@
    空房間、地板分成方格；家具用小木頭買，擺在格子上，不能重疊。
    window.KaidaHome.mount(el)；.set({ owner, guest, items, edit })；.place(kind)；.rotate()；.store()；.select(i) */
 import * as THREE from "./vendor/three.module.min.js";
-import { makeChar, makePet, mat, box, cyl, sph, cap, outline } from "./scene3d.js?v=20261103e"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
+import { makeChar, makePet, mat, box, cyl, sph, cap, outline, envAt } from "./scene3d.js?v=20261103f"; // 版本號要跟 index.html 的 script 一樣，才會是同一份模組
 
 const T = 0.5, GW = 10, GD = 8; // 一格 0.5，房間 10 × 8 格
 const W = GW * T, D = GD * T;
@@ -733,10 +733,9 @@ function buildWalls() {
   roomG = new THREE.Group(); scene.add(roomG);
   const F = FLOORS[state.floor] || FLOORS[0];
   floor.material = surfMat(TILES[state.tile] || TILES[F.floor], GW / 2, GD / 2);
-  if (scene.background) scene.background.set(F.bg);
   clouds = [];
   // 雲：記下原本的位置，每一幀左右飄、上下浮
-  const cloud = (x, y, z, r) => { const c = new THREE.Group(); c.position.set(x, y, z); roomG.add(c); clouds.push({ c, x, y, z, ph: clouds.length * 1.7, sp: 0.12 + (clouds.length % 3) * 0.04 }); [[0, 0, r], [r * 0.9, -0.1 * r, r * 0.7], [-r * 0.9, -0.12 * r, r * 0.65]].forEach(([a, b2, rr]) => { const m = sph(rr, mat("#ffffff", { emissive: "#ffffff", emissiveIntensity: 0.3 }), a, b2, 0, c, 12, 10); m.castShadow = false; }); };
+  const cloud = (x, y, z, r) => { const c = new THREE.Group(); c.position.set(x, y, z); roomG.add(c); clouds.push({ c, x, y, z, ph: clouds.length * 1.7, sp: 0.12 + (clouds.length % 3) * 0.04 }); [[0, 0, r], [r * 0.9, -0.1 * r, r * 0.7], [-r * 0.9, -0.12 * r, r * 0.65]].forEach(([a, b2, rr]) => { const m = sph(rr, cloudMat, a, b2, 0, c, 12, 10); m.castShadow = false; }); };
   if (F.out === "garden") {
     // 一樓外面：一圈草地、石板路、矮樹叢和小花
     const g = new THREE.Mesh(new THREE.PlaneGeometry(W + 8, D + 8), mat("#9cc584")); g.rotation.x = -Math.PI / 2; g.position.y = -0.02; g.receiveShadow = true; roomG.add(g);
@@ -787,15 +786,42 @@ function buildWalls() {
   // 窗戶：走廊沒有窗；房間的窗在右邊（門在中間）
   if (state.floor === 1 && state.hall) return;
   const win = new THREE.Group(); win.position.set(state.floor === 1 ? 1.75 : 0.6, 0.95, -D / 2 + 0.01); backG.add(win);
-  box(0.9, 0.7, 0.03, "#fffaf2", 0, 0, 0, win); box(0.8, 0.6, 0.035, mat("#bfe0f2", { emissive: "#6a98b8", emissiveIntensity: 0.35 }), 0, 0, 0.002, win);
+  box(0.9, 0.7, 0.03, "#fffaf2", 0, 0, 0, win); box(0.8, 0.6, 0.035, winMat, 0, 0, 0.002, win);
   box(0.03, 0.6, 0.04, "#fffaf2", 0, 0, 0.004, win); box(0.8, 0.03, 0.04, "#fffaf2", 0, 0, 0.004, win);
 }
+/* ===== 窗外天色：跟著真實時間（日出、白天、黃昏、晚上）變 ===== */
+const cloudMat = new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.3, roughness: 0.9 });
+const winMat = new THREE.MeshStandardMaterial({ color: "#bfe0f2", emissive: "#6a98b8", emissiveIntensity: 0.35, roughness: 0.4 });
+let hemiL = null, sunL = null, nightL = null, skyCv = null, skyBg = null, envNext = 0, skyHour = null;
+try { const q = new URLSearchParams(location.search).get("hour"); if (q !== null && q !== "") skyHour = +q; } catch (e) {}
+const _c1 = new THREE.Color(), _c2 = new THREE.Color();
+const mix = (a, b, k) => "#" + _c1.set(a).lerp(_c2.set(b), Math.max(0, Math.min(1, k))).getHexString();
+function hourNow() { if (skyHour !== null) return skyHour; const d = new Date(); return d.getHours() + d.getMinutes() / 60; }
+function drawHomeSky(e) {
+  const g = skyCv.getContext("2d"), W2 = 64, H2 = 256, h = e.h;
+  const gr = g.createLinearGradient(0, 0, 0, H2); gr.addColorStop(0, e.top); gr.addColorStop(0.75, e.bot); gr.addColorStop(1, mix(e.bot, "#ffffff", 0.15 * (1 - e.dark)));
+  g.fillStyle = gr; g.fillRect(0, 0, W2, H2);
+  if (e.dark > 0.05) { g.fillStyle = "#fff"; for (let i = 0; i < 40; i++) { g.globalAlpha = e.dark * (0.3 + (i % 5) / 7); g.fillRect((i * 37) % W2, (i * 53) % 150, 0.8, 0.5); } g.globalAlpha = 1; }
+  skyBg.needsUpdate = true;
+}
+function applyEnv() {
+  const e = envAt(hourNow()), d = e.dark;
+  if (!skyCv) { skyCv = document.createElement("canvas"); skyCv.width = 64; skyCv.height = 256; skyBg = new THREE.CanvasTexture(skyCv); skyBg.colorSpace = THREE.SRGBColorSpace; }
+  drawHomeSky(e); scene.background = skyBg;
+  if (hemiL) { hemiL.intensity = 0.45 + e.hemi * 0.65; hemiL.color.set(mix("#fff1dc", "#9aa8d8", d)); hemiL.groundColor.set(mix("#8a5a38", "#2a2030", d)); }
+  if (sunL) { sunL.intensity = e.sun * 0.85; sunL.color.set(e.sunC); const k = Math.max(0, Math.min(1, (e.h - 6) / 13)); sunL.position.set(7 - k * 10, 4 + Math.sin(Math.PI * k) * 4, 5); }
+  if (nightL) nightL.intensity = d * 1.6; // 晚上屋裡開燈
+  cloudMat.color.set(mix("#ffffff", "#5a6a90", d)); cloudMat.emissive.set(mix("#ffffff", e.bot, 0.3)); cloudMat.emissiveIntensity = 0.3 * (1 - d * 0.8);
+  winMat.color.set(mix(e.bot, e.top, 0.5)); winMat.emissive.set(e.top); winMat.emissiveIntensity = 0.25 + d * 0.15;
+  if (renderer) renderer.toneMappingExposure = e.exp;
+}
 function lighting() {
-  scene.add(new THREE.HemisphereLight(0xfff1dc, 0x8a5a38, 1.1));
-  const sun = new THREE.DirectionalLight(0xfff2d8, 1.5); sun.position.set(3, 7, 5); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+  scene.add(hemiL = new THREE.HemisphereLight(0xfff1dc, 0x8a5a38, 1.1));
+  nightL = new THREE.PointLight(0xffc98a, 0, 9, 1.4); nightL.position.set(0, 2.4, 0.4); scene.add(nightL);
+  const sun = sunL = new THREE.DirectionalLight(0xfff2d8, 1.5); sun.position.set(3, 7, 5); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
   const sc = sun.shadow.camera; sc.left = -5; sc.right = 5; sc.top = 5; sc.bottom = -5; sun.shadow.bias = -0.0015;
   scene.add(sun);
-  scene.background = new THREE.Color((FLOORS[state.floor] || FLOORS[0]).bg);
+  applyEnv();
 }
 // 鏡頭：預設從右前方斜斜往下看；拖曳可以轉（yaw 左右、pitch 上下），兩指或滾輪縮放
 const DIR0 = new THREE.Vector3(0.62, 0.86, 0.78).normalize(), AIM = new THREE.Vector3(-0.1, 0.35, 0);
@@ -1134,6 +1160,7 @@ function frame() {
   if (!container || !container.isConnected || container.offsetParent === null) return;
   const dt = Math.min(0.05, clock.getDelta()), s = clock.elapsedTime;
   tickRipples(dt);
+  if (s > envNext) { envNext = s + 30; applyEnv(); }
   clouds.forEach((o) => { o.c.position.x = o.x + Math.sin(s * o.sp + o.ph) * 0.7; o.c.position.y = o.y + Math.sin(s * 0.5 + o.ph) * 0.06; });
   // 鏡頭轉到牆外面就藏起那面牆
   if (backG) backG.visible = camera.position.z > -D / 2;
