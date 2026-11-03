@@ -1,4 +1,4 @@
-/* 番茄宿舍：Google 帳號登入 + 雲端備份（Firebase Auth + Realtime Database）
+/* 番茄讀書會：Google 帳號登入 + 雲端備份（Firebase Auth + Realtime Database）
    存檔整份放在 users/{uid}：{ d: 存檔 JSON 字串, ts: 存檔時間, dev: 哪台裝置 }
    本機記錄在 localStorage "kaida-acct"：{ uid, email, name, photo, at: 上次同步的雲端時間, dirty: 本機有沒同步的改動 } */
 const STORE = "kaida-pomodoro-v1", ACCT = "kaida-acct", DEV = "kaida-dev";
@@ -40,7 +40,7 @@ let fb = null, auth = null, db = null, user = null, busy = false, state = "idle"
 async function boot() {
   if (fb) return fb;
   // 測試時可以用 window.KaidaFirebase 換掉真的 SDK
-  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103j");
+  fb = window.KaidaFirebase || await import("./vendor/firebase.min.js?v=20261103m");
   const app = fb.initializeApp(CONFIG);
   auth = fb.getAuth(app); db = fb.getDatabase(app);
   fb.onAuthStateChanged(auth, (u) => {

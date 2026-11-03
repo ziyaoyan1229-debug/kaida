@@ -1,4 +1,4 @@
-/* 番茄宿舍：四碼房號的即時房間（透過公開 MQTT 伺服器，只傳暱稱、角色和狀態） */
+/* 番茄讀書會：四碼房號的即時房間（透過公開 MQTT 伺服器，只傳暱稱、角色和狀態） */
 (function () {
   var BROKER = "wss://broker.hivemq.com:8884/mqtt";
   try {

@@ -1,4 +1,4 @@
-/* 番茄宿舍：家裡書店的書。都是沒有版權（公有領域）的經典，收錄節選。
+/* 番茄讀書會：家裡書店的書。都是沒有版權（公有領域）的經典，收錄節選。
    window.KaidaBooks = [{ id, t, en, by, c, lang, text }]，text 用空行分段 */
 (function () {
   window.KaidaBooks = [
