@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title data-i18n-title="app.title">番茄讀書會</title>
-<meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。不用註冊，資料只存在你的手機。">
+<meta name="description" content="打開就能加入一間安靜的讀書房，跟同一時間打開的人一起開 25 分鐘番茄鐘。用 Google 帳號登入，進度自動備份到雲端。">
 <meta name="theme-color" content="#f2ece1">
 <script>/* 一開頁就套上配色，避免閃一下：預設牛皮紙 */try{var _d=JSON.parse(localStorage.getItem("kaida-pomodoro-v1")||"null"),_p=_d&&_d.pal||"kraft";if(_p!=="kraft")document.documentElement.setAttribute("data-pal",_p)}catch(e){}</script>
+<script>try{if(!localStorage.getItem("kaida-acct"))document.documentElement.classList.add("need-login")}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="番茄讀書會">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -340,6 +341,19 @@
   .set-btn { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
   .set-btn:focus-visible, .sheet-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .rb-set { color: var(--rb-ink); }
+  /* 登入畫面：沒登入就蓋住整個 app */
+  .login { display: none; position: fixed; inset: 0; z-index: 9999; background: var(--paper); color: var(--ink); overflow: auto; }
+  .need-login .login { display: grid; place-items: center; }
+  .need-login body { overflow: hidden; }
+  .login-in { width: min(360px, 100%); padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom)); text-align: center; display: grid; justify-items: center; gap: 14px; }
+  .login-logo { width: 132px; height: 132px; border-radius: 32px; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+  .login h1 { margin: 10px 0 0; font-size: 30px; letter-spacing: .04em; }
+  .login .lg-p { margin: 0 0 18px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+  .login .lg-g { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; border-radius: 999px; border: 1px solid #dadce0; background: #fff; color: #3c4043; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .login .lg-g:disabled { opacity: .6; cursor: default; }
+  .login .lg-note { text-wrap: balance; margin: 4px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .login .lg-err { min-height: 1.4em; margin: 0; font-size: 13px; color: var(--fail, #c0392b); }
+  .login .lg-lang { margin-top: 10px; background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
   .acct { display: flex; align-items: center; gap: 10px; padding: 8px 0 12px; }
   .acct .ac-t { flex: 1; min-width: 0; display: grid; gap: 2px; }
   .acct .ac-t b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -711,6 +725,15 @@
 </head>
 <body>
 <div class="hop" id="hop" hidden role="status" aria-live="polite"><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="hop-t" data-i18n="hop.t">準備房間中</div></div>
+<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="lg-t"><div class="login-in">
+  <img class="login-logo" src="apple-touch-icon.png" alt="">
+  <h1 id="lg-t" data-i18n="app.title">番茄讀書會</h1>
+  <p class="lg-p" data-i18n="lg.p">跟大家一起開番茄鐘專注讀書</p>
+  <button type="button" class="lg-g" id="lg-go"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span data-i18n="ac.in">Google 登入</span></button>
+  <p class="lg-err" id="lg-err" role="alert"></p>
+  <p class="lg-note" data-i18n="lg.note">登入後角色、小木頭和家會自動備份，換手機也找得回來。</p>
+  <button type="button" class="lg-lang" id="lg-lang">English</button>
+</div></div>
 <div class="wrap">
 <div class="sheet" id="settings" hidden><div class="sheet-bg" data-close-set></div><div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="set-title">
   <div class="sheet-head"><h2 id="set-title" data-i18n="set.title">設定</h2><button type="button" class="sheet-x" data-close-set data-i18n-aria="set.close" aria-label="關閉">×</button></div>
@@ -859,13 +882,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103a"></script>
-<script src="net.js?v=20261103a"></script>
-<script src="music.js?v=20261103a"></script>
-<script type="module" src="scene3d.js?v=20261103a" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103a"></script>
-<script src="books.js?v=20261103a"></script>
-<script type="module" src="account.js?v=20261103a"></script>
+<script src="scene.js?v=20261103b"></script>
+<script src="net.js?v=20261103b"></script>
+<script src="music.js?v=20261103b"></script>
+<script type="module" src="scene3d.js?v=20261103b" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261103b"></script>
+<script src="books.js?v=20261103b"></script>
+<script type="module" src="account.js?v=20261103b"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -955,7 +978,7 @@
       "s.ackNeed": "專注結束！休息時按一下「休息一下」，這一輪才會記下來", "s.ackLost": "上一段休息沒按「休息一下」，那一輪沒有算進去",
       "rc.wh": "悄悄話", "rc.tipWh": "悄悄話開著：說的話只有 {n} 看得到，不會出現在頭上", "rc.end": "結束對話", "rc.endLine": "先這樣吧，我要繼續進步了！", "rc.title": "和 {n} 聊天", "rc.ph": "說點什麼…", "rc.send": "傳送", "rc.tip": "你走到 {n} 旁邊了，說的話會出現在頭上", "rc.came": "{n} 走過來找你聊天", "rc.from": "{n}：{m}", "rc.bot": "哈哈對啊|加油！我們一起|我也是耶|好喔～|等等休息再聊😆|真的嗎！|一起努力💪|你在讀什麼？",
       "help.t": "說明", "help.ok": "知道了",
-      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|專注就能拿小木頭，根據時間比例計算。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|小木頭可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 根。|在設定最上面登入 Google 帳號，讀書紀錄、小木頭和家就會自動備份到雲端，換手機也找得回來。",
+      "help.body": "房間最多 6 個人，大家用同一個番茄鐘，一起專注、一起休息。|專注就能拿小木頭，根據時間比例計算。|休息時「休息一下」按鈕會晃動，要在休息結束前按下去，上一輪才會算進去（防止掛著刷分）。|坐在書桌前的專注時間會顯示在名牌下面，起身走動不算。|點別人的角色或名牌：看資料、加好友、聊天。按聊天你的角色會走到他旁邊。|設定裡可以打開專注模式（專注時全螢幕只顯示時間），也可以選倒數或計時。|小木頭可以在商店買衣服、配件、膚色和髮色；建好角色後改名字要 5 根。|讀書紀錄、小木頭和家都會自動備份到你的 Google 帳號，換手機登入就找得回來。",
       "slot.top": "上衣", "slot.hat": "帽子", "slot.face": "臉", "slot.neck": "脖子", "slot.ears": "耳朵", "slot.pet": "夥伴", "slot.style": "髮型", "slot.back": "背上", "slot.legs": "褲子", "slot.set": "套裝", "cat.legs": "褲子", "cat.set": "套裝", "cat.top": "上衣", "cat.style": "髮型", "cat.hat": "帽子頭飾", "cat.acc": "配飾", "cat.pet": "寵物", "c.noneHere": "這個分類的東西都買齊了！", "c.noneOwned": "這個分類還沒有東西，去下面商店逛逛",
       "q.next": "換一句",
       "f.avNote": "頭像就是你的角色，到個人設定換造型", "f.setupH": "先取個暱稱", "f.setupP": "好友會在排行榜上看到你的暱稱和頭像。",
@@ -1063,7 +1086,7 @@
       "s.ackNeed": "Focus done! Tap \"Take a break\" during the break so this round counts", "s.ackLost": "You didn't tap \"Take a break\" last break, so that round didn't count",
       "rc.wh": "Whisper", "rc.tipWh": "Whisper is on: only {n} sees what you say, nothing shows above your head", "rc.end": "End chat", "rc.endLine": "That's it for now, back to leveling up!", "rc.title": "Chat with {n}", "rc.ph": "Say something…", "rc.send": "Send", "rc.tip": "You walked over to {n}. What you say shows above your head.", "rc.came": "{n} came over to chat", "rc.from": "{n}: {m}", "rc.bot": "Haha yes|You got this!|Me too|Okay~|Let's chat at the break 😆|Really?!|Let's keep going 💪|What are you reading?",
       "help.t": "How it works", "help.ok": "Got it",
-      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|Focusing earns logs, based on how long you focus.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend logs in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 logs.|Sign in with Google at the top of Settings to back up your records, logs and home to the cloud and get them back on a new phone.",
+      "help.body": "Up to 6 people per room share one pomodoro timer: focus together, break together.|Focusing earns logs, based on how long you focus.|During the break the \"Take a break\" button shakes. Tap it before the break ends or the last round won't count (no idle farming).|Your desk focus time shows under your name tag. Walking around doesn't count.|Tap someone's character or name tag to see their profile, add them or chat. Chatting walks your character over to them.|Settings has Focus mode (full-screen timer while focusing) and countdown or elapsed time.|Spend logs in the Shop on clothes, accessories, skin and hair colors. After setup, renaming costs 5 logs.|Your records, logs and home are backed up to your Google account, so signing in on a new phone brings them back.",
       "slot.top": "Top", "slot.hat": "Hat", "slot.face": "Face", "slot.neck": "Neck", "slot.ears": "Ears", "slot.pet": "Buddy", "slot.style": "Hair", "slot.back": "Back", "slot.legs": "Bottoms", "slot.set": "Set", "cat.legs": "Bottoms", "cat.set": "Sets", "cat.top": "Tops", "cat.style": "Hair", "cat.hat": "Hats", "cat.acc": "Accessories", "cat.pet": "Pets", "c.noneHere": "You own everything here!", "c.noneOwned": "Nothing here yet. Check the shop below.",
       "q.next": "Another",
       "f.avNote": "Your avatar is your character. Change the look in Profile.", "f.setupH": "Pick a nickname", "f.setupP": "Friends see your nickname and avatar on the leaderboard.",
