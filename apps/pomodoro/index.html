@@ -905,13 +905,13 @@
 
 <script src="../shared/kaida-app.js"></script>
 <script src="vendor/mqtt.min.js"></script>
-<script src="scene.js?v=20261103p"></script>
-<script src="net.js?v=20261103p"></script>
-<script src="music.js?v=20261103p"></script>
-<script type="module" src="scene3d.js?v=20261103p" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
-<script type="module" src="home3d.js?v=20261103p"></script>
-<script src="books.js?v=20261103p"></script>
-<script type="module" src="account.js?v=20261103p"></script>
+<script src="scene.js?v=20261104c"></script>
+<script src="net.js?v=20261104c"></script>
+<script src="music.js?v=20261104c"></script>
+<script type="module" src="scene3d.js?v=20261104c" onerror="window.dispatchEvent(new Event('kaida3d-fail'))"></script>
+<script type="module" src="home3d.js?v=20261104c"></script>
+<script src="books.js?v=20261104c"></script>
+<script type="module" src="account.js?v=20261104c"></script>
 <script>
 (function () {
   var K = window.Kaida, t = K.t;
@@ -1177,9 +1177,9 @@
   // 第二次禮物：目前已經在玩的人再送 100 顆（每人一次）
   var gift100 = false;
   if (!data.gift100) { data.gift100 = true; if (oldPlayer) { data.wood += 100; gift100 = true; } K.save(STORE, data); }
-  // 2026/11 一次性大禮：每個帳號送 10000 顆番茄種子（旗標跟著存檔上雲端，換手機也不會重複拿）
-  var gift10k = false;
-  if (!data.gift10k) { data.gift10k = true; data.wood += 10000; gift10k = true; K.save(STORE, data); }
+  // 2026/11 測試用一次性大禮：現在已經有帳號的人送 100000 顆番茄種子，之後才加入的不送（旗標跟著存檔上雲端，換手機也不會重複拿）
+  var gift100k = false;
+  if (!data.gift100k) { data.gift100k = true; if (oldPlayer) { data.wood += 100000; gift100k = true; } K.save(STORE, data); }
   // 新玩家見面禮：一隻小雞夥伴和 50 顆番茄種子（取好名字、存好角色時告訴他）
   if (!data.welcome) {
     data.welcome = true;
@@ -4026,7 +4026,7 @@
   startSocial(); updateBadge();
   tick();
   setInterval(tick, 1000);
-  if (gift30 || gift100 || gift10k) setTimeout(function () { updateWood(); K.toast(t("gift.n", { n: (gift30 ? 30 : 0) + (gift100 ? 100 : 0) + (gift10k ? 10000 : 0) })); }, 1200);
+  if (gift30 || gift100 || gift100k) setTimeout(function () { updateWood(); K.toast(t("gift.n", { n: (gift30 ? 30 : 0) + (gift100 ? 100 : 0) + (gift100k ? 100000 : 0) })); }, 1200);
 })();
 </script>
 </body>
